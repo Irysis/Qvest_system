@@ -1904,6 +1904,15 @@ SUITES=(
   # 등급 v3.4 선택 현실 점검(2026-11-10 · DSR-GATE-FORM-20261110) — 통계량 = 계약 PORT_t · 조정 p값 = Romano & Wolf 2016 알고리즘 4.1 직접 계산 일치 ·
   #   음성 대조(잡음 40개 중 최고의 통과율 ≈ alpha) · 양성 대조 · 닮은 변형의 환산 독립 시행 수 · PBO · 관문 fail-closed 5 · 돌연변이(보정 제거)
   "08_Tests/contracts/test_selection_reality_check.R"
+  # 선택 점검 재채점 도구(v3.4) — 드라이런 무기록 · 쓰기 필드 한정 · 원본 1회 보존 · 등급 = 계약 재채점 · 스윕 아님/hard_fail 무접촉(실측 산출물의 임시 사본)
+  "08_Tests/programs/test_selection_regrade.R"
+  # 팩터 DB 판 표식(v10.2 · 2026-11-10 배선) — 수리 원장 대 측정 시각 · 전체/팩터 목록 범위 · 선언 칸만 비켜 감 · 진행 중 수리 · 운영 원장 3건
+  "08_Tests/contracts/test_factor_db_vintage.R"
+  # 셀 엔진 팩터 방향 선택(v10.2) — 필드 없음 = 종전 호출 모양 · registry/defensive 는 접근자 인자로 · 방어 방향 없는 팩터 · 어휘 밖 값은 멈춤
+  "08_Tests/reinforcement/test_rf_cell_factor_direction.R"
+  # P4 강화 사슬(v10.2 · round_core v1/p4.R) — 기저 풀(자격 · 제외 사유 · 판 표식 양방향) · 보는 창 격차 = 계약 직접 호출 값 · 사슬 판 검사 · 걸음 원장 사슬 ·
+  #   위반 주입 6(시험 창 지표 규칙 · 두 블록 한 걸음 · 미판정 위 걸음 · 풀 밖 기저 · 날짜 누출 · 낡은 생성기 md5) · 닫기 → 결과 원장 · 생성기 판
+  "08_Tests/programs/test_round_core_v1_p4_chain.R"
   # <<< 편입 드리프트 수리
   # MC8 크기 짝 · 노출 짝 무신호 대조(2026-10-13 · v10.01) — 양성 대조(전략 = 바스켓 · 벤치 × Ē 정확 일치) · 크기 착시(노출 짝만이면
   #   selection 오판 돌연변이) · 플라시보 분위 판정(운 좋은 한 종목 = 평균 비교 오판 돌연변이) · 타이밍 경로 진단 · PIT as-of 위반 주입 ·

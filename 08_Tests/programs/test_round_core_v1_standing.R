@@ -359,6 +359,54 @@ chk("I3 CLI standing-status(기본 등록부 — 이 판은 거기 없으니 '�
 o2 <- suppressWarnings(system2("Rscript", c(shQuote(file.path(RC_DIR, "standing.R")), shQuote(RD), "nope"), stdout = TRUE, stderr = TRUE))
 chk("I4 CLI 모르는 단계 = 실패", !is.null(attr(o2, "status")) && attr(o2, "status") != 0L)
 
+cat("J 입구 수리(11-10) — 방향 인자 · 결합용 뷰 · 팩터 DB 판\n")
+stat_of <- function(lines) { f <- tempfile(fileext = ".R"); writeLines(c(PAD, lines, "FACTORS <- x"), f, useBytes = TRUE); s <- rc_standing_static(f); unlink(f); s }
+or_of <- function(...) stat_of(c(...))$orientation
+chk("J1 등록부 방향 상수(registry · defensive · 위치 인자 포함) = factor_db_static(정적 부호)",
+    identical(or_of("f <- load_month_factors(d, factor_names = 'V01_BM', direction = 'registry')"), "factor_db_static") &&
+      identical(or_of("f <- load_month_factors(d, 0, 'V01_BM', FALSE, 'defensive')"), "factor_db_static") &&
+      identical(or_of("f <- fc_load_month(d, 'registry')"), "factor_db_static") && identical(or_of("f <- E$load_daily_factors(ym = 1, direction = 'registry')"), "factor_db_static") &&
+      identical(or_of("f <- fc_load_months(ds, 'defensive')"), "factor_db_static") && identical(or_of("f <- fc_daily(ym = 1, direction = 'registry')"), "factor_db_static"))
+chk("J2 인자 없음 · ic_asof · 변수 · 함수 값 · do.call 문자열 = factor_db_asof(동적 — 위반 주입)",
+    identical(or_of("f <- load_month_factors(d, direction = 'ic_asof')"), "factor_db_asof") && identical(or_of("f <- load_daily_factors(ym = 1)"), "factor_db_asof") &&
+      identical(or_of("dd <- 'registry'", "f <- load_month_factors(d, direction = dd)"), "factor_db_asof") &&
+      identical(or_of("f <- lapply(ds, load_month_factors)"), "factor_db_asof") && identical(or_of("f <- do.call('load_month_factors', list(d))"), "factor_db_asof"))
+chk("J3 결합용 뷰 ic_asof(구 판 통과 구멍) = factor_db_asof · 정적 + 동적 섞이면 동적",
+    identical(or_of("f <- fc_load_month(d)"), "factor_db_asof") && identical(or_of("f <- fc_daily(ym = 1, direction = 'ic_asof')"), "factor_db_asof") &&
+      identical(or_of("a <- fc_load_month(d, 'registry')", "b <- load_month_factors(d)"), "factor_db_asof"))
+chk("J4 주석 · 문자열 속 호출은 보지 않는다 · 부호 층은 그대로 우선", identical(or_of("# fc_load_month(d)", "cat('load_month_factors(d)')"), "engine_native") &&
+      identical(or_of("f <- load_month_factors(d, direction = 'registry')", "ic_sign <- 1"), "orientation_layer"))
+chk("J5 허용 — engine_native 허용이면 factor_db_static 도 · 명시 목록 밖은 그대로", setequal(rc_standing_orient_admitted(list("engine_native")), c("engine_native", "factor_db_static")) &&
+      identical(rc_standing_orient_admitted(list("factor_db_asof")), "factor_db_asof"))
+fml <- function(file, fn) { ex <- parse(file, keep.source = FALSE)
+  for (e in as.list(ex)) if (is.call(e) && identical(as.character(e[[1]]), "<-") && identical(as.character(e[[2]]), fn)) return(names(e[[3]][[2]]))
+  NULL }
+fsig <- list(load_month_factors = "02_Infrastructure/factor_db/factor_db_connector.R", load_daily_factors = "02_Infrastructure/factor_db/factor_db_connector.R",
+             fc_load_month = "02_Infrastructure/factor_db/factor_combinable.R", fc_daily = "02_Infrastructure/factor_db/factor_combinable.R")
+sig_ok <- vapply(names(fsig), function(fn) { n <- fml(fsig[[fn]], fn); k <- names(formals(.RCS_FDB_FORMALS[[fn]])); length(n) > 0L && identical(n[seq_along(k)], k) }, TRUE)
+chk("J6 위치 인자 대응표 = 정본 서명(커넥터 · 결합용 뷰 소스 파싱 — 실행 없음)", all(sig_ok), paste(names(sig_ok)[!sig_ok], collapse = ","))
+FDVL <- file.path(SB, "fdv_ledger.json")
+rc_json_write(list(schema = "factor_db_vintage_v1", entries = list(list(id = "T-REPAIR", completed_at = "2026-11-10T11:26:00+09:00", scope = "all"))), FDVL)
+mk_fdv_art <- function(nm, rid) { a <- mk_art(nm, c("2010-01-29", "2010-02-26"), c(1, 1)); rc_json_write(list(run_id = rid, essence_grade = "F"), file.path(a, "authoritative_remeasure.json")); a }
+A_OLD <- mk_fdv_art("fdv_old", "RP_20261101_090000_x"); A_NEW <- mk_fdv_art("fdv_new", "RP_20261111_090000_x")
+chk("J7 rc_standing_fdv 양방향(임시 원장) — 수리 앞 = stale · 수리 뒤 = current · 원장 없음 = 건너뜀(NA)",
+    isTRUE(rc_standing_fdv(A_OLD, ledger_path = FDVL)$stale) && isFALSE(rc_standing_fdv(A_NEW, ledger_path = FDVL)$stale) &&
+      is.na(rc_standing_fdv(A_OLD, ledger_path = file.path(SB, "none.json"))$stale))
+LANEJ <- file.path(SB, "lane_j"); REGJ <- file.path(SB, "reg_j.json")
+mkj <- function(nm, key, art) { d <- file.path(LANEJ, nm); dir.create(d, recursive = TRUE, showWarnings = FALSE)
+  writeLines(c(E_NATIVE, paste("##", nm)), file.path(d, "engine.R"), useBytes = TRUE); Sys.setFileTime(file.path(d, "engine.R"), T_BEFORE)
+  rc_json_write(list(fidelity = "faithful"), file.path(d, "FIDELITY.json")); rc_json_write(list(verdict = "faithful"), file.path(d, "fidelity_audit.json"))
+  rc_json_write(list(paper_key = key, paper_url = paste0("https://arxiv.org/abs/", key)), file.path(d, "lane_provenance.json"))
+  h <- ho(nm, key, art = art); h$engine_path <- file.path(d, "engine.R"); h }
+regj <- rc_json_read("06_Registry/research_programs.json"); pj <- pidx("P1_RETURN")
+regj$programs[[pj]]$queue <- c(regj$programs[[pj]]$queue, list(mkj("RP_AUTO_J_OLD", "9909.00001", A_OLD), mkj("RP_AUTO_J_NEW", "9909.00002", A_NEW)))
+rc_json_write(regj, REGJ)
+Sys.setenv(RC_FDV_LEDGER = FDVL); CJ <- rc_standing_lane_candidates(SC, registry_path = REGJ, tau = TAU, lane_root = LANEJ); Sys.unsetenv("RC_FDV_LEDGER")
+chk("J8 레인 측정이 팩터 DB 수리 전이어도 입구에서 빼지 않는다 — 표식만(stale) · 수리 뒤 = current · 둘 다 입구 통과(상설 측정이 새로 잰다)",
+    isTRUE(CJ[dir == "RP_AUTO_J_OLD"]$eligible) && identical(CJ[dir == "RP_AUTO_J_OLD"]$factor_db_vintage, "stale") && isTRUE(CJ[dir == "RP_AUTO_J_NEW"]$eligible) &&
+      identical(CJ[dir == "RP_AUTO_J_NEW"]$factor_db_vintage, "current") && !any(grepl("factor_db_stale", CJ$reasons)), paste(CJ$dir, CJ$reasons, CJ$factor_db_vintage, collapse = " | "))
+chk("J9 기존 고정물(측정 시각 없음) = 판정 불가 기록만 · 제외하지 않음", all(!grepl("factor_db_stale", C$reasons)) && all(grepl("^na:|^current$", C$factor_db_vintage)))
+
 Sys.unsetenv("RC_SA_ROOT")
 cat(sprintf("\n== round_core_v1_standing: PASS %d · FAIL %d ==\n", PASS, FAIL))
 cat(sprintf('{"test":"round_core_v1_standing","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))

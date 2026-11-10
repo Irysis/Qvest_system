@@ -4,6 +4,7 @@
 RC_MODULES <- c("util.R", "rules.R", "metrics.R", "spec.R", "p1.R", "pins.R", "cell_eval.R", "register.R", "driver.R")
 RC_MODULES <- c(RC_MODULES, "standing.R")   # WP5 P1 상설 자격(상설 판 · 판정 원장 · 레인 스캔)
 RC_MODULES <- c(RC_MODULES, "outcomes.R")   # v10.2 결과 원장(닫는 단계 기계화 — 다음 탐침 · 교훈 · 목표 축 판독)
+RC_MODULES <- c(RC_MODULES, "p4.R")         # v10.2 P4 강화 사슬(p4_chain — 기저 풀 · 격차 · 사슬 판 · 걸음 원장 · 설계 입력 · 닫기 · 생성기 판)
 local({
   of <- NULL
   for (i in rev(seq_len(sys.nframe()))) { f <- sys.frame(i); if (!is.null(f$ofile)) { of <- f$ofile; break } }

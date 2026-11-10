@@ -55,6 +55,41 @@ round.sh <판> superfan-mark --codes a,b --kind pass|daily --p2 <id> --t2 <id>  
 ```
 - 다른 작업 트리(worktree)에서 돌릴 때만 `RC_ROOT_POSIX` · `RC_ROOT_WIN` + `R_ENVIRON_USER`(QM_ROOT 를 그 트리로)를 준다. 기본은 저장소다.
 
+- 입구 수리(11-10): 방향 층은 호출마다 `direction` 인자로 가른다 — `"registry"` | `"defensive"` 문자열 상수 = `factor_db_static`(engine_native 허용 시 함께 허용) · 인자 없음 · `"ic_asof"` · 판정 불가 값 = `factor_db_asof`. 결합용 뷰 `fc_load_month(s)` · `fc_daily` 도 같은 규칙으로 본다. 레인 산출이 팩터 DB 수리 전 측정이어도(`contracts/factor_db_vintage.R::fdv_stale = TRUE`) 입구에서 빼지 않고 표식만 남긴다(열 `factor_db_vintage` = stale | current | na — 상설 측정이 지금의 팩터 DB 위에서 새로 잰다 · 시험은 `RC_FDV_LEDGER` 로 임시 원장). 낡은 측정의 소비는 A 자격 관문과 P4 기저 풀(등급으로 들어오는 경로)이 막는다. 자격 통과 목록 읽기 = `rc_standing_qualified(program)`.
+
+## P4 강화 사슬 (p4_chain · v1/p4.R · v10.2 · 2026-11-10)
+
+한 사슬 = 기저 엔진 1개에서 출발해 **한 걸음에 가설 하나 · 칸 하나 · 블록 유형 하나**씩 얹는 순차 루프(사슬형 — 스윕 아님). 규칙(채택 규칙 · 예산 · 생성기 판 핀)은 사슬 판 `chain_spec.json`(스키마 `rc_p4_chain_v1`)에 한 번 등록하고, 걸음은 추가 전용 원장 `chain_steps.jsonl`(앞 줄 md5 사슬)에 흐른다. 루프가 고쳐 쓰는 것은 생성기(`06_Registry/rx_generator.json` · 본문 `04_Research/programs/P4_ASSEMBLY/_generator/g<n>/*.md`)뿐이고, 판정 규칙을 바꾸려면 새 사슬 판을 등록한다.
+
+```r
+source("04_Research/programs/_lib/round_core/v1/load.R")
+pool <- rc_p4_base_pool()                               # 등록부 kind = engine + 상설 자격 → 자격(상설 통과 ∨ 권위 등급 A/B) · 제외 사유 코드
+gap  <- rc_p4_gap("<산출 폴더>")                         # 보는 창 A 하한별 값 · 문턱 · 여유 · 병목(시험 창 값 없음)
+rc_p4_chain_new("<사슬 디렉터리>", "P4C01_<이름>", base_key = "<풀 key>", pool, base_cell_spec = "<기저 칸 사양>",
+                adoption_rules = list(                    # 보는 창 지표만 · 숫자는 정본 참조(value_ref) + source 문구(필수 셋: dS_vis · uc_vis · d_dd_capture_median_vis)
+                  list(id = "improve", type = "threshold", label = "보는 창 S 개선", metric = "dS_vis", op = ">=",
+                       value_ref = "04_Research/programs/P3_CONSTRUCTION/P3R03_advanced_construction/prereg.json::final_selection_rule.tie_eps", source = "…"),
+                  list(id = "uc_floor", type = "threshold", label = "상승 포착 하한", metric = "uc_vis", op = ">=",
+                       value_ref = "06_Registry/behavior_card.json::uc_floor", source = "…"),
+                  list(id = "crisis_no_worse", type = "threshold", label = "위기 하락 포착 비악화", metric = "d_dd_capture_median_vis", op = "<=",
+                       value = 0, basis = "정의 — 비악화 = 부모 이하", source = "…")),
+                budget = list(max_steps = <정수>, max_steps_source = "<출처>", noise_k = <정수>, noise_k_source = "<출처>"))   # 예산 숫자는 사양 작성자가 출처와 함께(기본값 없음)
+rc_p4_chain_register("<사슬 디렉터리>", pool)             # 원장 첫 줄(사양 md5 · 해석된 규칙 · 기저 보는 창 지표)
+```
+
+```bash
+round.sh <사슬 디렉터리> p4-pool [--out f] · p4-check · p4-register · p4-design [--out f]     # 설계 입력 = 생성기 입력(보는 창만)
+round.sh <사슬 디렉터리> p4-step-open --k 1 --hypothesis "…" --mechanism "…" --block <유형> --cell <칸 사양> --parent 0 --generator g1
+#   (칸 측정 = 정본 셀 워커 — 이 코어 밖)
+round.sh <사슬 디렉터리> p4-step-decide --k 1 --artifacts <산출 폴더>      # 보는 창 지표 → 등록 채택 규칙 → accept | reject · r7
+round.sh <사슬 디렉터리> p4-status · p4-close --note "…" --probe "…" --probe "…" [--lesson "…"] [--regrade-write]
+round.sh - p4-generator-review [--out f]                                   # 블록 유형별 채택률 · 보는 창 dS_vis · 주된 기각 사유(다음 판 재료)
+```
+- 걸음 열기 기계 검사: 앞 걸음 판정됨 · k 연번 · 칸 사양 1개(처음 보는 md5) · 부모 = 사슬 머리 · 부모와 **한 블록 유형만** 다름(고정 축 · 어휘 밖 축 거부 · 기저 변경은 풀 안 자격 엔진만) · 가설 · 기전 문장 · τ_D 뒤 날짜 없음 · 예산 안 · 생성기 md5 = 사슬 판.
+- 닫기: 최종 후보 = 마지막 채택 걸음 · 결과 원장(`rc_outcome_record` · extra = 생성기 판 · 걸음 수 · 블록 유형별 채택/기각) · 마감 훅 `programs/selection_regrade.R::sr_regrade`(기저 + 모든 걸음 칸 = 시행 집합 · 결과는 `finalize.json`(사람 쪽)에만 · 원장엔 상태 · md5) · Judge 요청 파일은 쓰지 않는다.
+- 처방 도구 상자(`02_Infrastructure/programs/rx_round.R`): `rx_validate(impl, root, pool)` 이 `base_signal`(풀 key · `engine_blend` keys ≥ 2 · 경로 지정 거부)과 `factors[].direction`(ic_asof | registry | defensive — defensive 는 등록부 방어 방향이 있는 팩터만)을 받는다 · 도구 상자 표에 방어 방향 열 · 헌장 격차 절 `rx_charter_gap_md(gap)`.
+- 시험: `08_Tests/programs/test_round_core_v1_p4_chain.R`(격리 — 임시 등록부 · 원장 · 생성기 등록부 · 합성 산출물).
+
 ## 모듈 (v1)
 
 | 파일 | 내용 |
@@ -71,6 +106,7 @@ round.sh <판> superfan-mark --codes a,b --kind pass|daily --p2 <id> --t2 <id>  
 | `v1/driver.R` | 단계 실행(check · precheck · plan · draft · reviewed · register · evaluate · report · close) |
 | `v1/measure_cell.R` · `v1/fingerprint.sh` | 칸 측정(정본 셀 워커) · 데이터 지문 |
 | `v1/standing.R` | 상설 판 — 사양 검사 · 생성 함수 핀 · 레인 스캔(입구 규칙 · 사유 코드) · 항목 넣기 · 항목 R2 · 측정 · 판정 · 원장(추가 전용 사슬) · 보고 · Superfan 표식 · 상태 |
+| `v1/p4.R` | P4 강화 사슬 — 기저 풀 · 격차(보는 창 A 하한 여유 · 병목) · 사슬 판 검사 · 걸음 원장(추가 전용 사슬) · 걸음 열기 · 판정 · 설계 입력 · 닫기(결과 원장 · 마감 훅) · 생성기 판(rxg_*) · 생성기 검토 |
 | `v1/pair.R` | 짝 평가 골격(단계 목록 · 라운드 훅 · 미시험 사유) · P2 · P3 공용 도우미(위기 과반 · 깊은 위기 · 사이클 · 집중 · 회복 · 보유 대조 · 공통 창 · β 짝 사본) · 보는 창 / 사람 쪽 칸 평가 · 라운드 판정(판정 칸 수 · 판정어별 칸 수) · 선택 · 샤딩 · 메모(원자료 · ta_load_market · MC8) |
 | `v1/p2.R` | P2(장치 × 엔진) 템플릿 — P2R04 판정 ①~⑭ 단계 · 기록 · 진단 읽기 · R7 · A 거리 · 보는 창 파일(τ_D 가림 · 전수 검사) · P2R05 범용분(시드 띠 · 판정 여유 · Dimson β · 위기 유형 · 유동성 3분위 귀속) · 사양 라운드 판정 |
 | `v1/p3.R` | P3(구성 변형) 템플릿 — P3R03 결정 a~e · S · 알파 · β 짝(중앙값형) · 기전 방어 · 이력 탈락 · 후보 꼬리표 · 사양 라운드 판정 |

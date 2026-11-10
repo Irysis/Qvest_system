@@ -10,8 +10,21 @@
 ##   수치는 R 계약 산출만(AX-008 — 칸 평가 rc_eval_cell · 판정 표 rc_p1_table). 원장 · 스캔 기록에는 보는 창 값만 싣는다(τ_D).
 
 RC_STANDING_LEDGER_SCHEMA <- "rc_standing_ledger_v1"
-RC_STANDING_ORIENT <- c("engine_native", "factor_db_asof", "orientation_layer")
-RC_STANDING_FDB_CALLS <- c("load_month_factors", "load_daily_factors")            # 정본 커넥터(C15) — 방향 = as-of IC 3단 부호(C13 Z_Score_Aligned)
+RC_STANDING_ORIENT <- c("engine_native", "factor_db_static", "factor_db_asof", "orientation_layer")
+## 정본 커넥터(C15) + 결합용 뷰(factor_combinable.R) — 방향 인자로 정적/동적을 가른다(2026-11-10 · 상설 판 입구 수리)
+##   direction = "registry" | "defensive"(등록부에 미리 선언된 방향 = 정적 부호) → factor_db_static(엔진 고유와 같은 취급 — 동적 부호 아님)
+##   인자 없음 · "ic_asof" · 상수가 아닌 값(정적으로 판정 불가) · 함수 값으로 넘김 · do.call 문자열 → factor_db_asof(동적 부호)
+##   전에는 load_month_factors 호출만 보면 인자와 무관하게 동적으로 뺐고(레인 프롬프트의 registry 권장과 상쇄), 결합용 뷰 호출은
+##   목록에 없어 ic_asof 판도 engine_native 로 통과했다(레인 W 조사 P0-3).
+RC_STANDING_FDB_CALLS <- c("load_month_factors", "load_daily_factors", "fc_load_month", "fc_load_months", "fc_daily")
+RC_STANDING_FDB_STATIC_DIR <- c("registry", "defensive")
+## 위치 인자 대응(정본 서명 사본 — 커넥터 · 결합용 뷰 서명이 바뀌면 시험 J 가 대조한다) · fc_load_months 의 ... 는 fc_load_month(d, family = FALSE, ...) 로 간다
+.RCS_FDB_FORMALS <- list(
+  load_month_factors = function(sig_date, coverage_min, factor_names, dedup, direction) NULL,
+  load_daily_factors = function(ym, date_range, factors, align_direction, direction) NULL,
+  fc_load_month = function(sig_date, direction, factors, tickers, missing, dedup, family, root, dir, registry, resolve) NULL,
+  fc_load_months = function(sig_dates, direction, factors, tickers, missing, dedup, root, dir, registry, resolve) NULL,
+  fc_daily = function(ym, date_range, factors, direction, tickers, missing, dedup, root) NULL)
 RC_STANDING_ORIENT_CALLS <- c("align_factor_direction", "compute_rolling_ic_all")  # 엔진이 방향 · IC 를 스스로 다루는 층
 RC_STANDING_SIGN_IDS <- c("ic_sign", "sign_ic", "ic_dir", "ic_direction", "flip_sign", "sign_flip", "negate_factors")   # 소문자 비교
 RC_STANDING_W_TOL <- 1e-9          # 보유 비중 수치 허용오차(cell_eval.R rc_axis_audit 과 같은 크기)
@@ -32,7 +45,7 @@ RC_STANDING_REASONS <- c(
   engine_changed_since_handoff = "인계 뒤 엔진이 바뀌었다(인계 engine_md5 ≠ 지금 · md5 미기록이면 파일 시각 > 인계 시각 · 인계 시각 없음)",
   engine_parse_failed = "엔진 파싱 실패(정적 검사 불가)",
   output_contract_unknown = "FACTORS · PORTFOLIO 대입을 찾지 못했다",
-  dynamic_sign = "동적 부호 — 방향 층이 허용 목록 밖(factor_db_asof = 정본 커넥터의 as-of IC 부호 · orientation_layer = 엔진이 부호 · IC 를 스스로 다룸)",
+  dynamic_sign = "동적 부호 — 방향 층이 허용 목록 밖(factor_db_asof = 정본 커넥터 · 결합용 뷰의 as-of IC 부호(방향 인자 없음 · ic_asof · 판정 불가) · orientation_layer = 엔진이 부호 · IC 를 스스로 다룸 · factor_db_static(등록부 방향 registry · defensive)은 engine_native 를 허용하면 함께 허용)",
   long_leg_absent = "보는 창 신호일 중 롱 레그(비중 > 0)가 없는 날이 있다 — 시계열 방향 · 현금 타이밍 층(표준 구성이 그날 숏 대상을 사거나 비게 된다)",
   long_leg_unverifiable = "레인 측정 보유(04_holdings.csv)를 읽지 못해 롱 레그를 확인할 수 없다",
   pit_static = "PIT 정적 검사(lookahead_detector) 위반 또는 미스캔",
@@ -241,6 +254,34 @@ rc_standing_known <- function(program, root = rc_root()) {
   if (length(rows)) unique(rbindlist(rows)) else data.table(engine_md5 = character(0), round_id = character(0), code = character(0))
 }
 
+## 상설 자격 통과 엔진(P4 기저 풀의 읽기 입구 · 2026-11-10) — 상설 원장들의 판정(qualify = TRUE) 항목. 원장 사슬이 끊긴 판은 읽지 않는다(경고 · 자격 인정 없음).
+##   열: round_id · edition · code · engine · engine_path(저장소 상대) · engine_md5(넣을 때) · engine_same(지금 파일 md5 = 넣을 때) ·
+##       artifacts(마지막 ok 측정 산출) · paper_key · verdict_at · ledger. 성과 수치는 싣지 않는다(판정 여부만).
+rc_standing_qualified <- function(program = "P1_RETURN", root = rc_root(), sa_root = Sys.getenv("RC_SA_ROOT", root)) {
+  fs <- unique(c(Sys.glob(file.path(sa_root, "stage_artifacts/programs", program, "*", "standing_ledger.jsonl")),
+                 Sys.glob(file.path(root, "stage_artifacts/programs", program, "*", "standing_ledger.jsonl"))))
+  rows <- list()
+  for (f in fs) {
+    recs <- tryCatch(rc_standing_ledger_read(f), error = function(e) { warning("[round_core standing] 사슬이 끊긴 원장은 읽지 않는다: ", f); NULL })
+    if (is.null(recs)) next
+    for (it in rc_standing_items(recs)) {
+      v <- it[["verdict"]]; if (is.null(v) || !isTRUE(v[["qualify"]])) next
+      ms <- Filter(.rcs_meas_ok, it[["measures"]]); art <- if (length(ms)) .rcs_str(ms[[length(ms)]][["artifacts"]]) else NA_character_
+      if (is.na(art) && !is.null(it[["source_results"]])) art <- tryCatch(rc_json_read(file.path(rc_abs(it[["source_results"]], root), it[["code"]], "eval.json"))[["artifacts"]],
+                                                                       error = function(e) NA_character_) %||% NA_character_
+      ep <- .rcs_str(it[["engine_path"]]); em <- .rcs_str(it[["engine_md5"]])
+      now <- if (!is.na(ep) && file.exists(rc_abs(ep, root))) rc_md5(rc_abs(ep, root)) else NA_character_
+      rows[[length(rows) + 1L]] <- data.table(round_id = .rcs_str(it[["round_id"]]), edition = suppressWarnings(as.integer(.rcs_str(it[["edition"]]))),
+                                              code = .rcs_str(it[["code"]]), engine = .rcs_str(it[["engine"]]), engine_path = if (is.na(ep)) NA_character_ else .rcs_repo_rel(ep, root),
+                                              engine_md5 = em, engine_same = !is.na(now) && identical(now, em), artifacts = .rcs_str(art),
+                                              paper_key = .rcs_str(it[["paper"]][["paper_key"]]), verdict_at = .rcs_str(v[["at"]]), ledger = gsub("\\\\", "/", f))
+    }
+  }
+  if (length(rows)) rbindlist(rows, fill = TRUE) else
+    data.table(round_id = character(0), edition = integer(0), code = character(0), engine = character(0), engine_path = character(0),
+               engine_md5 = character(0), engine_same = logical(0), artifacts = character(0), paper_key = character(0), verdict_at = character(0), ledger = character(0))
+}
+
 ## ── 시행 회계(계보 = family_root) — P2R04 · P3R03 nf_prior 규칙 + 상설 원장 + 레인 측정 수 ─────────
 rc_standing_nf_prior <- function(fam, root = rc_root()) {
   sar <- Sys.getenv("RC_SA_ROOT", root)
@@ -288,11 +329,48 @@ rc_standing_static <- function(path) {
   for (i in which(tok == "SYMBOL_FUNCTION_CALL" & txt == "assign")) if (i + 2L <= n && tok[i + 2L] == "STR_CONST") {
     v <- gsub("^[\"']|[\"']$", "", txt[i + 2L]); if (v %in% c("FACTORS", "PORTFOLIO")) outs <- c(outs, v) }
   calls <- txt[tok == "SYMBOL_FUNCTION_CALL"]
-  fdb <- intersect(RC_STANDING_FDB_CALLS, calls)
   orl <- unique(c(intersect(RC_STANDING_ORIENT_CALLS, calls), txt[is_sym & tolower(txt) %in% RC_STANDING_SIGN_IDS]))
+  fc <- rc_standing_fdb_calls(ex)                                   # 호출마다 방향 인자 판독(식 나무 — 주석 · 문자열 제외)
+  fdb <- unique(fc$fn); dyn <- fc[!fc$static, , drop = FALSE]
   list(ok = TRUE, error = NA_character_, outputs = sort(unique(outs)),
-       orientation = if (length(orl)) "orientation_layer" else if (length(fdb)) "factor_db_asof" else "engine_native",
-       factor_db = fdb, orientation_tokens = orl, lines = sort(unique(pd$line1[is_sym & txt %in% c(fdb, orl)])))
+       orientation = if (length(orl)) "orientation_layer" else if (nrow(dyn)) "factor_db_asof" else if (nrow(fc)) "factor_db_static" else "engine_native",
+       factor_db = fdb, factor_db_calls = fc, orientation_tokens = orl,
+       lines = sort(unique(pd$line1[is_sym & txt %in% c(fdb, orl)])))
+}
+## 커넥터 · 결합용 뷰 호출의 방향 인자 — 식 나무를 훑어 호출마다 (함수 · 방향 · 정적 여부 · 근거)를 낸다.
+##   정적 = 방향 인자가 문자열 상수 "registry" | "defensive" 일 때만. 인자 없음(= 기본 ic_asof) · "ic_asof" · 변수 · 식 · 위치 대응 실패 ·
+##   함수 값 참조(lapply(x, load_month_factors) 등) · do.call/match.fun 문자열 = 동적(정적으로 확인할 수 없으면 동적 — 보수 판정).
+rc_standing_fdb_calls <- function(ex) {
+  out <- list(); F <- RC_STANDING_FDB_CALLS
+  rec <- function(fn, dir, why) out[[length(out) + 1L]] <<- data.frame(fn = fn, direction = dir, static = dir %in% RC_STANDING_FDB_STATIC_DIR,
+                                                                         why = why, stringsAsFactors = FALSE)
+  fname <- function(f) {
+    if (is.symbol(f)) return(as.character(f))
+    if (is.call(f) && is.symbol(f[[1]]) && as.character(f[[1]]) %in% c("$", "::", ":::", "@") && length(f) >= 3L && is.symbol(f[[length(f)]]))
+      return(as.character(f[[length(f)]]))
+    NA_character_
+  }
+  one_call <- function(nm, e) {
+    m <- tryCatch(match.call(.RCS_FDB_FORMALS[[nm]], e, expand.dots = FALSE), error = function(z) NULL)
+    if (is.null(m)) return(rec(nm, NA_character_, "argument_match_failed"))
+    d <- m[["direction"]]
+    if (is.null(d)) rec(nm, "ic_asof", "default")
+    else if (is.character(d) && length(d) == 1L && !is.na(d)) rec(nm, d, "constant")
+    else rec(nm, NA_character_, "non_constant")
+  }
+  walk <- function(e) {
+    if (is.call(e)) {
+      f <- e[[1]]; nm <- fname(f)
+      if (!is.na(nm) && nm %in% F) one_call(nm, e)
+      if (!is.na(nm) && nm %in% c("do.call", "match.fun", "get", "getFunction") && length(e) >= 2L && is.character(e[[2]]) && e[[2]][1] %in% F)
+        rec(e[[2]][1], NA_character_, "indirect_call")
+      if (is.call(f)) { if (is.na(nm)) walk(f) else for (i in seq_along(f)[-1]) if (!is.symbol(f[[i]])) walk(f[[i]]) }
+      for (i in seq_along(e)[-1]) { a <- e[[i]]; if (!missing(a)) walk(a) }
+    } else if (is.pairlist(e)) { for (a in as.list(e)) if (!missing(a)) walk(a)
+    } else if (is.symbol(e) && as.character(e) %in% F) rec(as.character(e), NA_character_, "function_value")
+  }
+  for (x in as.list(ex)) walk(x)
+  if (length(out)) do.call(rbind, out) else data.frame(fn = character(0), direction = character(0), static = logical(0), why = character(0), stringsAsFactors = FALSE)
 }
 ## PIT 정적 검사 — 레인 사전 점검과 같은 함수(detect_lookahead) · 격리 환경에 한 번 적재
 rc_standing_pit <- function(path, root = rc_root()) {
@@ -349,6 +427,21 @@ rc_standing_handoffs <- function(reg) {
   if (length(rows)) rbindlist(rows, fill = TRUE) else
     data.table(program = character(0), where = character(0), ho_key = character(0), base_id = character(0), dir = character(0), at = character(0))
 }
+## 팩터 DB 판(2026-11-10) — 계약 factor_db_vintage.R 과 원장(기본 06_Registry/factor_db_vintage.json · 시험 = ledger_path 또는 RC_FDV_LEDGER)이
+##   둘 다 있을 때만 판정한다(없으면 skipped). 반환 list(stale = TRUE|FALSE|NA, reason)
+rc_standing_fdv <- function(artifacts, root = rc_root(), ledger_path = NULL) {
+  cf <- file.path(root, "02_Infrastructure/contracts/factor_db_vintage.R")
+  lp <- ledger_path %||% { e <- Sys.getenv("RC_FDV_LEDGER", ""); if (nzchar(e)) e else file.path(root, "06_Registry/factor_db_vintage.json") }
+  a <- .rcs_str(artifacts)
+  if (!file.exists(cf) || !file.exists(lp)) return(list(stale = NA, reason = "skipped"))
+  if (is.na(a)) return(list(stale = NA, reason = "no_artifacts"))
+  if (!identical(.RCS$fdv_root, root)) { e <- new.env(parent = globalenv())
+    invisible(utils::capture.output(suppressMessages(sys.source(cf, envir = e, keep.source = FALSE)))); .RCS$fdv <- e; .RCS$fdv_root <- root }
+  r <- tryCatch(.RCS$fdv$fdv_stale(a, root, ledger = .RCS$fdv$fdv_ledger(root, path = lp)), error = function(e) list(stale = NA, reason = paste("error:", conditionMessage(e))))
+  list(stale = if (is.logical(r$stale) && length(r$stale) == 1L) r$stale else NA, reason = .rcs_str(r$reason))
+}
+## 허용 방향 층 — engine_native 를 허용하면 factor_db_static(등록부에 미리 선언된 정적 방향)도 허용한다(동적 부호가 아니다)
+rc_standing_orient_admitted <- function(admit) { a <- unlist(admit); if ("engine_native" %in% a) union(a, "factor_db_static") else a }
 ## 디렉터리 1개 판독 — 모든 실패 사유를 모은다(첫 사유에서 멈추지 않는다)
 .rcs_scan_dir <- function(d, H, sc, root, tau) {
   nm <- basename(d); ep <- file.path(d, "engine.R"); rs <- character(0)
@@ -378,13 +471,17 @@ rc_standing_handoffs <- function(reg) {
   if (has_eng) {
     if (!isTRUE(st$ok)) rs <- c(rs, "engine_parse_failed") else {
       if (!length(st$outputs)) rs <- c(rs, "output_contract_unknown")
-      if (!(st$orientation %in% unlist(sc[["orientation_admit"]]))) rs <- c(rs, "dynamic_sign")
+      if (!(st$orientation %in% rc_standing_orient_admitted(sc[["orientation_admit"]]))) rs <- c(rs, "dynamic_sign")
     }
   }
   ll <- if (nrow(h)) rc_standing_long_leg(hv("artifacts"), tau) else list(ok = NA, why = "no_handoff", n_dates = 0L, n_absent = NA_integer_)
   if (nrow(h)) { if (isFALSE(ll$ok)) rs <- c(rs, "long_leg_absent") else if (is.na(ll$ok)) rs <- c(rs, "long_leg_unverifiable") }
   pit <- if (has_eng && isTRUE(sc[["pit_static"]])) rc_standing_pit(ep, root) else list(clean = NA, checks = character(0), error = NA_character_)
   if (has_eng && isTRUE(sc[["pit_static"]]) && !isTRUE(pit$clean)) rs <- c(rs, "pit_static")
+  fdv <- if (nrow(h)) rc_standing_fdv(hv("artifacts"), root) else list(stale = NA, reason = "no_handoff")
+  ## (11-10 Q 검토) 레인 측정이 팩터 DB 수리 전이어도 입구에서 빼지 않는다 — 상설 측정은 엔진 코드를 지금의 팩터 DB 위에서 새로 돌리고
+  ##   입구는 성과를 읽지 않는다(레인의 옛 측정값에 기대지 않는다). 빼면 레인이 다시 재기 전까지 판이 통째로 멈춘다(막지 않는다 · v10.2 5항).
+  ##   표식만 남긴다(열 factor_db_vintage = stale | current | na:…). 낡은 측정의 소비는 A 자격 관문과 P4 기저 풀(등급 경로)이 막는다.
   pa <- if (nrow(h)) rc_standing_paper(d, h) else list(ok = FALSE, url = NA_character_, title = NA_character_, paper_key = NA_character_, url_source = NA_character_)
   if (nrow(h) && !isTRUE(pa$ok)) rs <- c(rs, "paper_meta_missing")
   data.table(dir = nm, engine = rc_rel(ep, root), engine_md5 = emd5, base_id = .rcs_str(hv("base_id")), program = .rcs_str(hv("program")),
@@ -394,6 +491,7 @@ rc_standing_handoffs <- function(reg) {
              outputs = if (is.null(st)) NA_character_ else paste(st$outputs, collapse = ","),
              long_leg = if (is.na(ll$n_absent)) ll$why else sprintf("%d/%d", ll$n_absent, ll$n_dates),
              pit = if (isTRUE(pit$clean)) "clean" else if (isFALSE(pit$clean)) paste(pit$checks, collapse = ",") else "unscanned",
+             factor_db_vintage = if (isTRUE(fdv$stale)) "stale" else if (isFALSE(fdv$stale)) "current" else paste0("na:", fdv$reason),
              paper_key = pa$paper_key, title = pa$title, url = pa$url, url_source = pa$url_source,
              fidelity = fid, audit_item = aitem, audit_file = afile, has_short = hv("has_short"), artifacts = .rcs_str(hv("artifacts")))
 }
@@ -776,7 +874,7 @@ rc_standing_rules_md <- function(spec, root = rc_root()) {
     sprintf("- 원천: `%s/%s` 디렉터리 × 등록부 인계 기록(kind = engine) · 인계 프로그램 = %s · 허용 감사 판정 = %s · 허용 방향 층 = %s · 롱 레그 창 = %s(τ_D %s 이전) · PIT 정적 검사 = %s",
             sc[["lane_root"]], sc[["dir_glob"]], sc[["routed_program"]], paste(unlist(sc[["audit_admit"]]), collapse = " · "),
             paste(unlist(sc[["orientation_admit"]]), collapse = " · "), sc[["long_leg_window"]], spec[["tau_d"]], if (isTRUE(sc[["pit_static"]])) "켬" else "끔"),
-    "- 방향 층: engine_native = 엔진 고유 특성(커넥터 부호를 쓰지 않음) · factor_db_asof = 정본 커넥터 `load_month_factors`/`load_daily_factors` 의 as-of IC 3단 부호 · orientation_layer = `align_factor_direction`/`compute_rolling_ic_all` 호출 또는 부호 층 식별자(R 파서 토큰 — 주석 · 문자열 제외)",
+    "- 방향 층: engine_native = 엔진 고유 특성(커넥터 부호를 쓰지 않음) · factor_db_static = 커넥터 · 결합용 뷰를 등록부 방향(`direction = \"registry\"` | `\"defensive\"` 문자열 상수)으로만 부름(engine_native 허용 시 함께 허용) · factor_db_asof = 정본 커넥터 `load_month_factors`/`load_daily_factors` · 결합용 뷰 `fc_load_month(s)`/`fc_daily` 를 방향 인자 없이 · `ic_asof` · 판정 불가 값으로 부름(as-of IC 부호) · orientation_layer = `align_factor_direction`/`compute_rolling_ic_all` 호출 또는 부호 층 식별자(R 파서 토큰 — 주석 · 문자열 제외)",
     "- 한 디렉터리의 모든 실패 사유를 모은다. 통과 + 처음 보는 엔진(md5)만 인계 시각 순으로 넣는다. 같은 엔진은 판 사이에서도 다시 판정하지 않는다(새 판의 rejudge_prior_editions = true 일 때만).", "",
     "| 사유 코드 | 제외 조건 |", "|---|---|", sprintf("| `%s` | %s |", names(RC_STANDING_REASONS), unname(RC_STANDING_REASONS)), "",
     "## 4. 항목마다 R2", "",

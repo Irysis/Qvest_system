@@ -120,6 +120,30 @@ chk("E10 도구 상자 고정 축 = 활성 측정 축(유니버스 문구 · 시
       identical(grepl("전 종목 + 위생", tb, fixed = TRUE), identical(.ep_b$universe, "ALL_HYG")) &&
       identical(grepl("측정 유니버스 K200∪KQ150", tb, fixed = TRUE), identical(.ep_b$universe, "K200_KQ150")))
 
+cat("=== F. base_signal(P4 기저 풀) · factors.direction(11-10) ===\n")
+POOLT <- setDT(list(key = c("engine:k1", "engine:k2", "engine:bad"), engine_path = c("04_Research/strategies/A/engine.R", "04_Research/strategies/B/engine.R", "04_Research/strategies/C/engine.R"),
+                    eligible = c(TRUE, TRUE, FALSE)))   # data.table(key = ) 는 예약 인자
+v1 <- rx_validate(list(base_signal = list(kind = "engine", key = "engine:k1")), ROOT, pool = POOLT)
+chk("F1 풀 자격 key = 통과 · 셀 엔진 형식(path = 저장소 경로 · pool_key)", isTRUE(v1$ok) && identical(v1$delta$base_signal$path, file.path(.rx_root(ROOT), "04_Research/strategies/A/engine.R")) &&
+      identical(v1$delta$base_signal$pool_key, "engine:k1"), paste(v1$errors, collapse = " | "))
+vb <- rx_validate(list(base_signal = list(kind = "engine_blend", keys = list("engine:k1", "engine:k2"))), ROOT, pool = POOLT)
+chk("F2 engine_blend(풀 자격 2개) = 통과 · paths 2", isTRUE(vb$ok) && length(vb$delta$base_signal$paths) == 2L)
+chk("F3 경로 직접 지정 · 풀 없음 · 풀 밖 · 자격 미달 · blend 1개 · kind 밖 = 거부",
+    !isTRUE(rx_validate(list(base_signal = list(kind = "engine", path = "x/engine.R")), ROOT, pool = POOLT)$ok) &&
+      !isTRUE(rx_validate(list(base_signal = list(kind = "engine", key = "engine:k1")), ROOT)$ok) &&
+      !isTRUE(rx_validate(list(base_signal = list(kind = "engine", key = "engine:zz")), ROOT, pool = POOLT)$ok) &&
+      !isTRUE(rx_validate(list(base_signal = list(kind = "engine", key = "engine:bad")), ROOT, pool = POOLT)$ok) &&
+      !isTRUE(rx_validate(list(base_signal = list(kind = "engine_blend", keys = list("engine:k1"))), ROOT, pool = POOLT)$ok) &&
+      !isTRUE(rx_validate(list(base_signal = list(kind = "mom_12_1")), ROOT, pool = POOLT)$ok))
+fvt <- .rx_factor_vocab(ROOT); fdef <- fvt[nzchar(direction_defensive)]$id[1]; fnod <- fvt[!nzchar(direction_defensive)]$id[1]
+fd <- function(id, d) rx_validate(list(factors = list(list(kind = "db", id = id, direction = d))), ROOT)$ok
+chk("F4 factors.direction — registry · ic_asof 통과 · defensive 는 방어 방향 있는 팩터만 · 어휘 밖 거부",
+    isTRUE(fd(fnod, "registry")) && isTRUE(fd(fnod, "ic_asof")) && isTRUE(fd(fdef, "defensive")) && !isTRUE(fd(fnod, "defensive")) && !isTRUE(fd(fdef, "bogus")),
+    paste(fdef, fnod))
+chk("F5 도구 상자 — 방어 방향 열 · 정렬 안내(ic_asof 기본 · 등록부와 다를 수 있음) · 방어 틸트 = defensive · 8절 base_signal",
+    grepl("| id | 이름 | 범주 | 방향 | 방어 방향 | 정의 |", tb, fixed = TRUE) && grepl("등록부 방향과 다를 수 있다", tb, fixed = TRUE) &&
+      grepl("방어 틸트에는 direction = defensive", tb, fixed = TRUE) && grepl("## 8. base_signal", tb, fixed = TRUE))
+
 cat(sprintf("\n== rx_round: PASS %d · FAIL %d ==\n", PASS, FAIL))
 cat(sprintf('{"test":"rx_round","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))
 if (FAIL > 0L) quit(status = 1L)

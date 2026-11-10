@@ -4,7 +4,7 @@
 ##   측정 · 판정 전에 잡는다.
 
 RC_SPEC_SCHEMA <- "round_spec_v1"
-RC_TEMPLATES   <- c("p1_qualification", "p2_device", "p3_construction", "custom")
+RC_TEMPLATES   <- c("p1_qualification", "p2_device", "p3_construction", "p4_chain", "custom")   # p4_chain = P4 강화 사슬(v1/p4.R · 사양 = chain_spec.json · 판정 = 걸음 원장)
 RC_CELL_ROLES  <- c("variant", "reference", "diagnostic")
 
 .rc_spec_err <- function(msg) stop(paste0("[round_core spec] ", msg), call. = FALSE)

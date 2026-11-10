@@ -10,6 +10,8 @@
 #     scan [--dry-run] [--max N] [--out f]   레인 산출 → 자격 큐(입구 규칙 · 사유 코드) — 등록 뒤 시드 + 새 엔진을 원장에 넣는다
 #     standing-measure         배리어 → 대기 항목마다 R2 대조 · 지문 · 정본 셀 워커 → 판정(원장 · 보는 창 표)
 #     standing-check · pending · measure-item <code> · judge · standing-report [--send] · standing-status · superfan-mark
+#   P4 강화 사슬(v1/p4.R · <round_dir> = 사슬 디렉터리 · 아래 기본 분기가 driver.R 로 넘긴다):
+#     p4-pool · p4-check · p4-register · p4-design · p4-step-open · p4-step-decide · p4-status · p4-close · p4-generator-review
 #   RC_ROOT_POSIX · RC_ROOT_WIN = 다른 작업 트리(worktree)에서 돌릴 때만(기본 = 저장소 · R 쪽은 R_ENVIRON_USER 로 QM_ROOT 를 맞춘다)
 set -u
 ROOT=${RC_ROOT_POSIX:-/c/Users/99922/OneDrive/Quant_Module_Moltbot}

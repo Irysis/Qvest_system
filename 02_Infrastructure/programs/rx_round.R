@@ -18,7 +18,9 @@
 #
 # 경계: 측정 = rf_cell_worker.R(정본 러너 run_paper_replication · close_t1). 등급 = essence(v3). 이 파일은 수치를 만들지 않는다
 #   (예외: 헌장의 S ≥ 1 필요 Calmar 산술 — 등급 산식의 역산이고 산출물에 식을 함께 적는다).
-# 공개: rx_paths · rx_toolbox_md · rx_charter_md · rx_prepare_lane · rx_parse_json · rx_validate · rx_compile_spec
+# 공개: rx_paths · rx_toolbox_md · rx_charter_md · rx_charter_gap_md · rx_prepare_lane · rx_parse_json · rx_validate · rx_compile_spec
+#   (2026-11-10 · P4 강화 사슬) rx_validate 가 base_signal(기저 풀 key · engine_blend)과 factors[].direction 을 받는다 ·
+#   도구 상자에 방어 방향 열 · 정렬 안내 · 8절(base_signal) · 헌장에 격차 절(rx_charter_gap_md)
 #==============================================================================
 suppressPackageStartupMessages({ library(data.table); library(jsonlite) })
 
@@ -113,6 +115,7 @@ rx_paths <- function(program, round_id, root = NULL) {
   out <- rbindlist(lapply(names(fr), function(k) { z <- fr[[k]]
     data.table(id = k, name = as.character(.rx_or(z$name, "")), category = as.character(.rx_or(z$category, "")),
                direction = as.character(.rx_or(z$direction, "")),
+               direction_defensive = if (length(z$direction_defensive) == 1L) as.character(z$direction_defensive) else "",   # 방어 방향(등록부 · 없으면 빈칸)
                definition = .rx_strip_dated_notes(as.character(.rx_or(z$definition, "")))) }))
   # custom 범주 = 측정된 전략 신호의 자동 등록(등록 조건 자체가 전기간 등급 B+ · 정의문에 등급 · 시험 창 날짜) — 처방 입력에서 뺀다(R4)
   out[category != "custom"]
@@ -140,13 +143,17 @@ rx_toolbox_md <- function(root = NULL) {
     if (hyg) "전 종목 + 위생(관리종목 · 거래정지 · 불성실공시 제외 + 유동성 하한 · 시점별 멤버십)" else "K200∪KQ150(시점별 멤버십)",
     " · 측정 시작 ", format(ep$start_date), "(신호가 그보다 늦게 생기면 그때부터)",
     " · 비용 15bps · 유동성 하한(20일 평균 거래대금 t-1) · 시그널 = 월말(리밸은 월간 이하 빈도로만 바꿀 수 있다) · 집행 close_t1",
-    " · 기저 신호(논문 엔진)와 그 가중(base_weight) · PIT C1~C15")
+    " · 기저 가중(base_weight) · PIT C1~C15 · 기저 신호(논문 엔진)는 P4 사슬의 기저 풀 key 로만 바꾼다(8절 · 경로 직접 지정 불가)")
   a("- 노출 축소(현금)는 오버레이 층으로만 생긴다(Σw ≤ 1). 다른 축은 Σw = 1 이다.")
   a(""); a("## 1. factors — 기저 신호에 결합할 팩터 목록(0개 이상 · 팩터 DB id)")
   a("- 형식: `\"factors\": [{\"kind\": \"db\", \"id\": \"<팩터 id>\"}, ...]` · 빈 목록 = 논문 신호만.")
   a("- 결합: 기저 신호 가중 고정 · 나머지를 팩터들이 나눈다. 팩터 값 = 팩터 DB 의 정렬 z-점수(방향 정렬 · PIT 적재).")
-  a(""); a("| id | 이름 | 범주 | 방향 | 정의 |"); a("|---|---|---|---|---|")
+  a("- 방향 필드(선택): `{\"kind\": \"db\", \"id\": \"<id>\", \"direction\": \"ic_asof\"|\"registry\"|\"defensive\"}` — 없으면 ic_asof.",
+    " ★엔진 값의 기본 정렬은 그 날까지의 IC 부호(ic_asof)이며 아래 표의 등록부 방향과 다를 수 있다.",
+    " 방어 틸트에는 direction = defensive(아래 '방어 방향' 칸이 있는 팩터만), 여러 시점에 걸친 고정 방향 신호에는 registry 를 쓴다.")
+  a(""); a("| id | 이름 | 범주 | 방향 | 방어 방향 | 정의 |"); a("|---|---|---|---|---|---|")
   for (i in seq_len(nrow(fa))) a("| ", fa$id[i], " | ", gsub("\\|", "/", fa$name[i]), " | ", fa$category[i], " | ", fa$direction[i], " | ",
+                                 if (nzchar(fa$direction_defensive[i])) fa$direction_defensive[i] else "—", " | ",
                                  gsub("\\|", "/", R(substr(fa$definition[i], 1, 160))), " |")
   a(""); a("## 2. weighting — 선정된 종목 안의 비중")
   a("- 형식: `{\"kind\": \"ew\"}` · `{\"kind\": \"score_tilt\"}` · `{\"kind\": \"rank_weight\"}` · `{\"kind\": \"rank_weight_sqrt\"}` · `{\"kind\": \"inv_vol\", \"window\": <일수>}` · `{\"kind\": \"catalog\", \"catalog_id\": \"<id>\", \"label\": \"<라벨>\"}`")
@@ -173,6 +180,9 @@ rx_toolbox_md <- function(root = NULL) {
   a(""); a("## 7. cap_core — 벤치 인지 코어-위성(비중 단계 뒤)")
   a("- 형식: `{\"k\": <정수 ≥0>, \"satellite\": \"floor\"}` — 코어 = 그 시그널일 K200 t-1 시총 상위 k종(벤치 비중 근사) · 위성 = 이 전략 보유(합집합 ≤ 25 절단).",
     " 벤치를 덜 벗어나 '시장보다 더 빠지는' 위험을 줄이는 대신 알파 희석. k = 0 = 무처치.")
+  a(""); a("## 8. base_signal — 기저 엔진 교체 · 결합(P4 사슬 · 기저 풀 안에서만)")
+  a("- 형식: `{\"kind\": \"engine\", \"key\": \"<기저 풀 key>\"}` 또는 `{\"kind\": \"engine_blend\", \"keys\": [\"<key>\", \"<key>\", ...]}`(풀 안 2개 이상 · 월별 rank-Z 등가중).",
+    " 엔진 파일 경로는 적지 않는다(검증기가 거부한다) — key 는 설계 입력의 기저 풀 표(자격 = 예)에서 고른다.")
   txt <- paste(L, collapse = "\n")
   .rx_assert_clean(txt, root, "toolbox")
   txt
@@ -198,7 +208,21 @@ rx_toolbox_md <- function(root = NULL) {
 }
 
 #' 헌장 · 목표 · 규칙(마크다운) — 등급 문턱은 정본에서 · S ≥ 1 필요 Calmar 는 등급 산식의 역산(R 계산 · 식 병기)
-rx_charter_md <- function(pk, root = NULL) {
+#' 격차 절(마크다운) — round_core v1/p4.R::rc_p4_gap 산출(보는 창 A 하한별 값 · 문턱 · 여유 · 병목)을 헌장에 싣는다.
+#'   수치는 그 계약 산출을 옮길 뿐 여기서 계산하지 않는다(패킷 contracts/diagnosis_packet.R 무수정 — 격차는 헌장 쪽에서 싣는다).
+rx_charter_gap_md <- function(gap, root = NULL) {
+  root <- .rx_root(root)
+  if (!is.list(gap) || !identical(gap$schema, "rc_p4_gap_v1")) stop("[rx_round] 격차는 rc_p4_gap 산출(rc_p4_gap_v1)만 받는다")
+  f3 <- function(x) { x <- suppressWarnings(as.numeric(x)); if (length(x) == 1L && is.finite(x)) formatC(x, format = "f", digits = 3) else "—" }
+  F <- as.data.table(gap$floors)
+  L <- c(paste0("## 5. 격차 — 보는 창(", gap$window[1], " ~ ", gap$window[2], ") A 하한별 여유 · 병목(R 계약 산출 · rc_p4_gap)"), "",
+         "| A 하한 | 값 | 문턱 | 여유 | 상대 여유 | 통과 |", "|---|---|---|---|---|---|",
+         vapply(seq_len(nrow(F)), function(i) paste0("| ", F$floor[i], " | ", f3(F$value[i]), " | ", f3(F$threshold[i]), " | ", f3(F$margin[i]), " | ",
+                                                     f3(F$margin_rel[i]), " | ", if (isTRUE(F$pass[i])) "예" else "아니오", " |"), ""),
+         "", paste0("- **병목**(상대 여유가 가장 작은 하한) = ", .rx_or(gap$bottleneck, "—"), " — 처방은 이 하한을 움직이는 기전을 먼저 본다."))
+  txt <- paste(L, collapse = "\n"); .rx_assert_clean(txt, root, "charter_gap"); txt
+}
+rx_charter_md <- function(pk, root = NULL, gap = NULL) {
   root <- .rx_root(root)
   g <- new.env(parent = globalenv())
   invisible(utils::capture.output(suppressMessages(sys.source(file.path(root, "02_Infrastructure/contracts/grade_v3.R"), envir = g, keep.source = FALSE))))
@@ -234,6 +258,7 @@ rx_charter_md <- function(pk, root = NULL) {
   a("- R6 지속성: 방어 개선은 여러 위기에 걸쳐 나타나야 한다(한 위기 맞춤 금지).")
   a("- AX-008: 수치는 R 계약 산출만 인용한다 — 새로 계산 · 추정하지 마라. 숫자가 필요하면 '측정 필요'라고 적어라.")
   a("- PIT C1~C15: 처방 규칙의 모든 입력은 결정 시점 이전 데이터여야 한다(오버레이 신호 = 보유 시작 전 · 재무 = 공시 지연 · 팩터 선정 통계 = as-of).")
+  if (!is.null(gap)) { a(""); a(rx_charter_gap_md(gap, root)) }
   txt <- paste(L, collapse = "\n")
   .rx_assert_clean(txt, root, "charter")
   txt
@@ -265,19 +290,49 @@ rx_parse_json <- function(txt) {
 
 #' 처방 구현 검증 — 축 이름 · 값을 **엔진이 읽는 함수와 등록부**로 확인한다(침묵 무처치 차단)
 #' @return list(ok, errors, delta = 정규화된 delta)
-rx_validate <- function(impl, root = NULL) {
+#' @param pool P4 기저 풀(round_core v1/p4.R::rc_p4_base_pool 산출 — key · engine_path · eligible) — base_signal 축을 검증할 때만 필요
+#'   base_signal = {kind: "engine", key} | {kind: "engine_blend", keys: [≥ 2]} — 풀 안 자격(eligible) key 만 · 경로(path · paths) 직접 지정 거부.
+#'   통과하면 delta 의 base_signal 은 셀 엔진 형식(path · paths = 풀의 엔진 경로 · pool_key(s) 꼬리표)으로 정규화된다.
+#'   factors[].direction = "ic_asof"(기본 · 필드 없음과 같다) | "registry" | "defensive"(등록부 direction_defensive 가 있는 팩터만)
+RX_FACTOR_DIRECTIONS <- c("ic_asof", "registry", "defensive")
+rx_validate <- function(impl, root = NULL, pool = NULL) {
   root <- .rx_root(root); en <- .rx_engine(root)
-  ok_axes <- c("factors", "weighting", "universe", "rebalance", "overlay", "defense_sleeve", "cap_core")
+  ok_axes <- c("factors", "weighting", "universe", "rebalance", "overlay", "defense_sleeve", "cap_core", "base_signal")
   err <- character(0); add <- function(...) err <<- c(err, paste0(...))
   if (!is.list(impl) || !length(impl)) return(list(ok = FALSE, errors = "구현(delta)이 비었다", delta = NULL))
   bad <- setdiff(names(impl), ok_axes)
   if (length(bad)) add("바꿀 수 없는 축/모르는 키: ", paste(bad, collapse = ","))
   if (!is.null(impl$factors)) {
-    fv <- .rx_factor_vocab(root)$id
+    fvt <- .rx_factor_vocab(root); fv <- fvt$id
     ids <- vapply(impl$factors, function(z) as.character(.rx_or(z$id, "")), character(1))
     kinds <- vapply(impl$factors, function(z) as.character(.rx_or(z$kind, "")), character(1))
     if (any(kinds != "db")) add("factors.kind 는 db 만")
     if (any(!ids %in% fv)) add("팩터 DB 에 없는 id: ", paste(ids[!ids %in% fv], collapse = ","))
+    dirs <- vapply(impl$factors, function(z) { d <- z$direction; if (is.null(d)) "ic_asof" else if (is.character(d) && length(d) == 1L) d else "<형식 오류>" }, character(1))
+    if (any(!dirs %in% RX_FACTOR_DIRECTIONS)) add("factors.direction 어휘 밖(", paste(RX_FACTOR_DIRECTIONS, collapse = " | "), "): ", paste(unique(dirs[!dirs %in% RX_FACTOR_DIRECTIONS]), collapse = ","))
+    nodef <- ids[dirs == "defensive" & !(ids %in% fvt[nzchar(direction_defensive)]$id)]
+    if (length(nodef)) add("direction = defensive 인데 등록부에 방어 방향(direction_defensive)이 없는 팩터: ", paste(nodef, collapse = ","))
+  }
+  if (!is.null(impl$base_signal)) {
+    bs <- impl$base_signal; k <- as.character(.rx_or(bs$kind, ""))
+    if (!is.null(bs$path) || !is.null(bs$paths)) add("base_signal 경로 직접 지정 거부 — 기저 풀 key(key · keys)로만 고른다")
+    else if (is.null(pool)) add("base_signal 은 기저 풀(pool)과 함께만 검증한다 — 풀 없이 받지 않는다")
+    else {
+      P <- as.data.table(pool); el <- P[eligible %in% TRUE]
+      absp <- function(p) if (grepl("^([A-Za-z]:|/)", p)) p else file.path(root, p)
+      if (identical(k, "engine")) {
+        key <- as.character(unlist(bs$key))
+        if (length(key) != 1L || !nzchar(key)) add("base_signal.key 는 문자열 1개")
+        else if (!key %in% el$key) add("기저 풀(자격) 밖 key: ", key)
+        else impl$base_signal <- list(kind = "engine", path = absp(el[key == bs$key]$engine_path[1]), pool_key = key)
+      } else if (identical(k, "engine_blend")) {
+        keys <- unique(as.character(unlist(bs$keys)))
+        if (length(keys) < 2L) add("engine_blend 는 풀 안 key 2개 이상")
+        else if (length(setdiff(keys, el$key))) add("기저 풀(자격) 밖 key: ", paste(setdiff(keys, el$key), collapse = ","))
+        else impl$base_signal <- list(kind = "engine_blend", paths = as.list(vapply(keys, function(x) absp(el[key == x]$engine_path[1]), "", USE.NAMES = FALSE)),
+                                      pool_keys = as.list(keys))
+      } else add("base_signal.kind 는 engine | engine_blend")
+    }
   }
   if (!is.null(impl$weighting)) {
     k <- as.character(.rx_or(impl$weighting$kind, ""))
