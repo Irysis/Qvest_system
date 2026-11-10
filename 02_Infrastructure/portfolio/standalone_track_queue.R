@@ -282,7 +282,7 @@ standalone_track_scan <- function(root = .st_root()) {
   #   ★★단 대상은 **라벨 경로를 실제로 지나는 모듈**로 한정한다:
   #     ① screening tier 도입 이후 등록분 (그 전엔 라벨이 없었다)
   #     ② stage_artifacts/alpha_search 아래 run_dir 이 실재하는 것
-  #        (논문복제 러너 run_pead_paper.R 등은 register_module 을 직접 부르고
+  #        (구 논문복제 러너 run_pead_paper.R 등(2026-11-10 삭제)은 register_module 을 직접 부르고
   #         alpha_search run_dir 을 만들지 않는다 — 라벨 대상이 아니다)
   #   이 한정 없이는 78건이 상시 점등된다(초판 실측) = 검사기가 무시당하는 경로.
   labeled_ids <- unique(R$strategy_id)

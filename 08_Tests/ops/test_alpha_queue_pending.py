@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""alpha_search_queue_run.sh 의 pending 산정 블록 — 위반 주입 테스트.
+"""alpha-pending 산정 술어(구 alpha_search_queue_run.sh 블록 · 그 러너는 2026-11-10 삭제) — 위반 주입 테스트.
 
 왜 이 파일이 있나 (2026-08-02):
   무인 스케줄러(morning_run.sh [0.56/3])가 소비하는 pending 카운터에 키 불일치 결함 2건이
@@ -38,9 +38,23 @@ import tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
+
+
+def _rel(p, base=None):
+    """표시용 상대 경로 — 다른 드라이브(돌연변이 사본 등)면 절대 경로 그대로(Windows relpath ValueError 회피)."""
+    try:
+        return os.path.relpath(p, base or ROOT)
+    except ValueError:
+        return p
+
+
 # 돌연변이 검사(검사기 자신이 살아 있는지)용 오버라이드. 평시엔 비워 둔다.
+# (2026-11-10 재조준) 구 소비자 alpha_search_queue_run.sh 는 퇴역 · 삭제됐다(PRUNE-EXTRA-DELETIONS-20261110).
+#   살아 있는 소비자 = programs/next_replication.R(alpha-pending CLI) + ops/rf_next_paper_pick.py(alpha_pending import).
 TARGET = os.environ.get("QVEST_QUEUE_RUN_SH") or os.path.join(
-    ROOT, "02_Infrastructure", "ops", "alpha_search_queue_run.sh")
+    ROOT, "02_Infrastructure", "programs", "next_replication.R")
+PICK = os.environ.get("QVEST_PICK_PY") or os.path.join(
+    ROOT, "02_Infrastructure", "ops", "rf_next_paper_pick.py")
 PRED = os.environ.get("QVEST_PREDICATES_PY") or os.path.join(
     ROOT, "02_Infrastructure", "ops", "research_pool_predicates.py")
 # 정본 술어를 가리키는 센티넬(문자열 블록과 구분). run() 이 CLI 로 돌린다.
@@ -87,15 +101,31 @@ def check_wiring():
     if not os.path.isfile(PRED):
         fails.append("술어 정본 부재: %s" % PRED)
         return fails
+    for p in (TARGET, PICK):
+        if not os.path.isfile(p):
+            fails.append("소비자 부재: %s" % _rel(p, ROOT))
+    if fails:
+        return fails
     with open(TARGET, encoding="utf-8") as fh:
         src = fh.read()
-    if not re.search(r"research_pool_predicates\.py.*\n?.*alpha-pending|alpha-pending", src):
-        fails.append("소비자가 정본 술어를 호출하지 않는다 (alpha-pending 호출 부재): %s"
-                     % os.path.relpath(TARGET, ROOT))
+    # 주석 줄을 뺀 코드에서 정본 모듈 경로 + alpha-pending 서브명령을 함께 찾는다.
+    code = "\n".join(l for l in src.splitlines() if not l.lstrip().startswith("#"))
+    if not (re.search(r"research_pool_predicates\.py", code) and re.search(r"\"alpha-pending\"", code)):
+        fails.append("소비자가 정본 술어를 호출하지 않는다 (research_pool_predicates.py alpha-pending 호출 부재): %s"
+                     % _rel(TARGET, ROOT))
     # heredoc 술어의 부활 감시 — 마커(`<<'PY'`)가 코드 라인으로 되살아나면 재분기다.
     if re.search(r"^[^#\n]*<<'PY'", src, re.M):
         fails.append("★heredoc 술어가 되살아났다 — 정의가 다시 2벌로 갈렸다: %s"
-                     % os.path.relpath(TARGET, ROOT))
+                     % _rel(TARGET, ROOT))
+    with open(PICK, encoding="utf-8") as fh:
+        psrc = fh.read()
+    if not re.search(r"^\s*from research_pool_predicates import [^\n]*\balpha_pending\b", psrc, re.M):
+        fails.append("선택기가 정본 술어 alpha_pending 을 import 하지 않는다: %s"
+                     % _rel(PICK, ROOT))
+    # 선택기가 자기 pending 술어를 다시 정의하면 재분기다.
+    if re.search(r"^def alpha_pending\b", psrc, re.M):
+        fails.append("★선택기가 alpha_pending 을 자체 정의했다 — 정의가 다시 2벌로 갈렸다: %s"
+                     % _rel(PICK, ROOT))
     return fails
 
 
@@ -303,8 +333,8 @@ CASES = [
 def main():
     block = MODULE
     fails, teeth_fail = [], []
-    print("술어 정본: %s" % os.path.relpath(PRED, ROOT))
-    print("소비자 배선: %s" % os.path.relpath(TARGET, ROOT))
+    print("술어 정본: %s" % _rel(PRED, ROOT))
+    print("소비자 배선: %s · %s" % (_rel(TARGET, ROOT), _rel(PICK, ROOT)))
     print("=" * 78)
     for w in check_wiring():
         fails.append(("W 배선", "정본 경유", w, ""))

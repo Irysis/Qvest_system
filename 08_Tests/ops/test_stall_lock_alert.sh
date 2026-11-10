@@ -22,7 +22,11 @@ PASS=0; FAIL=0
 ok(){ PASS=$((PASS+1)); echo "  PASS  $1"; }
 ng(){ FAIL=$((FAIL+1)); echo "  FAIL  $1 :: $2"; }
 
-RUNNERS="paper_router_run.sh mode_queue_research_run.sh"
+# (2026-11-10) mode_queue_research_run.sh 는 퇴역 · 삭제됐다(PRUNE-EXTRA-DELETIONS-20261110) — 정체 잠금 경보 계약은
+#   살아 있는 러너에 대해 계속 잰다. 대상 0개면 FAIL(공허 통과 금지).
+RUNNERS="paper_router_run.sh"
+n_live=0; for f in $RUNNERS; do [ -f "$OPS/$f" ] && n_live=$((n_live+1)); done
+[ "$n_live" -ge 1 ] && ok "검사 대상 러너 $n_live 개 실재" || ng "검사 대상" "살아 있는 러너 0개 — 검사가 공허해진다"
 
 echo "== 배선 축: 락 경합 분기에 정체 검사가 있는가 =="
 for f in $RUNNERS; do

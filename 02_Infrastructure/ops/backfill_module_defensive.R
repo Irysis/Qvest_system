@@ -23,7 +23,7 @@
 #
 # essence_grade 우선순위 (백필 시):
 #   meta.essence_grade(v9.21 재채점, essence_regrade_ref 있음) > 산출물 essence_grade > meta
-#   ★근거: `essence_regrade_apply.R` 은 "top-level grade 는 불변" 이라 명시하고 권위 등급을
+#   ★근거: `essence_regrade_apply.R`(태그 pre-v10.2-prune-20261110 에서만 확인 가능) 은 "top-level grade 는 불변" 이라 명시하고 권위 등급을
 #     meta 에 병기했다. 그리고 alpha_search 레인 산출물 19건은 **재채점 이전 판**이라
 #     hard_fail(MDD) 규칙으로 F 가 박혀 있다(현행 규칙은 MDD 로 등급을 접지 않는다).
 #

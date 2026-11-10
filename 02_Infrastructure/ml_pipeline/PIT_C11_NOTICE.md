@@ -12,7 +12,7 @@
 
 ## 해당 파일
 
-- `dpl_feature_builder.py`
+- `dpl_feature_builder.py` — 2026-11-10 삭제(호출처 0 · 태그 `pre-v10.2-prune-20261110` 로 복구 가능 · 표식은 기존 산출 인용 금지 기록으로 존치)
 
 ## 참조
 

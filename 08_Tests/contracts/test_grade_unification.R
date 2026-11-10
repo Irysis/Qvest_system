@@ -185,34 +185,11 @@ cat("\n── D. 등급 축 출처 구분 ────────────�
 #     값들을 실제로 반환하므로 proxy 축에서는 그 나열이 맞다. 12개 파일을 고치는 게 아니라
 #     **불변식을 강제**하는 것이 옳다: 등급이 어느 채점기에서 왔는지 corpus 가 구분 가능해야 한다.
 #     구분 수단은 이미 있다 — metric_type(proxy/backtested) + authoritative 필드.
-
-RUNNERS <- c("run_coverage_delta", "run_disclosure_meta", "run_hzz_inverse", "run_hzz_trend",
-             "run_pead_paper", "run_qfactor_paper", "run_qmj_paper", "run_residmom_paper",
-             "run_te_sink", "run_bsc_momentum", "run_dm_momentum", "run_volmanaged")
-.rd <- file.path(ROOT, "02_Infrastructure", "alpha_search")
-srcs <- lapply(RUNNERS, function(f) {
-  p <- file.path(.rd, paste0(f, ".R"))
-  if (!file.exists(p)) NA_character_ else paste(readLines(p, warn = FALSE), collapse = "\n")
-})
-names(srcs) <- RUNNERS
-present <- RUNNERS[!vapply(srcs, function(x) is.na(x[1]), logical(1))]
-
-# D1 — 논문 러너에 essence 스택이 없다(전제 확인). 생겼으면 D2 의 근거가 바뀐다.
-stacked <- present[vapply(present, function(f)
-  grepl("essence_score", srcs[[f]], fixed = TRUE) ||
-  grepl("authoritative_remeasure", srcs[[f]], fixed = TRUE), logical(1))]
-if (length(present) && !length(stacked))
-  ok(sprintf("논문 러너 %d종에 essence 스택 없음 — proxy 축임이 전제로 확인됨", length(present))) else
-  ng("★일부 러너에 essence 스택이 생겼다 — 그 파일은 essence 축으로 전환할 것",
-     paste(stacked, collapse = ","))
-
-# D2 — ★반대 방향 단방향 검사: proxy 축 러너에서 hurdle 접미어를 지우지 말 것
-lost <- present[vapply(present, function(f)
-  grepl("pass\\s*<-", srcs[[f]]) && !grepl("A_NOVEL", srcs[[f]], fixed = TRUE), logical(1))]
-if (!length(lost))
-  ok("proxy 축 러너가 hurdle 접미어 나열을 유지 — 조용한 조건 축소 없음") else
-  ng("★proxy 축 러너에서 접미어가 사라졌다 — hurdle A_NOVEL/A_DEF 가 조용히 탈락한다",
-     paste(lost, collapse = ","))
+#
+# ★2026-11-10 정리(PRUNE-EXTRA-DELETIONS-20261110): 구 논문 러너(run_*_paper 등 · proxy 축)는
+#   호출자 0 으로 삭제됐다(복구 = 태그 pre-v10.2-prune-20261110). 그 파일들만 재던 구 D1(essence
+#   스택 부재 전제) · D2(hurdle 접미어 유지)는 대상이 없어져 함께 걷었다. 살아 있는 불변식인
+#   D3(corpus 에서 등급 출처 추적 가능)는 그대로 잰다.
 
 # D3 — corpus 불변식: backtested 등급은 authoritative 근거를 동반해야 한다
 cp <- file.path(ROOT, ".cache", "lcode_corpus.json")

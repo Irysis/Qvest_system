@@ -118,18 +118,7 @@ def s5_to_s6_split(src: Path, strategy: str, **_) -> bool:
     codex_target.parent.mkdir(parents=True, exist_ok=True)
     if judge_target.exists():
         return False
-    # Mutation Tracker 갱신 (S2.7) — best effort
-    tracker = PROJECT_ROOT / "02_Infrastructure" / "validation" / "mutation_tracker.py"
-    if tracker.exists():
-        try:
-            env = os.environ.copy()
-            env["QVEST_PROJECT_DIR"] = str(PROJECT_ROOT)
-            subprocess.run(
-                ["python3", str(tracker)],
-                env=env, capture_output=True, timeout=30, check=False,
-            )
-        except Exception:
-            pass
+    # (구 S2.7 Mutation Tracker 갱신 블록 — validation/mutation_tracker.py 는 2026-11-10 삭제 · 태그 pre-v10.2-prune-20261110)
     cp(src, judge_target)
     cp(src, codex_target)
     log(f"TRIGGER: Forge DONE_S5 → Judge+Codex TODO_S6 ({strategy})")

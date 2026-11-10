@@ -571,7 +571,8 @@ if [ -f "$HFC" ]; then
 fi
 
 # ── ★v10 (2026-09-03) legacy book/cert 감사 스위치 ──────────────────────────────────────────
-#   7b(measurement coherence · book_state) · 7c(cert backfill) · 7d(v8 readiness) · 7e(active-book timeline)
+#   7b(measurement coherence · book_state) · 7c(cert backfill) · 7e(active-book timeline)
+#   (7d v8 readiness 절은 2026-11-10 코드째 삭제 — qvest_v8_ready · v8_readiness_gate.R 호출처 0 · 태그 pre-v10.2-prune-20261110)
 #   는 전부 **폐지된 층**(governor book_state · cert · v8 착수 관문)을 정본으로 읽는다. v10 BOOK 정본은
 #   06_Registry/book/book_registry.json(writer = book/book_registry.R) 이고 boot_lean.sh 가 이미 그것을 읽는다.
 #   ★특히 7c 는 legacy 동결 디렉터리에 새 cert 를 쓸 수 있는 유일한 경로였다(cert_backfill_audit.R 안에도
@@ -752,59 +753,6 @@ if [ -f "$WT_TIMELINE_R" ]; then
   TIMELINE_OUT=$(cd "$PROJECT" && Rscript "$WT_TIMELINE_R" --rebuild-active-book 2>&1 || true)
   TIMELINE_COUNT=$(echo "$TIMELINE_OUT" | grep -oE 'rebuilt [0-9]+' | tail -1 | awk '{print $2}')
   echo "[boot] WT timeline rebuild: ${TIMELINE_COUNT:-0} active book WTs (qepm/observability/timelines/)"
-fi
-
-# 7d. v7.2.1 — v8 Readiness Gate (read-only, --no-write production 무손상)
-#     15 check 중 e2e_kernel + timeline_generation은 no-write 시 SKIP 정상 (13 PASS + 2 SKIP 기대값)
-#     memory_health check은 cached memory_health_latest.json read
-QV8_CLI="$PROJECT/02_Infrastructure/tools/qvest_v8_ready"
-# ★v10 (2026-09-03): v8 Design Readiness Gate 는 "v8.0 설계를 시작해도 되는가" 를 묻는 1회성 착수 관문이라
-#   v10 에서 판정 의미가 없다(그 게이트가 소비하는 cert·e2e 층도 함께 퇴역). 되살리려면 QVEST_V8_READINESS=1.
-[ "${QVEST_V8_READINESS:-0}" = "1" ] || QV8_CLI="/nonexistent-v10-readiness-off"
-if [ -f "$QV8_CLI" ]; then
-  # L-314 follow-up: temp file 1회 parse로 4값 동시 추출.
-  # (v8.1.1 2026-06-10 fix) python에는 stdin 리다이렉트로 전달 — Git Bash mktemp의 MSYS 경로(/tmp/...)를
-  # native Windows python이 open() 못 하는 함정 (FileNotFoundError → 영구 '?' 표시) 해소.
-  V8_TMP=$(mktemp)
-  # qvest_v8_ready CLI exit code 0=PASS / 1=FAIL / 2=WARN — 모두 정상 JSON 반환. 'true'로 exit code 무시.
-  bash "$QV8_CLI" --no-write --json > "$V8_TMP" 2>/dev/null || true
-  [ -s "$V8_TMP" ] || echo "{}" > "$V8_TMP"
-  # (2026-07-26 probe① 도훈 승인) warn 축 노출 + 자가검산 — 구판은 pass/fail/skip만 파싱해
-  # soak WARN(critical, human 확인 의무)이 이름 없이 상태문자 "WARN"에만 묻혔고,
-  # pass+fail+warn+skip ≠ 총 check수여도 침묵(파싱 결손 불가시)이었다.
-  V8_PARSED=$(python3 -c "
-import json, sys
-try:
-    d = json.load(sys.stdin)
-    s = d.get('summary', {})
-    checks = d.get('checks', []) or []
-    warns = ';'.join(str(c.get('name','?')) for c in checks
-                     if str(c.get('status','')).upper() == 'WARN')
-    print(f\"{d.get('overall','?')}|{s.get('pass','?')}|{s.get('fail','?')}|{s.get('warn','?')}|{s.get('skip','?')}|{len(checks)}|{warns}\")
-except Exception:
-    print('?|?|?|?|?|?|')
-" < "$V8_TMP" 2>/dev/null || echo "?|?|?|?|?|?|")
-  rm -f "$V8_TMP"
-  IFS='|' read -r V8_OVERALL V8_PASS V8_FAIL V8_WARN V8_SKIP V8_NCHK V8_WARN_NAMES <<< "$V8_PARSED"
-  echo "[boot] v8 readiness (--no-write, ${V8_NCHK:-?} check incl v8_architecture): $V8_OVERALL — pass=$V8_PASS fail=$V8_FAIL warn=$V8_WARN skip=$V8_SKIP (e2e+timeline SKIP 정상, memory_health cached)"
-  if [ "${V8_WARN:-0}" != "0" ] && [ "${V8_WARN:-?}" != "?" ] && [ -n "$V8_WARN_NAMES" ]; then
-    echo "[boot]    warn 항목: ${V8_WARN_NAMES//;/ · } (soak류 = human 확인 의무)"
-  fi
-  # 자가검산: 파싱된 4축 합 ≠ 총 check수 → 파서/스키마 드리프트로 축이 새는 중
-  if [ "${V8_NCHK:-?}" != "?" ] && [ "${V8_PASS:-?}" != "?" ]; then
-    V8_SUM=$(( ${V8_PASS:-0} + ${V8_FAIL:-0} + ${V8_WARN:-0} + ${V8_SKIP:-0} ))
-    if [ "$V8_SUM" != "$V8_NCHK" ]; then
-      echo "[boot] WARN: readiness 자가검산 불일치 — pass+fail+warn+skip=$V8_SUM ≠ checks=$V8_NCHK (파서/스키마 드리프트, 축 결손 의심)"
-    fi
-  fi
-  if [ "${V8_FAIL:-99}" != "0" ] && [ "${V8_FAIL:-99}" != "?" ]; then
-    echo "[boot] WARN: v8_readiness FAIL — bash 02_Infrastructure/tools/qvest_v8_ready --strict 직접 실행 권장"
-  fi
-  # (v8.1.1 2026-06-10) readiness CLI 자체 고장('?')도 침묵 금지 — 게이트 실패로 계상
-  if [ "${V8_OVERALL:-?}" = "?" ]; then
-    echo "[boot] ERROR: v8 readiness CLI 자체 실행 실패 ('?') — /tmp/qvest_v8_ready_stderr.log 확인"
-    BOOT_FAILS=$((BOOT_FAILS+1))
-  fi
 fi
 
 # 8. 상태 보고 (v6 — 3-agent Work Task)

@@ -426,7 +426,7 @@ register_module <- function(sim_result, strategy_id, grade = NA_character_,
     grade           = grade %||% "ungraded",
     grade_basis     = grade_basis %||% NA,   # v10: 등급 출처 (essence/mandate/proxy 구분)
     ## ★권위 등급 — 2계층 풀 floor 가 읽는 축(SKILL §3). `grade` 는 발행 시점 기록이라
-    ##   재채점 이후 갈린다(essence_regrade_apply.R 이 명시). 둘을 같이 싣는다.
+    ##   재채점 이후 갈린다(essence_regrade_apply.R 이 명시 · 태그 pre-v10.2-prune-20261110 에서만 확인 가능). 둘을 같이 싣는다.
     essence_grade   = .eg,
     defensive_score = .ds,                   # NULL 이면 필드 자체가 안 실린다 = 미산출
     role            = role %||% NA,

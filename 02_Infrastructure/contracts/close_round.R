@@ -189,7 +189,7 @@ close_round <- function(round_id,
           message("[close_round] ⚠ frontier 선언↔실기록 불일치 — 큐 2종에 없는 FQ-id: ",
                   paste(fq_missing, collapse = ", "),
                   " (FQ-167/168 계보: frontier_update 는 실제 기록 결과에서 파생시킬 것. ",
-                  "종결분은 06_Registry/_archive/alpha_frontier_queue_done_*.json 에 있을 수 있다. ",
+                  "종결분은 git 이력(태그 pre-v10.2-prune-20261110 · 06_Registry/_archive/alpha_frontier_queue_done_20260823.json)에 있을 수 있다. ",
                   "큐 기록 후 재확인 — 비차단 경고)")
       } else {
         message("[close_round] frontier 대조 불가 — alpha_frontier_queue.json / infra_backlog.json 둘 다 부재")

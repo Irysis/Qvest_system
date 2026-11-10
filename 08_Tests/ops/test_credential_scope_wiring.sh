@@ -29,7 +29,12 @@ ng(){ FAIL=$((FAIL+1)); echo "  FAIL  $1 :: $2"; }
 # 유무만 반환 — 값 출력 금지
 tokstate(){ if [ -n "${CLAUDE_CODE_OAUTH_TOKEN:-}" ]; then echo "SET"; else echo "UNSET"; fi; }
 
-RUNNERS="alpha_search_queue_run factor_deep_recheck_run mode_queue_research_run paper_router_run"
+# (2026-11-10) 퇴역 러너 3종(alpha_search_queue_run · factor_deep_recheck_run · mode_queue_research_run)은
+#   삭제됐다(PRUNE-EXTRA-DELETIONS-20261110). 이 계약(source < 수리줄 < claude 호출 · 지문 · 값 노출 금지)은
+#   살아 있는 무인 LLM 러너에 대해 계속 잰다. 대상이 0개가 되면 아래 가드가 FAIL 한다(공허 통과 금지).
+RUNNERS="paper_router_run"
+n_live=0; for f in $RUNNERS; do [ -f "$ROOT/02_Infrastructure/ops/$f.sh" ] && n_live=$((n_live+1)); done
+[ "$n_live" -ge 1 ] && ok "검사 대상 러너 $n_live 개 실재" || ng "검사 대상" "살아 있는 러너 0개 — 검사가 공허해진다"
 
 # ★2026-08-22: claude 호출 형태가 `timeout 3000 "$CLAUDE_BIN"` →
 #   `_run_claude "$CLAUDE_BIN"` 로 바뀌었다(도훈 "시간제한 없애").
@@ -66,7 +71,7 @@ for f in $RUNNERS; do
   cal=$(grep -nE '(timeout 3000|_run_claude) "\$CLAUDE_BIN" -p "\$PROMPT_TEXT"|^_run_claude ""' "$p" | head -1 | cut -d: -f1)
   if [ -z "$fp" ] || [ -z "$cal" ] || [ "$fp" -ge "$cal" ]; then nofp="$nofp $f"; fi
 done
-[ -z "$nofp" ] && ok "4개 러너 모두 claude 호출 **전에** 지문 로깅"   || ng "지문 배선" "해당:$nofp — 다음 401 도 원인 구분 불가"
+[ -z "$nofp" ] && ok "대상 러너 모두 claude 호출 **전에** 지문 로깅"   || ng "지문 배선" "해당:$nofp — 다음 401 도 원인 구분 불가"
 
 echo "== C2. 값 노출 금지: 러너가 토큰을 로그로 내지 않는가 =="
 leak=""

@@ -171,8 +171,10 @@ if cmp -s "$OPS/rf_llm_env.sh" "$T/rf_llm_env_mut.sh"; then ng "D8 돌연변이"
   case "$r" in *AUTOMEM=unset*LANE=unset*) ok "D8 표식 줄을 지운 돌연변이 → 표식 소실(D1·D2 가 잡는다)" ;; *) ng "D8 돌연변이 판별력" "$r" ;; esac
 fi
 
-echo "--- E. _run_claude 레인 4종 ---"
-for lane in alpha_search_queue_run.sh factor_deep_recheck_run.sh mode_queue_research_run.sh paper_router_run.sh; do
+# (2026-11-10) 퇴역 러너 3종(alpha_search_queue_run · factor_deep_recheck_run · mode_queue_research_run)은 삭제 —
+#   _run_claude 를 정의하는 살아 있는 레인은 paper_router_run.sh 하나다(paper_atlas_run.sh 는 rf_llm_agent_run 직접 호출).
+echo "--- E. _run_claude 레인 ---"
+for lane in paper_router_run.sh; do
   src="$OPS/$lane"
   body="$(sed -n '/^_run_claude(){/,/^}/p' "$src" | tr -d '\r')"
   if [ -z "$body" ]; then ng "E $lane" "_run_claude 정의 없음"; continue; fi

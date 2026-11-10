@@ -17,7 +17,7 @@
 #   판정 자체는 `02_Infrastructure/contracts/defensive_score.R::ds_pool_eligible()` 이 낸다.
 #
 # ★등급 축 (2026-09-07 정정): 소비자는 오랫동안 `rec$grade` 를 읽었는데 그 값은
-#   **발행 시점 기록**이다(essence_regrade_apply.R 이 명시: "top-level grade 는 불변").
+#   **발행 시점 기록**이다(essence_regrade_apply.R 이 명시: "top-level grade 는 불변" · 태그 pre-v10.2-prune-20261110 에서만 확인 가능).
 #   v9.21 권위 재채점 결과는 `meta$essence_grade` 에 병기됐고, 신규 등재는
 #   `essence_grade` 를 싣는다. 세 자리가 갈린 채로 floor 를 걸면 SKILL 이 말하는
 #   "essence grade" 와 코드가 읽는 값이 다른 축이 된다(실측: 그 때문에 essence B 인

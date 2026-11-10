@@ -253,7 +253,6 @@ PINNED <- c(
   "02_Infrastructure/regime/msm_asof.R",
   "02_Infrastructure/regime/msm_daily_refit.R",
   "02_Infrastructure/regime/regime_cusum.R",
-  "02_Infrastructure/regime/regime_ensemble.R",
   "02_Infrastructure/regime/regime_hmm.R",
   "02_Infrastructure/regime/regime_jump_model.R",
   "02_Infrastructure/regime/regime_vrp.R",

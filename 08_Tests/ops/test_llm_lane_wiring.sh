@@ -78,11 +78,10 @@ out4=$(scan "$T" | tr -d '\r' | grep paper_router || true)
 [ -n "$out4" ] && ok "B3 레인에 주입한 모델 없는 맨 호출을 잡는다" || ng "B3 판별력 없음(레인 맨 호출)"
 
 # (v10.01 2026-10-13) rf_grid_propose.sh 는 고정 격자와 함께 퇴역 · 새 레인 paper_atlas_run.sh(메커니즘 지도) 편입.
-#   alpha_search_queue · mode_queue_research · factor_deep_recheck 는 v10 퇴역 러너(스케줄 밖) — 스크립트 배선은 계속 재되
-#   설정 lanes 에서는 빠졌다(D12 · 해석기 기본값 opus/max 로 떨어진다).
+#   alpha_search_queue · mode_queue_research · factor_deep_recheck 는 v10 퇴역 러너 — 설정 lanes 에서 빠졌고(D12)
+#   스크립트도 2026-11-10 삭제됐다(PRUNE-EXTRA-DELETIONS-20261110). 배선 검사는 살아 있는 두 레인에 대해 잰다.
 echo "=== C. 레인 해석기 호출 · 설정 lane 일치 (v10.01 D12 편성) ==="
-for pair in paper_router_run.sh:paper_router paper_atlas_run.sh:paper_atlas alpha_search_queue_run.sh:alpha_search_queue \
-            mode_queue_research_run.sh:mode_queue_research factor_deep_recheck_run.sh:factor_deep_recheck; do
+for pair in paper_router_run.sh:paper_router paper_atlas_run.sh:paper_atlas; do
   f="${pair%%:*}"; lane="${pair#*:}"
   if grep -q "^rf_llm_resolve $lane " "$OPS/$f"; then ok "C $f → rf_llm_resolve $lane"; else ng "C $f" "rf_llm_resolve $lane 부재"; fi
 done
@@ -100,12 +99,13 @@ done
 [ -z "$stale" ] && ok "C6b 퇴역 레인 설정 잔존 0" || ng "C6b 퇴역 레인이 설정에 남았다" "$stale"
 fab=$("$PY" -c "import io,json;c=json.loads(io.open(r'$ROOT/06_Registry/reinforce_auto_config.json','rb').read().decode('utf-8'));L=(c.get('llm') or {}).get('lanes',{});print(' '.join(sorted(k for k,v in L.items() if 'fable' in str((v or {}).get('model','')).lower())))" | tr -d '\r')
 [ -z "$fab" ] && ok "C6c fable 배정 레인 0(D12 — Opus 로 대체)" || ng "C6c fable 레인 잔존" "$fab"
-for f in paper_router_run.sh paper_atlas_run.sh alpha_search_queue_run.sh mode_queue_research_run.sh factor_deep_recheck_run.sh; do
-  bash -n "$OPS/$f" || ng "C7 문법 $f"
+c7=0
+for f in paper_router_run.sh paper_atlas_run.sh; do
+  bash -n "$OPS/$f" || { ng "C7 문법 $f"; c7=1; }
 done
-ok "C7 5 레인 문법(bash -n)"
-# C8 (P0-M1) — 5 레인의 호출은 단일 진입을 거친다: 해석값(LLM_MODEL/LLM_EFFORT)이 rf_llm_agent_run 으로 흘러간다
-for f in paper_router_run.sh paper_atlas_run.sh alpha_search_queue_run.sh mode_queue_research_run.sh factor_deep_recheck_run.sh; do
+[ "$c7" -eq 0 ] && ok "C7 2 레인 문법(bash -n)"
+# C8 (P0-M1) — 레인의 호출은 단일 진입을 거친다: 해석값(LLM_MODEL/LLM_EFFORT)이 rf_llm_agent_run 으로 흘러간다
+for f in paper_router_run.sh paper_atlas_run.sh; do
   if grep -q 'rf_llm_agent_run ' "$OPS/$f"; then ok "C8 $f → rf_llm_agent_run"; else ng "C8 $f" "단일 진입 미경유"; fi
 done
 

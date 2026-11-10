@@ -8,7 +8,7 @@
 #   빠지기 쉽다 — 안 불려도 아무 에러가 안 나고, "조용하다" 가 "문제 없다" 로 읽힌다.
 #
 # ★그래서 이 검사의 1급 축은 알림기 내부가 아니라 **호출 배선**이다:
-#   ① 세 러너 전부가 부르는가  ② rc 가 최종화된 **뒤**에 부르는가(폴백 성공을 실패로 알리지 않게)
+#   ① 대상 러너 전부가 부르는가(2026-11-10 퇴역 러너 삭제 뒤 = paper_router_run.sh)  ② rc 가 최종화된 **뒤**에 부르는가(폴백 성공을 실패로 알리지 않게)
 #   ③ 조기 skip 경로에서는 안 부르는가(스팸 방지)  ④ 텔레그램 단일 진입점 규약을 지키는가
 set -uo pipefail
 SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
@@ -23,9 +23,13 @@ if [ ! -f "$NOTIFY" ]; then
   echo "  SKIP  알림기 부재"; echo "== t_summary: PASS=0 FAIL=0 =="; printf '{"test":"run_completion_notify","pass":0,"fail":0,"total":0,"skipped":1,"skips":[{"axis":"ALL","reason":"알림기 부재","missing":"%s"}]}\n' "$NOTIFY"; exit 0
 fi
 
-RUNNERS="mode_queue_research_run.sh alpha_search_queue_run.sh paper_router_run.sh"
+# (2026-11-10) 퇴역 러너 mode_queue_research_run.sh · alpha_search_queue_run.sh(· factor_deep_recheck_run.sh)는
+#   삭제됐다(PRUNE-EXTRA-DELETIONS-20261110). 알림 배선 계약은 살아 있는 러너에 대해 계속 잰다 — 대상 0개면 FAIL(공허 통과 금지).
+RUNNERS="paper_router_run.sh"
+n_live=0; for f in $RUNNERS; do [ -f "$OPS/$f" ] && n_live=$((n_live+1)); done
+[ "$n_live" -ge 1 ] && ok "검사 대상 러너 $n_live 개 실재" || ng "검사 대상" "살아 있는 러너 0개 — 검사가 공허해진다"
 
-echo "== 배선 축 1: 세 러너가 모두 알림기를 부르는가 (만들고 안 부르는 상태 아님) =="
+echo "== 배선 축 1: 대상 러너가 모두 알림기를 부르는가 (만들고 안 부르는 상태 아님) =="
 for f in $RUNNERS; do
   if grep -q 'research_run_notify.R' "$OPS/$f" 2>/dev/null; then ok "$f 가 알림기를 호출"
   else ng "$f 호출" "알림기가 소비자 없이 존재 — 완주가 도훈에게 도달하지 않는다"; fi
@@ -123,7 +127,7 @@ for f in $RUNNERS; do
   if [ -z "$blk" ]; then ng "$f 블록 추출" "알림 블록을 못 찾음"; continue; fi
   out=$(bash -c "set -uo pipefail
 BASE='$ROOT'; LOG=/dev/null; rc=0; N=7; _n_done=1; _EFFECT_CMP=CHANGED
-_EFFECT_BEFORE=''; _EFFECT_SIG='$ROOT/02_Infrastructure/ops/research_effect_signature.py'
+_EFFECT_BEFORE=''
 _ROUTE_DIR='$ROOT/stage_artifacts/paper_recharge'; _ROUTE_BEFORE=0
 BACKLOG_DATES=''; QVEST_MODE_QUEUE_LANE=alpha; PYBIN='${QVEST_PY:-python}'
 log(){ :; }; export QVEST_RUN_NOTIFY_DRYRUN=1
@@ -153,30 +157,16 @@ echo "== 귀속 축: 런이 무엇을 겨눴는지 로그에 남는가 =="
 #   08-16 연속성 마커 사고("남의 mtime 이 내 턴의 계약을 충족")와 같은 계통.
 #   전역 지문은 "무언가 바뀌었다" 는 답해도 "내가 바꿨다" 는 답하지 못한다.
 #   ⇒ 디스패치 **전에** 대상을 남긴다. 귀속은 사후에 복원되지 않는다.
-MQ="$OPS/mode_queue_research_run.sh"
-if grep -q "_queue_top_ids.py" "$MQ" && grep -q "디스패치 후보" "$MQ"; then
-  ok "mode_queue — 디스패치 대상 기록 존재"
-else
-  ng "디스패치 기록" "런이 무엇을 겨눴는지 남지 않아 성공/실패를 남의 산출로 오귀속한다"
-fi
-HELP="$OPS/_queue_top_ids.py"
-if [ -f "$HELP" ] && command -v "${QVEST_PY:-python}" >/dev/null 2>&1; then
-  _TQ=$(mktemp)
-  printf '{"items":[{"wt_id":"WT-A"},{"wt_id":"WT-B"},{"id":"X-1"},{"wt_id":"WT-D"}]}' > "$_TQ"
-  got=$("${QVEST_PY:-python}" "$HELP" "$_TQ" 3 2>/dev/null)
-  [ "$got" = "WT-A,WT-B,X-1" ] && ok "상위 N 추출 정확 (wt_id 우선, id 폴백)" || ng "추출" "got=$got"
-  printf 'not json' > "$_TQ"
-  got=$("${QVEST_PY:-python}" "$HELP" "$_TQ" 3 2>/dev/null)
-  [ "$got" = "?" ] && ok "손상 큐 → ? (조용히 빈 문자열로 접지 않음)" || ng "손상 큐" "got=$got"
-  rm -f "$_TQ"
-fi
+# (2026-11-10) 이 축의 대상(mode_queue_research_run.sh 의 WT 디스패치 기록 · _queue_top_ids.py)은 WT 디스패치 레인과 함께
+#   삭제됐다(PRUNE-EXTRA-DELETIONS-20261110). 살아 있는 러너(paper_router_run.sh)는 WT 를 디스패치하지 않으므로 대상 없음.
+#   귀속 창 계약(남의 산출 귀속 방지)은 아래 '창 축'이 살아 있는 러너에 대해 계속 잰다.
 
 echo "== 시간제한 축: 기본이 무제한이고 env 로만 켜지는가 (도훈 지시 2026-08-22) =="
 # ★근거: 18:13 실측에서 상한이 자른 것은 폭주가 아니라 **끝난 일의 뒷정리**였다.
 #   런은 18:10 에 WT-005 를 ALPHA_DONE 으로 올리고 alpha_package(15KB)까지 냈는데
 #   18:13 에 죽어 MODEQ_DONE 자기보고와 원장 append 를 잃었다.
 #   되돌리기는 코드 수정이 아니라 QVEST_RUN_TIMEOUT 환경변수여야 한다.
-for f in $RUNNERS factor_deep_recheck_run.sh; do
+for f in $RUNNERS; do
   [ -f "$OPS/$f" ] || continue
   if grep -q 'timeout 3000 "\$CLAUDE_BIN"' "$OPS/$f"; then
     ng "$f 시간제한" "하드코딩 timeout 3000 잔존 — 끝난 일의 뒷정리를 계속 자른다"
@@ -197,7 +187,7 @@ echo RAN
 FAKE
 chmod +x "$_RC_D/fake_claude"
 { printf '. "%s"\n' "$OPS/rf_llm_env.sh"
-  sed -n "/^_run_claude(){/,/^}/p" "$OPS/mode_queue_research_run.sh"
+  sed -n "/^_run_claude(){/,/^}/p" "$OPS/paper_router_run.sh" | tr -d '\r'
   printf 'CLAUDE_BIN="%s"; LOG="%s"; PROMPT_TEXT=hi; LLM_MODEL=opus; LLM_EFFORT=max; LLM_FALLBACK_MODEL=""\n' "$_RC_D/fake_claude" "$_RC_D/log"
   printf '_run_claude ""; echo "rc=$?"; cat "$LOG"\n'
 } > "$_RC_D/h.sh"

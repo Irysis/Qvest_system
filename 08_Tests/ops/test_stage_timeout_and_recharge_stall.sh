@@ -46,11 +46,14 @@ grep -q 'if \[ "\$_stm" != "0" \]' "$MR" && ok "0 이면 timeout 미사용 (되�
 
 echo "== ★분리 축: 리서치 런 시간제한을 되살리지 않았는가 (도훈 지시 보존) =="
 # 러너들의 claude 호출에 하드코딩 timeout 이 다시 들어가면 안 된다.
-back=0
-for f in paper_router_run.sh alpha_search_queue_run.sh mode_queue_research_run.sh factor_deep_recheck_run.sh; do
+# (2026-11-10) 퇴역 러너 3종(alpha_search_queue · mode_queue_research · factor_deep_recheck)은 삭제 — 살아 있는 레인만 잰다.
+back=0; n_chk=0
+for f in paper_router_run.sh paper_atlas_run.sh; do
   [ -f "$ROOT/02_Infrastructure/ops/$f" ] || continue
+  n_chk=$((n_chk+1))
   grep -q 'timeout 3000 "\$CLAUDE_BIN"' "$ROOT/02_Infrastructure/ops/$f" && back=$((back+1))
 done
+[ "$n_chk" -ge 1 ] || ng "검사 대상" "살아 있는 러너 0개 — 분리 축이 공허해진다"
 [ "$back" -eq 0 ] && ok "리서치 런 하드코딩 상한 0건 (지시 보존)" \
   || ng "지시 역행" "스테이지 상한을 넣으면서 리서치 런 상한을 되살렸다 (${back}건)"
 

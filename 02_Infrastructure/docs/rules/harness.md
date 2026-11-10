@@ -18,7 +18,7 @@
 |---|---|
 | agent_role_guard | Alpha/Risk/Optimizer 역할 경계 |
 | worktask_sequence_enforcer | (사료·v9 등록 해제) WT 순서 — v10 전이 검증은 `state_machine.R` |
-| unified_agent_guard | Stage 순서 + 1인 다역할 차단 |
+| unified_agent_guard | (2026-11-10 삭제 · 태그 pre-v10.2-prune-20261110) Stage 순서 + 1인 다역할 차단 |
 | s0_debate_guard | (legacy v55) S0 1인 다역할 스폰 차단 |
 | role_taxonomy_admission_gate | (legacy v55) 6-role 분류 admission |
 
@@ -55,7 +55,7 @@
 
 | Hook | 발급 cert |
 |---|---|
-| alpha_discovery_certifier | `alpha_discovery_certificate.json` (4 AND 조건) |
+| alpha_discovery_certifier | (동결 QEPM WT 체인 · 미등록) `alpha_discovery_certificate.json` (4 AND 조건) |
 | sr_provenance_check (Post) | `sr_provenance_certificate.json` (forge_package 4-field) |
 | schedule_fidelity_check | `schedule_fidelity_certificate.json` (density≥0.95 OR infeasibility) |
 | worktask_artifact_validator | `forge_package_validated_certificate.json` (8-field) |
@@ -235,7 +235,7 @@ QEPM Codex Critic Round(외부 codex auto-spawn)는 **2026-06-30 v8.2에서 폐�
 
 - **등록 셋**: settings.json 47 distinct .sh (고스트 등록 0 — 등록분 전부 FS 실재). `milestone_commit.sh` **재등록**(PostToolUse[Write]) — 8674cb3 무언급 소실분 복구 (Stop hook 2종과 동일 사건, qvest.md Tier 3 주장과 정합 회복).
 - **FS-only 미등록 (의도적, 5건)**: cash_sleeve_validator / circuit_breaker / trail_consistency_checker / attribution_quarterly_trigger / **role_taxonomy_admission_gate**(v55 Scout 전용 — v8.1 흐름 불일치로 강등 확정, 도훈 2026-06-11. 파일 retain).
-- **등록 해제 documented (v53/v8.0 폐지)**: unified_agent_guard / task_complete_guard / teammate_idle_guard. **헬퍼/비-hook**: _shared_parse / resolve_project / harness_health / pit_v3_daemon.
+- **등록 해제 documented (v53/v8.0 폐지)**: unified_agent_guard(2026-11-10 삭제 · 태그 pre-v10.2-prune-20261110) / task_complete_guard / teammate_idle_guard. **헬퍼/비-hook**: _shared_parse / resolve_project / harness_health / pit_v3_daemon.
 - **agent_role_guard 복원**: MSYS ps가 `-o` 미지원이라 PARENT_PID 식별이 항상 실패 → 역할 경계 가드가 이 머신에서 상시 allow였음. bash 내장 `$PPID`로 교체 수리 (battery 13/13 검증).
 - **회귀 배터리**: `02_Infrastructure/ops/hook_e2e_battery.py` — 등록·미등록 hook 을 파일 경로로 직접 실행하는 payload 블록/통과 **15케이스**(2026-09-03 실측 15/15 PASS). hook 파서/이스케이프 변경 시 실행 의무.
 

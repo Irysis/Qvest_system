@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""factor_deep_recheck_run.sh 의 uncertain 큐 산정 블록 — 위반 주입 테스트.
+"""uncertain 재검 큐 산정 술어(구 factor_deep_recheck_run.sh 블록 · 그 러너는 2026-11-10 삭제) — 위반 주입 테스트.
 
 왜 별도 파일인가 (test_alpha_queue_pending.py 와 분리):
   두 스크립트는 같은 결함(id 표기 미정규화)을 공유하지만 **술어가 다르다** —
@@ -37,9 +37,21 @@ import tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
+
+
+def _rel(p, base=None):
+    """표시용 상대 경로 — 다른 드라이브(돌연변이 사본 등)면 절대 경로 그대로(Windows relpath ValueError 회피)."""
+    try:
+        return os.path.relpath(p, base or ROOT)
+    except ValueError:
+        return p
+
+
 # 돌연변이 검사(검사기 자신이 살아 있는지)용 오버라이드. 평시엔 비워 둔다.
+# (2026-11-10 재조준) 구 소비자 factor_deep_recheck_run.sh 는 퇴역 · 삭제됐다(PRUNE-EXTRA-DELETIONS-20261110).
+#   살아 있는 소비자 = ops/research_pool_status.py(RPP.recheck_residual · RPP.recheck_uncertain — 부팅 잔여 줄).
 TARGET = os.environ.get("QVEST_RECHECK_RUN_SH") or os.path.join(
-    ROOT, "02_Infrastructure", "ops", "factor_deep_recheck_run.sh")
+    ROOT, "02_Infrastructure", "ops", "research_pool_status.py")
 PRED = os.environ.get("QVEST_PREDICATES_PY") or os.path.join(
     ROOT, "02_Infrastructure", "ops", "research_pool_predicates.py")
 MODULE = object()   # 정본 술어 센티넬 (legacy 문자열 블록과 구분)
@@ -82,14 +94,25 @@ def check_wiring():
     if not os.path.isfile(PRED):
         fails.append("술어 정본 부재: %s" % PRED)
         return fails
+    if not os.path.isfile(TARGET):
+        fails.append("소비자 부재: %s" % _rel(TARGET, ROOT))
+        return fails
     with open(TARGET, encoding="utf-8") as fh:
         src = fh.read()
-    if "recheck-build" not in src:
-        fails.append("소비자가 정본 술어를 호출하지 않는다 (recheck-build 호출 부재): %s"
-                     % os.path.relpath(TARGET, ROOT))
+    code = "\n".join(l for l in src.splitlines() if not l.lstrip().startswith("#"))
+    if not re.search(r"^\s*import research_pool_predicates as RPP\b", code, re.M):
+        fails.append("소비자가 정본 술어 모듈을 import 하지 않는다: %s"
+                     % _rel(TARGET, ROOT))
+    for fn in ("recheck_residual", "recheck_uncertain"):
+        if not re.search(r"\bRPP\.%s\(" % fn, code):
+            fails.append("소비자가 정본 술어를 호출하지 않는다 (RPP.%s 호출 부재): %s"
+                         % (fn, _rel(TARGET, ROOT)))
+        if re.search(r"^def %s\b" % fn, code, re.M):
+            fails.append("★소비자가 %s 를 자체 정의했다 — 정의가 다시 2벌로 갈렸다: %s"
+                         % (fn, _rel(TARGET, ROOT)))
     if re.search(r"^[^#\n]*<<'PY'", src, re.M):
         fails.append("★heredoc 술어가 되살아났다 — 정의가 다시 2벌로 갈렸다: %s"
-                     % os.path.relpath(TARGET, ROOT))
+                     % _rel(TARGET, ROOT))
     return fails
 
 
@@ -222,8 +245,8 @@ WRITE_CASES = [
 def main():
     block = MODULE
     fails, teeth_fail = [], []
-    print("술어 정본: %s" % os.path.relpath(PRED, ROOT))
-    print("소비자 배선: %s" % os.path.relpath(TARGET, ROOT))
+    print("술어 정본: %s" % _rel(PRED, ROOT))
+    print("소비자 배선: %s" % _rel(TARGET, ROOT))
     print("=" * 78)
     _w = check_wiring()
     for w in _w:

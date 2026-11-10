@@ -10,7 +10,7 @@
 # ★자체합성 금지 계약 준수 (backtest-contract.md · python-policy §4):
 #   - leg 내 일간 포트수익 = PerformanceAnalytics::Return.portfolio (월내 drift 표준)
 #   - leg 결합(GL·L − GS·S)·월간 집계(apply.monthly + Return.cumulative)는
-#     driver_ls_generic.R (2026-06-06) 이 확립한 선례를 그대로 따른다.
+#     driver_ls_generic.R (2026-06-06 · 2026-11-10 삭제 — 복구 = 태그 pre-v10.2-prune-20261110) 이 확립한 선례를 그대로 따른다.
 #   - NAV 누적 cumprod 는 build_benchmark_returns 와 동일 관용(수익 합성이 아니라 누적).
 #   ★다리 결합 ls_combination (2026-11-09 · 도훈 '논문식으로 진행' · decision_register REPLICATION-LS-PAPER-BHR-20261109):
 #   - "daily"(기본 · 구판 비트 동일): 매일 Rg = GL·L − GS·S — 다리 노출을 매일 NAV 의 GL · GS 로 되돌린다.

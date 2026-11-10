@@ -81,7 +81,7 @@ RG <- RG[!is.na(regime_lag), .(Date, regime=regime_lag)]   # legacy 정렬(보�
 .floor_excluded <- 0L
 ## ★등급 축 정정(2026-09-07): 여기서 읽는 값은 `rec$grade`(발행 시점 기록)가 아니라
 ##   **essence 등급**이다 — essence_grade > meta.essence_grade > grade 폴백
-##   (`l2_essence_grade()`). essence_regrade_apply.R 이 "top-level grade 는 불변" 을
+##   (`l2_essence_grade()`). essence_regrade_apply.R(태그 pre-v10.2-prune-20261110 에서만 확인 가능) 이 "top-level grade 는 불변" 을
 ##   명시하고 권위 등급을 meta 에 병기했기 때문에, grade 로 floor 를 걸면 SKILL §3 이
 ##   말하는 축과 코드가 읽는 축이 갈린다(실측: essence B 인 fr_eligible 3건이 그렇게 빠져 있었다).
 ## ── 방어형 경로 (도훈 지시 2026-09-04) ───────────────────────────────────────
