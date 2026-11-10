@@ -2083,12 +2083,11 @@ SUITES=(
   "08_Tests/programs/test_rx_generator_scorecard.R"
   "08_Tests/reinforcement/test_rf_cdar_construct.R"
   "08_Tests/reinforcement/test_rf_factor_cov.R"
-  # 11-10 저녁 편입분(편입 검사기 E2 가 잡은 5건) — 선택 예산 재현성 · 현금 통과 · 벤치 CDaR 예산 · 부팅 메모 · 훅 사전 거름 등가(주간 층)
+  # 11-10 저녁 편입분(편입 검사기 E2 가 잡은 4건) — 선택 예산 재현성 · 현금 통과 · 벤치 CDaR 예산 · 부팅 메모
   "08_Tests/programs/test_trial_budget_rc.R"
   "08_Tests/reinforcement/test_rf_cash_budget_link.R"
   "08_Tests/reinforcement/test_rf_cdar_bench_budget.R"
   "08_Tests/ops/test_boot_lean_memo.sh"
-  "08_Tests/hooks/test_hook_dispatch_equivalence.sh"
   # <<< 11-10 H1
 )
 
