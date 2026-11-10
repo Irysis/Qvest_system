@@ -13,8 +13,13 @@ invisible(capture.output(suppressMessages(source(file.path(ROOT, "02_Infrastruct
 hm <- function(s) if (is.null(s) || !nzchar(s)) "?" else sub("^\\d{4}-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}).*$", "\\1-\\2 \\3:\\4", s)
 for (g in P$groups) {
   nm <- trimws(sub("\\(.*$", "", g$name %||% g$component))
-  items <- vapply(g$anomalies, function(x) sprintf("%s — %d회 · 처음 %s · 마지막 %s%s", substr(gsub("\\s+", " ", x$text %||% ""), 1, 180), as.integer(x$count %||% 1L),
-                                                   hm(x$first_seen), hm(x$last_seen), if (isTRUE(as.integer(x$reopened %||% 0L) > 0L)) " · 재발" else ""), character(1))
+  ## (2026-11-10 감사 레인 B) 본문 = 요약 한 문장(감시기가 만든 summary · '무엇이 · 언제부터 · 몇 번') + 위치(로그 경로).
+  ##   로그 원문 줄(x$text)은 싣지 않는다 — 원문 덤프가 채널을 '오류창'처럼 만들었고(11-07~11-10 9/18통) 비밀 값이 섞일 수 있다.
+  ##   감시기 판이 낡아 summary 가 없으면 규칙 id 만(원문으로 돌아가지 않는다).
+  items <- vapply(g$anomalies, function(x) sprintf("%s — 처음 %s · %d회%s%s", substr(gsub("\\s+", " ", x$summary %||% sprintf("규칙 %s 이상", x$rule %||% "?")), 1, 120),
+                                                   hm(x$first_seen), as.integer(x$count %||% 1L),
+                                                   if (isTRUE(as.integer(x$reopened %||% 0L) > 0L)) " · 재발" else "",
+                                                   if (nzchar(x$where %||% "")) sprintf(" · 위치 %s", x$where) else ""), character(1))
   keys <- paste(vapply(g$anomalies, function(x) as.character(x$key %||% ""), character(1)), collapse = ",")
   ## ★정본 발송기의 bullet 은 항목 ≥ 2(BULLET_MIN) — 이상 1건짜리 알림은 bullet 이면 거부돼 가동(10-16) 뒤 한 통도 나가지 않았다
   ##   (판단 Superfan T1 C-20261017-036 · 건식 재현). 1건이면 text 절(relaxed 라 길이 상한 면제 · 최소 30자는 항목 문구가 넘는다).

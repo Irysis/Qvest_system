@@ -158,6 +158,13 @@ def _will_report(name):
     except Exception: return False
 
 now = datetime.datetime.now()
+# never_run 첫 관측 기억(기계별 키) — 아래 '한 번도 안 돈 채 주기를 넘긴 작업' 축이 쓴다. 판독 실패 = 빈 기억(오늘부터 센다).
+FIRST_SEEN_PATH = os.path.join(os.path.dirname(SEEN_PATH), "task_first_seen.json") if SEEN_PATH else ""
+first_seen = {}
+if FIRST_SEEN_PATH and os.path.exists(FIRST_SEEN_PATH):
+    try: first_seen = json.load(io.open(FIRST_SEEN_PATH, encoding="utf-8")) or {}
+    except Exception: first_seen = {}
+if not isinstance(first_seen, dict): first_seen = {}
 bad, stale, inflight, known, selfrep, newly = [], [], [], [], [], []
 seen_next = dict(seen)
 for t in tasks:
@@ -191,6 +198,21 @@ for t in tasks:
     #   예정일이 지났는데도 never_run 이면 아래 '다음 실행 없음' 축(time_scheduled ∧ next_run 없음)이 잡는다.
     if lbl != "never_run" and ms and ag is not None and ag > ms:
         stale.append("%s(%.0f일>%s)" % (name, ag, ms))
+
+    # ★한 번도 안 돈 채 주기를 넘긴 작업 (2026-11-10 감사 레인 A) — 위 주석의 "'다음 실행 없음' 축이 잡는다"는
+    #   다음 실행이 **있는** never_run 에는 거짓이다. 실측 11-10: Qvest_WeeklyCleaner(주간 · 다음 11-14) ·
+    #   Qvest_MonthlyDistill 이 이 PC 에서 rc 267011 인데 next_run 이 있어 어느 축에도 안 걸렸다(무경보).
+    #   등록 시각은 수집기가 못 읽으므로(RegistrationInfo.Date 빈 값 · 작업 파일 접근 거부 · 11-10 실측) 이 감시가
+    #   **처음 본 시각**을 기계별로 기억하고, 그 뒤 주기(max_stale_days — 일간 2 · 주간 9 · 월간 35, 수집기 Get-MaxStaleDays)를
+    #   넘겨도 한 번도 안 돌았으면 정체로 올린다. 첫 관측 이전 기간은 모르므로 세지 않는다(거짓 양성 없음 쪽).
+    if lbl == "never_run" and ms and t.get("time_scheduled"):
+        key = "%s|%s" % (os.environ.get("COMPUTERNAME", "?"), name)
+        fs = _ts(first_seen.get(key) or "")
+        if fs is None:
+            first_seen[key] = now.strftime("%Y-%m-%dT%H:%M:%S"); fs = now
+        nr_age = (now - fs).total_seconds() / 86400.0
+        if nr_age > float(ms):
+            stale.append("%s(한 번도 안 돎 — 감시 첫 관측 %s 뒤 %.0f일>%s)" % (name, fs.strftime("%m-%d"), nr_age, ms))
 
     # ★다음 실행이 없으면 그 작업은 **끝난** 것이다 — staleness 로는 절대 안 잡힌다.
     #   반복 트리거가 만료되면 last_run 은 방금이고(age 0일) next_run 만 비는데,
@@ -301,6 +323,11 @@ if SEEN_PATH:
         io.open(SEEN_PATH, "w", encoding="utf-8").write(json.dumps(seen_next, ensure_ascii=False, indent=2))
     except Exception:
         pass
+if FIRST_SEEN_PATH:
+    try:
+        io.open(FIRST_SEEN_PATH, "w", encoding="utf-8").write(json.dumps(first_seen, ensure_ascii=False, indent=2, sort_keys=True))
+    except Exception:
+        pass
 
 print(json.dumps({"n": len(tasks), "bad": bad, "stale": stale, "shutdown": shutdown,
                   "inflight": inflight, "known": known, "selfrep": selfrep}, ensure_ascii=False))
@@ -349,14 +376,39 @@ fi
 # 3) 경보 — 무인 선언 시에만 (TTY 추론 아님. 내 시험 실행이 도훈 텔레그램으로 새는 사고 재발방지)
 #    시스템 정지는 그 자체로 경보 대상 — 4일간 무인 실행이 0 이었다는 뜻이기 때문(08-01 실측).
 #    단 작업 수만큼이 아니라 **1건**으로 낸다.
+# ── (2026-11-10 감사 레인 B) 경보 발신부 — 사유별 문구 · 원인 키(작업별 하루 1통 · 다른 발신처와 공유) · 해소 ──────────
+#   구판 본문 = "무인 파이프라인 task_health 가 scheduled_task_unhealthy 사유로 정지했습니다" + 고정 꼬리 "(작업 스크립트가 실행 자체를
+#   못 한 경우 …)" — 정지한 것은 다른 작업이고, 꼬리는 종료 코드 · 시간 상한 종료일 때 틀린 서술이었다(11-10 MorningBrief 267014).
+#   판정 논리(위 파이썬 블록 · never_run · 정체)는 건드리지 않는다 — 그 출력 토큰 'Name(label)' 을 사람 문장으로만 바꾼다.
+_th_phrase() {   # 'Name(label)' → 사유별 한 구절
+  local tok="$1" name lbl
+  name="${tok%%(*}"; lbl="${tok#*(}"; lbl="${lbl%)}"
+  case "$lbl" in
+    terminated_by_user_or_limit) echo "${name} 이 실행 시간 상한(또는 수동 중지)으로 강제 종료됨(267014)" ;;
+    never_run*|*'한 번도 안 돎'*)  echo "${name} 이 한 번도 실행되지 않음(${lbl})" ;;
+    *'다음 실행 없음'*)           echo "${name} 의 다음 실행 예정이 없음(트리거 만료)" ;;
+    exit_*)                       echo "${name} 이 종료 코드 ${lbl#exit_} 로 끝남" ;;
+    *일*'>'*)                     echo "${name} 이 주기보다 오래 안 돎(${lbl})" ;;
+    *)                            echo "${name} 상태 이상(${lbl})" ;;
+  esac
+}
+_th_py=""; command -v sched_resolve_python >/dev/null 2>&1 && _th_py=$(sched_resolve_python || true)
+# 해소 — 정상(rc 0) · 꺼진 작업의 원인 키를 지운다(같은 날 재발도 다시 1통). 판독 실패 = 아무것도 안 지움.
+[ -n "$_th_py" ] && [ -f "$BASE/02_Infrastructure/ops/alert_dedup.py" ] && \
+  "$_th_py" "$BASE/02_Infrastructure/ops/alert_dedup.py" resolve-healthy --health "${OUT:-$BASE/06_Registry/scheduler_task_health.json}" >/dev/null 2>&1 || true
 if { [ -n "$BAD" ] || [ -n "$STALE" ] || [ -n "$SHUTDOWN" ]; } && command -v sched_is_unattended >/dev/null 2>&1 && sched_is_unattended; then
   if command -v sched_alert_emit >/dev/null 2>&1; then
-    det=""
-    [ -n "$SHUTDOWN" ] && det="$SHUTDOWN"
-    [ -n "$BAD" ]   && det="${det}${det:+ | }실패: $BAD"
-    [ -n "$STALE" ] && det="${det}${det:+ | }정체: $STALE"
+    det=""; keys=""; nfail=0
+    [ -n "$SHUTDOWN" ] && { det="$SHUTDOWN"; keys="task:_system_shutdown"; nfail=1; }
+    # 정체 토큰은 안에 공백이 있다('Name(한 번도 안 돎 — …)') — 공백 분할 대신 판정 JSON 에서 한 줄에 하나씩 받는다.
+    while IFS= read -r _t; do
+      _t="${_t%$'\r'}"; [ -n "$_t" ] || continue
+      det="${det}${det:+ · }$(_th_phrase "$_t")"; keys="${keys}${keys:+ }task:${_t%%(*}"; nfail=$((nfail + 1))
+    done < <(printf '%s' "$VERDICT" | "$PYBIN" -c 'import json,sys;d=json.load(sys.stdin);print("\n".join(list(d.get("bad",[]))+list(d.get("stale",[]))))' 2>/dev/null)
+    # 보조 키 '~task_health:digest' — Superfan 'scheduler' 구성요소(이 로그 요약 줄을 보는 감시)가 같은 날 다시 보내지 않게.
     sched_alert_emit "task_health" "scheduled_task_unhealthy" \
-      "$det | 상세 06_Registry/scheduler_task_health.json (작업 스크립트가 실행 자체를 못 한 경우 — 스크립트 내부 계측은 이 상황을 볼 수 없음)"
+      "$det" "$keys ~task_health:digest" \
+      "예약 작업 ${nfail}건 이상 — ${det%% · *}$( [ "$nfail" -gt 1 ] && echo " 외 $((nfail - 1))건" ). 상세 06_Registry/scheduler_task_health.json"
   fi
 fi
 exit 0

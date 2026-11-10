@@ -11,9 +11,12 @@
 #
 # ★양방향: 살아있으면 막고(위반 주입), 죽었으면 막지 않는다(양성 대조 — 과잉 fail-closed 방지).
 #
-# ⚠공유 경로 주의: morning_run 의 LOCK 은 `/tmp/qm_morning_run_<TODAY>.lock` 로 **고정 공유**다.
-#   테스트가 이걸 건드리면 실운영 런과 충돌한다 → 실행 전 생존 런을 확인하고, 기존 락은
-#   백업 후 복원한다. (같은 계통: 공유 샌드박스 경로가 검사 flake 를 만든 2026-08-21 사례)
+# ★격리 (2026-11-10 감사 레인 B 개정): 구판은 **운영 락**(/tmp/qm_morning_run_<오늘>.lock)을 백업 · 덮어쓰기 · 복원하고
+#   **운영 루트**의 morning_run.sh 를 운영 로그(.cache/scheduler_logs/morning_run.log)에 trigger=test 로 돌렸다.
+#   이 검사는 daily_refresh [8.x] 검사 배터리 안에서 매일 밤 · 아침 돌아, 운영 로그에 가짜 실행 15줄(11-06~11-10)을 남기고
+#   superfan 아침 체인 감시가 읽는 로그를 오염시켰다. 가드가 회귀하면 운영 루트의 체인 단계가 실제로 시작될 수도 있었다.
+#   → morning_run.sh 의 덮어쓰기(QVEST_MORNING_BASE · QVEST_MORNING_LOG · QVEST_MORNING_LOCK_DIR)로 임시 루트에서만 돈다.
+#   임시 루트에는 단계 스크립트가 없으므로 가드가 뚫려도 실제 단계는 하나도 실행되지 않는다(전부 'skip (missing)').
 set -uo pipefail
 SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 REAL_ROOT="$(cd "$SELF_DIR/../.." && pwd)"
@@ -22,42 +25,21 @@ PASS=0; FAIL=0
 ok(){ PASS=$((PASS+1)); echo "  PASS  $1"; }
 ng(){ FAIL=$((FAIL+1)); echo "  FAIL  $1 :: $2"; }
 
+TMPR="$(mktemp -d)"; trap 'rm -rf "$TMPR"' EXIT
+mkdir -p "$TMPR/root/.cache/scheduler_logs" "$TMPR/locks"
+export QVEST_MORNING_BASE="$TMPR/root" QVEST_MORNING_LOG="$TMPR/mr.log" QVEST_MORNING_LOCK_DIR="$TMPR/locks"
+unset QVEST_UNATTENDED
 TODAY=$(date +%Y%m%d)
-LOCK="/tmp/qm_morning_run_${TODAY}.lock"
-BAK="/tmp/_test_mrlock_backup_$$"
+LOCK="$TMPR/locks/qm_morning_run_${TODAY}.lock"
+PROD_LOG="$REAL_ROOT/.cache/scheduler_logs/morning_run.log"
+prod_sz0=$(wc -c < "$PROD_LOG" 2>/dev/null || echo 0)
 
-# 생존 런이 있으면 검사하지 않는다 — 실운영 락을 흔들지 않기 위해.
-if [ -f "$LOCK" ]; then
-  _p=$(awk '{print $1; exit}' "$LOCK" 2>/dev/null)
-  if [ -n "${_p:-}" ] && kill -0 "$_p" 2>/dev/null; then
-    echo "  SKIP  실운영 morning_run(PID=$_p) 생존 중 — 공유 락을 건드리지 않음"
-    echo "== t_summary: PASS=0 FAIL=0 =="; printf '{"test":"morning_run_live_pid_guard","pass":0,"fail":0,"total":0,"skipped":1,"skips":[{"axis":"ALL","reason":"실운영 morning_run 생존 중 — 공유 락 미접촉","missing":"%s"}]}\n' "$LOCK (점유 중)"; exit 0
-  fi
-fi
-mkdir -p "$BAK"
-for f in "$LOCK" "${LOCK}.done" "${LOCK}.retry"; do
-  [ -f "$f" ] && cp -p "$f" "$BAK/$(basename "$f")"
-done
-restore(){
-  rm -f "$LOCK" "${LOCK}.done" "${LOCK}.retry"
-  for f in "$BAK"/*; do [ -e "$f" ] && cp -p "$f" "/tmp/$(basename "$f")"; done
-  rm -rf "$BAK"
-}
-trap restore EXIT
-
-OUT="/tmp/_test_mr_out_$$.txt"
-# ★morning_run 은 본문 전체를 `} >> "$LOG"` 로 리다이렉트한다 — stdout 캡처는 **항상 빈다**.
-#   (초판 검사기가 이걸로 2건 거짓 FAIL 했다.) 로그 파일의 **증분**만 읽는다.
-MRLOG="$REAL_ROOT/.cache/scheduler_logs/morning_run.log"
-[ -f "$MRLOG" ] || MRLOG="/tmp/qm_morning_run.log"
+OUT="$TMPR/out.txt"
 _off=0
-snap(){ _off=$(wc -c < "$MRLOG" 2>/dev/null || echo 0); }
-grab(){ local now; now=$(wc -c < "$MRLOG" 2>/dev/null || echo 0)
-        if [ "$now" -ge "$_off" ]; then tail -c "+$((_off+1))" "$MRLOG" 2>/dev/null > "$OUT"
-        else cp "$MRLOG" "$OUT" 2>/dev/null; fi; }
+snap(){ _off=$(wc -c < "$QVEST_MORNING_LOG" 2>/dev/null || echo 0); }
+grab(){ tail -c "+$((_off+1))" "$QVEST_MORNING_LOG" 2>/dev/null > "$OUT"; }
 
 echo "== 위반 주입: 직전 런이 **생존 중**이면 재시도를 막는가 =="
-# 이 셸($$)은 확실히 살아 있다 — 구판이라면 '.done 없음'만 보고 재시도 진입한다.
 printf '%s @ %s trigger=test\n' "$$" "$(date)" > "$LOCK"
 rm -f "${LOCK}.done" "${LOCK}.retry"
 snap; timeout 60 bash "$SCRIPT" test >/dev/null 2>&1; grab
@@ -70,7 +52,6 @@ else
 fi
 
 echo "== 양성 대조: 직전 런이 **죽었으면** 막지 않는가 (과잉 fail-closed 방지) =="
-# 존재하지 않는 PID + 재시도 상한 0 → 가드는 통과하고 상한에서 멈춰야 한다.
 printf '%s @ %s trigger=test\n' "999999" "$(date)" > "$LOCK"
 rm -f "${LOCK}.done" "${LOCK}.retry"
 snap; MORNING_MAX_RETRY=0 timeout 60 bash "$SCRIPT" test >/dev/null 2>&1; grab
@@ -91,7 +72,11 @@ else
   ng "PID 불명 처리" "읽기 실패를 생존으로 오판 — 하루 전체가 막힐 수 있음"
 fi
 
-rm -f "$OUT"
+echo "== 격리: 운영 로그가 한 바이트도 늘지 않았는가 =="
+prod_sz1=$(wc -c < "$PROD_LOG" 2>/dev/null || echo 0)
+[ "$prod_sz1" = "$prod_sz0" ] && ok "운영 morning_run.log 무접촉 ($prod_sz0 B)" \
+  || ng "운영 로그 오염" "$prod_sz0 → $prod_sz1 B (동시에 실제 예약 실행이 돌았다면 그 몫일 수 있음)"
+
 echo "== t_summary: PASS=$PASS FAIL=$FAIL =="
 printf '{"test":"morning_run_live_pid_guard","pass":%d,"fail":%d,"total":%d,"skipped":0}\n' "$PASS" "$FAIL" "$((PASS+FAIL))"
 [ "$FAIL" -eq 0 ] || exit 1

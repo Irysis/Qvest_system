@@ -36,10 +36,20 @@ if (!.gate_ok) {
   .msg <- sprintf("⚠️ 레짐 브리핑 보류 — 컴포넌트 stale: %s (as_of=%s). regime 데이터 점검 요.",
                   paste(.stale, collapse = ", "), .asof)
   cat(sprintf("[mrs_daily] STALE-GATE BLOCK: %s\n", .msg))
-  tryCatch(tg_send(.msg), error = function(e) cat("[mrs_daily] stale alert fail\n"))
+  ## (2026-11-10 감사 레인 B) tg_send 는 실패를 예외가 아니라 list(ok = FALSE) 로 돌려준다 — tryCatch(error=) 만으로는 못 본다.
+  .sr <- tryCatch(tg_send(.msg), error = function(e) list(ok = FALSE, error = conditionMessage(e)))
+  if (!isTRUE(.sr$ok)) cat(sprintf("[mrs_daily] stale alert FAILED: %s\n", substr(.sr$error %||% "?", 1, 200)))
 } else tryCatch({
-  tg_regime_briefing()
-  cat("[mrs_daily] briefing sent OK\n")
+  .br <- tg_regime_briefing()
+  ## 구판은 반환값과 무관하게 'sent OK' 를 찍었다(400 · 429 거부도 성공으로 기록 · superfan 감시도 그 줄을 믿는다).
+  if (is.list(.br) && identical(.br$sent_ok, FALSE)) {
+    cat(sprintf("[mrs_daily] briefing SEND FAILED: %s (원장 qepm/observability/telegram_send_failures.jsonl)\n",
+                substr(.br$send_error %||% "?", 1, 200)))
+  } else if (is.null(.br)) {
+    cat("[mrs_daily] briefing skipped (tg_regime_briefing 이 데이터 부재로 NULL 반환)\n")
+  } else {
+    cat(sprintf("[mrs_daily] briefing sent OK (charts %s)\n", .br$charts_sent %||% "?"))
+  }
 }, error = function(e) {
   cat(sprintf("[mrs_daily] ERR: %s\n", conditionMessage(e)))
 })

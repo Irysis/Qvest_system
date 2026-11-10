@@ -20,7 +20,9 @@ if (length(sub_dirs) == 0) {
     msg <- sprintf("⚠️ 모닝브리핑 정체 — 최신 brief %s 가 직전 거래일 %s 보다 과거. P3 inference/brief 생성 정체 의심. stale brief 송출 보류 (601_daily_inference 점검 요).",
                    as.character(brief_date), as.character(bm_max))
     cat(sprintf("[P2 brief] STALE-GATE BLOCK: %s\n", msg))
-    tryCatch(tg_send(msg), error = function(e) cat(sprintf("[P2 brief] stale alert fail: %s\n", e$message)))
+    ## (2026-11-10 감사 레인 B) tg_send 는 실패를 예외가 아니라 list(ok = FALSE) 로 돌려준다 — 반환값을 읽는다.
+    .sr <- tryCatch(tg_send(msg), error = function(e) list(ok = FALSE, error = conditionMessage(e)))
+    if (!isTRUE(.sr$ok)) cat(sprintf("[P2 brief] stale alert FAILED: %s\n", substr(.sr$error %||% "?", 1, 200)))
   } else {
     cat(sprintf("[P2 brief] sending from %s (fresh: brief %s >= bm %s)\n", latest, as.character(brief_date), as.character(bm_max)))
     brief_md <- file.path(latest, "brief.md")
@@ -28,9 +30,15 @@ if (length(sub_dirs) == 0) {
     trend_png <- file.path(latest, "trend.png")
     if (file.exists(brief_md)) {
       body <- paste(readLines(brief_md, encoding = "UTF-8"), collapse = "\n")
-      if (nchar(body) > 3900) body <- paste0(substr(body, 1, 3900), "\n...(truncated)")
-      tryCatch(tg_send(body, parse_mode = "Markdown"),
-               error = function(e) cat(sprintf("[P2 brief] tg_send fail: %s\n", e$message)))
+      ## (2026-11-10 감사 레인 B) 넘치면 글자 중간이 아니라 **줄 단위**로 덜어낸다(SKILL §0.3 — 숫자 · 단어 중간 절삭 금지 ·
+      ##   Markdown 엔티티가 반쪽 나면 400 으로 통째 유실). 3900 = 발송기 공통 여유(telegram_notify.R .TG_FIT_CHARS · Bot API 상한 4096).
+      if (nchar(body) > 3900) {
+        .ln <- strsplit(body, "\n", fixed = TRUE)[[1]]
+        .keep <- which(cumsum(nchar(.ln) + 1L) <= 3850L)
+        body <- paste0(paste(.ln[.keep], collapse = "\n"), "\n(뒤 ", length(.ln) - length(.keep), "줄은 brief.md 에)")
+      }
+      .br <- tryCatch(tg_send(body, parse_mode = "Markdown"), error = function(e) list(ok = FALSE, error = conditionMessage(e)))
+      if (!isTRUE(.br$ok)) cat(sprintf("[P2 brief] tg_send FAILED: %s\n", substr(.br$error %||% "?", 1, 200)))
     }
     if (file.exists(dist_png)) {
       tryCatch(tg_send_photo(dist_png, caption = "P2 - 오늘 분포 forecast"),

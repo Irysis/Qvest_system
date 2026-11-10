@@ -122,6 +122,12 @@ QM_ROOT="$BASE" Rscript --no-save "$BASE/02_Infrastructure/monitoring/mark_nolay
 # 도훈 mandate 2026-05-26: KOSPI 200 1일 분포 forecast (mu, sigma, nu, lam) + VaR/ES/P(폭락)
 # P3 spec: α=6.68e-4, taus=11, train_min=3024 (~12y lookback) — Optuna trial 19
 # ──────────────────────────────────────────────────────────────────────────────
+# Step 5c (2026-11-10 감사 레인 B): 1계층(v10.2) 상태 한 통 · 무음 — 데이터 신선도 · 판 표식 · 상설 판 · 기저 풀 · 강화 사슬 · 결과 원장 · 열린 결정.
+#   성과 수치 없음 · 칸 판독 실패 = '판독 불가'(체인 계속) · 정본 = morning_steps/l1_status_send.R
+echo "[5c] 1계층 상태 (무음)..."
+cd "$BASE"
+Rscript --no-save -e 'source("02_Infrastructure/ops/morning_steps/l1_status_send.R")' >> /tmp/qm_morning.log 2>&1 || echo "[5c] l1_status 실패 (fail-soft)"
+
 echo "[6/6] P2 bearish forecast brief..."
 P2_BF_DIR="$BASE/04_Research/decision_framework/bearish_forecast_v3"
 P2_PY=""

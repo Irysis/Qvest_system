@@ -12,6 +12,11 @@
 #   10 7 * * 1-5 bash .../02_Infrastructure/ops/morning_run.sh cron
 
 BASE=$(ls -d /c/Users/99922/OneDrive/Quant_Module_Moltbot /mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo "$PWD")
+# ★시험 격리 (2026-11-10 감사 레인 B): 시험이 실제 루트 · 실제 로그 · 실제 /tmp 락을 쓰지 않게 하는 덮어쓰기 4개(아래 3개 + 단계 로그 QVEST_MORNING_STAGE_LOG_DIR).
+#   실측: 검사 배터리(daily_refresh [8.x] suite_totals --collect)가 매일 밤 · 아침 이 스크립트를 trigger=test 로 불러
+#   운영 로그에 가짜 실행 줄을 남기고(11-06~11-10 15줄) 오늘자 운영 락을 직접 바꿔 썼다. 운영(예약 작업)은 셋 다 비워 두므로 동작 불변.
+#   QVEST_MORNING_BASE = 루트 · QVEST_MORNING_LOG = 로그 파일 · QVEST_MORNING_LOCK_DIR = 하루 1회 락 디렉터리.
+[ -n "${QVEST_MORNING_BASE:-}" ] && BASE="$QVEST_MORNING_BASE"
 # ★로그는 **스케줄러가 가리키는 곳**에 남긴다 (2026-08-13 수리).
 #   구판은 LOG=/tmp/qm_morning_run.log 였는데, 본문 전체가 `} >> "$LOG"`(:193)로 자기 stdout 을
 #   삼킨다. 그래서 Qvest_MorningBrief.bat 의 `>> .cache/scheduler_logs/morning_run.log` 에는
@@ -21,7 +26,9 @@ BASE=$(ls -d /c/Users/99922/OneDrive/Quant_Module_Moltbot /mnt/c/Users/99922/One
 #   구분되지 않는다(감사기 hb() 주석이 지적한 바로 그 형태). 게다가 Git Bash 의 /tmp 는
 #   프로젝트 밖 휘발성 경로라 진짜 로그도 보존되지 않았다.
 #   BASE 해석 실패 시에만 /tmp 로 낙하 — 그때도 어디로 갔는지 한 줄 남긴다.
-if [ -n "${BASE:-}" ] && [ -d "$BASE/.cache/scheduler_logs" ]; then
+if [ -n "${QVEST_MORNING_LOG:-}" ]; then
+  LOG="$QVEST_MORNING_LOG"
+elif [ -n "${BASE:-}" ] && [ -d "$BASE/.cache/scheduler_logs" ]; then
   LOG="$BASE/.cache/scheduler_logs/morning_run.log"
 else
   LOG="/tmp/qm_morning_run.log"
@@ -29,7 +36,11 @@ else
 fi
 TRIGGER="${1:-manual}"
 TODAY=$(date +%Y%m%d)
-LOCK="/tmp/qm_morning_run_${TODAY}.lock"
+LOCK_DIR="${QVEST_MORNING_LOCK_DIR:-/tmp}"
+# 단계 로그(/tmp/qm_*.log) 자리 — 운영 기본 /tmp 그대로. 시험은 QVEST_MORNING_STAGE_LOG_DIR 로 돌린다
+#   (superfan 감시가 /tmp/qm_morning.log 갱신 시각을 BOOK 트래킹 생존 신호로 읽는다 — 시험이 그 시각을 갱신하면 정체를 가린다).
+STAGE_LOG_DIR="${QVEST_MORNING_STAGE_LOG_DIR:-/tmp}"
+LOCK="$LOCK_DIR/qm_morning_run_${TODAY}.lock"
 DOW=$(date +%u)   # 1=Mon .. 7=Sun
 
 # (2026-07-26) 단계 결과를 exit 코드만으로 읽으면 안 된다.
@@ -161,7 +172,7 @@ stage_result() {   # $1=표시명 $2=exit코드 $3=경보 컴포넌트명
     echo "★재시도 진입 ($(( _n + 1 ))/${MORNING_MAX_RETRY}) — $_retry_reason"
   fi
   # 오래된 락 정리 (7일+)
-  find /tmp -maxdepth 1 -name "qm_morning_run_*.lock" -mtime +7 -delete 2>/dev/null || true
+  find "$LOCK_DIR" -maxdepth 1 -name "qm_morning_run_*.lock" -mtime +7 -delete 2>/dev/null || true
 
   cd "$BASE" || { echo "BASE not found: $BASE"; exit 1; }
 
@@ -176,13 +187,13 @@ stage_result() {   # $1=표시명 $2=exit코드 $3=경보 컴포넌트명
     #   QVEST_STAGE_TIMEOUT_MIN=0 이면 무제한(종전 동작).
     _stm="${QVEST_STAGE_TIMEOUT_MIN:-20}"
     if [ "$_stm" != "0" ] && command -v timeout >/dev/null 2>&1; then
-      timeout "${_stm}m" bash "$BASE/02_Infrastructure/ops/paper_recharge_daily.sh" >> /tmp/qm_paper_recharge_morning.log 2>&1
+      timeout "${_stm}m" bash "$BASE/02_Infrastructure/ops/paper_recharge_daily.sh" >> "$STAGE_LOG_DIR"/qm_paper_recharge_morning.log 2>&1
       _prc=$?
       if [ "$_prc" -eq 124 ]; then
         echo "      ★[0/3] 스테이지 상한 ${_stm}분 초과 — 다음 스테이지로 진행(체인 보존)"
       fi
     else
-      bash "$BASE/02_Infrastructure/ops/paper_recharge_daily.sh" >> /tmp/qm_paper_recharge_morning.log 2>&1
+      bash "$BASE/02_Infrastructure/ops/paper_recharge_daily.sh" >> "$STAGE_LOG_DIR"/qm_paper_recharge_morning.log 2>&1
       _prc=$?
     fi
     stage_result "paper_recharge" "$_prc" "paper_recharge"
@@ -204,7 +215,7 @@ stage_result() {   # $1=표시명 $2=exit코드 $3=경보 컴포넌트명
   echo "[0.5/3] paper_router_run.sh (논문 스타일 라우팅 + alpha-search 자동분기, 도훈 mandate 2026-06-18 옵션1)"
   if [ -f "$BASE/02_Infrastructure/ops/paper_router_run.sh" ]; then
     # 내부 게이트: QVEST_PAPER_ROUTER_ENABLE=1 + 당일 신규 다운로드>0 일 때만 헤드리스 claude 라우터 실행.
-    bash "$BASE/02_Infrastructure/ops/paper_router_run.sh" >> /tmp/qm_paper_router.log 2>&1
+    bash "$BASE/02_Infrastructure/ops/paper_router_run.sh" >> "$STAGE_LOG_DIR"/qm_paper_router.log 2>&1
     stage_result "paper_router" "$?" "paper_router"
   else
     echo "      paper_router skip (missing)"
@@ -214,14 +225,14 @@ stage_result() {   # $1=표시명 $2=exit코드 $3=경보 컴포넌트명
   #   [0.51] 라우팅 v5 산출 → 프로그램 재료 큐(결정론 · 멱등) / [0.52] 메커니즘 지도 추출(LLM 제안 → R 검증 후 기록)
   echo "[0.51/3] program_paper_sync.R (v10.01 — 엔진별 논문 → 프로그램 재료 큐)"
   if [ -f "$BASE/02_Infrastructure/programs/program_paper_sync.R" ]; then
-    (cd "$BASE" && QM_ROOT="$BASE" Rscript 02_Infrastructure/programs/program_paper_sync.R --root "$BASE") >> /tmp/qm_program_sync.log 2>&1
+    (cd "$BASE" && QM_ROOT="$BASE" Rscript 02_Infrastructure/programs/program_paper_sync.R --root "$BASE") >> "$STAGE_LOG_DIR"/qm_program_sync.log 2>&1
     stage_result "program_paper_sync" "$?" ""
   else
     echo "      program_paper_sync skip (missing)"
   fi
   echo "[0.52/3] paper_atlas_run.sh (v10.01 — 메커니즘 지도 추출 · 게이트 QVEST_PAPER_ATLAS_ENABLE=1)"
   if [ -f "$BASE/02_Infrastructure/ops/paper_atlas_run.sh" ]; then
-    bash "$BASE/02_Infrastructure/ops/paper_atlas_run.sh" >> /tmp/qm_paper_atlas.log 2>&1
+    bash "$BASE/02_Infrastructure/ops/paper_atlas_run.sh" >> "$STAGE_LOG_DIR"/qm_paper_atlas.log 2>&1
     stage_result "paper_atlas" "$?" "paper_atlas"
   else
     echo "      paper_atlas skip (missing)"
@@ -244,7 +255,7 @@ stage_result() {   # $1=표시명 $2=exit코드 $3=경보 컴포넌트명
   #   ★무인 체인은 bootstrap 을 거치지 않는다 — 부트 표면에만 걸면 무인 경로에서 영영 안 돈다.
   echo "[0.58/3] build_factor_evidence.py (IC 실측 → 팩터 근거 사이드카, 원천 갱신 시에만)"
   if [ -f "$BASE/02_Infrastructure/factor_db/build_factor_evidence.py" ] && [ -n "${QVEST_PY:-}" ]; then
-    QM_ROOT="$BASE" "$QVEST_PY" "$BASE/02_Infrastructure/factor_db/build_factor_evidence.py" --if-stale >> /tmp/qm_factor_evidence.log 2>&1
+    QM_ROOT="$BASE" "$QVEST_PY" "$BASE/02_Infrastructure/factor_db/build_factor_evidence.py" --if-stale >> "$STAGE_LOG_DIR"/qm_factor_evidence.log 2>&1
     stage_result "factor_evidence" "$?" ""
   else
     echo "      factor_evidence skip (빌더 부재 또는 QVEST_PY 미설정)"
@@ -259,7 +270,7 @@ stage_result() {   # $1=표시명 $2=exit코드 $3=경보 컴포넌트명
   #   (1단계에서 죽으면 3단계가 실행 자체를 안 함). MorningBrief(PT3H)를 2차 담체로 둔다.
   echo "[0.7/3] scheduler_task_health.sh (예약작업 rc/정체 — 스크립트 바깥 한 겹)"
   if [ -f "$BASE/02_Infrastructure/ops/scheduler_task_health.sh" ]; then
-    bash "$BASE/02_Infrastructure/ops/scheduler_task_health.sh" --quiet >> /tmp/qm_task_health.log 2>&1
+    bash "$BASE/02_Infrastructure/ops/scheduler_task_health.sh" --quiet >> "$STAGE_LOG_DIR"/qm_task_health.log 2>&1
     stage_result "task_health" "$?" "task_health"
   else
     echo "      task_health skip (스크립트 없음)"
@@ -271,7 +282,7 @@ stage_result() {   # $1=표시명 $2=exit코드 $3=경보 컴포넌트명
   #   즉시 물러나므로(claude 미호출) 매일 걸어도 비용이 0 이다.
   echo "[0.75/3] cleaner_distill_run.sh (주간 증류 무인 레인 — 미증류 주가 남아 있을 때만 발화)"
   if [ -f "$BASE/02_Infrastructure/ops/cleaner_distill_run.sh" ]; then
-    bash "$BASE/02_Infrastructure/ops/cleaner_distill_run.sh" >> /tmp/qm_cleaner_distill.log 2>&1
+    bash "$BASE/02_Infrastructure/ops/cleaner_distill_run.sh" >> "$STAGE_LOG_DIR"/qm_cleaner_distill.log 2>&1
     stage_result "cleaner_distill" "$?" "cleaner_distill"
   else
     echo "      cleaner_distill skip (스크립트 없음)"
@@ -282,15 +293,15 @@ stage_result() {   # $1=표시명 $2=exit코드 $3=경보 컴포넌트명
     # ★(2026-10-17 · 결정 BOOT-QW-LOGIN-REFRESH-20261017) 부팅 규칙 — 주말 부팅도 데이터 최신성은 본다: 최신이 아니면(벤치 최신일 <
     #   KRX 직전 거래일) 퀀티 로그인 · 최신화(daily_refresh). 평일은 morning_briefing [0/5] 가 같은 진입점을 부른다. 최신이면 no-op.
     echo "[1w/3] ensure_data_current.sh (주말 — 데이터 최신성만 · 부팅 규칙)"
-    bash "$BASE/02_Infrastructure/ops/ensure_data_current.sh" >> /tmp/qm_morning.log 2>&1
+    bash "$BASE/02_Infrastructure/ops/ensure_data_current.sh" >> "$STAGE_LOG_DIR"/qm_morning.log 2>&1
     echo "      ensure_data_current exit=$?"
   else
     echo "[1/3] morning_briefing.sh (데이터 refresh + P3 brief)"
-    bash "$BASE/02_Infrastructure/ops/morning_briefing.sh" >> /tmp/qm_morning.log 2>&1
+    bash "$BASE/02_Infrastructure/ops/morning_briefing.sh" >> "$STAGE_LOG_DIR"/qm_morning.log 2>&1
     echo "      morning_briefing exit=$?"
 
     echo "[2/3] mrs_daily_briefing.sh (레짐 brief)"
-    bash "$BASE/02_Infrastructure/ops/mrs_daily_briefing.sh" >> /tmp/qm_mrs_daily.log 2>&1
+    bash "$BASE/02_Infrastructure/ops/mrs_daily_briefing.sh" >> "$STAGE_LOG_DIR"/qm_mrs_daily.log 2>&1
     echo "      mrs_daily exit=$?"
   fi
 

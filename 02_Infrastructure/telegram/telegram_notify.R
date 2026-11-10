@@ -1677,7 +1677,8 @@ tg_agent_brief <- function(agent,
     }, error = function(e) NULL)
 
     # Full body 아카이브 (깨짐 발생 시 /tmp/qvest_tg_body_ARCHIVE/ 경유 조회 가능)
-    archive_dir <- "/tmp/qvest_tg_body_ARCHIVE"
+    ## (2026-11-10 감사 레인 B) 시험이 운영 보관(= 유일한 발송 이력)에 가짜 본문을 섞지 않게 덮어쓰기 하나. 운영은 비워 둔다.
+    archive_dir <- Sys.getenv("QVEST_TG_ARCHIVE_DIR", "/tmp/qvest_tg_body_ARCHIVE")
     tryCatch({
       if (!dir.exists(archive_dir)) dir.create(archive_dir, recursive = TRUE)
       scope_safe <- gsub("[^A-Za-z0-9_-]", "_",
@@ -1697,12 +1698,19 @@ tg_agent_brief <- function(agent,
     .cn <- names(charts)
     for (.ci in seq_along(charts)) {
       chart <- charts[[.ci]]
+      .lab <- if (!is.null(.cn) && nzchar(.cn[.ci])) .cn[.ci] else basename(chart)
       if (file.exists(chart)) {
-        .lab <- if (!is.null(.cn) && nzchar(.cn[.ci])) .cn[.ci] else basename(chart)
         cap <- sprintf("[%s] %s", agent, .lab)
-        tg_send_photo(chart, caption = cap)
+        .pr <- tg_send_photo(chart, caption = cap)
+        if (!isTRUE(.pr$ok)) result$charts_failed <- c(result$charts_failed, .lab)
+      } else {
+        ## (2026-11-10 감사 레인 B) 없는 차트는 구판처럼 건너뛰되 호출자에게 알린다(조용한 누락 금지 · 원장 기록 없음 = 호출자 문제).
+        result$charts_missing <- c(result$charts_missing, .lab)
       }
     }
+    if (length(result$charts_missing) || length(result$charts_failed))
+      cat(sprintf("[tg_agent_brief] 차트 누락 %d · 실패 %d (%s)\n", length(result$charts_missing),
+                  length(result$charts_failed), paste(c(result$charts_missing, result$charts_failed), collapse = ", ")))
   }
 
   cat(sprintf("[tg_agent_brief] %s · %d bytes · ok=%s\n",
@@ -1720,9 +1728,15 @@ tg_send_photo <- function(image_path, caption = "", parse_mode = "") {
       tg_send_photo(image_path, caption = caption, parse_mode = parse_mode)
     ))
   }
+  ## ★반환 계약 (2026-11-10 감사 레인 B — tg_send 의 TG-01 과 같은 계약): invisible(list(ok, kind, status, error)).
+  ##   구판은 실패를 cat 으로만 흘리고 httr 응답(또는 NULL)을 돌려줬다 — 사진 거부(400 · 413) · 파일 없음이 실패 원장에
+  ##   한 줄도 남지 않았다(텍스트만 원장에 남고 차트 유실은 아무 표면에도 안 보였다). 반환값을 읽는 호출자는 0곳(11-10 전수)이라 안전.
+  .cap_head <- sprintf("[photo:%s] %s", basename(image_path %||% ""), caption %||% "")
   if (!file.exists(image_path)) {
     cat(sprintf("[tg] Photo not found: %s\n", image_path))
-    return(invisible(NULL))
+    .tg_record_send_failure("photo_missing", sprintf("file not found: %s", image_path), .cap_head, parse_mode)
+    return(invisible(list(ok = FALSE, kind = "photo_missing", status = NA_integer_,
+                          error = sprintf("file not found: %s", image_path))))
   }
   tryCatch({
     resp <- POST(
@@ -1736,10 +1750,18 @@ tg_send_photo <- function(image_path, caption = "", parse_mode = "") {
       encode = "multipart"
     )
     if (http_error(resp)) {
-      cat(sprintf("[tg] Photo failed: %s\n", content(resp, "text", encoding = "UTF-8")))
+      .body <- content(resp, "text", encoding = "UTF-8")
+      cat(sprintf("[tg] Photo failed: %s\n", .body))
+      .tg_record_send_failure("photo_http_error", .body, .cap_head, parse_mode, status_code(resp))
+      invisible(list(ok = FALSE, kind = "photo_http_error", status = status_code(resp), error = .body))
+    } else {
+      invisible(list(ok = TRUE, kind = "sent", status = status_code(resp), error = NA_character_))
     }
-    invisible(resp)
-  }, error = function(e) cat(sprintf("[tg] Photo error: %s\n", e$message)))
+  }, error = function(e) {
+    cat(sprintf("[tg] Photo error: %s\n", e$message))
+    .tg_record_send_failure("photo_exception", e$message, .cap_head, parse_mode)
+    invisible(list(ok = FALSE, kind = "photo_exception", status = NA_integer_, error = e$message))
+  })
 }
 
 tg_send_document <- function(file_path, caption = "") {
@@ -3348,24 +3370,24 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
     verdict)
 
   # ── Send: text + 3 charts (v2.4 — Chart 4/5 삭제, 핵심 3종만) ──
-  tg_send(msg)
+  ## ★(2026-11-10 감사 레인 B) 발송 결과를 읽는다 — 구판은 반환값을 버리고 '파일이 있으면 보냈다'로 셌다
+  ##   (mrs_regime_send.R 는 그 위에서 'briefing sent OK' 를 무조건 찍었다 · 400 · 429 거부도 성공으로 기록).
+  .r_txt <- tg_send(msg)
   Sys.sleep(3)
-  tg_send_photo(file.path(out_dir, "regime_score_24m.png"), "Daily Regime Score (12M)")
+  .r_p1 <- tg_send_photo(file.path(out_dir, "regime_score_24m.png"), "Daily Regime Score (12M)")
   Sys.sleep(2)
-  tg_send_photo(file.path(out_dir, "regime_3layer_24m.png"), "3-Layer Signal (Month-end + Latest Daily)")
+  .r_p2 <- tg_send_photo(file.path(out_dir, "regime_3layer_24m.png"), "3-Layer Signal (Month-end + Latest Daily)")
   Sys.sleep(2)
   ktri_chart <- file.path(out_dir, "ktri_9quad.png")
-  if (file.exists(ktri_chart)) {
-    tg_send_photo(ktri_chart, "KTRI 9-Quadrant Map (252d)")
-  }
+  .r_p3 <- if (file.exists(ktri_chart)) tg_send_photo(ktri_chart, "KTRI 9-Quadrant Map (252d)") else NULL
 
-  n_charts_sent <- sum(file.exists(c(
-    file.path(out_dir, "regime_score_24m.png"),
-    file.path(out_dir, "regime_3layer_24m.png"),
-    file.path(out_dir, "ktri_9quad.png"))))
-  cat(sprintf("[regime_briefing] Sent: text + %d charts\n", n_charts_sent))
+  n_charts_sent <- sum(vapply(list(.r_p1, .r_p2, .r_p3), function(r) isTRUE(r$ok), logical(1)))
+  sent_ok <- isTRUE(.r_txt$ok)
+  cat(sprintf("[regime_briefing] Sent: text=%s + %d charts\n", if (sent_ok) "ok" else "FAILED", n_charts_sent))
   invisible(list(regime = latest, daily = latest_daily, ktri = ktri_latest,
-                 fred = fred_latest_row, ref_date = msg_ref_date, charts = out_dir))
+                 fred = fred_latest_row, ref_date = msg_ref_date, charts = out_dir,
+                 sent_ok = sent_ok, charts_sent = n_charts_sent,
+                 send_error = if (sent_ok) NA_character_ else (.r_txt$error %||% "unknown")))
 }
 
 cat("[telegram_notify] Loaded. Bot: @quant12323413245_bot | Channel: -1003850915447\n")

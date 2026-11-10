@@ -18,11 +18,22 @@
 #   T4  분기: 발송 실패 시 audit 이 alert_delivery=FAILED 를 쓰고 alert_state 스탬프를 보류하는가
 #   T5  돌연변이: T4 의 검사가 공허하지 않은가 (ok=TRUE 면 반대로 스탬프해야 함)
 #
-# ⚠T1/T2 는 **실제 API 를 호출**한다. 다만 400 으로 거부되는 메시지라 채널에는
-#   아무것도 도달하지 않는다 — 가로채서 mock 하면 거부하는 검증기 자신을 건너뛰므로
-#   실제 경로로 태운다(이 저장소의 실사고 교훈).
+# ★(2026-11-10 감사 레인 B 개정) 기본 = **모의 발송기**. 구판은 T1/T2 를 실제 api.telegram.org 로 태웠다 —
+#   채널에는 400 으로 거부돼 안 갔지만(08-16 초판은 실제로 발송됐다) 운영 실패 원장에 탐침 줄을 쌓았고
+#   (11-10 실측 554줄 중 541줄), 이 시험은 daily_refresh 검사 배터리 안에서 하루 3~5회 돌았다.
+#   지금은 임시 루트(원장 · 잠금 · 보관 = 임시) + 모의 POST(텔레그램 legacy Markdown 의 짝 규칙을 흉내 — 살아 있는 '_' 가
+#   홀수면 400 "can't parse entities")로 같은 계약(반환 · 원장 기록)을 본다. 실제 API 왕복이 꼭 필요하면 QVEST_TG_LIVE_PROBE=1
+#   (그때만 운영 루트 · 실제 원장 — 구판 동작). 모의본은 텔레그램 규칙을 재현하는 범위만 덮는다 — 그 차이가 LIVE 축의 몫이다.
 
-ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
+LIVE <- identical(Sys.getenv("QVEST_TG_LIVE_PROBE"), "1")
+REAL_ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
+if (LIVE) {
+  ROOT <- REAL_ROOT
+} else {
+  ROOT <- chartr("\\", "/", tempfile("tg_contract_")); dir.create(file.path(ROOT, "02_Infrastructure"), recursive = TRUE)
+  Sys.setenv(TG_BOT_TOKEN = "TEST_TOKEN_NOT_REAL", TG_CHAT_ID = "0", CLAUDE_PROJECT_DIR = ROOT,
+             QVEST_TG_SERIAL_LOCK = "false", QVEST_TG_ARCHIVE_DIR = file.path(ROOT, "archive"))
+}
 setwd(ROOT)
 
 PASS <- 0L; FAIL <- 0L; SKIP <- 0L
@@ -35,14 +46,28 @@ chk <- function(name, cond, detail = "") {
 skp <- function(name, why) { SKIP <<- SKIP + 1L; cat(sprintf("  SKIP  %s — %s\n", name, why)) }
 
 suppressMessages({
-  source("02_Infrastructure/config.R")
-  source("02_Infrastructure/telegram/telegram_notify.R")
+  if (LIVE) source("02_Infrastructure/config.R")
+  source(file.path(REAL_ROOT, "02_Infrastructure/telegram/telegram_notify.R"), encoding = "UTF-8")
 })
+if (!LIVE) {
+  ## 모의 httr — 전역 함수(tg_send)는 attach 된 httr 보다 전역 정의를 먼저 찾는다. 네트워크 0.
+  .odd_us <- function(s) { cs <- strsplit(s, "")[[1]]; esc <- c(FALSE, head(cs, -1) == "\\"); sum(cs == "_" & !esc) %% 2 == 1 }
+  POST <- function(url, body = NULL, ...) {
+    bad <- identical(body$parse_mode, "Markdown") && .odd_us(body$text %||% "")
+    structure(list(status = if (bad) 400L else 200L,
+                   txt = if (bad) "{\"ok\":false,\"error_code\":400,\"description\":\"Bad Request: can't parse entities: Can't find end of the entity\"}" else "{\"ok\":true}"),
+              class = "mockresp")
+  }
+  http_error <- function(r) r$status >= 400L
+  status_code <- function(r) r$status
+  content <- function(r, ...) r$txt
+}
 
 LEDGER <- file.path(ROOT, "qepm/observability/telegram_send_failures.jsonl")
 nlines <- function(p) if (file.exists(p)) length(readLines(p, warn = FALSE)) else 0L
 
-cat("=== T1/T2 위반 주입 — 미종결 Markdown 엔티티 (실제 API, 400 거부되어 채널 미도달) ===\n")
+cat(sprintf("=== T1/T2 위반 주입 — 미종결 Markdown 엔티티 (%s) ===\n",
+            if (LIVE) "실제 API · 400 거부되어 채널 미도달" else "모의 발송기 · 임시 원장"))
 before <- nlines(LEDGER)
 # 주입: _ 가 **정확히 1개(홀수)** 여야 legacy Markdown 이 종결자를 못 찾는다.
 #   ⚠2026-08-16 초판은 "injection_probe _unterminated" 를 썼는데 _ 가 2개(짝수)라

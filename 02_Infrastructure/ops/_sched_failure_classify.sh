@@ -412,34 +412,59 @@ sched_alert_emit() {
   local base="${BASE:-${PROJECT:-$PWD}}" today="${TODAY:-$(date +%Y%m%d)}"
   local adir="$base/.cache/scheduler_alerts"; mkdir -p "$adir" 2>/dev/null
   local marker="$adir/${comp}_${reason}_${today}.alert"
-  [ -f "$marker" ] && return 0          # 같은 (comp,reason) 1일 1회 스로틀
+  # 같은 (comp,reason) 1일 1회 스로틀. 단 원인 키(인자 4)를 주고 공유 저장소를 쓸 수 있으면 그 저장소가 스로틀이다 —
+  #   마커는 해소를 모르므로, 원인이 풀린(다음 정상 실행) 뒤 같은 날 재발한 실패를 영영 막았다(2026-11-10).
+  local _dd_ok=0
+  if [ -n "${4:-}" ] && [ -f "$base/02_Infrastructure/ops/alert_dedup.py" ] && sched_resolve_python >/dev/null 2>&1; then _dd_ok=1; fi
+  [ -f "$marker" ] && [ "$_dd_ok" = "0" ] && return 0
   {
     echo "ts=$(date -Iseconds)"; echo "component=$comp"; echo "reason=$reason"
     echo "detail=$detail";      echo "log=${LOG:-}"
   } > "$marker"
   sched_alert_should_send || return 0    # 수동 실행 = 마커만, 텔레그램 생략
+  # ── (2026-11-10 감사 레인 B · SKILL §0.4 '같은 원인 반복 발송 금지' 집행) 인자 4 = 원인 키(공백 구분 · '~' = 보조 키) · 인자 5 = 요약 한 문장.
+  #   원인 키를 주면 공유 저장소(ops/alert_dedup.py · .cache/alert_dedup.json)에 잡는다 — 다른 발신처(Superfan 감시)가 오늘 이미
+  #   같은 원인을 보냈으면 건수만 올리고 보내지 않는다. 판독 실패(파이썬 없음 · 빈 출력) = 보낸다(경보를 놓치지 않는 쪽).
+  local ckeys="${4:-}" summary="${5:-}"
+  if [ -n "$ckeys" ] && [ "$_dd_ok" = "1" ]; then
+    local py _cl; py="$(sched_resolve_python 2>/dev/null || true)"
+    if [ -n "$py" ]; then
+      # shellcheck disable=SC2086
+      _cl=$("$py" "$base/02_Infrastructure/ops/alert_dedup.py" claim --source "sched:$comp" --summary "${summary:-$reason}" $ckeys 2>/dev/null | tr -d '\r' | tail -1)
+      if [ "$_cl" = "DUP" ]; then
+        echo "$(date -Iseconds) [sched_alert_emit] $comp/$reason — 같은 원인을 오늘 이미 보냄(키 $ckeys) · 발송 생략" >> "$adir/_tg_alert_send.log"
+        return 0
+      fi
+    fi
+  fi
   local rs; rs="$(command -v Rscript || true)"
   [ -x "$rs" ] || return 0              # Rscript 없으면 마커만 보존(fail-soft)
   local rfile="$adir/_tg_alert_${comp}_${today}.R"
-  cat > "$rfile" <<RS
+  # ★값은 R 소스에 끼우지 않고 환경변수로 넘긴다(2026-11-10) — 구판은 detail 을 R 문자열 리터럴에 그대로 끼워 따옴표 · 백슬래시가
+  #   든 내용이면 R 구문이 깨져 발송이 조용히 실패했고, 로그 원문 덤프가 그대로 실릴 수 있었다.
+  #   요약 문구 기본값도 '정지했습니다'(task_health 같은 감시 구성요소에는 거짓)에서 중립 문구로.
+  cat > "$rfile" <<'RS'
 suppressWarnings(suppressMessages({
   root <- Sys.getenv("QM_ROOT", Sys.getenv("CLAUDE_PROJECT_DIR", getwd()))
   source(file.path(root, "02_Infrastructure", "telegram", "telegram_notify.R"))
 }))
+.e <- function(k) Sys.getenv(k, "")
+.det <- substr(gsub("[\r\n]+", " ", .e("SA_DETAIL")), 1L, 400L)
+.sum <- if (nzchar(.e("SA_SUMMARY"))) .e("SA_SUMMARY") else sprintf("무인 구성요소 %s 에서 경보가 났습니다(사유 %s).", .e("SA_COMP"), .e("SA_REASON"))
 invisible(tryCatch(tg_agent_brief(
-  agent = "Q-Lead", title = "[무인] 스케줄러 경보 — ${comp}",
-  relaxed = TRUE, force = TRUE, lock_scope = "sched_${comp}_${reason}_${today}",
+  agent = "Q-Lead", title = sprintf("[무인] 스케줄러 경보 — %s", .e("SA_COMP")),
+  relaxed = TRUE, force = TRUE, lock_scope = sprintf("sched_%s_%s_%s", .e("SA_COMP"), .e("SA_REASON"), .e("SA_TODAY")),
   sections = list(
-    list(type = "summary", emoji = "\U0001F6A8",
-         body = "무인 파이프라인 ${comp} 가 ${reason} 사유로 정지했습니다."),
+    list(type = "summary", emoji = "\U0001F6A8", body = .sum),
     list(type = "kv", emoji = "\U0001F4CB", heading = "상세",
-         kv = list("구성요소" = "${comp}", "사유" = "${reason}", "내용" = "${detail}"))
+         kv = list("구성요소" = .e("SA_COMP"), "사유" = .e("SA_REASON"), "내용" = .det, "위치" = .e("SA_LOG")))
   )
 ), error = function(e) NULL))
 RS
   # (v10 2026-09-02) stdout 은 사후 증거로 남기고(구판은 /dev/null — '무엇이 발송됐나' 의 유일 증거가 이 .R 파일이었다),
   #   발송 성공 시 생성 스크립트를 지운다(마커 디렉터리에 57개 누적). 실패 시 사후 분석용으로 보존.
-  if "$rs" "$rfile" >> "$adir/_tg_alert_send.log" 2>&1; then rm -f "$rfile"; fi
+  if SA_COMP="$comp" SA_REASON="$reason" SA_DETAIL="$detail" SA_SUMMARY="$summary" SA_TODAY="$today" SA_LOG="${LOG:-$marker}" \
+     "${QVEST_SCHED_ALERT_RSCRIPT:-$rs}" "$rfile" >> "$adir/_tg_alert_send.log" 2>&1; then rm -f "$rfile"; fi
   return 0
 }
 

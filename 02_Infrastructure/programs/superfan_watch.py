@@ -131,6 +131,11 @@ def validate_registry(reg):
         ids.append(cid)
         if not c.get("name") or not c.get("dossier"):
             e.append("%s: name · dossier 필수" % cid)
+        for fk, ty in (("sched_task", str), ("cause_key", str), ("notify", bool)):     # 경보 소음 정책 필드(2026-11-10)
+            if fk in c and not isinstance(c[fk], ty):
+                e.append("%s: %s 형식(%s)" % (cid, fk, ty.__name__))
+        if c.get("notify") is False and not str(c.get("notify_reason") or "").strip():
+            e.append("%s: notify=false 면 notify_reason(누가 대신 보내나) 필수" % cid)
         for r in c.get("rules", []):
             k = r.get("kind")
             rid = r.get("id", "")
@@ -629,6 +634,84 @@ def _scan_ledger_activity(root, W, cid, r, now, events):
     _flag(W, events, cid, r["id"], r["severity"], msg, {"file": r["file"], "commits_since": n}, now)
 
 
+# ── 경보 소음 정책(2026-11-10 감사 레인 B · SKILL qvest-telegram §0.4 '평상 무음 · 실패는 1회 · 같은 원인 반복 발송 금지' 집행) ──────
+#   ① 꺼진 것은 '낡음 · 정지'를 알리지 않는다 — 구성요소의 sched_task(예약 작업)가 task_health 산출(06_Registry/scheduler_task_health.json)에서
+#      enabled = false 면 신선도 · 완료 표식 규칙을 재지 않는다(실측: 꺼진 ReinforceAutoLoop 의 로그 '파일 없음' 35회 · 2통).
+#      판독 실패 · 작업 미수록 = 켜진 것으로 본다(경보 쪽 · fail-closed).
+#   ② 원인 하나 = 하루 한 통 — 원인 키를 ops/alert_dedup.py 저장소에 잡는다. sched_task 가 있으면 'task:<작업>'(task_health 경보와 같은 키) ·
+#      cause_key 가 있으면 그 키 · 없으면 'sf:<구성요소>:<이상 키>'. 이미 오늘 나간 원인은 보내지 않고 '알림 완료(중복)'로 표식.
+#   ③ notify = false 구성요소는 기록만(다른 발신처가 같은 사실을 보내는 경우).
+STALENESS_KINDS = ("freshness", "expect_today")
+
+
+def _task_states(root):
+    """{작업 이름: enabled(bool)} — task_health 산출에서. 판독 실패 = {}(= 모두 켜진 것으로)."""
+    p = os.environ.get("QVEST_SUPERFAN_TASK_HEALTH_PATH") or os.path.join(root, "06_Registry", "scheduler_task_health.json")
+    try:
+        with io.open(p, encoding="utf-8") as f:
+            return {t["task"]: (t.get("enabled") is not False) for t in (json.load(f).get("tasks") or []) if t.get("task")}
+    except Exception:
+        return {}
+
+
+def _task_disabled(states, name):
+    return bool(name) and states.get(name) is False
+
+
+def _dedup_path(root):
+    """공유 저장소 경로. 감시 상태 경로를 재정의한 실행(시험)은 그 옆에 둔다 — 시험이 운영 저장소에 원인 키를 잡지 않게."""
+    if os.environ.get("QVEST_ALERT_DEDUP_PATH"):
+        return os.environ["QVEST_ALERT_DEDUP_PATH"]
+    if os.environ.get("QVEST_SUPERFAN_WATCH_PATH"):
+        return os.path.join(os.path.dirname(os.path.abspath(os.environ["QVEST_SUPERFAN_WATCH_PATH"])), "alert_dedup.json")
+    return os.path.join(root, ".cache", "alert_dedup.json")
+
+
+def _dedup():
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "ops"))
+    try:
+        import alert_dedup
+        if os.environ.get("QVEST_SUPERFAN_NOW") and not os.environ.get("QVEST_ALERT_DEDUP_NOW"):
+            os.environ["QVEST_ALERT_DEDUP_NOW"] = os.environ["QVEST_SUPERFAN_NOW"]   # 같은 기준 시각(시험)
+        return alert_dedup
+    except Exception:
+        return None
+    finally:
+        sys.path.pop(0)
+
+
+def _cause_keys(comp, anoms):
+    if comp.get("sched_task"):
+        return ["task:%s" % comp["sched_task"]]
+    if comp.get("cause_key"):
+        return [comp["cause_key"]]
+    return ["sf:%s:%s" % (comp["id"], a["key"]) for a in anoms]
+
+
+def _summary(a, reg_comp=None):
+    """알림 본문용 요약 한 문장 — 로그 원문 줄을 싣지 않는다(비밀 값 · 덤프 차단). 위치는 따로."""
+    ev = a.get("evidence") or {}
+    rule = a.get("rule", "")
+    kind = ""
+    for r in (reg_comp or {}).get("rules", []):
+        if r.get("id") == rule:
+            kind = r.get("kind", "")
+    t = a.get("text") or ""
+    if kind == "log_patterns":
+        s = "로그에 '%s' 사건이 기록됨" % (ev.get("label") or rule)
+    elif kind == "freshness":
+        m = re.match(r"갱신 (\d+)시간 전\(문턱 ([\d.]+)시간\)", t)
+        s = ("로그 갱신이 %s시간째 없음(문턱 %s시간)" % m.groups()) if m else ("기다리는 로그 파일이 아직 없음" if t.startswith("파일 없음") else "로그 신선도 이상")
+    elif kind == "expect_today":
+        m = re.match(r"(\d\d:\d\d) 이후", t)
+        s = "오늘 %s 이후에도 완료 표식이 없음" % (m.group(1) if m else "정해진 시각")
+    elif kind == "json_field":
+        s = "상태 파일 값이 실패 상태임(%s)" % (t.split(" = ", 1)[-1][:60])
+    else:
+        s = re.sub(r"\s+", " ", t)[:120]
+    return s
+
+
 def scan(root=None, only=None):
     root = root or _root()
     reg = _read_json(registry_path(root))
@@ -642,16 +725,32 @@ def scan(root=None, only=None):
     dflt = float(reg.get("default_max_event_age_h", 48))
     fn = {"log_patterns": _scan_log_rule, "freshness": _scan_freshness, "expect_today": _scan_expect_today, "json_field": _scan_json_field,
           "jsonl_ledger": _scan_jsonl_ledger, "ledger_covers": _scan_ledger_covers, "ledger_activity": _scan_ledger_activity}
+    states = _task_states(root)
     for c in reg["components"]:
         if only and c["id"] != only:
             continue
         rules = [dict(r, max_event_age_h=r.get("max_event_age_h", dflt)) if r["kind"] == "log_patterns" else r for r in c.get("rules", [])]
+        off = _task_disabled(states, c.get("sched_task"))
         for r in rules:
+            if off and r["kind"] in STALENESS_KINDS:          # ① 꺼진 작업의 낡음 · 미완료는 재지 않고 열린 것은 해소
+                _clear(W, c["id"], r["id"], now)
+                continue
             try:
                 fn[r["kind"]](root, W, c["id"], r, now, events)
             except Exception as ex:                                    # 규칙 하나의 실패가 감시 전체를 멈추지 않게 — 그 자체를 이상으로
                 _flag(W, events, c["id"], r.get("id", "?"), "warn", "감시 규칙 실행 실패 %s: %s" % (type(ex).__name__, ex), {}, now)
-        W.setdefault("components", {})[c["id"]] = {"last_scan": _iso(now)}
+        W.setdefault("components", {})[c["id"]] = dict({"last_scan": _iso(now)}, **({"disabled_task": c["sched_task"]} if off else {}))
+        # ② 해소 — 예약 작업에 묶이지 않은 구성요소는 이상이 정상 복귀(resolved)하면 그 원인 키를 지운다(같은 날 재발도 다시 1통).
+        #    task:<작업> 키는 task_health 가 그 작업의 다음 정상 실행(rc 0)에서 지운다(scheduler_task_health.sh · resolve-healthy).
+        if not c.get("sched_task") and not c.get("cause_key"):
+            gone = ["sf:%s:%s" % (c["id"], a["key"]) for a in W.get("anomalies", {}).values()
+                    if a["component"] == c["id"] and a["status"] == "resolved" and a.get("resolved_at") == _iso(now)]
+            dd = _dedup() if gone else None
+            if dd:
+                try:
+                    dd.resolve(gone, path=_dedup_path(root))
+                except Exception:
+                    pass
         # 사건형(로그) 이상의 만료 — 마지막 사건이 문턱보다 오래되면 열린 목록에서 뺀다(같은 사건이 다시 나오면 재개방)
         log_rules = {r["id"]: float(r["max_event_age_h"]) for r in rules if r["kind"] == "log_patterns"}
         for a in W.get("anomalies", {}).values():
@@ -726,22 +825,54 @@ def notify(root, W, now, baseline=False):
             a["notified"] = {"at": _iso(now), "reopened": int(a.get("reopened", 0)), "baseline": True}
         return [("baseline", len(pend), None)]
     reg = _read_json(registry_path(root))
+    comps = {c["id"]: c for c in reg.get("components", [])}
     names = {c["id"]: c.get("name", c["id"]) for c in reg.get("components", [])}
     groups = {}
     for a in pend:
         groups.setdefault(a["component"], []).append(a)
     mute = now.hour >= QUIET_HOURS[0] or now.hour < QUIET_HOURS[1]
+    # ③ notify = false · ② 같은 원인 오늘 이미 나감 → 보내지 않고 표식만(다음 시간에 다시 시도하지 않게)
+    dd = _dedup(); sent = []; claimed = {}
+    for cid in sorted(groups):
+        c = comps.get(cid, {"id": cid}); L = groups[cid]
+        why = None
+        if c.get("notify") is False:
+            why = "notify_off"
+        elif dd is not None:
+            try:
+                keys = _cause_keys(c, L)
+                new = dd.claim(keys, source="superfan:%s" % cid, summary=_summary(L[0], c), path=_dedup_path(root))
+                if new:
+                    claimed[cid] = new
+                else:
+                    why = "dedup"
+            except Exception:
+                pass                                                   # 저장소 실패 = 보낸다(경보를 놓치지 않는 쪽)
+        if why:
+            for a in L:
+                a["notified"] = {"at": _iso(now), "reopened": int(a.get("reopened", 0)), "suppressed": why}
+            sent.append((cid, len(L), why))
+            del groups[cid]
+    if not groups:
+        return sent
+    # text(원문)은 감시기 내부 payload 에만 남는다(임시 파일 · 발신 뒤 삭제) — 발신기 본문은 summary · where 만 쓴다(superfan_notify.R).
     keys = ("key", "rule", "text", "count", "first_seen", "last_seen", "event_time", "reopened")
     payload = {"at": _iso(now), "mute": mute,
                "groups": [{"component": cid, "name": names.get(cid, cid),
-                           "anomalies": [{k: a.get(k) for k in keys} for a in sorted(L, key=lambda x: x["last_seen"])]}
+                           "anomalies": [dict({k: a.get(k) for k in keys}, summary=_summary(a, comps.get(cid)),
+                                              where=(a.get("evidence") or {}).get("file") or "")
+                                         for a in sorted(L, key=lambda x: x["last_seen"])]}
                           for cid, L in sorted(groups.items())]}
     res = _send(root, payload)
-    sent = []
     for cid, L in sorted(groups.items()):
         if res.get(cid):
             for a in L:
                 a["notified"] = {"at": _iso(now), "reopened": int(a.get("reopened", 0)), "mute": mute}
+        elif dd is not None and claimed.get(cid):
+            try:
+                dd.release(claimed[cid], path=_dedup_path(root))     # 발신 실패 — 다음 시간에 다시 보낼 수 있게 원인 키를 되돌린다
+            except Exception:
+                pass
         sent.append((cid, len(L), bool(res.get(cid))))
     return sent
 
@@ -800,6 +931,16 @@ def ack(W, key, kind, note):
     if not (note or "").strip():
         _die("--note 필수(무엇을 했나 · 왜 괜찮은가)")
     a["status"] = "acked"; a["ack"] = {"kind": kind, "note": note.strip(), "at": _iso(_now())}
+    # '고쳤다(fixed)' 확인 = 원인 해소 — 공유 저장소의 그 원인 키를 지운다(같은 날 재발도 다시 1통 · 2026-11-10 경보 소음 정책 ②).
+    #   known · noise 는 원인이 살아 있다는 뜻이라 지우지 않는다.
+    if kind == "fixed":
+        dd = _dedup()
+        if dd is not None:
+            try:
+                comps = {c["id"]: c for c in (_read_json(registry_path()) or {}).get("components", [])}
+                dd.resolve(_cause_keys(comps.get(a["component"], {"id": a["component"]}), [a]), path=_dedup_path(_root()))
+            except Exception:
+                pass
 
 
 def main(argv=None):
@@ -830,6 +971,9 @@ def main(argv=None):
             for cid, n, ok in sent:
                 if cid == "baseline":
                     print("[superfan_watch] 알림 기준선 — 지금 열린 실패 %d건은 보내지 않고 '알림 완료'로 표식" % n)
+                elif ok in ("dedup", "notify_off"):
+                    print("[superfan_watch] 알림 억제(%s) — %s %d건 · %s" % (ok, cid, n,
+                          "같은 원인을 오늘 이미 보냄" if ok == "dedup" else "다른 발신처가 보내는 구성요소"))
                 else:
                     print("[superfan_watch] 알림 %s — %s %d건" % ("보냄" if ok else "발신 실패(다음 시간에 다시)", cid, n))
         return 0
