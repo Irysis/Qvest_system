@@ -1,0 +1,49 @@
+{
+  "check": "A — 정확성 · 멱등 · 경합 · 실패 안전",
+  "ok": false,
+  "summary": "high 결함 없음. 확인된 것: 틱은 허용 목록(rs)만 통해 round.sh 를 부르고, 등록 · 닫기 · 새 판 · 격리 경로가 없다. 코어 round_core · settings.json · superfan_components.json 의 git diff 는 0이다. 계약 시험 4종은 대상만 늘렸고 약해지지 않았다. 원장 쓰기는 코어뿐이다. 점유 생존 판정은 ps 1.9.3 이 설치돼 있어 죽은 pid 를 회수한다. 결함은 medium 3건 · low 4건이다. medium 2건은 탐침으로 재현했다: (1) 측정 상태 줄을 탐욕적 정규식으로 읽어서, 팩터 DB 수리 중 기준 칸 측정이 '측정 실행 오류' 오경보를 내고 rc 1 로 끝난다. (2) 닫기 대기 알림은 보내기 전에 표식을 남기고 전송 결과 ok=FALSE 를 무시해서, 한 번 실패하면 영구히 사라진다.",
+  "issues": [
+    {"severity": "medium", "title": "측정 상태 줄 파싱이 탐욕적 — 수리 중 기준 칸 측정이 '측정 실행 오류' 오경보 · rc 1",
+     "evidence": "chain_tick.sh:154 sed 's/^\\[p4-[a-z-]*measure\\] .* — \\([a-z_]*\\).*/\\1/p' — '.*' 가 마지막 ' — ' 까지 먹는다. driver.R:160-164 는 '— <status> · <reason>' 을 찍고, p4.R:872 vintage_in_progress · 868 vintage_unknown · 857 barrier · 864 data_stale 사유에는 ' — ' 가 들어 있다. 탐침(chkA 셸 반복): vintage_in_progress · vintage_unknown · barrier_held 줄 → st='' 이고, failed(사유 없음)만 st='failed'. 계획기 ct_plan(chain_tick.R:140-144)은 measure_base 를 판 표식 검사(145-148)보다 먼저 내므로, 수리 진행 중에 새로 등록된 사슬은 기준 칸 측정 → core rc 1(driver.R:161 switch 기본) → chain_tick.sh:159 '*)' 분기 → measure_error 경보 + RC=1 이 된다. 매 틱 반복되고 하루 1통 푸시다. vintage_unknown 도 vintage_unknown 경보가 아니라 measure_error 로 잘못 분류된다.",
+     "problem": "설계 §2.4 · §표(진행 중 수리 = 로그만)와 달리, 팩터 DB 수리 진행 중(11-09 · 11-10 처럼 잦다)에 '강화 사슬 측정 실행이 실패했습니다' 오경보가 나가고 종료 코드가 1이 된다.",
+     "fix_hint": "상태 토큰은 첫 ' — ' 바로 뒤에서 잡는다(예: sed -n 's/^\\[p4-[a-z-]*measure\\] [^—]* — \\([a-z_]*\\).*/\\1/p' 또는 awk -F' — ' '{split($2,a,\" \"); print a[1]}'). 계획기는 measure_base 도 판 표식 in_progress/unknown 이면 wait 로 둔다. 시험 가짜 round.sh 에 실제 사유 문구(' — ' 포함)를 넣은 양성 대조를 더한다."},
+    {"severity": "medium", "title": "닫기 대기 알림 — 보내기 전 표식 · 전송 실패(ok=FALSE) 무시 → 영구 소실",
+     "evidence": "chain_tick.R:242 ct_record(mark close_wait:<reason>) 가 prep_send(249) 앞에 있다. tg_agent_brief 는 실패를 예외가 아니라 list(ok=FALSE, ...)로 돌려준다(telegram_notify.R ~1666 · ~1758). ct_notify_close_wait 는 r$ok 를 보지 않고 'sent' 를 돌려주고(256), 오류(attr err)여도 표식은 이미 남아 있다. chain_tick.sh:225 는 출력을 로그로만 보내고 실패해도 경보를 내지 않는다. 탐침 chkA/probe_notify.R(prep_send 가짜 = ok FALSE): first=sent second=seen prep_send_calls=1 → defect_reproduced true.",
+     "problem": "감독 단계(p4-close)로 넘기는 유일한 신호가 텔레그램이 한 번 일시적으로 실패하면 다시 나가지 않는다. 사슬은 닫기 대기로 무기한 남고, 매 틱 로그 한 줄뿐이다.",
+     "fix_hint": "표식은 전송 성공(isTRUE(r$ok)) 뒤에만 남긴다(실패면 'failed' 와 rc ≠ 0). 틱은 failed 를 sched_alert_emit(원인 하나 = 하루 한 통)으로 올리고 다음 틱에 다시 시도한다."},
+    {"severity": "medium", "title": "tick_hold 가 진행 중인 생성(≤ gen_timeout_sec 3600초) 뒤 열기 전에 다시 확인되지 않는다",
+     "evidence": "tick_hold 는 ct_plan(chain_tick.R:138)에서만 본다. gen_step(chain_tick.sh:169-210)은 생성 → compile(chain_tick.R:191-231 · hold 검사 없음) → p4-step-open 을 다시 계획하지 않고 잇는다. SKILL §0-1 은 '손으로 걸음을 돌리는 동안 tick_hold 를 둔다(틱이 그 사슬을 건너뛴다)'를 약속한다.",
+     "problem": "세션이 생성 도중에 tick_hold 를 두고 손으로 설계를 시작해도, 틱이 걸음 k 를 먼저 연다. 세션의 p4-step-open 은 '앞 걸음이 판정되지 않았다'로 거부된다. 틱이 연 걸음은 hold 때문에 측정되지 않은 채 남는다(Superfan step_stalled 대상). 원장 손상은 없다(코어가 막는다).",
+     "fix_hint": "compile 앞과 p4-step-open 직전에 ct_plan 을 다시 불러 ACT=open ∧ 같은 k 일 때만 연다(또는 compile 이 tick_hold 를 보면 race 로 거부 · 실패로 세지 않음)."},
+    {"severity": "low", "title": "닫힌 · hold 사슬만 있어도 틱이 무음이 아니다 — 매시 잠금 · 로그 파일 · R 호출",
+     "evidence": "chain_tick.sh:47-54 는 첫 줄이 chain_registered 인지만 본다. 닫힌 사슬도 CHAINS 에 들어가고 115-118 에서 매시 .cache/scheduler_logs/chain_tick_<ts>.log 를 새로 만든다. 사슬마다 plan R 을 띄우고 배리어 status 도 부른다. 설계표 3행 'chain_closed → 조용히'.",
+     "problem": "결국 모든 사슬이 닫히므로, 영구히 하루 24개 로그 파일이 쌓이고 R 기동 비용이 든다. 경보는 없다.",
+     "fix_hint": "0단계 필터에서 원장 마지막 사건이 chain_closed 인 사슬은 빼고, 사슬별 행동이 모두 skip 이면 로그 파일을 지운다(또는 첫 비-skip 행동 때 연다)."},
+    {"severity": "low", "title": "생성기 종료 4(인증) · 5(가드 탐침) · 프롬프트 거부는 세지 않아 매시 새 작업 폴더가 무한히 쌓인다",
+     "evidence": "chain_tick.sh:174 p4-workdir(설계 입력 생성)가 생성 전에 매번 돈다. 184-185(4 · 5)와 177(prompt 거부)은 gen_fail 을 세지 않는다. 경보는 하루 1통으로 묶이지만, 04_Research/programs/P4_ASSEMBLY/_lanes/<cid>/k<k>_<ts>/ 는 매시 하나씩 늘어난다(OneDrive 동기화 폴더).",
+     "problem": "인증 · 가드 장애가 며칠 이어지면 작업 폴더가 하루 24개씩 늘고 설계 입력 계산도 반복된다. 상한이 없다.",
+     "fix_hint": "4 · 5 는 하루 물러남(backoff 와 같은 장부)으로 막거나, 쓰지 않은 작업 폴더를 지운다. 또는 p4-workdir 앞에 자격 · 가드 사전 점검을 둔다."},
+    {"severity": "low", "title": "chain_gen_run.sh 잠금 건너뜀이 종료 0(산출 없음) — 틱이 생성 실패로 세어 차단까지 갈 수 있다",
+     "evidence": "chain_gen_run.sh:46 '다른 인스턴스 실행 중 — skip; exit 0'(gen_result.json · out.md 없음). 머리말은 '종료 0 = 산출'이다. chain_tick.sh:181 은 0 을 성공으로 보고 compile → 'reject gen_rc'(chain_tick.R:196) → gen_fail 로 간다. 두 틱이면 gen_blocked + 경보.",
+     "problem": "틱이 죽고 고아 생성기가 남은 경우(정체 잠금 경보와 함께) 사슬 생성이 '연속 실패'로 차단된다. 실패 원인이 잘못 분류된다.",
+     "fix_hint": "잠금 건너뜀은 별도 종료 코드(예: 7 busy)로 돌려주고 틱은 세지 않는다. 계약 시험이 0 을 요구하면, 틱이 gen_result.json 이 없는 0 을 busy 로 분류한다."},
+    {"severity": "low", "title": "잠금 인계 TOCTOU — 죽은 잠금을 두 실행이 동시에 회수하면 둘 다 진행",
+     "evidence": "chain_tick.sh:107-112 — A 가 rm -rf · mkdir · pid 를 쓴 뒤 B 가 rm -rf(A 의 새 잠금 삭제) · mkdir 에 성공할 수 있다. 예약 작업은 IgnoreNew 이므로 세션 수동 실행과 겹칠 때만 생긴다. standing_board_run.sh 와 같은 관습이다.",
+     "problem": "드물지만 두 틱이 같은 사슬을 동시에 다룬다. 코어 측정 점유 · 원장 잠금이 대부분 막지만, 생성 호출은 두 번 날 수 있다(chain_gen_run 자체 잠금이 둘째를 skip 하면 위 low 결함으로 이어진다).",
+     "fix_hint": "회수 뒤 pid 를 다시 읽어 자기 것인지 확인하거나, 회수를 rename(원자적 이동) 방식으로 바꾼다."}
+  ],
+  "verified_ok": [
+    "허용 목록 밖 단계 0 — rs() 만 round.sh 호출 · 모르는 행동은 p4-<행동> 으로 바뀌어 거부된다(chain_tick.sh:35 · 122 · 234)",
+    "코어 무변경 — git diff 04_Research/programs/_lib/round_core = 0줄 · settings.json · superfan_components.json 변경 0",
+    "원장 쓰기는 코어 명령뿐 — chain_tick.R 은 장부 · 작업 폴더 · cells/k<k>.json 만 쓰고 원장이 참조하는 칸 파일은 덮지 않는다(R2)",
+    "등록 0 사슬 — 잠금 · 로그 · R 호출 없이 무음 0 종료(chain_tick.sh:54)",
+    "배리어 잠김 — 측정 · 판정 · 설계를 건너뛰고 가벼운 패스의 알림만",
+    "측정 도중 사망 — 코어 점유가 pid 로 회수(ps 1.9.3 설치 확인) · 원장 무기록 · 다음 틱 재시도 · 실패 2회 → 포기 기록",
+    "생성 연속 실패 상한 = 코어 RC_STANDING_MAX_FAILS(2L · standing.R:32) 판독 · 한도 = 다음 날 00:00 까지 생성만 물러남",
+    "정보 경계 — 생성기 = 청정 레인(R6 허용 목록 + 작업 폴더) · Read|Grep|Glob 매처 등록 확인 · LLM 전 양성 대조 탐침"
+  ],
+  "probes": [
+    "chkA/probe_notify.R — {\"test\":\"probe_notify_lost\",\"defect_reproduced\":true}",
+    "sed 상태 파싱 셸 탐침 — vintage_in_progress/vintage_unknown/barrier_held → st='' · failed → st='failed'"
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "ok": false,
+  "summary": "관점 B(규칙·운영) 적대적 검증. high 0 · medium 1 · low 4. 생성기 읽기 경계(청정 레인 R6 허용 목록 + LLM 전 양성 대조 탐침 · 무력 훅/미등록 = 종료 5)는 무인 호출에서도 실제로 걸린다(test_scn_chain_gen_guard.sh 직접 실행 31/31 · 허용 목록에 사슬 폴더·06_Registry·stage_artifacts 없음 · .cache/design_view 현재 사본에 등급/OOS 표기 0). 단일 진입(rf_llm_agent_run) · 토큰 확보 · 완료 통지 기본 끔(형제 paper_router_run 과 같음) · 정체 잠금 · 계약 시험 4종 등재 확인. 허용 목록 · 감독 단계 미호출 · 스위치(enabled · QVEST_CHAIN_TICK · tick_hold) · 배치 파일 접합(Git Bash 절대 경로 · PATH · 로그 · rc) · 설정 숫자 근거(rx_lane.sh TMO 3600 · RC_STANDING_MAX_FAILS 2L · 작업 XML IgnoreNew/PT24H) 모두 코드와 일치. 코어 p4 는 걸음 판정/측정에서 푸시하지 않는다(걸음마다 푸시 없음). Superfan step_stalled 는 포기도 step_result 를 쓰므로 오경보 없음. 남은 결함은 경보 표식의 영구성(침묵)과 알림 유실 · 폴더 누적 등 운영 품질 문제다.",
+  "issues": [
+    {"severity": "medium", "title": "once() 표식이 영구 — 일시적 판독 실패 한 번 뒤 같은 사유의 사슬 정지가 영원히 무음",
+     "problem": "broken:<사유> · close_stuck · blocked:<사유> 표식은 장부에 영구 저장되고 --reset 은 gen_blocked/decide_failed 접두만 지운다. plan_error/state_unreadable 처럼 일시적일 수 있는 판독 실패가 한 번 나서 알림이 가고 회복된 뒤, 나중에 같은 사유로 사슬이 다시 멈추면(light pass break → 그 사슬 아무것도 안 함) 경보가 다시 나가지 않는다. 열린 걸음이 없으면 Superfan step_stalled 도 못 잡는다 = 침묵 정지.",
+     "evidence": "02_Infrastructure/ops/chain_tick.sh:66-68(once = record mark new|seen) · :221(broken → once \"broken:$RSN\") · :222 · :224 · 02_Infrastructure/programs/chain_tick.R:92-93(mark 는 한 번 쓰면 seen 영구) · :97-100(ct_reset 이 ^(gen_blocked|decide_failed) 만 지움)",
+     "fix_hint": "표식 키에 날짜를 넣어 하루 단위로 만들거나(원인 하나 = 하루 한 통과 같은 단위 · sched_alert_emit 이 이미 하루 스로틀), 계획이 정상으로 돌아온 틱에서 그 사슬의 broken:/blocked: 표식을 지운다. --reset 이 모든 표식을 지우는 선택지를 둔다."},
+    {"severity": "low", "title": "닫기 대기 알림 — 표식을 발송 전에 찍어 발송 실패 시 영구 유실",
+     "problem": "ct_notify_close_wait 가 mark close_wait:<사유> 를 먼저 쓰고 prep_send 를 부른다. tg_agent_brief 발송 실패는 오류가 아니라 반환값으로 올 수 있어 tryCatch 에 안 걸리고 'sent' 로 기록되며, 오류여도 표식이 이미 있어 다음 틱은 seen 으로 끝난다. 닫기 대기 사슬은 그 뒤 아무 알림 없이 열린 채 남는다(Superfan 은 close_wait 를 보지 않는다).",
+     "evidence": "02_Infrastructure/programs/chain_tick.R:242(표식 먼저) · :249-256(prep_send 반환값 미검사 · 실패도 표식 유지) · chain_tick.sh:225(매 틱 notify 호출하지만 seen 이면 끝)",
+     "fix_hint": "발송 성공(반환값 확인) 뒤에 표식을 쓰거나, 실패면 표식을 되돌린다(sched_alert_emit 의 claim/confirm/release 와 같은 2단계)."},
+    {"severity": "low", "title": "가드 탐침 실패(5) · 인증 실패(4) 지속 시 매 틱 새 작업 폴더 생성 · 물러남 없음",
+     "problem": "gen_step 은 생성기 호출 전에 p4-workdir 로 새 폴더(_lanes/<cid>/k<k>_<ts>)를 만들고, 종료 5·4 는 gen_fail 로 세지도 물러남을 걸지도 않는다. 조건이 지속되면 매시 폴더가 하나씩 쌓이고(하루 24개 · 지울 주체 없음), claude 호출 뒤 분류된 인증 실패면 매시 claude 를 다시 부른다. 경보는 하루 한 통이라 폭주는 아니다.",
+     "evidence": "02_Infrastructure/ops/chain_tick.sh:171-176(폴더 먼저) · :184-185(4·5 = alert 후 return · 장부 무기록 · backoff 없음)",
+     "fix_hint": "종료 4·5 에 그날 물러남(backoff-set auth|guard_probe)을 걸거나, 실패한 빈 작업 폴더를 지운다/같은 k 폴더를 재사용한다."},
+    {"severity": "low", "title": "아침 집계가 chain_tick · chain_gen 마커를 다시 센다 — 00시~아침 실행 사이 경보는 두 번 도달",
+     "problem": "sched_alert_emit 로 이미 자체 텔레그램을 낸 chain_tick_* / chain_gen_* 마커가 morning_run.sh 집계 제외 목록(unattended_line|task_health|paper_router)에 없다. 그날 아침 집계 전에 난 사슬 틱 경보는 집계 1통에 다시 실린다(같은 사실 2회).",
+     "evidence": "02_Infrastructure/ops/morning_run.sh:331-334(grep -v -E '/(unattended_line|task_health|paper_router)_') · chain_tick.sh:61-63(sched_alert_emit \"chain_tick\" …) · chain_gen_run.sh:42(sched_alert_emit \"chain_gen\" …)",
+     "fix_hint": "morning_run.sh 제외 목록에 chain_tick|chain_gen 을 더하는 것을 총괄에게 제안(이 단계는 수정 금지)."},
+    {"severity": "low", "title": "Superfan reinforce_chain.schedule 문구가 '세션이 부른다'로 남음(문서-코드 불일치)",
+     "problem": "무인 틱이 걸음을 열고 재고 판정하는데 구성요소 등록부의 schedule 은 세션만 기술한다. 전담 팬 진단 시 호출 주체를 오인할 수 있다. 구현자도 not_done 에 제안으로 남겼다(등록부 수정 금지).",
+     "evidence": "06_Registry/superfan_components.json reinforce_chain.schedule = \"세션이 부른다(round.sh <사슬> p4-step-open → …)\"",
+     "fix_hint": "총괄이 제안 문구(\"세션 또는 무인 틱(02_Infrastructure/ops/chain_tick.sh · Qvest_StandingBoard 매시 37분)\")로 갱신."}
+  ],
+  "verified_ok": [
+    "생성기 읽기 경계: chain_gen_run.sh:79-100 탐침이 실제 훅(arm_gen_read_guard.sh R6)을 같은 환경 표식으로 발화 — round_outcomes.jsonl · 사슬 measure · finalize.json · G:/C:/역슬래시 3꼴 block · 작업 폴더 pass · settings.json 등록과 매처 확인 · 어긋나면 claude 미호출(종료 5). 정책 clean_lane.read_allow 에 04_Research/programs · 06_Registry · stage_artifacts 없음 · target_regex 가 essence/authoritative_remeasure/stage_artifacts/scheduler_logs/MEMORY 차단 · CLAUDE_CODE_DISABLE_AUTO_MEMORY=1(rf_llm_env.sh:144)",
+    "test_scn_chain_gen_guard.sh 직접 실행 PASS 31/31(무력 훅 · 미등록 · 돌연변이 M1~M3 빨강)",
+    "산출 검사: compile 이 hypothesis/mechanism/expected_direction/falsification/philosophy_alignment 에 rc_input_issues + 전문 rc_after_tau_leaks + rx_validate + rc_p4_spec_diff(chain_tick.R:205-219)",
+    "허용 목록 밖 단계 거부(chain_tick.sh:35 · :122) — p4-register/p4-close/p4-generator-review/p4-quarantine 미포함",
+    "코어 p4.R 는 측정/판정에서 prep_send 없음 — 걸음마다 푸시 없음 · 닫기 대기만 prep_send 1통",
+    "포기도 step_result(abandoned=TRUE) 기록(p4.R:1063) → Superfan step_stalled 오경보 없음 · 열기 직후 같은 틱 측정 · 판정",
+    "배치 파일: Git Bash 절대 경로 → bash = Git Bash · 인자 없음 · PATH(Python315 · R 4.6.2) · 로그 standing_board_task.log + 자체 로그 · chain rc 기록",
+    "숫자 근거: rx_lane.sh:18 TMO 3600 · standing.R:32 RC_STANDING_MAX_FAILS 2L · 작업 XML PT24H/IgnoreNew/PT1H(UTF-16 판독)",
+    "한도: rf_llm_limit_hit → 종료 3 → 다음 날 00:00 까지 생성만 물러남 · 경보 원인 키 llm_limit:usage_limit 하루 한 통",
+    "SKILL §0-1 · lean-loop v10.2 2항 문구가 코드(허용 목록 · tick_hold · --reset · enabled)와 일치 · 고정 축/등급/PIT/코어 무변경"
+  ]
+}

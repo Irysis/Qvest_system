@@ -1,0 +1,35 @@
+{
+  "ok": true,
+  "summary": "관문 not_before 는 스위치 바로 뒤(rf_replication_auto.sh:88-123)에 있다. 디스패처 · RP_SLOT 작업자 · 구판 단일 슬롯이 모두 이 관문을 지나고, 해석 불가는 닫힘(fail-closed)으로 동작한다. 새 시험을 직접 돌려 24/24 를 확인했다(21:32~21:34 · 운영 파일 새 쓰기 0 · heartbeat 만). 돌연변이 치환 1곳 성사를 단정하고 검출함. bash -n · py_compile 통과 · 제어 문자 0 · CR 0. 대기 줄은 lane_errors 정규식 어디에도 걸리지 않는다. 일별 로그는 reinforce_auto_tick.sh 의 { } >> 리디렉션이 쓰므로 lane_alive 는 신선하게 유지된다. commands_for_lead 3줄을 임시 설정 사본에 재현했다: rc 0 · not_before 보존 · slots {cpu 0, gpu 1}. 시간대 없는 값은 rc 2 로 거부되고 설정은 바뀌지 않는다. 운영 설정 md5 6350d22c… 불변(mtime 11-06). 보고된 기존 시험 결함 2건(S13 = 2d8c59b0e · W8 = 등록부 2000-01-01 대 시험 2005-01-01)은 사실이며, 수리자 쪽 시험 파일은 무수정이다. 비차단 지적 3건: 아래 issues.",
+  "issues": [
+    {
+      "severity": "medium",
+      "title": "관문이 풀린 뒤 첫 LLM 작업 = gpu1 의 묵은 in_progress THGNN(2601.04602) 재시도 — 보고 누락",
+      "problem": "06_Registry/replication_slots/gpu1/replication_request.json 은 status=in_progress · lane_mode=clean · auto_retries=1 · started 11-06 이다. claim .cache/rf_replication.claim.gpu1 의 owner_win 39328 은 이미 죽었다(tasklist 0건). 11-13 19:10 뒤 첫 틱의 sweep_claim(rf_replication_slots.py:282)이 이 claim 을 회수하고, 요청이 BUSY 상태라 gpu1 작업자가 뜬다. 그 결과 인계함 · 큐보다 THGNN clean 재구현이 먼저 돈다. 수리자 not_done 과 절차서는 cpu1 · cpu2 만 고아로 적었고, 절차서의 '인계함 torch 논문을 큐보다 먼저'는 첫 작업에 대해서는 사실이 아니다. 이 논문은 '도훈 10-18 THGNN 끝난 뒤 레인 보류' 맥락의 대상이기도 하다.",
+      "evidence": "gpu1 요청 필드 실측 · claim 폴더 owner_win=39328 · paper=2601.04602 · tasklist 0건 · _tick 의 'req_status in BUSY → continue(발행 없음)' 뒤 launch 경로(rf_replication_slots.py:690-720)",
+      "fix_hint": "총괄이 재가동 전에 정한다: THGNN 재시도를 의도한 것이면 절차서에 명시하고, 아니면 Q 세션이 gpu1 요청을 정리(done/보류)한다. 절차서 2단계 ⚠ 줄에 gpu1 도 함께 적는다."
+    },
+    {
+      "severity": "low",
+      "title": "순서 의존 — 설정보다 1단계 7)을 먼저 붙여넣으면 관문 없이 즉시 3슬롯으로 일한다",
+      "problem": "지금 운영 설정에는 not_before 가 없다(null). slots 는 {cpu 2, gpu 1}이고 enabled 는 true 다. 도훈이 commands_for_lead 전에 7)(Enable)을 실행하면 다음 틱부터 리셋 전 LLM 이 최대 3개 동시에 돈다. 절차서 ★ 주의문과 commands 순서(not-before 먼저)로만 막혀 있다.",
+      "evidence": "현 설정 실측 {'enabled': True, 'slots': {'cpu': 2, 'gpu': 1}, 'not_before': None} · 절차서 '★7) 은 Q 가 레인 설정을 먼저 넣은 뒤에만'",
+      "fix_hint": "총괄은 commands_for_lead 1~3을 실행하고 show 결과를 확인한 뒤에만 도훈에게 1단계를 넘긴다. 필요하면 7) 앞에 PowerShell 사전 점검 한 줄을 둔다(show 출력에 not_before 가 없으면 중단)."
+    },
+    {
+      "severity": "cosmetic",
+      "title": "절차서 1단계 코드 블록 번호 순서 7) → 6)",
+      "problem": "'# 7) 레인 켜기'가 '# 6) 확인' 앞에 있다. 의도는 6 = 마지막 확인('7 뒤에 한 번')이지만, 번호를 보고 7을 빼먹거나 6을 먼저 실행할 여지가 있다.",
+      "evidence": "scheduled_tasks_20261110.md diff 1단계 블록",
+      "fix_hint": "레인 켜기를 6), 확인을 7)로 번호를 바꾼다."
+    }
+  ],
+  "verified": {
+    "gate_position": "rf_replication_auto.sh:81(EN) 바로 뒤 · RP_SLOT 경로 설정(상단)은 파일 쓰기가 mkdir 뿐 · 리프레시 배리어 · 디스패처 · claim 회수보다 앞",
+    "fail_closed": "cfg 판독 불가 · 문자열 아님 · 해석 불가 · 시간대 없음 · 이음새 값 불량 · 판정기 빈 출력(case *) = invalid → exit 0 무작업",
+    "watcher": "lane_errors 정규식(rc=[1-9] · Error in · failed_needs_session|rate_limit|weekly limit|HTTP 429|authentication_error · audit_conflict · refresh_lock_stale · claim_live_long)에 대기 · invalid 줄 무해당 · lane_alive = 틱 래퍼 리디렉션",
+    "tests_run": ["08_Tests/scenarios/test_scn_lane_not_before.sh 24/24 (운영 무접촉 확인)"],
+    "cli_replay": "임시 사본에 not-before → enable --cpu 0 --gpu 1 → show 실행: 기대대로 · 무시간대 rc 2 · 값 없는 not-before rc 2 · enable 에 값 인자 rc 2",
+    "gpu_lease_now": ".cache/gpu_lease.json 없음(임대 없음)"
+  }
+}

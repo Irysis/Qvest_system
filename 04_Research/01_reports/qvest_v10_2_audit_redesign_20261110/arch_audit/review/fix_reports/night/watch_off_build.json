@@ -1,0 +1,28 @@
+{
+  "done": [
+    "superfan_watch.py: 꺼짐을 감시기가 직접 잰다(_task_states_direct: PowerShell Get-ScheduledTask 한 번 · 읽기 전용 · 상한 30초 = 실측 4.3~5.3초의 약 6~7배 · 시험 이음새 QVEST_SUPERFAN_TASK_QUERY_CMD)",
+    "직접 조회가 실패하면(명령 없음 · 시간 초과 · rc != 0 · 물은 이름 응답 누락) task_health 산출(같은 기계 · 17시간 안)로 물러나고, 그것도 못 믿으면 켜진 것으로 본다(fail-closed)",
+    "판정 근거를 감시 상태 task_state{source: direct|task_health|none, detail, at, disabled}와 구성요소 task_state_source에 남긴다",
+    "꺼짐으로 해소한 실행 낡음 이상(freshness · expect_today)은 원인 키(task:<작업> · sf:…)도 alert_dedup.resolve로 놓는다. cause_key 구성요소는 건드리지 않는다. _clear가 해소한 이상 목록을 돌려준다",
+    "e2e 시험 S8(7개 판정) + 돌연변이 M11(직접 조회 제거) · M12(원인 키 해소 제거) · M13(응답 누락 검사 제거) 추가. 기본 가짜 조회는 'fail'이라 S1~S7은 종전 경로 그대로",
+    "noise 시험: 직접 조회를 '실패'로 고정해 운영 스케줄러를 묻지 않게 하고, 코드 사본 출처를 QVEST_E2E_CODE_ROOT로 바꿀 수 있게 했다(CODE_ROOT · 렌더와 정적 검사는 REAL)",
+    "superfan_protocol.md §10에 '꺼진 작업' 줄 추가",
+    "수리 전 실패 실증: 원본 코드에서 S8은 2/7(실패 5), 사본에서는 7/7",
+    "21:09:16에 원자 교체(cp .tmp && mv -f, 15~20분 · 35~40분 창 밖). 교체 전 원본 md5 일치 확인"
+  ],
+  "not_done": [],
+  "changed_files": [
+    "02_Infrastructure/programs/superfan_watch.py",
+    "08_Tests/scenarios/test_scn_tg_alert_dedup_e2e.py",
+    "08_Tests/scenarios/test_scn_tg_alert_noise.py",
+    "00_Lawbook/specs/superfan_protocol.md"
+  ],
+  "new_files": [],
+  "tests_run": [
+    {"path": "08_Tests/scenarios/test_scn_tg_alert_dedup_e2e.py", "result": "43/43 pass (운영 경로 · 교체 뒤)"},
+    {"path": "08_Tests/scenarios/test_scn_tg_alert_noise.py", "result": "30/30 pass (운영 경로 · 교체 뒤)"},
+    {"path": "08_Tests/programs/test_superfan_watch.R", "result": "63/63 pass"},
+    {"path": "08_Tests/hooks/test_scheduler_task_health_verdict.sh", "result": "41/41 pass"}
+  ],
+  "swapped_live": true
+}

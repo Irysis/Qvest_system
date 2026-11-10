@@ -1,0 +1,8 @@
+{"stage": "done", "swapped_live": true, "swapped_at": "2026-11-10T21:21:22+09:00",
+ "changed_files": ["02_Infrastructure/ops/rf_replication_auto.sh", "02_Infrastructure/ops/rf_replication_slots.py", "04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/arch_audit/procedures/scheduled_tasks_20261110.md"],
+ "new_files": ["08_Tests/scenarios/test_scn_lane_not_before.sh"],
+ "tests_after_swap": {"test_scn_lane_not_before.sh": "24/24", "test_replication_lane.sh": "87/87", "test_replication_slots.py": "S1-S12 30 PASS, crash at S13 (boot_lean.sh PEND now needs S/LANE_TICK - commit 2d8c59b0e 16:58, pre-existing)", "test_replication_slots_lane.sh": "17/18 - W8 expects 2601.04602 start 2005 but registry 2000 since dad8e725c 10-20 (pre-existing)", "test_refresh_barrier.sh": "80/80"},
+ "commands_for_lead": [
+  "cd G:/OneDrive/Quant_Module_Moltbot && \"$QVEST_PY\" 02_Infrastructure/ops/rf_replication_slots.py --root G:/OneDrive/Quant_Module_Moltbot config not-before 2026-11-13T19:10:00+09:00",
+  "cd G:/OneDrive/Quant_Module_Moltbot && \"$QVEST_PY\" 02_Infrastructure/ops/rf_replication_slots.py --root G:/OneDrive/Quant_Module_Moltbot config enable --cpu 0 --gpu 1",
+  "cd G:/OneDrive/Quant_Module_Moltbot && \"$QVEST_PY\" 02_Infrastructure/ops/rf_replication_slots.py --root G:/OneDrive/Quant_Module_Moltbot config show"]}

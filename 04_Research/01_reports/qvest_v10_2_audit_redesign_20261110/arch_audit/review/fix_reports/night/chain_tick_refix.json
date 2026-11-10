@@ -1,0 +1,91 @@
+{
+ "status": "done — 22:22:0x 교체(금지 창 밖 · 틱 잠금 없음 · 라이브=사본 시점 확인 뒤) · 라이브 시험 전부 통과",
+ "findings": [
+  {
+   "id": "F1",
+   "verdict": "확인(실재)",
+   "fix": "chain_tick.sh do_measure — 상태 토큰 = 상태 줄의 첫 ' — ' 뒤(${ln#* — } · ${rest%%[!a-z_]*}) · chain_tick.R ct_plan — 판 표식(판독 불가 · 수리 중) 검사를 measure_base 앞으로",
+   "tests": "R1 · R1b(양성 대조) · M10 · C1c · M7"
+  },
+  {
+   "id": "F2/F9",
+   "verdict": "확인(실재 · 두 지적 같은 결함)",
+   "fix": "ct_notify_close_wait — 표식은 isTRUE(r$ok) ∧ push 뒤에만 · 실패 = 'failed' + CLI 종료 1 · 발송 아닌 실행 = 'dry'(표식 없음) · 틱 = close_wait_notify_<cid> 경보(하루 1통) + RC 1 · 다음 틱 재시도",
+   "tests": "R2 · M16 · K6 · K6b · K6c · M6(대상 줄 갱신) · M8"
+  },
+  {
+   "id": "F3",
+   "verdict": "확인(실재)",
+   "fix": "gen_step — 생성 뒤 · p4-step-open 직전 두 곳에서 다시 계획(still_open: ACT=open ∧ k 같음) · 아니면 경합(실패로 세지 않음) · 칸 사양 · 작업 폴더 삭제",
+   "tests": "R3 · R3b · M12"
+  },
+  {
+   "id": "F4",
+   "verdict": "확인(실재)",
+   "fix": "0단계 — 원장 마지막 줄 chain_closed · tick_hold 사슬 제외(남은 것 없으면 무음 0 · 잠금 · 로그 · R 없음) · 모든 행동 skip ∧ rc 0 이면 로그 파일 삭제",
+   "tests": "R4 · R4b · R4c · M11 · M18"
+  },
+  {
+   "id": "F5/F10",
+   "verdict": "확인(실재 · 두 지적 같은 결함)",
+   "fix": "종료 4 · 5 · 프롬프트 거부 · 경합 · 건너뜀 = 쓰지 않은 작업 폴더 삭제(drop_wdir · 가드 탐침 로그는 틱 로그로 옮김). 하루 물러남은 걸지 않음 — 인증 · 가드는 사람이 고치면 다음 틱에 바로 재개해야 하고 경보는 이미 하루 1통",
+   "tests": "R5 · M17"
+  },
+  {
+   "id": "F6",
+   "verdict": "확인(실재)",
+   "fix": "틱 쪽 분류 — 생성기 종료 0 인데 gen_result.json 없음 = 건너뜀(다른 인스턴스) · 실패로 세지 않음. chain_gen_run.sh(계약 시험 대상)는 그대로",
+   "tests": "R6 · M13"
+  },
+  {
+   "id": "F7",
+   "verdict": "확인(실재 · 드묾)",
+   "fix": "죽은 잠금 회수 = mv -T 로 고유 이름(원자) → 옮긴 디렉터리 재판정 → 살아 있으면 되돌리고 건너뜀 · 죽었으면 삭제 · EXIT trap 은 자기 pid 잠금만 지움 · 시험 주입 CT_LOCK_RACE_HOOK",
+   "tests": "R7 · M14"
+  },
+  {
+   "id": "F8",
+   "verdict": "확인(실재)",
+   "fix": "chain_tick.R record mark_daily(키 <표식>@YYYYmmdd · 지난 날 키 삭제) · 틱 broken · close_stuck · blocked 알림 = once_daily. 사건형(포기 · 생성 차단 · 판정 상한 · 닫기 대기)은 1회 유지",
+   "tests": "R8 · M15 · K3b"
+  },
+  {
+   "id": "F11",
+   "verdict": "확인(실재 · morning_run.sh:331-334 제외 목록에 chain_tick|chain_gen 없음)",
+   "fix": "고치지 않음(운영 파일 · 범위 밖) — 총괄 제안"
+  },
+  {
+   "id": "F12",
+   "verdict": "확인(실재)",
+   "fix": "고치지 않음(superfan_components.json 무변경 규칙) — 총괄 제안"
+  }
+ ],
+ "tests_pre_swap": {
+  "test_scn_chain_tick.sh(사본 대상)": "58/58",
+  "test_scn_chain_tick.sh(옛 대상 = 수리 전)": "38/58 — R1~R8 11건 빨강 · M10~M18 치환 0(옛 코드에 대상 없음) · R1b 양성 대조는 둘 다 통과",
+  "test_scn_chain_tick_core.R(사본 대상)": "42/42",
+  "test_scn_chain_tick_core.R(옛 대상)": "C1c FAIL · K3b mark_daily 없음 오류로 중단",
+  "test_scn_chain_gen_guard.sh(라이브)": "31/31",
+  "계약 시험 5종(라이브)": "llm_single_entry 37/37 · credential_scope_wiring 7/7 · llm_lane_wiring 13/13 · run_completion_notify 35/35 · stall_lock_alert 14/14"
+ },
+ "swapped_live": true,
+ "swapped_files": [
+  "02_Infrastructure/programs/chain_tick.R",
+  "08_Tests/scenarios/test_scn_chain_tick.sh",
+  "08_Tests/scenarios/test_scn_chain_tick_core.R",
+  "02_Infrastructure/ops/chain_tick.sh"
+ ],
+ "tests_post_swap": {
+  "test_scn_chain_tick.sh": "58/58",
+  "test_scn_chain_tick_core.R": "42/42",
+  "test_scn_chain_gen_guard.sh": "31/31",
+  "chain_tick.sh --dry-run(라이브 · 사슬 0)": "무음 rc 0",
+  "test_round_core_v1_p4_chain.R(22:17 · 코어 무변경)": "159/159",
+  "계약 시험 5종(22:15 · 대상 파일 무변경)": "전부 통과"
+ },
+ "commands_for_lead": [
+  "morning_run.sh:331,333 제외 정규식 (unattended_line|task_health|paper_router) 에 chain_tick|chain_gen 추가 제안(F11)",
+  "06_Registry/superfan_components.json reinforce_chain.schedule 을 '세션 또는 무인 틱(02_Infrastructure/ops/chain_tick.sh · Qvest_StandingBoard 매시 37분)'으로 갱신 제안(F12)"
+ ],
+ "backup_of_pre_refix": "scratchpad/wfC/chain_tick/refix_orig/"
+}
