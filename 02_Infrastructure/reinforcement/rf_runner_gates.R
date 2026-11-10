@@ -640,6 +640,21 @@ rf_a_ctx <- function(rctx, entries, base_id, axes = NULL, gate = NULL, dossier_r
   e$fdv_stale(art, root)
 }
 
+#' 규칙 변경 수혜 표식 판독(v10.2) — 권위 기록(authoritative_remeasure.json)에서 읽는다. 표식이 없으면 수혜 아님(none).
+#'   selection_regrade$benefits_from_rule_change = 선택 현실 점검 재채점 도구가 남긴다 · rule_change_benefit$benefit = 규칙 판을 올리는
+#'   일괄 재채점이 남긴다(규칙 판 · 직전 등급과 함께).
+.rfg_rule_benefit <- function(au) {
+  if (!is.list(au)) return(list(benefit = FALSE, state = "unknown", reason = ""))
+  s <- au[["selection_regrade"]]; b <- au[["rule_change_benefit"]]
+  hit <- c(if (is.list(s) && isTRUE(s[["benefits_from_rule_change"]]))
+             sprintf("선택 관문 재채점(%s)으로 %s → %s", .rfg_s1(s[["rules_version"]]), .rfg_s1(s[["prior_essence_grade"]]), .rfg_s1(au[["essence_grade"]])),
+           if (is.list(b) && isTRUE(b[["benefit"]]))
+             sprintf("규칙 판 %s 재채점으로 %s → %s", .rfg_s1(b[["rules_version"]]), .rfg_s1(b[["prior_essence_grade"]]), .rfg_s1(au[["essence_grade"]])))
+  if (!length(hit)) return(list(benefit = FALSE, state = "none", reason = ""))
+  list(benefit = TRUE, state = "beneficiary",
+       reason = paste0("규칙 변경 수혜 기록 — ", paste(hit, collapse = " · "), " · 규칙 발효 전에 잰 기록이다(발효 뒤 재측정 전 A 자격 없음)"))
+}
+
 #' A 자격 관문 (P0-12 · 순수 · rf_grade_a_hold 흡수)
 #' @param entry   원장 entry(carry$overlay — 자기 층 판별). NULL 허용.
 #' @param attempt list(n, cell_code, grade, essence, artifacts [, adversary, vintage_flags, measurement_regime]) — 수집 시점의 새 칸이면
@@ -669,6 +684,13 @@ rf_a_eligibility <- function(entry, attempt, spec, ctx) {
   fx$factor_db_vintage <- if (is.na(fv$stale)) "unknown" else if (isTRUE(fv$stale)) "stale" else "current"
   fx$factor_db_vintage_reason <- .rfg_s1(fv$reason)
   if (isTRUE(fv$stale)) add("factor_db_stale", .rfg_s1(fv$reason))
+  # ⓪-c rule_change_beneficiary (v10.2 · 2026-11-10 · 도훈 결정 GRADE-V33-NOTCH-ASOF-AND-RULE-CHANGE-PROCEDURE-20261110) — 등급 규칙이
+  #   바뀌기 전에 잰 기록이 그 규칙 변경으로 등급이 오른 것(수혜 기록)은 그 등급으로 A 자격을 얻지 못한다. 새 규칙은 발효 뒤 등록 · 측정분부터
+  #   자격 판정에 쓴다(.claude/rules/measurement-graduation.md §3b). 표식 = 권위 기록의 selection_regrade$benefits_from_rule_change
+  #   (programs/selection_regrade.R) 또는 rule_change_benefit$benefit(일괄 재채점 도구). 상시 보류(설정으로 끌 수 없음 · RF_A_HOLD_CODES 밖).
+  rb <- .rfg_rule_benefit(au)
+  fx$rule_change_benefit <- rb$state
+  if (isTRUE(rb$benefit)) add("rule_change_beneficiary", rb$reason)
   # ① legacy_regime — 칸 규약 ≠ 현행 규약(P0-04 결정 EXEC-PRICE · rebase 전 측정은 현행 규약의 A 가 아니다)
   r <- rf_cell_regime(attempt, ctx)
   fx$regime <- r$regime; fx$regime_basis <- r$basis; fx$regime_current <- ctx$regime %||% NA_character_
@@ -782,7 +804,7 @@ rf_a_eligibility <- function(entry, attempt, spec, ctx) {
   if (!isTRUE(ctx$rule_ready)) add("rule_pending", "판정 규칙 미확정 — D-B: 보고만")
   act <- if (isTRUE(G$ok)) G$active else stats::setNames(rep(TRUE, length(RF_A_HOLD_CODES)), RF_A_HOLD_CODES)
   u <- unique(fired)
-  on <- u[vapply(u, function(k) k %in% c("gate_config", "control_cell", "factor_db_stale") || isTRUE(act[k]), logical(1))]
+  on <- u[vapply(u, function(k) k %in% c("gate_config", "control_cell", "factor_db_stale", "rule_change_beneficiary") || isTRUE(act[k]), logical(1))]
   list(eligible = !length(on), codes = on, inactive = setdiff(u, on), fired = u, detail = detail, facts = fx,
        gate_source = G$source, gate_active = names(act)[act], regime_current = cur, self_unverified = isTRUE(su$hold),
        evaluated_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"))

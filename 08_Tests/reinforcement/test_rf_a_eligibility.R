@@ -331,6 +331,45 @@ el_off <- elig_of(mk_att(34, "B2_6", mk_art("20261105_090000_3"), sp_ok))
 chk(!("factor_db_stale" %in% el_off$fired) && identical(el_off$facts$factor_db_vintage, "unknown"),
     "G5 [대조] 원장이 없는 루트에서는 같은 산출이 보류되지 않는다 — G1 의 보류는 원장 판정에서 왔다", codes_of(el_off))
 
+## ── H. rule_change_beneficiary (v10.2 · 2026-11-10 · 도훈 결정 GRADE-V33-NOTCH-ASOF-AND-RULE-CHANGE-PROCEDURE-20261110) ──
+##   등급 규칙이 바뀌기 전에 잰 기록이 그 변경으로 등급이 오른 것(수혜 기록)은 그 등급으로 A 자격을 얻지 못한다(상시 보류).
+##   표식 = 권위 기록의 selection_regrade$benefits_from_rule_change(재채점 도구) · rule_change_benefit$benefit(일괄 재채점).
+cat("=== H. rule_change_beneficiary ===\n")
+mark_art <- function(tag, kind) {
+  d <- mk_art(tag); p <- file.path(d, "authoritative_remeasure.json"); au <- fromJSON(p, simplifyVector = FALSE)
+  if (identical(kind, "sel"))  au$selection_regrade <- list(benefits_from_rule_change = TRUE, rules_version = "v3.4", prior_essence_grade = "B")
+  if (identical(kind, "rule")) au$rule_change_benefit <- list(benefit = TRUE, rules_version = "v3.3", prior_essence_grade = "B")
+  if (identical(kind, "same")) au$selection_regrade <- list(benefits_from_rule_change = FALSE, rules_version = "v3.4", prior_essence_grade = "A")
+  writeLines(toJSON(au, auto_unbox = TRUE, null = "null"), p); d
+}
+h1 <- elig_of(mk_att(41, "B2_6", mark_art("h_sel", "sel"), sp_ok))
+h2 <- elig_of(mk_att(42, "B2_6", mark_art("h_rule", "rule"), sp_ok))
+h3 <- elig_of(mk_att(43, "B2_6", mark_art("h_same", "same"), sp_ok))
+chk("rule_change_beneficiary" %in% h1$codes && !isTRUE(h1$eligible) && identical(h1$facts$rule_change_benefit, "beneficiary"),
+    "H1 선택 관문 재채점으로 등급이 오른 발효 전 기록 → rule_change_beneficiary 보류(발행 막음)", codes_of(h1))
+chk("rule_change_beneficiary" %in% h2$codes && !isTRUE(h2$eligible),
+    "H2 규칙 판 일괄 재채점의 수혜 표식 → 같은 보류", codes_of(h2))
+chk(!("rule_change_beneficiary" %in% h3$fired) && identical(h3$facts$rule_change_benefit, "none") && identical(codes_of(h3), codes_of(e0)),
+    "H3 [대조] 재채점했지만 등급이 오르지 않은 기록 → 보류 없음(다른 판정은 기준 사례와 같다)", codes_of(h3))
+chk(identical(e0$facts$rule_change_benefit, "none"), "H4 표식 없는 기록 = 수혜 아님(none)")
+chk(!("rule_change_beneficiary" %in% RF_A_HOLD_CODES) && !("rule_change_beneficiary" %in% names(gcfg$holds)),
+    "H5 상시 보류 — 설정 on/off 집합에 없어 끌 수 없다")
+# [돌연변이] 상시 보류 목록에서 그 코드를 뺀 사본 — 표식이 있어도 발행된다(= H1 이 그 목록에 기대고 있음을 실증). 소스 텍스트 치환 · 치환 성사 단정.
+src_g <- readLines(file.path(ROOT, "02_Infrastructure/reinforcement/rf_runner_gates.R"), encoding = "UTF-8", warn = FALSE)
+hit_g <- grepl('"factor_db_stale", "rule_change_beneficiary")', src_g, fixed = TRUE)
+mut_g <- sub('"factor_db_stale", "rule_change_beneficiary")', '"factor_db_stale")', src_g, fixed = TRUE)
+MG <- file.path(S, "rf_runner_gates_mut_h.R"); writeLines(enc2utf8(mut_g), MG, useBytes = TRUE)
+ME <- new.env(parent = globalenv())
+invisible(capture.output(suppressMessages({
+  sys.source(file.path(ROOT, "02_Infrastructure/reinforcement/reinforce_ledger.R"), envir = ME)
+  sys.source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_spec_sig.R"), envir = ME)
+  sys.source(MG, envir = ME) })))
+att_m <- mk_att(44, "B2_6", mark_art("h_mut", "sel"), sp_ok); ent_m <- list(base_id = BID, status = "active", attempts = list(att_m))
+hm <- ME$rf_a_eligibility(ent_m, att_m, NULL, ME$rf_a_ctx(ME$rf_runner_ctx(S), list(ent_m), BID, axes = NULL))
+chk(sum(hit_g) == 1L && isTRUE(hm$eligible) && "rule_change_beneficiary" %in% hm$inactive,
+    "H6 [돌연변이] 상시 보류 목록에서 뺀 사본 → 수혜 기록이 발행된다(치환 1곳 성사) — H1 이 그 차이를 본다",
+    sprintf("치환 %d · eligible %s · codes %s", sum(hit_g), isTRUE(hm$eligible), codes_of(hm)))
+
 unlink(c(S, S2, S3, LCOPY), recursive = TRUE, force = TRUE)
 cat(sprintf("\n합계: 통과 %d · 실패 %d · 생략 %d\n", PASS, FAIL, SKIP))
 cat(sprintf('{"test":"rf_a_eligibility","pass":%d,"fail":%d,"total":%d,"skipped":%d}\n', PASS, FAIL, PASS + FAIL, SKIP))

@@ -46,6 +46,14 @@ paths:
   - **Graduation tier (불변 — essence Grade A 의 HARD 3종)**: 위 HARD 3종(PORT_t 2.95·oos_retention 0.7·calmar 0.64) — screening pass는 이 계층에 어떤 면제도 주지 않음. screening은 "버릴 후보"와 "다른 방식으로 쓸 후보"를 구분하는 라벨일 뿐. ★**분포-공간 증거는 자본 tier 에 어떤 자격도 주지 않는다 (2026-08-22 신설)** — `DISTRIBUTION_TARGET` 은 screening tier 라벨이며 HARD 3종은 **forge-authoritative 포트폴리오 수치로만** 판정한다. 분포 통계량(중앙값 스프레드·왜도·분위 프로파일)으로 PORT_t·oos_retention·calmar 를 **대체하거나 근사하는 주장은 §1 위반**이다. 분포 재료가 자본으로 가는 유일한 경로 = 소비 형태를 바꿔 **평균 basis 포트폴리오 수치를 실제로 산출**한 뒤 그 수치로 판정.
 - **훅 배선 완료 (2026-07-03 도훈 confirm, 아키텍처 감사)**: `discovery_graduation_gate.sh`가 HARD 3종(PORT_t·oos_retention·calmar)을 fail-closed 실차단 + sweep-DSR 미산출 block.
 
+## §3b 등급 규칙을 바꾸는 절차 (2026-11-10 도훈 결정 GRADE-V33-NOTCH-ASOF-AND-RULE-CHANGE-PROCEDURE-20261110)
+등급식 · 노치 · 관문 · 문턱을 바꿀 때 지키는 세 가지다. 규칙이 결과를 보고 따라가면 등급은 측정이 아니라 사후 선택이 된다.
+1. **결정은 익명 집계로** — 변경을 결정하기 전에는 그 변경으로 등급이 오르내릴 **개별 기록을 열지 않는다**. 결정 근거 = 문헌 · 통계 논거 · 합성 자료 대조 · 등급 띠 전이표의 **건수**(기록 id · 전략명 · 프로그램명 없이). 결정 기록(`decision_register`)에 무엇을 보고 정했는지 적는다(판단 Superfan T4 가 이 문구로 확인한다 — 규약 §13-1).
+2. **수혜 기록 표식** — 새 규칙으로 저장분을 다시 채점해 등급이 **측정 때보다 오른** 기록은 권위 기록에 표식을 남긴다: `selection_regrade$benefits_from_rule_change`(`programs/selection_regrade.R`) · `rule_change_benefit{benefit, measured_grade, rules_version}`(`programs/grade_v3_backfill.R::gv3b_benefit_mark` — 한 번 오른 기록은 다음 재채점에서 변화가 없어도 수혜로 남는다).
+3. **발효 뒤 등록분부터** — 새 규칙은 발효 뒤에 등록 · 측정한 것의 자격 판정에 쓴다. 수혜 기록은 재채점 등급으로 A 자격을 얻지 못한다: A 자격 관문의 상시 보류 `rule_change_beneficiary`(`reinforcement/rf_runner_gates.R` · 설정으로 끌 수 없음 · 발효 뒤 재측정이 풀어 준다). 재채점 값 자체는 비교 · 진단용으로 판 표식과 함께 남긴다.
+- 검사: `08_Tests/reinforcement/test_rf_a_eligibility.R` H 절(보류 발화 · 대조 · 돌연변이) · `08_Tests/programs/test_grade_v3_backfill_mark.R`(표식 판정 · 배선 · 돌연변이).
+- 문턱 완화는 이 절차로도 열리지 않는다(INV-7 · 고정 축 · 등급 문턱 재보정 = 도훈 권한).
+
 ## §4 BOOK 등록 규범 (★v10 2026-08-29 — 구 "governor admission" 대체)
 - **등록 자격 = essence Grade A + Judge(PIT 전담) `judge_verdict_v2::pit_pass=true`.** writer(`02_Infrastructure/book/book_registry.R::register_book_entry`)가 verdict 를 **실제로 읽어** 검증한다(진술 불가). 예외 = 도훈 mandate(`grade_basis="dohoon_mandate_*"` — 선례 BOOK_0001 = 구 PG2).
 - **등록 자동화 금지** — 도훈 confirm 후 세션이 writer 를 호출한다. 직접 편집은 `book_write_guard.sh` 가 차단. 엔트리 삭제 금지(append-only — 상태 변경은 status 필드만).

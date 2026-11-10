@@ -16,6 +16,17 @@
 #==============================================================================
 suppressPackageStartupMessages({ library(data.table); library(jsonlite); library(parallel) })
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
+#' 규칙 변경 수혜 표식 — 저장분 재채점(규칙 판 올림)이 측정 때 등급보다 등급을 올렸는가.
+#'   측정 때 등급 = 표식이 들고 다니는 measured_grade → 없으면 재채점 이력의 가장 이른 등급 → 없으면 직전 등급.
+#'   한 번 오른 기록은 다음 재채점에서 '변화 없음'이어도 수혜로 남는다(측정 때 등급 이하로 내려가야 풀린다).
+#'   소비 = A 자격 관문 상시 보류 rule_change_beneficiary(reinforcement/rf_runner_gates.R) · 규칙 = measurement-graduation §3b.
+gv3b_benefit_mark <- function(A, new, old, old_rv, rules_ver, at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")) {
+  rank <- c(F = 0L, C = 1L, B = 2L, A = 3L)
+  h0 <- A$grade_v3_backfill$history %||% list()
+  m0 <- as.character(A$rule_change_benefit$measured_grade %||% (if (length(h0)) h0[[1]]$essence_grade else old) %||% old)
+  list(benefit = isTRUE(unname(rank[new] > rank[m0])), measured_grade = m0, rules_version = rules_ver, prior_rules_version = old_rv,
+       prior_essence_grade = old, at = at)
+}
 args <- commandArgs(trailingOnly = TRUE)
 argv <- function(k, d = NULL) { i <- match(k, args); if (is.na(i) || i == length(args)) d else args[i + 1L] }
 WRITE <- "--write" %in% args
@@ -79,6 +90,11 @@ one <- function(p) tryCatch({
   if (rescore) rs <- sub("^v3: [^|]*\\| v921 [^:]*: ", "", rs)
   pre <- if (rescore && !hf) sub("\\| v921 [^:]*: $", paste0("| v921 ", as.character(A$grade_v921 %||% "NA"), ": "), pre) else pre
   A$reasons <- paste0(pre, rs)
+  ## 규칙 변경 수혜 표식(2026-11-10 · 도훈 결정 GRADE-V33-NOTCH-ASOF-AND-RULE-CHANGE-PROCEDURE-20261110 · measurement-graduation §3b):
+  ##   규칙 판 재채점은 그 판이 발효되기 전에 잰 기록에 새 규칙을 입히는 일이다. 측정 때 등급(기록된 가장 이른 등급)보다 오르면 수혜 기록 —
+  ##   A 자격 관문이 상시 보류한다(rf_runner_gates.R rule_change_beneficiary · 발효 뒤 재측정 전). 표식은 다음 재채점에서 측정 때 등급
+  ##   이하로 내려가야 풀린다(한 번 오른 뒤 '변화 없음'으로 지워지지 않게 measured_grade 를 들고 다닌다).
+  if (rescore && !hf) A$rule_change_benefit <- gv3b_benefit_mark(A, new, old, old_rv, RULES_VER)
   A$grade_v3_backfill <- list(at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), tool = "02_Infrastructure/programs/grade_v3_backfill.R",
                               decision = if (rescore) paste0("decision_register ", .gv3_rv_decision(RULES_VER), "(규칙 판 재채점 ", old_rv, " → ", RULES_VER, ")")
                                          else "decision_register GRADE-V3-PROMOTE",
@@ -109,7 +125,7 @@ res <- if (WORKERS > 1L) {
   source(file.path(ROOT, "02_Infrastructure/ops/qv_psock.R"))   # 포트 예약 회피(금칙 ⑧ · 11-09)
   cl <- qv_psock_cluster(WORKERS)
   tryCatch({
-    clusterExport(cl, c("ROOT", "%||%", "init_worker"))
+    clusterExport(cl, c("ROOT", "%||%", "init_worker", "gv3b_benefit_mark"))
     invisible(clusterEvalQ(cl, eval(init_worker)))
     parLapplyLB(cl, todo, one)
   }, finally = stopCluster(cl))
