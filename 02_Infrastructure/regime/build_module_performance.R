@@ -508,8 +508,14 @@ res <- list(schema_version="v3.1", generated=as.character(Sys.Date()),
             regime_pit_c11=.BMP_C11$c11_consumption_record(.C11G, site = "build_module_performance",
               mode = "window_start(b): 모듈 수익 창 시작(직전 행)", n_rows = length(out), root = PROJ),
             regimes=regimes, metric_type="backtested_realized (sim_result NAV, 실측-only)",
-            grade_floor=.L2_FLOOR,                       # ★v10: 이 산출물에 실제로 쓰인 floor (검사 재도출용)
+            ## ★2026-11-10(전체 감사): 풀 편입 축을 산출물이 스스로 말한다. role 모드(10-06 '2계층 풀 = 역할 대표')에서 편입 기준은
+            ##   역할 등급 B+ 이고 essence 등급 floor 가 아니다 — 전에는 role 모드에서도 grade_floor = "B" 만 적혀 하류가 이 풀을
+            ##   'essence B+ 풀'로 오독할 수 있었다. n_floor_excluded 도 role 모드에서는 '역할 대표가 아닌 칸의 수'다.
+            pool_mode=.POOL_MODE,
+            admission_axis=if (identical(.POOL_MODE, "role")) "role_grade_B_plus(strategy_roles.json 역할 대표)" else "essence_grade_floor",
+            grade_floor=.L2_FLOOR,                       # ★v10: essence 등급 floor — legacy 모드의 편입 기준 · role 모드에서는 참고값(편입 기준 아님)
             n_floor_excluded=.floor_excluded,
+            n_floor_excluded_meaning=if (identical(.POOL_MODE, "role")) "역할 대표가 아닌 칸의 수" else "essence 등급 floor 미달 칸의 수",
             n_defensive_admitted=.def_admitted,
             defensive_route=.DEF_ROUTE,
             ## ★자격 판정 사유 집계 — 부재/거짓/판정불가를 가른 채로 남긴다.
