@@ -13,8 +13,10 @@ description: 1계층 알파 서칭 (v10.01) — 논문 1편을 완전 충실구�
 
 1. **명시값 전부 복제**: 시그널 정의(회귀기간·skip·표준화·랭킹) · 비중 방식 · **종목수
    (상한 없음 — 데실 100종 그대로)** · **롱숏 그대로**(long-leg 사상 폐지) · 리밸 주기.
-2. **유일한 변경 = 유니버스·기간 = 측정 축**(정본 `constraint_defaults.json::measurement_axis` · 현행 epoch `all_hyg_2000_v1`
-   = 전 종목 + 위생 · 2000-01-01~ · 2026-10-13 전환 · 구 `K200_KQ150` · 2005~). 러너가 적재 직후 K200/KQ150 플래그를
+2. **유일한 변경 = 유니버스·기간 = 측정 축**(정본 `constraint_defaults.json::measurement_axis` · 현행 epoch `all_hyg_px1000_2000_v1`
+   = 전 종목 + 위생 + 동전주 바닥(전날 수정 종가 1,000원 미만 제외 · 10-17) · 2000-01-01~ · 실효 시작 MC3 B · 구 `all_hyg_2000_v1`(10-13~16) · `K200_KQ150` · 2005~).
+   ★측정 기록(`authoritative_remeasure.json`)에는 러너가 팩터 DB 판 표식 `factor_db_vintage`(측정 시각 · 수리 원장 md5 · 측정 순간 낡음 판정)를 싣는다 —
+   수리 원장(`06_Registry/factor_db_vintage.json`)보다 앞선 측정은 A 자격(`factor_db_stale`) · 기저 풀 자격이 없다(재측정 = 검증기만 재실행). 러너가 적재 직후 K200/KQ150 플래그를
    위생 멤버십(PIT 시변)으로 바꿔 끼우고 시작일을 `.RP_START_DATE` 로 준다 — 엔진은 플래그로 자르고 시작일 리터럴을 쓰지 않으며,
    러너에 `universe`·`start_date` 를 넘기지 않는다(넘기면 그 값이 측정 축을 덮는다). 등급은 같은 epoch 안에서만 비교한다.
 3. 유동성 필터 = 논문 우선(`paper_faithful` — 논문 무명시면 무필터). LiqPass 미적용.

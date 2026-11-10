@@ -410,6 +410,55 @@ source(file.path(.RP_INFRA, "contracts", "measurement_axis.R"))   # MC1 · MC3 �
   }, error = function(e) list(status = "error", why = conditionMessage(e)))
 }
 
+# ── 팩터 DB 판 표식 (v10.2 · 2026-11-10 레인 D 감사 — README §5-4 '아직 잇지 못한 것' ①) ──
+#   왜: 낡음 판정(contracts/factor_db_vintage.R::fdv_stale)은 실행 시각만으로도 되지만, 기록에 '어느 수리 원장 판 위에서 쟀는지'가 없으면
+#     원장이 나중에 고쳐지거나(추가 전용 위반 · 완료 시각 정정) 다른 기기에서 읽힐 때 사후 재도출이 불가능하다. 측정 순간의 원장 지문을 남긴다.
+#   무엇: measured_at(= run_id 실행 시작 — fdv_measured_at 과 같은 기준) · 원장 md5 · 수리 id/완료 시각 · 진행 중 수리 · 선언 팩터(칸 사양이 있을 때만) ·
+#     측정 순간의 낡음 판정(stale_at_measure — 진행 중 수리가 있으면 TRUE) · 팩터 DB 빌드 도장(build_hash.txt · 월 파일 수 · 최신 mtime).
+#   계약 함수는 격리 환경에 적재해 그대로 부른다(사본 · 재구현 없음). code_root = 계약 파일 위치 · data_root = 원장 · 팩터 DB 위치(운영은 둘 다 .RP_ROOT).
+#   실패는 측정을 막지 않는다 — status = "error: …" 로 남고, 소비자(A 자격 관문 · 기저 풀)는 종전대로 실행 시각으로 판정한다(fail-open 이 아니라 판정 경로 불변).
+.rp_fdv_stamp <- function(out_dir, run_id, code_root = .RP_ROOT, data_root = code_root) {
+  rid <- regmatches(as.character(run_id), regexpr("[0-9]{8}_[0-9]{6}", as.character(run_id)))
+  t0 <- if (length(rid)) as.POSIXct(rid, format = "%Y%m%d_%H%M%S", tz = "Asia/Seoul") else as.POSIXct(NA)
+  base <- list(schema = "rp_factor_db_vintage_stamp_v1", contract = "02_Infrastructure/contracts/factor_db_vintage.R",
+               measured_at = if (is.na(t0)) NA_character_ else format(t0, "%Y-%m-%dT%H:%M:%S+0900"),
+               measured_at_basis = "run_id(실행 시작) — fdv_measured_at 과 같은 기준")
+  tryCatch({
+    e <- new.env(parent = globalenv())
+    sys.source(file.path(code_root, "02_Infrastructure", "contracts", "factor_db_vintage.R"), envir = e, keep.source = FALSE)
+    lp <- file.path(data_root, "06_Registry", "factor_db_vintage.json")
+    L <- e$fdv_ledger(data_root, path = lp)
+    v <- e$fdv_stale(out_dir, ledger = L)
+    df <- e$fdv_declared_factors(out_dir)
+    fdb <- file.path(data_root, ".cache", "factor_db")
+    bh <- file.path(fdb, "build_hash.txt")
+    mf <- list.files(fdb, pattern = "^factor_db_[0-9]{6}\\.parquet$", full.names = TRUE)
+    c(base, list(status = "ok", ledger = "06_Registry/factor_db_vintage.json", ledger_md5 = unname(tools::md5sum(lp)),
+                 ledger_schema = L$schema, valid_from = v$valid_from,
+                 repairs = lapply(L$entries, function(x) list(id = x$id, completed_at = x$completed_at %||% NA_character_)),
+                 in_progress = as.list(vapply(Filter(function(x) is.null(x$completed_at), L$entries), function(x) as.character(x$id), "")),
+                 declared_factors = if (is.null(df)) NA else as.list(df),
+                 declared_factors_note = if (is.null(df)) "알 수 없음(엔진 기저 · 칸 사양 없음) — 범위가 팩터 목록인 수리도 닿은 것으로 본다(계약 규칙)" else NA_character_,
+                 stale_at_measure = v$stale, stale_hits = as.list(v$hits %||% character(0)),
+                 factor_db_build = list(build_hash = if (file.exists(bh)) substr(paste(readLines(bh, warn = FALSE), collapse = " "), 1L, 200L) else NA_character_,
+                                        n_month_files = length(mf),
+                                        latest_mtime = if (length(mf)) format(max(file.mtime(mf)), "%Y-%m-%dT%H:%M:%S") else NA_character_)))
+  }, error = function(err) c(base, list(status = paste("error:", conditionMessage(err)))))
+}
+# 권위 기록 원자적 쓰기 — 같은 폴더 임시 파일에 쓰고 이름을 바꾼다(측정 중 크래시 · 디스크 오류가 반쪽 JSON 을 남기면 소비자가 파싱 실패를
+#   '미측정'과 구분하지 못한다). 쓰기 실패면 임시 파일을 지우고 오류를 그대로 올린다(종전 write_json 과 같은 실패 의미).
+.rp_write_json_atomic <- function(x, path, ...) {
+  tmp <- paste0(path, ".tmp", Sys.getpid())
+  ok <- FALSE
+  on.exit(if (!ok) unlink(tmp, force = TRUE), add = TRUE)
+  jsonlite::write_json(x, tmp, ...)
+  jsonlite::fromJSON(tmp, simplifyVector = FALSE)          # 되읽기 — 파싱 안 되는 파일을 권위 이름으로 올리지 않는다
+  if (file.exists(path)) unlink(path, force = TRUE)
+  if (!file.rename(tmp, path)) stop("[replication] 권위 기록 이름 바꾸기 실패: ", path)
+  ok <- TRUE
+  invisible(path)
+}
+
 # ★"호출자가 고르지 않았다" 는 **부재(NULL)** 로 표현한다 — 특정 값을 표식으로 삼으면
 #   그 값을 진짜로 고른 호출자와 구분되지 않는다(2026-08-31 실사고).
 # ★종목수 상한 (도훈 지시 2026-08-31). 정본 = constraint_defaults.json::max_names 25
@@ -878,9 +927,12 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
     auth$essence_diag <- .dg
     rm(.dg, .eff, .dev, .alw)
   }
+  # 팩터 DB 판 표식(v10.2 · 레인 D) — 위 .rp_fdv_stamp 머리 주석. 끄기 = QVEST_RP_FDV_STAMP=0(검사 격리 전용)
+  if (!identical(Sys.getenv("QVEST_RP_FDV_STAMP", "1"), "0"))
+    auth$factor_db_vintage <- .rp_fdv_stamp(OUT_DIR, run_id, code_root = .RP_ROOT, data_root = PROJECT_ROOT)
   saveRDS(bt, file.path(OUT_DIR, "bt_result.rds"))
-  write_json(auth, file.path(OUT_DIR, "authoritative_remeasure.json"),
-             auto_unbox = TRUE, pretty = TRUE, digits = 6, na = "null")
+  .rp_write_json_atomic(auth, file.path(OUT_DIR, "authoritative_remeasure.json"),
+                        auto_unbox = TRUE, pretty = TRUE, digits = 6, na = "null")
   cat(sprintf("[replication] 권위 등급 = %s (15bps 판 · %s)\n", grade, integrity))
 
   # ---- 7-c. 2계층 모듈 풀 등재 (2026-09-07 신설 이음매) ----------------------

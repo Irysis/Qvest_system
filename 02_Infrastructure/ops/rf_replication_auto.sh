@@ -32,7 +32,10 @@ REQ="${QVEST_RP_REQUEST:-$ROOT/06_Registry/replication_request.json}"
 CFG="${QVEST_RF_CONFIG:-$ROOT/06_Registry/reinforce_auto_config.json}"
 # 모든 방법론 설정(10-17 · REPLICATION-ALL-METHODS-20261017 — 레인 표준 구성 · 구현 에이전트 시간 상한 · 생존 claim 회수). 덮기 = 검사 격리 전용
 RV_CFG="${QVEST_RP_VARIANTS_CFG:-$ROOT/06_Registry/rf_replication_variants.json}"
-LOG="$ROOT/.cache/scheduler_logs/replication_auto_$(date +%Y%m%d).log"
+# ★디스패처 로그도 상태 폴더를 따른다(2026-11-10 레인 D 감사) — 구판은 이 줄만 $ROOT/.cache 고정이라, 상태 폴더를 격리한 검사
+#   (test_replication_slots_lane.sh D1 등)의 디스패처 판정 줄(slots.py stderr · 가짜 논문 A.cpu/B.gpu)이 운영 로그에 섞였다
+#   (11-08 · 11-09 · 11-10 운영 로그 실측 — 11-10 은 그 줄뿐 · 감시기 lane_errors 가 이 파일을 읽는다). 운영 기본값은 그대로(.cache).
+LOG="${QVEST_RP_STATE_DIR:-$ROOT/.cache}/scheduler_logs/replication_auto_$(date +%Y%m%d).log"
 JLOG="${QVEST_RP_JLOG:-$ROOT/.cache/reinforce_auto_log.jsonl}"
 CLAIM="${QVEST_RP_CLAIM:-$ROOT/.cache/rf_replication.claim}"
 # ── ★다중 슬롯(2026-10-20 · WP3 · L1-SPEED-LEVERS-20261020) ─────────────────────────────────────────────────────────────
@@ -214,6 +217,10 @@ if d.get("status") == "in_progress" and not os.path.isdir(CLAIM):
     d["status"] = "pending"
     d["revived_from"] = "in_progress"
     d["revived_at"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+    # ★측정 도중 중단(2026-11-10 레인 D) — 검증기 시작 표식(rp_verify 가 남김)이 있으면 '측정 중에 죽었다'는 뜻이다. 아래 상태 전이 단계가
+    #   엔진 지문을 대조해 같으면 verify_interrupted(검증기만)로 보낸다 — 구판은 표식이 없어 감사를 통과한 엔진을 에이전트가 처음부터 다시 썼다.
+    if d.get("verify_engine_md5"):
+        d["revived_verify"] = True
     io.open(REQ, "wb").write(json.dumps(d, ensure_ascii=False, indent=1).encode("utf-8"))
     print("revived from in_progress (no claim)")
 elif d.get("status") == "failed_needs_session":
@@ -444,9 +451,16 @@ jl start "paper=$P_KEY" "url=$P_URL" "wdir=$WDIR" "lane_mode=$LANE_MODE" "lane_m
 # ★상태 전이 pending → in_progress (cleaner 의 distill_status 선례).
 #   claim 이 1차 방어지만, 검증이 20분 넘게 돌 수 있어 그 사이 다른 소비자가 들어오면
 #   LLM 호출이 중복된다. 상태가 그 창을 눈에 보이게 만든다(2026-08-30 실측: 중복 1회).
+# ★측정 도중 중단 판정(2026-11-10 레인 D 감사) — 되살린 요청에 검증기 시작 표식이 있고 지금 engine.R 지문이 그 표식과 같으면
+#   failure=verify_interrupted(아래 검증기만 분기) · 다르면(엔진이 바뀜 · 없음) 표식만 지우고 종전 경로. 표식은 매 착수에 지운다
+#   (rp_verify 가 측정 직전에 새로 남긴다) — 끝난 측정의 낡은 표식이 다음 착수를 검증기만으로 보내지 않게. 검사 = 08_Tests/scenarios/test_scn_repl_lane.sh L7.
 "$PY" -c "
-import io,json,time
+import io,json,time,hashlib,os
 d=json.loads(io.open(r'$REQ','rb').read().decode('utf-8'))
+eng=os.path.join(r'$WDIR','engine.R')
+vm=d.pop('verify_engine_md5',None); d.pop('verify_started_at',None)
+if d.pop('revived_verify',None) and vm and os.path.isfile(eng) and hashlib.md5(io.open(eng,'rb').read()).hexdigest()==vm:
+    d['failure']='verify_interrupted'; d['failure_detail']='측정(검증기) 도중 중단 뒤 되살림 — 엔진 지문 같음 · 에이전트 없이 검증기만'
 d['status']='in_progress'; d['started_at']=time.strftime('%Y-%m-%dT%H:%M:%S%z')
 io.open(r'$REQ','wb').write(json.dumps(d,ensure_ascii=False,indent=1).encode('utf-8'))"
 
@@ -467,6 +481,15 @@ io.open(r'$REQ','wb').write(json.dumps(d,ensure_ascii=False,indent=1).encode('ut
   fi
   # ★RP_LANE_MODE(FA-CLEAN-BASE-PATH) — 청정이면 검증기가 충실도 감사를 청정 조건(산출물 경로 비공개 + 같은 가드 표식)으로 부른다.
   #   가드 표식 자체는 여기서 싣지 않는다(검증기의 측정·원장 쓰기에 새면 안 된다 — 감사 스폰 한 번에만 검증기가 싣는다).
+  # ★검증기 시작 표식(2026-11-10 레인 D) — 측정 도중 크래시 · 전원 차단 · 기기 전환으로 claim 이 고아가 되면, 되살린 다음 착수가 이 표식과
+  #   engine.R 지문으로 '측정만 다시'를 고른다(위 상태 전이 단계 · verify_interrupted). 표식 쓰기 실패는 측정을 막지 않는다(종전 동작).
+  "$PY" -c "
+import io,json,time,hashlib,os
+p=r'$REQ'; eng=os.path.join(r'$WDIR','engine.R')
+d=json.loads(io.open(p,'rb').read().decode('utf-8'))
+if os.path.isfile(eng):
+    d['verify_engine_md5']=hashlib.md5(io.open(eng,'rb').read()).hexdigest(); d['verify_started_at']=time.strftime('%Y-%m-%dT%H:%M:%S%z')
+    io.open(p,'wb').write(json.dumps(d,ensure_ascii=False,indent=1).encode('utf-8'))" 2>>"$LOG" || jl verify_mark_failed "paper=$P_KEY"
   # QVEST_RP_REQUEST = 이 실행의 요청 파일(슬롯이면 슬롯 요청 · 구판이면 기본 경로 그대로) — 검증기 · 공급기가 같은 파일을 닫는다(WP3)
   QM_ROOT="$ROOT" RP_WDIR="$WDIR" RP_URL="$P_URL" RP_TITLE="$P_TITLE" RP_KEY="$P_KEY" QVEST_RP_REQUEST="$REQ" \
     QVEST_RP_JLOG="$JLOG" RP_IS_COMBO="${IS_COMBO:-0}" RP_COUNT_PAPER="${C_COUNT:-1}" RP_LANE_MODE="$LANE_MODE" \
@@ -531,7 +554,7 @@ rp_gpu_gate_pre_verify(){
   rp_slot_handoff "engine_gpu_dependency_pre_verify:${cl#* }" 1
 }
 # ★gpu_handoff(2026-10-20 · WP3) — CPU 슬롯이 측정 직전 GPU 엔진을 발견해 넘긴 요청. 엔진은 그대로(사전검사 통과분) → GPU 슬롯은 검증기만.
-if { [ "$PREV_FAIL" = "audit_not_run" ] || [ "$PREV_FAIL" = "refresh_lock_deferred" ] || [ "$PREV_FAIL" = "audit_ruled" ] || [ "$PREV_FAIL" = "session_reverify" ] || [ "$PREV_FAIL" = "gpu_handoff" ] || [ "$HAS_RULING" = "1" ]; } && [ -s "$WDIR/engine.R" ]; then
+if { [ "$PREV_FAIL" = "audit_not_run" ] || [ "$PREV_FAIL" = "refresh_lock_deferred" ] || [ "$PREV_FAIL" = "audit_ruled" ] || [ "$PREV_FAIL" = "session_reverify" ] || [ "$PREV_FAIL" = "gpu_handoff" ] || [ "$PREV_FAIL" = "verify_interrupted" ] || [ "$HAS_RULING" = "1" ]; } && [ -s "$WDIR/engine.R" ]; then
   rp_gpu_gate_pre_verify
   # ★refresh_lock_deferred(2026-09-24) — 검증기 직전 리프레시 배리어로 측정 없이 연기된 요청. 엔진은 멀쩡하다 → 검증기만.
   # ★audit_ruled(2026-10-14) — 감사 상충을 세션이 판정해 suspect 수용 · 진행으로 정한 요청(요청의 audit_ruling). 엔진은 그대로 →
@@ -542,6 +565,8 @@ if { [ "$PREV_FAIL" = "audit_not_run" ] || [ "$PREV_FAIL" = "refresh_lock_deferr
     jl verify_only_retry "paper=$P_KEY" "note=감사 상충 세션 판정 반영 — 에이전트 · 감사 재스폰 없이 검증기만(엔진 보존)"
   elif [ "$PREV_FAIL" = "session_reverify" ]; then
     jl verify_only_retry "paper=$P_KEY" "note=세션 판정 — 검증 계기 결함 수리 뒤 재검증(엔진 보존 · 에이전트 재스폰 없음)"
+  elif [ "$PREV_FAIL" = "verify_interrupted" ]; then
+    jl verify_only_retry "paper=$P_KEY" "note=측정 도중 중단 뒤 되살림(엔진 지문 같음) — 에이전트 없이 검증기(감사+측정)만 재실행(엔진 보존 · 재시도 예산 무소모)"
   elif [ "$PREV_FAIL" = "gpu_handoff" ]; then
     jl verify_only_retry "paper=$P_KEY" "note=CPU 슬롯이 넘긴 GPU 엔진 — 에이전트 없이 검증기(측정+감사)만(엔진 보존 · 사전검사 통과분)"
   else

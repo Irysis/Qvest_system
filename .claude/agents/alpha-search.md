@@ -16,7 +16,7 @@ skills: [alpha-search, qvest-telegram]
 2. **factor_engine.R 작성** — `02_Infrastructure/alpha_search/factor_engine_template.R` 복사 후 "팩터 정의" 블록 교체. **PIT 준수**(shift/rolling, 동일시점 참조 금지).
 3. **실행 (v10 충실구현)** — **선확인**: `bash 02_Infrastructure/ops/refresh_barrier.sh status` 가 `state=free` 가 아니면 측정 보류(잠금 해제 후 재시도 · 러너는 배리어를 안 본다). 그 뒤 전략 디렉터리로 `cd` 한 뒤 한 줄로:
    `Rscript -e 'source("02_Infrastructure/alpha_search/run_paper_replication.R"); run_paper_replication(strategy_name=, strategy_idea=, factor_engine_path=, portfolio_spec=<논문값>, source_paper=list(url="..."))'`
-   — 엔진은 `FACTORS(Date,Ticker,Score)` 또는 `PORTFOLIO(Date,Ticker,Weight[,Leg])` 형태 둘 다 허용. 유일한 축 변경 = 유니버스·기간 = **측정 축**(현행 epoch `all_hyg_2000_v1` = 전 종목 + 위생 · 2000-01-01~ — 러너가 적재 직후 K200/KQ150 플래그를 위생 멤버십으로 바꿔 끼우고 시작일을 `.RP_START_DATE` 로 준다 · 엔진은 플래그로 자르고 시작일 리터럴을 쓰지 않는다 · `universe`·`start_date` 인자는 넘기지 않는다). 등급은 15bps 순비용 판(논문 명시값 병기).
+   — 엔진은 `FACTORS(Date,Ticker,Score)` 또는 `PORTFOLIO(Date,Ticker,Weight[,Leg])` 형태 둘 다 허용. 유일한 축 변경 = 유니버스·기간 = **측정 축**(현행 epoch `all_hyg_px1000_2000_v1` = 전 종목 + 위생 + 전날 수정 종가 1,000원 미만 제외 · 2000-01-01~ · 정본 `constraint_defaults.json::measurement_axis.active` — 러너가 적재 직후 K200/KQ150 플래그를 위생 멤버십으로 바꿔 끼우고 시작일을 `.RP_START_DATE` 로 준다 · 엔진은 플래그로 자르고 시작일 리터럴을 쓰지 않는다 · `universe`·`start_date` 인자는 넘기지 않는다). 등급은 15bps 순비용 판(논문 명시값 병기).
    (`run_alpha_search()` 는 폐지가 아니라 **실투형 측정 도구**로 존치 — 강화·재측정 경로에서 쓴다.)
 4. **리포트 해석** — 권위 등급은 `authoritative_remeasure.json::essence_grade` **만** 인용한다(손계산·재구성 금지). ★`hurdle` 등급은 proxy 진단이라 **판정 인용 금지**(CLAUDE.md). 텔레그램은 러너가 `[1계층]` 표제로 자동 발송.
 
