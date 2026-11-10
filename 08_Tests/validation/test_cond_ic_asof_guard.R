@@ -387,7 +387,7 @@ last <- if (length(lb)) lb[length(lb)] else ""
 chk(length(tau_l) == 1L && identical(last, pit[tau_l]) && grepl("ORGANIC-DE", last, fixed = TRUE) &&
       grepl("사람·등급·Judge·BOOK·전략 구현은 전기간 그대로", last, fixed = TRUE) && !any(pit == ORG_OLD),
     "E1 pit.md Lockbox 절 끝 = 정보 경계 τ_D 2022-12-31 결정문(D6 · ORGANIC-DE 승계 · 사람 쪽 판정 전기간 · 1회 · 구 문장 잔존 0)")
-v6 <- sec("## V6 Gap-Directed")
+v6 <- sec("## 조건부 IC 소비")   # (2026-11-10) 절 이름 개정 — 구 '## V6 Gap-Directed 가설'의 QEPM 단계 문구를 빼고 살아 있는 규칙만 남겼다
 chk(any(grepl("Usable_Date <= 결정 시점`의 조건부 IC", v6, fixed = TRUE)) && any(grepl("as-of 판 미제공 시 사용 안 함", v6, fixed = TRUE)) &&
       !any(grepl("conditional_ic_matrix.csv` → 조건부 IC 높은 팩터 우선", v6, fixed = TRUE)),
     "E2 pit.md V6 절 = Usable_Date <= 결정 시점 조건부 IC · as-of 판 미제공 시 사용 안 함(구 문언 없음)")

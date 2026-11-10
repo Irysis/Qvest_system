@@ -83,7 +83,7 @@ A 가 안 나온 이유는 검증 부족이 아니라 ① 한 계보에 갇힌 �
    사슬도 '사슬이라 면제'에 기대지 않는다 — 끝나면 기저와 모든 걸음 칸을 시행 집합으로 최종 후보를 다시 채점한다. 스윕형 라운드의 최종 후보도 같다(`programs/selection_regrade.R`).
 4. **의식은 규칙에, 속도는 후보에** — 규칙은 프로그램에 한 번 등록(상설 판 — round_core README '상설 판')하고 후보를 흘린다. P1 상설 자격(P1S01)부터 출시한다.
 5. **막지 않는다** — 환경 핀(운영 파일 · 패키지)은 측정을 시작할 때 건다. 등록만 되고 측정을 못 시작한 라운드가 다른 프로그램 · 코어 출시 · 결함 수리를 묶고 있으면, 등록본을 보존한 채 그 라운드를 뒤로 미루고 묶인 것부터 푼다(재개 때 재핀 — 사전등록 내용은 바꾸지 않는다).
-6. **닫으면 남긴다** — 종료는 다음 탐침 2개 이상(없으면 사유) · 교훈 · 목표 축 판독을 결과 원장(`06_Registry/round_outcomes.jsonl`)에 쓴다. 글에 정보 경계 뒤 날짜가 있으면 닫히지 않는다.
+6. **닫으면 남긴다** — 종료는 다음 탐침 2개 이상(없으면 사유) · 교훈 · 목표 축 판독을 결과 원장(`06_Registry/round_outcomes.jsonl` — 2026-11-10 현재 미생성 · 첫 `round.sh close` 가 만든다)에 쓴다. 글에 정보 경계 뒤 날짜가 있으면 닫히지 않는다.
    ```bash
    bash 04_Research/programs/_lib/round_core/round.sh <round_dir> close --note "<해석>" --probe "<다음 탐침 1>" --probe "<다음 탐침 2>" [--lesson "<교훈>"] [--r7 noise|signal] --p2 <id> --t2 <id>
    Rscript -e 'source("04_Research/programs/_lib/round_core/v1/load.R"); writeLines(rc_outcomes_md(rc_outcomes_path(), "<프로그램 id>"))'   # 다음 설계의 출발점
@@ -206,7 +206,7 @@ long-only · ≤25종 · **Σw ≤ 1(잔여 현금)** · **전 종목 + 위생 �
 
 `morning_run.sh`: [0/3] 수집 → [0.5/3] 트리아지 v5(엔진 분류) → [0.51] `program_paper_sync.R`(엔진별 재료 큐) →
 [0.52] `paper_atlas_run.sh`(메커니즘 지도 · `QVEST_PAPER_ATLAS_ENABLE=1`일 때만).
-- 지도 = `06_Registry/mechanism_atlas.jsonl`(append-only · R 검증 통과분만 · 원문 위치 없는 수치 거부).
+- 지도 = `06_Registry/mechanism_atlas.jsonl`(첫 수록 전엔 파일 없음 · append-only · R 검증 통과분만 · 원문 위치 없는 수치 거부).
 - 처방 담당은 처방 전에 지도에서 해당 엔진 · 기전의 기존 증거를 읽는다(시장 · 기간 · 위기 행동).
 - 예약 작업의 켜짐 · 꺼짐은 문서에 적지 않는다 — 정본은 부팅 `Queue:` 줄(레인 슬롯 · 틱 나이)과 `scheduler_task_health`. 켜고 끄는 것은 도훈(시스템 설정).
 

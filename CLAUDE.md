@@ -4,7 +4,7 @@
 
 **Qvest v10.2 — 목표 역산형 1계층 리서치 · 사다리 루프 · 2계층 로테이션 · BOOK · Judge=PIT 전담 · 행동 카드(위기 방어)** (세션 모델 정본 `claude-opus-5-5`. 2026-11-10 도훈 지시 — 인프라 전수점검 + 1계층 재편. 설계 `04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/README.md` · 1계층 처방 원설계(10-13 D1~D16) `04_Research/01_reports/l1_prescription_redesign_20261013/README.md` · 등록 훅 13 · 직전 판 v10.01 · 롤백 태그 `pre-v10.2-ladder-20261110`)
 
-> **★버전·모델 표기 단일 출처**: 위 줄이 정본(`boot_currency_check.sh` C0 파생). 타 문서는 위임.
+> **★버전·모델 표기 단일 출처**: 위 줄이 정본(`boot_currency_check.sh` C0 파생 · 주간/수동 전수 점검에서 검사). 타 문서는 위임.
 
 **★ Active SOT**: `.claude/rules/lean-loop.md`(1계층 루프) · `.claude/skills/research-program/SKILL.md`(1계층 프로그램 절차) · `.claude/skills/strategy-rotation/SKILL.md`(2계층) · `02_Infrastructure/docs/CHANGELOG_constitution.md`(계보·전판 아카이브)
 

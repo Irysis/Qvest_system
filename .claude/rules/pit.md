@@ -54,12 +54,11 @@
 3. **strict-PIT A/B**: 현재 타이밍 vs `Date < first-day-of-holding-month`. `overlay_lookahead_ab()` 인플레 >5%면 strict 값으로 재판정.
 4. 신규 패널 소비 전 **anchor_date − 홀딩월 간격 확인** + score→forward-ret IC 부호(양수=PIT 방향 정상)로 윈도우 의미 실증.
 
-## S0/S1 오버레이 금지
+## 오버레이 적용 위치 (v10.2 · 1계층 — 구 'S0/S1 오버레이 금지'의 현행 표기 · 2026-11-10)
 
-- S0 (가설) / S1 (구현)에서 DD/VT/Regime 오버레이 적용 금지
-- S1은 순수 팩터 신호 측정. EW 20종목 + 15bps + 유동성만
-- 예외: 전략 자체가 국면을 alpha source로 사용 시만 Regime 허용
-- **오버레이는 S5 Mutation 또는 v6.4 Optimizer/Forge에서만**
+- 충실구현(논문 그대로) 측정에는 논문에 없는 DD/VT/Regime 오버레이를 붙이지 않는다(순수 신호 측정)
+- 예외: 논문(전략) 자체가 국면을 alpha source로 쓰면 그 국면만 허용
+- **오버레이는 처방 · 강화 사슬(P2 방어 엔진 · P4 걸음)에서만** — 위 '오버레이 신호 타이밍'(C5) 의무와 함께
 
 ## Lockbox — 폐지 (v10 2026-08-29 도훈 지시)
 
@@ -72,11 +71,9 @@
 - (존치 교훈) **양성 대조 없는 계기는 방어선으로 세지 않는다** — 발화 실증(위반 주입 + 돌연변이 통제) 없는 훅·검사기를 방어선 목록에 올리지 말 것.
 - ★정보 경계 τ_D = **2022-12-31**(v10.01 D6 · 2026-10-13 도훈 확정 — 구 ORGANIC-DE 09-25 의 컨트롤러 한정 예외를 승계·확장): 처방 에이전트(분석가·처방 담당·팩터 정의자·리뷰어) · 최종 후보 선택 규칙 · 교훈 카드는 τ_D 이전 성과·위기만 본다. 2023-01~ = 강건성 시험 구간. 사람·등급·Judge·BOOK·전략 구현은 전기간 그대로. 경계는 수치 튜닝만 막는다 — LLM 사전학습의 서사 지식(Glasserman & Lin 2023, arXiv:2309.17322)은 막지 못하므로 시험 구간 판정은 크기 짝 대조와 함께 읽는다.
 
-## V6 Gap-Directed 가설
+## 조건부 IC 소비 (C1/C14 · D-E-V6 2026-09-25 — 구 'V6 Gap-Directed 가설' 절의 살아 있는 규칙만 · 2026-11-10)
 
-- S0 가설에 `expected_role` + `why_now` 필수
-- `.cache/portfolio_gap_vector.json` → 현재 SR/CAGR/MDD gap 확인
-- 조건부 IC 높은 팩터 우선 — 단 **`Usable_Date <= 결정 시점`의 조건부 IC**만 쓴다. **as-of 판 미제공 시 사용 안 함**(현행 `.cache/conditional_ic_matrix.csv` = 전기간 스냅샷 → C1/C14 대상 · 엔진 소비 함수 4종은 `02_Infrastructure/validation/cond_ic_asof_guard.R` 호출부 가드가 가린다 · D-E-V6 2026-09-25 도훈 결정)
+- 조건부 IC 는 **`Usable_Date <= 결정 시점`의 조건부 IC**만 쓴다. **as-of 판 미제공 시 사용 안 함**(현행 `.cache/conditional_ic_matrix.csv` = 전기간 스냅샷 → C1/C14 대상 · 엔진 소비 함수 4종은 `02_Infrastructure/validation/cond_ic_asof_guard.R` 호출부 가드가 가린다 · D-E-V6 2026-09-25 도훈 결정)
 
 ## 위반 시 처리
 
