@@ -159,6 +159,7 @@ adapter_kind=weight → register_method → `06_Registry/method_registry.json`)�
    (wrap_adapter 는 퇴화 입력을 EW 로 내려앉히므로, 그대로 두면 "측정됨"으로 집계되고
    실제로는 EW 를 잰다 — 실사고 기록 method_registry.R:73-78).
 4. 등재되면 `rf_weight_catalog_grow.sh`(주간 Qvest_WeightCatalogGrow) `sync_catalog` 재색인 후 **강화 격자 비중 arm** 이 된다 — `adapter_kind=weight` 만(sigma/exposure 는 weight_catalog.R 이 건너뛴다).
+   ★사실 정정(2026-11-10 감사): 예약 작업 Qvest_WeightCatalogGrow 는 현재 Disabled 다 — 재색인은 `02_Infrastructure/portfolio/weight_catalog.R` 을 직접 돌릴 때만 일어난다. '강화 격자'는 퇴역(v10.01) — 카탈로그(`06_Registry/weight_catalog.json`)는 강화 사슬 도구 상자의 B2 비중 블록(`06_Registry/reinforce_program.json`)과 P3 구성 라운드가 소비한다. 카탈로그 방법의 Σ 는 trailing 수익률 표본 공분산이다(`weight_catalog.R` ctx · `stats::cov` · 축소 변형 = `gen:qepm_MVO__shr_*`) — 요인 구조 Σ = BΩB′ + D 는 살아 있는 경로에 없다.
 
 ★어댑터는 **선호 벡터만** 낸다. long-only·Σw=1 은 wrapper 가 강제한다(v10: 비중 상한 폐지). 스케일은
   자유롭게 둬도 된다(wrapper 가 먼저 합-정규화 후 상한 적용).

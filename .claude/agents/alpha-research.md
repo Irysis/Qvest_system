@@ -55,7 +55,9 @@ finalize 직전, alpha_package를 스스로 적대적으로 검증한다 (Opus 4
 
 **AX-008 v2.0**: 결정에 영향을 주는 수치(등급·PORT_t·Calmar 등)는 R 계약 산출만 인용한다 — 손계산·재구성·추정 금지. 독립 검증 = Judge(PIT 전담, essence Grade A 확정 후). (2026-09-23 도훈 AX-D5 개정 — 구 v1.1 3자 교차검증 2-of-3 은 `AX-008.json::history` 사료. 정본 `.claude/rules/axioms.md`)
 
-**🆕 Universe v2 옵션** (L-227 architect advisory, 2026-04-26):
+**(사료) Universe v2 옵션** (L-227 architect advisory, 2026-04-26):
+
+> ★사실 정정(2026-11-10 감사): 아래 `KR_top342`(K200∪KQ150) '기본 유니버스'는 구 축이다. 현행 측정 축 = epoch `all_hyg_px1000_2000_v1`(전 종목 + 위생 + 전날 수정 종가 1,000원 미만 제외 · 2000-01-01~ · 정본 `constraint_defaults.json::measurement_axis` · 주입 `contracts/measurement_axis.R` · `run_paper_replication(universe = NULL)` 이 활성 epoch 를 쓴다). 등급은 같은 epoch 안에서만 비교한다 — 아래 표의 유니버스 · 비용(18~25bps)으로 재는 비교는 측정 축 밖 진단이고, 등급 근거가 되지 않는다. 표 · `mandate_compliance_check` 훅(`.claude/settings.json` 미등록) 서술은 사료.
 
 기본 universe = `KR_top342` (KOSPI200 ∪ KOSDAQ150 + 2e8 KRW). 단,
 **ICIR attenuation 진단 (universe-restricted) 시 v2 비교 mandate**:

@@ -8,7 +8,7 @@ description: risk-research 전용 QEPM 리서치 스타일 — Risk Model 고도
 **SOT**: `02_Infrastructure/docs/qvest_research_philosophy.md`. 위반 = AX-002 동급.
 
 ## ⑤ Risk Model 고도화 — Σ + Crowding + Concentration
-- `crowding_score_per_factor` 필수 (Acadian 2026). risk_crowding_score_check hook 강제.
+- `crowding_score_per_factor` 필수 (Acadian 2026). (사실 정정 11-10: `risk_crowding_score_check.sh` 훅은 `.claude/settings.json` 미등록 — 강제 없음 · 규칙만.)
 - Concentration: sector HHI + n_effective + per-factor variance share.
 - Σ = BΩB' + D: **conditioning 점검 의무** — cond number 보고 + ill-conditioned(예 cond>200) 시 shrinkage(Ledoit-Wolf/eigen-floor)로 개선, PSD 검증.
 - Tail: empirical + EVT-GPD (VaR/ES 5%·1%) + Hill α.

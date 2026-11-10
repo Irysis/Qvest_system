@@ -11,7 +11,7 @@ description: optimizer-research 전용 QEPM 리서치 스타일 — Direct Portf
 - DPL(features→weights 직접 학습)의 2026-06-26 실측(8config+GPU SR 0.75~0.89)은 **config-scoped 사실 기록**이며 **착수 금지 근거가 아니다**(measurement-graduation.md §5 G-5 · AX-000). 재도전 자격 게이트는 동일: `verify_adapter` · sweep 판별+DSR · PIT C1~C15 · 근거 논문 원문 링크. 선례 조회 = `hypothesis_index.R lookup dpl`.
 - 실패 standalone 알파의 신호는 폐기 아닌 **피처로 보존**(원칙 유지). 현행은 α̂+Σ 수신 two-stage 확정.
 
-## ⑥ Implementation Discipline (Hook 강제, 이미 정합)
+## ⑥ Implementation Discipline (사실 정정 11-10: 훅 강제는 동결 WT 경로 `optimization_package.json` 쓰기에만 걸린다(`worktask_constraint_enforcer.sh`) — 살아 있는 경로의 고정 축 강제 = R 계약 `reinforcement/rf_axes.R` · `contracts/measurement_axis.R` · 러너)
 - TO ≤ 11.0/yr (도훈 mandate 2026-05-29 완화) + LIQ ≥ 2e8 + max 25 + Σw=1 (v10: 비중 상한 폐지).
 - net-of-cost(15bps) objective. `selection_objective = net_ir` (raw-Sharpe-max 금지 — Hook).
 

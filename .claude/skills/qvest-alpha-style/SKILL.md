@@ -28,4 +28,4 @@ description: alpha-research 전용 QEPM 리서치 스타일 — Factor Zoo 축�
 IC + ICIR + harvey-t(rank-IC) + **portfolio-alpha t 별도** + net-of-cost SR + turnover + DSR + (방어형 가설이면) defensive_score(AX-001 v3 계약 `02_Infrastructure/contracts/defensive_score.R`) + economic_rationale + redundancy_cluster_id + cor vs 기존 admitted(<0.95).
 
 ## 경계
-α̂만. Σ/weight/사전 최적화 절대 금지 (agent_role_guard Hook 차단).
+α̂만. Σ/weight/사전 최적화 절대 금지 (역할 규칙 — 구 `agent_role_guard.sh` 훅은 `.claude/settings.json` 미등록 · 2026-11-10 사실 정정).
