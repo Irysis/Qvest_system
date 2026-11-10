@@ -75,7 +75,8 @@ rvw <- function(id, role, trigger, round, file = NULL, challenges = list(), mkfi
        challenges = challenges)
 }
 LREV <- list()
-for (cid in c("P4C99_selftest", "P4C97_none", "P4C96_measure", "P4C95_nota", "P4C94_vint")) {
+for (cid in c("P4C99_selftest", "P4C97_none", "P4C96_measure", "P4C95_nota", "P4C94_vint",
+              "P4C93_close", "P4C92_lock", "P4C91_samea", "P4C90_sameb", "P4C89_aband", "P4C88_new", "P4C87_old", "P4C86_other", "P4C85_grade", "P4C84_dup")) {
   tg <- sub("_.*$", "", cid)
   LREV <- c(LREV, list(rvw(paste0("R-P1-", tg), "philosophy", "P1", cid), rvw(paste0("R-T1-", tg), "judgment", "T1", cid),
                        rvw(paste0("R-P2-", tg), "philosophy", "P2", cid, file = sprintf("04_Research/programs/_supervision/superfan/philosophy/20261110_1300_P2_%s.md", tg)),
@@ -550,6 +551,255 @@ invisible(rc_p4_step_open(CD5, 1, H, M, "regime_exposure", C1, 0, rc_json_read(r
 invisible(.rcp4_append(CD5, list(event = "step_measured", k = 1L, cell_spec_md5 = rc_md5(C1), artifacts = .rcp4_rel(A_S1), vintage = list(id = "vint-OTHER", n_repairs = 3L))))
 chk("J21b 걸음 측정의 판 표식 ≠ 기준 칸 = 판정 거부", grepl("판 표식", err_of(rc_p4_step_decide(CD5, 1, root = ROOT, metrics_fun = mfun))))
 chk("J22 운영 판단 원장 무접촉", identical(rc_md5("06_Registry/q_judgment_ledger.json"), REAL_LEDGER_MD5))
+
+cat("K 닫기 순서 · 점유 · 시행 집합 · 판 검사 · 판 표식 · 포기 · 글 검사 · 기각 기억 · 중복 칸 · 상태 문자열(11-10 적대적 검토 2차 R1)\n")
+isna0 <- function(x) is.null(x) || (length(x) == 1L && is.na(x))
+mkchain <- function(cid, base_key = "engine:T_ok", base_art = A_BASE) {
+  cd <- file.path(SB, "chain", cid); invisible(rc_p4_chain_new(cd, cid, base_key, POOL, BASE_CELL, RULES, BUD))
+  invisible(reg4(cd, cid, mf = function(a, root, tau, ...) bmv)); invisible(bmeas(cd, base_art)); cd }
+gid <- function(cd) rc_json_read(rc_p4_spec_path(cd))$generator$id
+open_k <- function(cd, k, cell, parent = 0L, block = "regime_exposure", hyp = H) rc_p4_step_open(cd, k, hyp, M, block, cell, parent, gid(cd), root = ROOT, pool = POOL)
+evs <- function(cd) vapply(rc_p4_steps_read(cd), function(r) as.character(r$event), "")
+SRLOG <- file.path(SB, "sr_log.txt"); FSR2 <- file.path(SB, "fake_sr2.R")
+writeLines(c("sr_regrade <- function(candidate_dir, trial_dirs, root = NULL, write = FALSE, expected = NULL, ...) {",
+             sprintf("  cat(paste0(as.character(jsonlite::toJSON(list(cand = candidate_dir, trials = as.list(trial_dirs), n = expected$n_trials, ids = as.list(unlist(expected$ids))), auto_unbox = TRUE)), '\\n'), file = '%s', append = TRUE)", SRLOG),
+             "  list(status = 'ok', grade_before = 'B', grade_after = Sys.getenv('T_SR_GRADE', 'A'), gate_ok = TRUE, reason = 'fake', check = NULL, written = FALSE) }"), FSR2)
+srlines <- function() if (file.exists(SRLOG)) { x <- readLines(SRLOG, warn = FALSE); x[nzchar(x)] } else character(0)
+A_RJ <- mk_art("rj2", seed = 12L); stub$rj2 <- list(S_vis = NA_real_, uc_vis = 0.6, dd_capture_median_vis = 0.1)
+## K1~K3 닫기 순서 · 재개 멱등
+CD93 <- mkchain("P4C93_close"); invisible(open_k(CD93, 1, C1)); invisible(md(CD93, 1, A_S1)); r93 <- RCPT("P4C93_close")
+OUT93 <- file.path(SB, "outcomes_93.jsonl"); writeLines(character(0), OUT93); RLOG2 <- file.path(SB, "register_log2.txt")
+FRG_BAD <- file.path(SB, "fake_register_bad.R")
+writeLines(c("rmm_register_measured <- function(out_dir, sim_result = NULL, origin_mode = 'replication', meta = list(), ...) {",
+             sprintf("  cat(paste0(out_dir, '\\n'), file = '%s', append = TRUE)", RLOG2),
+             sprintf("  cat('{broken\\n', file = '%s', append = TRUE)", OUT93),
+             "  list(registered = TRUE, code = 'ok', reason = '') }"), FRG_BAD)
+cl93 <- function(op, reg = FRG_BAD) err_of(rc_p4_close(CD93, "n", probes = c("a", "b"), root = ROOT, outcomes_path = op, philosophy_p2 = r93$p2, superfan_t2 = r93$t2,
+                                                       ledger = LEDG, review_root = RVR, regrade_file = FSR2, gate_file = FGT, register_file = reg, regrade_write = TRUE,
+                                                       other_chain_dirs = character(0)))
+BADO <- file.path(SB, "outcomes_bad.jsonl"); writeLines("{not json", BADO); unlink(c(SRLOG, RLOG2))
+e93a <- cl93(BADO)
+chk("K1 결과 원장 판독 불가 = 부작용 전에 닫기 거부(재채점 · 등재 미호출 · finalize 없음 · 닫는 중 기록 없음)",
+    nzchar(e93a) && !length(srlines()) && !file.exists(RLOG2) && !file.exists(file.path(CD93, "finalize.json")) && !("chain_closing" %in% evs(CD93)), e93a)
+e93b <- cl93(OUT93)
+chk("K2 부작용 뒤 실패(결과 원장 쓰기 실패) = 사슬은 '닫는 중' — 새 걸음 열기 거부 · 재채점 · 등재 1회 · finalize.json 남음",
+    nzchar(e93b) && "chain_closing" %in% evs(CD93) && !("chain_closed" %in% evs(CD93)) && file.exists(file.path(CD93, "finalize.json")) &&
+      grepl("닫는 중", err_of(open_k(CD93, 2, C3, parent = 1L, block = "tail_overlay"))) && length(srlines()) == 1L && length(readLines(RLOG2)) == 1L,
+    paste(e93b, "|", paste(evs(CD93), collapse = ",")))
+OUT93b <- file.path(SB, "outcomes_93b.jsonl"); unlink(GLOG)
+e93c <- cl93(OUT93b)
+chk("K3 다시 닫기 = 이어서 마무리 — 재채점 · 관문 · 등재 다시 안 함 · 결과 원장 1줄 · chain_closing · chain_closed 각 1줄",
+    identical(e93c, "") && length(srlines()) == 1L && length(readLines(RLOG2)) == 1L && !file.exists(GLOG) &&
+      length(rc_outcomes_read(OUT93b, program = "P4_ASSEMBLY")) == 1L && sum(evs(CD93) == "chain_closed") == 1L && sum(evs(CD93) == "chain_closing") == 1L, e93c)
+## K4 닫기 점유
+CD92 <- mkchain("P4C92_lock"); invisible(open_k(CD92, 1, C1)); invisible(md(CD92, 1, A_S1)); r92 <- RCPT("P4C92_lock")
+LK92 <- file.path(CD92, "measure", "close.claim"); dir.create(LK92, recursive = TRUE); writeLines(c(as.character(Sys.getpid()), "t"), file.path(LK92, "pid"))
+unlink(SRLOG)
+e92 <- err_of(rc_p4_close(CD92, "n", probes = c("a", "b"), root = ROOT, outcomes_path = OUTC, philosophy_p2 = r92$p2, superfan_t2 = r92$t2, ledger = LEDG, review_root = RVR,
+                          regrade_file = FSR2, gate_file = NO_GATE, other_chain_dirs = character(0)))
+chk("K4 다른 닫기가 점유 중 = 닫기 거부 · 재채점 미호출 · 원장 무기록", grepl("다른 프로세스", e92) && !length(srlines()) &&
+      !any(c("chain_closing", "chain_closed") %in% evs(CD92)), e92)
+unlink(LK92, recursive = TRUE)
+## K5 같은 기저 사슬의 시행 집합
+A_BB <- mk_art("base_b", seed = 11L)
+CD91 <- mkchain("P4C91_samea", base_art = A_BB); invisible(open_k(CD91, 1, C1)); invisible(md(CD91, 1, A_S3))
+invisible(open_k(CD91, 2, C3, parent = 0L, block = "tail_overlay")); invisible(md(CD91, 2, A_RJ))
+CD86 <- mkchain("P4C86_other", base_key = sk$key, base_art = mk_art("base_o", seed = 13L)); invisible(open_k(CD86, 1, C1)); invisible(md(CD86, 1, A_S3))
+CD90 <- mkchain("P4C90_sameb"); invisible(open_k(CD90, 1, C1)); invisible(md(CD90, 1, A_S1)); r90 <- RCPT("P4C90_sameb"); unlink(SRLOG)
+e90 <- err_of(rc_p4_close(CD90, "n", probes = c("a", "b"), root = ROOT, outcomes_path = OUTC, philosophy_p2 = r90$p2, superfan_t2 = r90$t2, ledger = LEDG, review_root = RVR,
+                          regrade_file = FSR2, gate_file = NO_GATE, other_chain_dirs = c(CD91, CD86, CD90)))
+SL <- if (length(srlines())) jsonlite::fromJSON(srlines()[1], simplifyVector = FALSE) else list(); trb <- basename(as.character(unlist(SL$trials)))
+chk("K5 같은 기저의 앞 사슬 시행 = 선택 현실 점검 시행 집합 · 기대 시행 수에 들어간다(다른 기저 사슬은 빠진다 · 기대 = 2 + 3)",
+    identical(e90, "") && identical(as.integer(SL$n), 5L) && all(c("base", "s1", "base_b", "s3", "rj2") %in% trb) && !("base_o" %in% trb) &&
+      all(c("base_b", "rj2") %in% unlist(SL$ids)) && "P4C91_samea" %in% unlist(rc_json_read(file.path(CD90, "finalize.json"))$same_base_chains),
+    paste(e90, "|", srlines()[1]))
+## K6 사슬 판 — 필수 채택 규칙 방향 · 문턱
+loose <- function(i, f) { s <- S0; s$adoption$rules[[i]] <- f(s$adoption$rules[[i]]); err_of(rc_p4_chain_check(s, ROOT)) }
+chk("K6 필수 채택 규칙의 방향 · 문턱이 느슨하면 사슬 판 거부(dS ≥ −1 · 상승 포착 ≥ 0 · 위기 ≤ +1 · N1 동률 통과(≥ 과반값) · N2 방향 반대) · 정본 판은 통과",
+    grepl("방향", loose(1, function(r) { r$value_ref <- NULL; r$value <- -1; r$basis <- "느슨"; r })) &&
+      grepl("방향", loose(2, function(r) { r$value_ref <- NULL; r$value <- 0; r$basis <- "느슨"; r })) &&
+      grepl("방향", loose(3, function(r) { r$value <- 1; r })) && grepl("방향", loose(4, function(r) { r$op <- ">="; r })) &&
+      grepl("방향", loose(5, function(r) { r$op <- "<"; r })) && grepl("방향", loose(1, function(r) { r$op <- "<="; r })) &&
+      identical(err_of(rc_p4_chain_check(S0, ROOT)), ""))
+## K7 판 표식 — 진행 중 수리 · 데이터 지문
+CD84 <- mkchain("P4C84_dup"); invisible(open_k(CD84, 1, C1))
+VINT_IP <- function(root) list(id = "vint-1", n_repairs = 1L, n_in_progress = 1L)
+RUN$n <- 0L; n84 <- rc_p4_steps_verify(CD84)$n
+jip <- rc_p4_step_measure(CD84, 1, ROOT, runner = fake_ok, barrier = free, fingerprint = FP, vintage = VINT_IP, freshness = FRESH)
+chk("K7 팩터 DB 수리 진행 중(완료 시각 없는 항목) = 측정 거부 · 러너 미호출 · 원장 무기록", identical(jip$status, "vintage_in_progress") && RUN$n == 0L &&
+      rc_p4_steps_verify(CD84)$n == n84, jip$status)
+FR2 <- file.path(SB, "fakeroot2"); dir.create(file.path(FR2, "02_Infrastructure/contracts"), recursive = TRUE)
+writeLines("fdv_stamp <- function(root = NULL) list(schema = 'x', valid_from = NA, repairs = list(list(id = 'R1', completed_at = NULL)), in_progress = list('R1'))",
+           file.path(FR2, "02_Infrastructure/contracts/factor_db_vintage.R"))
+vd <- rc_p4_vintage_default(FR2)
+chk("K7b 기본 판 표식 = 진행 중 수리 수(n_in_progress)를 싣는다", identical(as.integer(vd$n_in_progress), 1L))
+invisible(rc_p4_step_measure(CD84, 1, ROOT, runner = runner_to(A_S1), barrier = free, fingerprint = FP, vintage = VINT, freshness = FRESH))
+d84 <- tryCatch(rc_p4_step_decide(CD84, 1, root = ROOT, metrics_fun = mfun), error = function(e) e)
+chk("K7c 기준 칸 · 걸음 측정의 데이터 지문(md5) 기록 · 판정 기록에 대조 결과", !inherits(d84, "error") && identical(d84$data_fp_vs_base, "same") &&
+      .rcp4_txt(.rcp4_state(CD84, ROOT)$base_meas$data_fp_md5), if (inherits(d84, "error")) conditionMessage(d84) else "")
+## K8 중복 칸(정규화 사양)
+invisible(open_k(CD84, 2, C3, parent = 1L, block = "tail_overlay")); invisible(md(CD84, 2, A_RJ))
+s3b <- s3[rev(names(s3))]; s3b$label <- "다른 이름"; s3b$idea <- "같은 처치"; C3B <- wspec("s3b", s3b)
+chk("K8 기각된 칸과 의미가 같은 칸(키 순서 · 라벨 · 메모만 다름) = 걸음 열기 거부(정규화 사양 서명)", grepl("이미 쓴", err_of(open_k(CD84, 3, C3B, parent = 1L, block = "tail_overlay"))))
+## K9 · K10 등급 표기 글
+n84 <- rc_p4_steps_verify(CD84)$n
+eg1 <- err_of(open_k(CD84, 3, C4, parent = 1L, block = "rebalance", hyp = "기저가 등급 C 에 머문 원인인 노출 경로를 끊는다"))
+invisible(open_k(CD84, 3, C4, parent = 1L, block = "rebalance"))
+for (i in 1:2) invisible(rc_p4_step_measure(CD84, 3, ROOT, runner = fake_fail, barrier = free, fingerprint = FP, vintage = VINT, freshness = FRESH))
+n84b <- rc_p4_steps_verify(CD84)$n; eg2 <- err_of(rc_p4_step_abandon(CD84, 3, "등급 B 라서 더 재지 않는다", ROOT))
+chk("K9 가설 · 포기 사유의 등급 표기 = 거부 · 원장 무기록(열기 · 포기 각각)", grepl("등급", eg1) && grepl("등급", eg2) && rc_p4_steps_verify(CD84)$n == n84b &&
+      !any(vapply(rc_p4_steps_read(CD84), function(r) grepl("등급 C", paste(unlist(r), collapse = " "), fixed = TRUE), TRUE)), paste(eg1, "|", eg2))
+invisible(rc_p4_step_abandon(CD84, 3, "워커가 두 번 실패했다", ROOT))
+invisible(.rcp4_append(CD84, list(event = "step_open", k = 4L, hypothesis = "기저가 등급 C 에 머문 원인", mechanism = M, block_type = "universe",
+                                  cell_spec_path = .rcp4_rel(C5), cell_spec_md5 = rc_md5(C5), parent = 1L, generator_version = gid(CD84), changed_axes = list("universe"))))
+di84 <- tryCatch(rc_p4_design_input(ROOT, CD84, pool = POOL, outcomes_path = OUTC, other_chain_dirs = character(0)), error = function(e) conditionMessage(e))
+chk("K10 원장에 이미 들어간 오염 글(등급 표기) = 설계 입력이 그 글만 생략하고 만든다(영구 정지 없음 · 누출 없음) · 포기 걸음은 '포기'로",
+    grepl("P4 강화 사슬 설계 입력", di84, fixed = TRUE) && grepl("글 생략", di84, fixed = TRUE) && !grepl("등급 C", di84, fixed = TRUE) && grepl("포기", di84, fixed = TRUE),
+    substr(di84, 1, 300))
+## K11 포기뿐인 사슬의 닫기 r7
+CD89 <- mkchain("P4C89_aband"); invisible(open_k(CD89, 1, C1))
+for (i in 1:2) invisible(rc_p4_step_measure(CD89, 1, ROOT, runner = fake_fail, barrier = free, fingerprint = FP, vintage = VINT, freshness = FRESH))
+invisible(rc_p4_step_abandon(CD89, 1, "워커가 두 번 실패했다", ROOT))
+OUT89 <- file.path(SB, "outcomes_89.jsonl"); r89 <- RCPT("P4C89_aband")
+c89 <- tryCatch(rc_p4_close(CD89, "n", probes = c("a", "b"), root = ROOT, outcomes_path = OUT89, philosophy_p2 = r89$p2, superfan_t2 = r89$t2, ledger = LEDG, review_root = RVR,
+                            regrade_file = FSR2, gate_file = NO_GATE, other_chain_dirs = character(0)), error = function(e) e)
+o89 <- rc_outcomes_read(OUT89, program = "P4_ASSEMBLY")
+chk("K11 측정 실패로 포기한 걸음뿐인 사슬 = 닫기 r7 판독 없음(잡음 아님) · 블록 집계 기각 0 · 포기 1",
+    !inherits(c89, "error") && length(o89) == 1L && isna0(o89[[1]]$r7) && identical(as.integer(o89[[1]]$extra$by_block$regime_exposure$reject), 0L) &&
+      identical(as.integer(o89[[1]]$extra$by_block$regime_exposure$abandoned), 1L), if (inherits(c89, "error")) conditionMessage(c89) else .rcp4_js(o89[[1]]$r7))
+## K12 · K13 사슬 사이 기각 기억
+oc <- .rcp4_other_chain_rejects(.rcp4_state(CD90, ROOT), ROOT, dirs = c(CD89, CD86, CD91), n_max = 1L)
+chk("K12 다른 사슬 기각 기억 — 포기 걸음 빠짐 · 같은 기저 우선 · 줄마다 기저 표기", !nrow(oc[chain == "P4C89_aband"]) && "base" %in% names(oc) &&
+      identical(oc[block == "regime_exposure"]$chain, "P4C91_samea") && identical(oc[chain == "P4C91_samea"]$base[1], "engine:T_ok"), .rcp4_js(oc))
+CD87 <- mkchain("P4C87_old"); invisible(open_k(CD87, 1, C1)); invisible(md(CD87, 1, A_S3)); Sys.sleep(1.2)
+CD88 <- mkchain("P4C88_new"); invisible(open_k(CD88, 1, C1)); invisible(md(CD88, 1, A_S3))
+oc2 <- .rcp4_other_chain_rejects(.rcp4_state(CD90, ROOT), ROOT, dirs = c(CD87, CD88), n_max = 1L)
+chk("K13 블록마다 최근 기각 우선(사슬 id 알파벳 순 아님)", identical(oc2[block == "regime_exposure"]$chain, "P4C88_new"), .rcp4_js(oc2))
+## K14 생성기 검토 · 성적표
+RV89 <- tryCatch(rc_p4_generator_review(ROOT, chain_dirs = CD89, outcomes_path = OUT89), error = function(e) e)
+sc89 <- if (inherits(RV89, "error")) list() else RV89$scorecard$by_generator[[1]]
+chk("K14 생성기 검토 · 성적표 — 포기 걸음은 판정 · 기각 분모 밖(따로 셈)", !inherits(RV89, "error") && identical(RV89$table$decision, "abandoned") &&
+      identical(as.integer(sc89$n_decided), 0L) && identical(as.integer(sc89$n_abandoned), 1L), if (inherits(RV89, "error")) conditionMessage(RV89) else "")
+## K15 상태 문자열
+FGT_ERR <- file.path(SB, "fake_gate_err.R"); writeLines("rcg_route <- function(...) stop('관문 파일 손상')", FGT_ERR)
+CD85 <- mkchain("P4C85_grade"); invisible(open_k(CD85, 1, C1)); invisible(md(CD85, 1, A_S1)); r85 <- RCPT("P4C85_grade"); OUT85 <- file.path(SB, "outcomes_85.jsonl")
+c85 <- tryCatch(rc_p4_close(CD85, "n", probes = c("a", "b"), root = ROOT, outcomes_path = OUT85, philosophy_p2 = r85$p2, superfan_t2 = r85$t2, ledger = LEDG, review_root = RVR,
+                            regrade_file = FSR2, gate_file = FGT_ERR, register_file = file.path(SB, "none.R"), regrade_write = TRUE, other_chain_dirs = character(0)), error = function(e) e)
+o85 <- rc_outcomes_read(OUT85, program = "P4_ASSEMBLY"); f85 <- if (file.exists(file.path(CD85, "finalize.json"))) rc_json_read(file.path(CD85, "finalize.json")) else list()
+cc85 <- .rcp4_js(Filter(function(r) identical(r$event, "chain_closed"), rc_p4_steps_read(CD85)))
+chk("K15 관문 오류 · 등재 대기(등급 A · B 가지에서만 생기는 상태) = 결과 원장 · 사슬 원장에는 evaluated 로만(실제 상태는 finalize.json)",
+    !inherits(c85, "error") && length(o85) == 1L && identical(o85[[1]]$extra$finalize$candidate_gate, "evaluated") && identical(o85[[1]]$extra$finalize$module_pool, "evaluated") &&
+      identical(f85$candidate_gate$status, "error") && identical(f85$module_pool$status, "pending_manual") &&
+      !grepl("pending_manual|\"error\"", .rcp4_js(o85[[1]])) && !grepl("pending_manual|\"error\"", cc85),
+    if (inherits(c85, "error")) conditionMessage(c85) else .rcp4_js(o85[[1]]$extra$finalize))
+
+cat("KM 수리 되돌림 돌연변이(소스 텍스트 치환 · 치환 성사 단정 · 원본 대조 = 같은 탐침이 원본에서 참)\n")
+P4SRC <- file.path(RC_DIR, "p4.R"); P4TXT <- paste(readLines(P4SRC, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
+mut <- function(from, to, probe) {
+  n <- lengths(regmatches(P4TXT, gregexpr(from, P4TXT, fixed = TRUE))); if (n != 1L) return(sprintf("치환 %d곳", n))
+  f <- tempfile(fileext = ".R"); writeLines(enc2utf8(sub(from, to, P4TXT, fixed = TRUE)), f, useBytes = TRUE)
+  sys.source(f, envir = globalenv(), keep.source = FALSE); on.exit({ sys.source(P4SRC, envir = globalenv(), keep.source = FALSE); unlink(f) }, add = TRUE)
+  isTRUE(tryCatch(probe(), error = function(e) FALSE))
+}
+MC <- new.env(); MC$i <- 0L
+mkc <- function(cid, base_key = "engine:T_ok", base_art = A_BASE, measure = TRUE) {
+  MC$i <- MC$i + 1L; cd <- file.path(SB, "mchain", sprintf("%s_%02d", cid, MC$i))
+  invisible(rc_p4_chain_new(cd, cid, base_key, POOL, BASE_CELL, RULES, BUD)); invisible(reg4(cd, cid, mf = function(a, root, tau, ...) bmv))
+  if (measure) invisible(bmeas(cd, base_art)); cd }
+fo <- function() tempfile(pattern = "outc_", tmpdir = SB, fileext = ".jsonl")
+cls <- function(cd, cid, op, ...) err_of(rc_p4_close(cd, "n", probes = c("a", "b"), root = ROOT, outcomes_path = op, philosophy_p2 = RCPT(cid)$p2, superfan_t2 = RCPT(cid)$t2,
+                                                    ledger = LEDG, review_root = RVR, regrade_file = FSR2, ...))
+acc1 <- function(cid) { cd <- mkc(cid); invisible(open_k(cd, 1, C1)); invisible(md(cd, 1, A_S1)); cd }
+## K16 닫기 ↔ 걸음 열기 경합(11-10 재수리 R1) — 닫기의 잠금 밖 미판정 검사를 지난 뒤 다른 프로세스가 걸음을 열면 chain_closing 은 거부되고 사슬은 진행 가능하다
+race_close <- function(cid) {
+  cd <- mkc(cid); invisible(open_k(cd, 1, C1)); invisible(md(cd, 1, A_S1))
+  orig <- get(".rcp4_receipt_need", envir = globalenv()); fired <- FALSE
+  assign(".rcp4_receipt_need", function(...) { if (!fired) { fired <<- TRUE; invisible(open_k(cd, 2, C3, parent = 1L, block = "tail_overlay")) }; orig(...) }, envir = globalenv())
+  on.exit(assign(".rcp4_receipt_need", orig, envir = globalenv()), add = TRUE)
+  e <- cls(cd, cid, fo(), gate_file = NO_GATE, other_chain_dirs = character(0))
+  list(cd = cd, e = e, fired = fired)
+}
+RC86 <- race_close("P4C86_other")
+d86 <- err_of(md(RC86$cd, 2, A_RJ)); e86b <- cls(RC86$cd, "P4C86_other", fo(), gate_file = NO_GATE, other_chain_dirs = character(0))
+chk("K16 닫기 검사 뒤 끼어든 걸음 = chain_closing 거부(잠금 안 미판정 재확인) · 그 걸음 판정 가능 · 다시 닫기 = 성공 · 닫힌 사슬에 미판정 걸음 없음",
+    RC86$fired && grepl("판정 안 된 걸음", RC86$e) && identical(d86, "") && identical(e86b, "") &&
+      sum(evs(RC86$cd) == "chain_closing") == 1L && sum(evs(RC86$cd) == "chain_closed") == 1L &&
+      !length(setdiff(.rcp4_state(RC86$cd, ROOT)$open_ks, .rcp4_state(RC86$cd, ROOT)$decided_ks)), paste(RC86$e, "|", d86, "|", e86b))
+## K17 중복 칸 서명 = 열 때 기록한 서명(11-10 재수리 R1) — 기각 칸 파일을 덮어쓴 뒤 라벨만 바꾼 같은 처치 = 거부 · 기록 서명 없는 옛 줄 + 파일 변경 = 대조 불가 거부
+dup_over <- function(cid) {
+  cd <- mkc(cid); X <- wspec(paste0("x_", cid), s3); invisible(open_k(cd, 1, X, block = "tail_overlay")); invisible(md(cd, 1, A_RJ))
+  s4o <- base_spec; s4o$overlay <- list(kind = "dd_brake", arm_id = "dd_brake_other"); rc_json_write(s4o, X)
+  s3c <- s3; s3c$label <- paste("라벨만 다름", cid); Y <- wspec(paste0("y_", cid), s3c)
+  list(cd = cd, e = err_of(open_k(cd, 2, Y, block = "tail_overlay")))
+}
+DO87 <- dup_over("P4C87_old")
+spk <- Filter(function(r) identical(r$event, "step_open"), rc_p4_steps_read(DO87$cd))[[1]]$spec_key
+old_rec <- function(cid) {
+  cd <- mkc(cid); X <- wspec(paste0("o_", basename(cd)), s3)
+  invisible(.rcp4_append(cd, list(event = "step_open", k = 1L, hypothesis = H, mechanism = M, block_type = "tail_overlay", cell_spec_path = .rcp4_rel(X),
+                                  cell_spec_md5 = rc_md5(X), parent = 0L, generator_version = gid(cd), changed_axes = list("overlay"))))
+  invisible(md(cd, 1, A_RJ)); rc_json_write(s1, X)
+  err_of(open_k(cd, 2, C3B, block = "tail_overlay"))
+}
+e83 <- old_rec("P4C88_new")
+chk("K17 기각 칸 파일 덮어쓰기 뒤 같은 처치(라벨만 다름) = 거부(기록 spec_key) · 열기 기록에 spec_key · 옛 줄(서명 없음) + 파일 변경 = 대조 불가 거부",
+    grepl("이미 쓴", DO87$e) && .rcp4_txt(spk) && grepl("대조할 수 없다", e83), paste(DO87$e, "|", e83))
+
+PRB <- list(
+  resume = function() { cd <- acc1("P4C93_close"); unlink(c(SRLOG, RLOG2)); writeLines(character(0), OUT93)
+    invisible(cls(cd, "P4C93_close", OUT93, gate_file = FGT, register_file = FRG_BAD, regrade_write = TRUE, other_chain_dirs = character(0)))
+    e <- cls(cd, "P4C93_close", fo(), gate_file = FGT, register_file = FRG_BAD, regrade_write = TRUE, other_chain_dirs = character(0))
+    identical(e, "") && length(srlines()) == 1L },
+  preread = function() { cd <- acc1("P4C93_close"); unlink(SRLOG)
+    e <- cls(cd, "P4C93_close", BADO, gate_file = NO_GATE, other_chain_dirs = character(0)); nzchar(e) && !length(srlines()) && !("chain_closing" %in% evs(cd)) },
+  claim = function() { cd <- acc1("P4C92_lock"); unlink(SRLOG); lk <- file.path(cd, "measure", "close.claim"); dir.create(lk, recursive = TRUE)
+    writeLines(c(as.character(Sys.getpid()), "t"), file.path(lk, "pid")); e <- cls(cd, "P4C92_lock", fo(), gate_file = NO_GATE, other_chain_dirs = character(0))
+    unlink(lk, recursive = TRUE); grepl("다른 프로세스", e) && !length(srlines()) },
+  samebase = function() { cd <- acc1("P4C90_sameb"); unlink(SRLOG); e <- cls(cd, "P4C90_sameb", fo(), gate_file = NO_GATE, other_chain_dirs = c(CD91, CD86))
+    identical(e, "") && identical(as.integer(jsonlite::fromJSON(srlines()[1], simplifyVector = FALSE)$n), 5L) },
+  bounds = function() grepl("방향", loose(4, function(r) { r$op <- ">="; r })),
+  vint = function() { cd <- mkc("P4C84_dup", measure = FALSE)
+    identical(rc_p4_base_measure(cd, ROOT, runner = runner_to(A_BASE), barrier = free, fingerprint = FP, vintage = VINT_IP, freshness = FRESH, metrics_fun = mfun)$status, "vintage_in_progress") },
+  r7 = function() { cd <- mkc("P4C89_aband"); invisible(open_k(cd, 1, C1))
+    for (i in 1:2) invisible(rc_p4_step_measure(cd, 1, ROOT, runner = fake_fail, barrier = free, fingerprint = FP, vintage = VINT, freshness = FRESH))
+    invisible(rc_p4_step_abandon(cd, 1, "워커가 두 번 실패했다", ROOT)); o <- fo(); invisible(cls(cd, "P4C89_aband", o, gate_file = NO_GATE, other_chain_dirs = character(0)))
+    isna0(rc_outcomes_read(o, program = "P4_ASSEMBLY")[[1]]$r7) },
+  opentext = function() { cd <- mkc("P4C85_grade"); grepl("등급", err_of(open_k(cd, 1, C1, hyp = "기저가 등급 C 에 머문 원인"))) },
+  abandontext = function() { cd <- mkc("P4C85_grade"); invisible(open_k(cd, 1, C1))
+    for (i in 1:2) invisible(rc_p4_step_measure(cd, 1, ROOT, runner = fake_fail, barrier = free, fingerprint = FP, vintage = VINT, freshness = FRESH))
+    grepl("등급", err_of(rc_p4_step_abandon(cd, 1, "등급 B 라서", ROOT))) },
+  design = function() is.character(tryCatch(rc_p4_design_input(ROOT, CD84, pool = POOL, outcomes_path = OUTC, other_chain_dirs = character(0)), error = function(e) NULL)),
+  rejects = function() !nrow(.rcp4_other_chain_rejects(.rcp4_state(CD90, ROOT), ROOT, dirs = CD89, n_max = 1L)),
+  order = function() identical(.rcp4_other_chain_rejects(.rcp4_state(CD90, ROOT), ROOT, dirs = c(CD87, CD88), n_max = 1L)[block == "regime_exposure"]$chain, "P4C88_new"),
+  dup = function() grepl("이미 쓴", err_of(open_k(CD84, 5, C3B, parent = 1L, block = "tail_overlay"))),
+  race = function() grepl("판정 안 된 걸음", race_close("P4C86_other")$e),
+  dupkey = function() grepl("이미 쓴", dup_over("P4C87_old")$e),
+  dupna = function() grepl("대조할 수 없다", old_rec("P4C88_new")),
+  status = function() { cd <- acc1("P4C85_grade"); o <- fo()
+    invisible(cls(cd, "P4C85_grade", o, gate_file = FGT_ERR, register_file = file.path(SB, "none.R"), regrade_write = TRUE, other_chain_dirs = character(0)))
+    identical(rc_outcomes_read(o, program = "P4_ASSEMBLY")[[1]]$extra$finalize$candidate_gate, "evaluated") })
+MU <- list(
+  resume = c("reuse <- is.list(prev) && identical(prev$closing_id, closing_id)", "reuse <- FALSE && identical(prev$closing_id, closing_id)"),
+  preread = c("invisible(rc_outcomes_read(ap, kind = \"round\"))   #", "invisible(NULL)   #"),
+  claim = c("cl <- .rcp4_claim(chain_dir, \"close\")", "cl <- list(ok = TRUE, path = tempfile())"),
+  samebase = c("sb <- .rcp4_same_base_trials(st, root, other_chain_dirs)", "sb <- .rcp4_same_base_trials(st, root, character(0))"),
+  bounds = c("  .rcp4_required_bounds(rr, rv, root)\n", "\n"),
+  vint = c("if (isTRUE(.rcp4_num(v0$n_in_progress) > 0)) {", "if (FALSE) {"),
+  r7 = c("else if (nj) \"noise\"", "else if (ns) \"noise\""),
+  opentext = c("ci <- rc_input_issues(list(hypothesis, mechanism), st$tau)", "ci <- list(ok = TRUE)"),
+  abandontext = c("ci <- rc_input_issues(list(reason), st$tau)", "ci <- list(ok = TRUE)"),
+  design = c("if (isTRUE(rc_input_issues(list(x), tau)$ok)) x else", "if (TRUE) x else"),
+  rejects = c("identical(r$decision, \"reject\") && !.rcp4_abandoned(r)) {", "identical(r$decision, \"reject\")) {"),
+  order = c("D[order(block, -same_base, -xtfrm(at_), -k)]", "D[order(block, chain, -k)]"),
+  dup = c("else if (nk %in% usedk)", "else if (FALSE)"),
+  race = c("if (length(und)) sprintf(\"판정 안 된 걸음이 있다(다른 프로세스가 걸음을 열었다)", "if (FALSE) sprintf(\"판정 안 된 걸음이 있다(다른 프로세스가 걸음을 열었다)"),
+  dupkey = c("if (.rcp4_txt(rec_key)) return(as.character(rec_key))", "if (FALSE) return(as.character(rec_key))"),
+  dupna = c("else if (anyNA(usedk))", "else if (FALSE)"),
+  status = c("candidate_gate = if (cg$status %in% c(\"evaluated\", \"error\")) \"evaluated\" else cg$status,", "candidate_gate = cg$status,"))
+for (nm in names(MU)) {
+  base_ok <- isTRUE(tryCatch(PRB[[nm]](), error = function(e) FALSE)); m <- mut(MU[[nm]][1], MU[[nm]][2], PRB[[nm]])
+  chk(sprintf("KM-%s 원본 = 탐침 참 · 수리 되돌림 돌연변이 = 탐침 거짓(치환 1곳 성사)", nm), base_ok && identical(m, FALSE), sprintf("원본 %s · 돌연변이 %s", base_ok, m))
+}
 
 Sys.unsetenv("RC_RXG_PATH")
 cat(sprintf("\n== round_core_v1_p4_chain: PASS %d · FAIL %d ==\n", PASS, FAIL))

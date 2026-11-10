@@ -7,7 +7,7 @@
 # 무엇: 걸음 원장(chain_steps.jsonl) 레코드 목록만 입력으로 받는 **순수 함수**(파일 · 네트워크 · 전역 상태 없음)로 판별 성적을 낸다.
 #   전부 보는 창 지표(*_vis · τ_D 이전)만 읽는다 — 시험 창 · 전 기간 이름의 열이 레코드에 보이면 멈춘다(fail-closed · R4).
 #   척도(판 g 마다 · 사슬을 단위로):
-#     n_chains · n_steps(연 걸음) · n_decided(판정) · n_accept · accept_rate = 채택 / 판정
+#     n_chains · n_steps(연 걸음) · n_decided(판정 — 채택 · 기각만) · n_accept · accept_rate = 채택 / 판정 · n_abandoned(측정 실패로 포기 — 판정 아님 · 분모 밖)
 #     dS_mean · dS_median = 판정 걸음의 보는 창 dS_vis(부모 대비) 평균 · 중앙
 #     gain_per_step(주 척도) = Σ 채택 걸음 dS_vis / 판정 걸음 수 — 측정 예산 한 걸음이 산 보는 창 S 개선(사슬 머리는 채택 걸음만 옮긴다)
 #     cum_dS_mean = 사슬마다 (머리 S_vis − 기준 칸 S_vis) 의 평균 · cum_duc_mean · cum_ddd_mean = 같은 식의 상승 포착 · 위기 하락 포착 중앙값 차
@@ -59,7 +59,8 @@ RXG_SC_FORBIDDEN_RX <- "(test|_tw$|oos|full|overall|lifetime|_all$)"
     ax <- paste(sort(as.character(unlist(o$changed_axes))), collapse = "+")
     sig <- paste(bt, ax, sep = "|")
     r <- res[rk %in% k]; r <- if (length(r)) r[[1]] else NULL
-    dec <- if (is.null(r)) "pending" else .rxgs_chr(r$decision)
+    ## 측정 실패로 포기한 걸음(abandoned = TRUE · p4.R rc_p4_step_abandon)은 가설 기각이 아니다 — 'abandoned' 로 따로 두어 판정 · 채택률 분모 · 되풀이 기각에서 뺀다(11-10 적대적 검토 2차 R1)
+    dec <- if (is.null(r)) "pending" else if (isTRUE(r$abandoned)) "abandoned" else .rxgs_chr(r$decision)
     rows[[length(rows) + 1L]] <- data.table(
       chain = cid, generator = { gv <- .rxgs_chr(o$generator_version); if (is.na(gv)) gen_reg else gv }, k = k, block = bt, axes = ax,
       decision = dec, dS = if (is.null(r)) NA_real_ else .rxgs_num(r$table$dS_vis),
@@ -98,7 +99,7 @@ RXG_SC_FORBIDDEN_RX <- "(test|_tw$|oos|full|overall|lifetime|_all$)"
     if (!nrow(x)) NA_real_ else sum(x[decision == "accept"]$dS, na.rm = TRUE) / nrow(x) }, numeric(1))
   B <- if (nrow(D)) D[, .(steps = .N, decided = sum(decision %in% c("accept", "reject")), accept = sum(decision == "accept"),
                           dS_mean = if (any(is.finite(dS))) mean(dS, na.rm = TRUE) else NA_real_), by = block][order(block)] else NULL
-  list(n_chains = nrow(C), n_steps = nrow(D), n_decided = nd, n_accept = na,
+  list(n_chains = nrow(C), n_steps = nrow(D), n_decided = nd, n_accept = na, n_abandoned = sum(D$decision == "abandoned"),
        accept_rate = if (nd) na / nd else NA_real_,
        dS_mean = if (nd && any(is.finite(dd$dS))) mean(dd$dS, na.rm = TRUE) else NA_real_,
        dS_median = if (nd && any(is.finite(dd$dS))) stats::median(dd$dS, na.rm = TRUE) else NA_real_,

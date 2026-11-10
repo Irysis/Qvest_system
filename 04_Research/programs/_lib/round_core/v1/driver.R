@@ -172,7 +172,7 @@ if (sys.nframe() == 0L) {
                               cat(sprintf("[outcomes-quarantine] 결과 원장 줄 격리(md5 %s)\n", substr(m, 1, 8))) },
     "p4-step-decide" = { r <- rc_p4_step_decide(rd, opt("--k"), opt("--artifacts"), ROOT)
                          cat(sprintf("[p4-step-decide] 걸음 %s — %s(산출 출처 %s)\n", r$k, r$decision, r$artifacts_source)) },
-    "p4-step-abandon" = { rc_p4_step_abandon(rd, opt("--k") %||% stop("--k 필요"), opt("--reason") %||% stop("--reason 필요"), ROOT); cat("[p4-step-abandon] 걸음 포기 기록(기각 · 산출 없음)\n") },
+    "p4-step-abandon" = { rc_p4_step_abandon(rd, opt("--k") %||% stop("--k 필요"), opt("--reason") %||% stop("--reason 필요"), ROOT); cat("[p4-step-abandon] 걸음 포기 기록(측정 실패 · 가설 기각 아님 · 산출 없음)\n") },
     "p4-workdir" = { if (!exists("rx_toolbox_md", mode = "function")) invisible(capture.output(suppressMessages(source(file.path(ROOT, "02_Infrastructure/programs/rx_round.R")))))
                      fs <- rc_p4_generator_workdir(rd, opt("--out") %||% stop("--out 필요(사슬 디렉터리 밖 빈 폴더)"), ROOT, pool = rc_p4_base_pool(ROOT))
                      cat(sprintf("[p4-workdir] 생성기 작업 디렉터리 %d파일 → %s\n", length(fs), dirname(fs[1]))) },

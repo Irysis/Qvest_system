@@ -435,8 +435,9 @@ chk("Z3 시행 집합 = 기준 칸 + 판정한 모든 걸음(채택 1 · 기각 
     setequal(srl[2:(length(srl) - 1L)], want_trials) && identical(srl[1], .rcp4_abs(r1$artifacts, ROOT)) && identical(tail(srl, 1), "TRUE") &&
       identical(as.integer(FZ$n_abandoned), 1L) && identical(as.integer(ST$recs[[length(ST$recs)]]$final_k), 1L), paste(srl, collapse = " | "))
 gl <- readLines(GLOG)
-chk("Z4 새 등급 A = 후보 관문 발행 경로(rcg_route · strategy_id = <사슬>_k1 · 크래시 재진입에서 같은 호출 1회 더 = 멱등 덮어쓰기) · 요약은 finalize.json 에만", length(gl) == 2L && all(grepl("^route .* P4C90_e2e_k1", gl)) &&
-      identical(FZ$candidate_gate$action, "publish"))
+## 11-10 적대적 검토 2차 R1 — 닫기 재진입은 chain_closing · finalize.json(closing_id)으로 이어서 마무리한다: 재채점 · 관문 · 등재를 다시 부르지 않는다(관문 호출 1회 · 재채점 1회)
+chk("Z4 새 등급 A = 후보 관문 발행 경로(rcg_route · strategy_id = <사슬>_k1 · 크래시 재진입은 관문을 다시 부르지 않는다 = 1회) · 요약은 finalize.json 에만", length(gl) == 1L && all(grepl("^route .* P4C90_e2e_k1", gl)) &&
+      identical(FZ$candidate_gate$action, "publish") && identical(FZ$closing_id, .rcs_md5s(.rcp4_js(ST$closing_rec))), paste(gl, collapse = " | "))
 oj <- .rcp4_js(O[[1]]); cj <- .rcp4_js(Filter(function(r) identical(r$event, "chain_closed"), ST$recs))
 chk("Z5 결과 원장 · 사슬 원장에 등급 · 관문 판정이 새지 않는다(상태 문자열만) · 탐침 2 · 교훈 · τ_D 뒤 날짜 없음",
     identical(O[[1]]$extra$finalize$candidate_gate, "evaluated") && !grepl("publish|\"A\"|grade_after", oj) && !grepl("publish|grade_after", cj) &&
@@ -490,7 +491,7 @@ dk <- tryCatch(suppressWarnings(rc_outcomes_md(OB, tau_clean = TAU)), error = fu
 chk("K1b 이미 들어간 나쁜 줄(검사 강화 전) — 설계 입력 읽기는 그 줄만 빼고 계속(경고 · 원장 그대로)", is.character(dk) && length(dk) > 1L && !any(grepl("등급 C", dk, fixed = TRUE)) &&
       any(grepl("P4C80_k", readLines(OB, encoding = "UTF-8"), fixed = TRUE)))
 DI2 <- rc_p4_design_input(ROOT, CDC, pool = POOL, outcomes_path = OUTC, other_chain_dirs = c(CD, CD2))
-mo <- mut_src('for (r in o$results) if (identical(r$decision, "reject")) {', 'for (r in o$results) if (identical(r$decision, "nope")) {'); sys.source(mo$path, envir = globalenv())
+mo <- mut_src('for (r in o$results) if (identical(r$decision, "reject") && !.rcp4_abandoned(r)) {', 'for (r in o$results) if (identical(r$decision, "nope")) {'); sys.source(mo$path, envir = globalenv())
 DI2m <- rc_p4_design_input(ROOT, CDC, pool = POOL, outcomes_path = OUTC, other_chain_dirs = c(CD, CD2)); restore_p4()
 chk("K2 설계 입력 §4b — 다른 사슬의 기각 걸음(블록 유형 · 사슬 · 걸음 · 사유 코드 · 수치 없음) · 돌연변이 = 없음",
     grepl("4b. 다른 사슬", DI2, fixed = TRUE) && grepl("`weighting` 기각", DI2, fixed = TRUE) && grepl("P4C90_e2e 걸음 2(improve", DI2, fixed = TRUE) &&

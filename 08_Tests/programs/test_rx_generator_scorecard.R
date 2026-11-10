@@ -106,5 +106,16 @@ m3 <- mutate("  bad <- ks[grepl(RXG_SC_FORBIDDEN_RX, ks, perl = TRUE)]", "  bad 
 chk("S21 [돌연변이 red] 새 블록 판정 · 되풀이 기각 기록 · 보는 창 검사를 각각 지우면 S06 · S07 · S14 가 깨진다(치환 성사)",
     identical(m1, FALSE) && identical(m2, FALSE) && identical(m3, FALSE))
 
+## ── 측정 실패 포기 걸음(11-10 적대적 검토 2차 R1) — 가설 기각이 아니다 ─────────────────
+ab <- function(k) list(event = "step_result", k = k, decision = "reject", abandoned = TRUE, artifacts = NA, r7 = NA, reasons = list("measure_failed: 측정 실패 2회 — 워커"))
+CD <- list(reg("P4C04_d", "g3"), base(0.80, 0.70, 0.95),
+           op(1L, "weighting", "weighting", "g3"), ab(1L),
+           op(2L, "weighting", "weighting", "g3"), rs(2L, "accept", 0.10, 0.90, 0.70, 0.90, "signal"))
+g3 <- E$rxg_scorecard(list(P4C04_d = CD))$by_generator$g3
+chk("S22 포기 걸음 = 판정 · 채택률 분모 밖 · 따로 셈(n_abandoned) · 되풀이 기각 아님 · 기각 사유 빈도 밖",
+    g3$n_decided == 1L && eq(g3$accept_rate, 1) && g3$n_abandoned == 1L && g3$repeat_fail == 0L && !length(g3$reasons) && eq(g3$gain_per_step, 0.10))
+m4 <- mutate("else if (isTRUE(r$abandoned)) \"abandoned\" ", "", function(M) M$rxg_scorecard(list(P4C04_d = CD))$by_generator$g3$n_decided == 1L)
+chk("S23 [돌연변이 red] 포기 판별을 지우면 S22 가 깨진다(치환 성사)", identical(m4, FALSE))
+
 cat(sprintf("\n%s\n", toJSON(list(test = "test_rx_generator_scorecard", pass = pass, fail = fail, total = pass + fail), auto_unbox = TRUE)))
 quit(status = if (fail > 0L) 1L else 0L)
