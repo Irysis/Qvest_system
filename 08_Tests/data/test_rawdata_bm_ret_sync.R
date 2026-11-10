@@ -367,10 +367,7 @@ code_only <- function(p) {
 iuf <- code_only("02_Infrastructure/data/incremental_update_file.R")
 chk("G1_incremental_update_file_routes",
     grepl("rawdata_bm_ret_sync_dt(", iuf, fixed = TRUE) && !grepl("raw[, BM_Ret := NULL]", iuf, fixed = TRUE))
-krx <- code_only("02_Infrastructure/data/krx_build_rawdata.R")
-chk("G2_krx_no_self_computed_bm_ret_or_zero_sentinel",
-    grepl("rawdata_bm_ret_sync_dt(", krx, fixed = TRUE) && !grepl("BM_Ret := 0]", krx, fixed = TRUE) &&
-      !grepl("merge(new_rows, bm_new[, .(Date, BM_Ret)]", krx, fixed = TRUE))
+# (2026-11-10 H1 TRIM) G2(krx_build_rawdata.R 경로) 제거 — 퇴역(RAWDATA-QW-ONLY-20261017 · 일일 체인 호출 0). G1 · G3~G5 는 그대로.
 san <- code_only("02_Infrastructure/data/rawdata_sanitize.R")
 chk("G3_sanitize_routes", grepl("rawdata_bm_ret_sync_dt(", san, fixed = TRUE) && !grepl("raw[, BM_Ret := NULL]", san, fixed = TRUE))
 rep <- code_only("02_Infrastructure/data/repair_rawdata_bmret_from_benchmark.R")

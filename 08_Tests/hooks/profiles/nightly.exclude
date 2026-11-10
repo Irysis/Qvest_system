@@ -1,22 +1,8 @@
-# 밤 목록에서 빼는 스위트 (2026-11-10 전수점검 · v10.2) — 한 줄 한 경로. 주 1회 전체 실행(profiles/tiers.json)에서는 그대로 돈다.
-# 기준: 시험 대상이 전부 '퇴역 표기 파일' 또는 '등록 해제된 훅'인 스위트(점검 레인 집계 — 11종 · 검사 130건 · 실패 0).
-#   매일 밤 다시 확인할 것이 없다. 보관(SUITES 에서 빼기)은 대상 코드를 실제로 보관할 때 함께 한다.
-# 대상 = data/naver_data_collector.R(10-17 퇴역)
-08_Tests/data/test_size_scale_integrity.R
-# 대상 = hooks/ast_spec_gate.sh(등록 해제)
+# 밤 목록에서 빼는 스위트 — 한 줄 한 경로(주간 전체 실행에서는 그대로 돈다).
+# 2026-11-10 H1: 대상이 퇴역한 9종은 시험째 삭제했다(SUITES 의 '(2026-11-10 H1 삭제 — …)' 주석 · 감사 tests_delete_plan.tsv).
+#   층 선언의 정본은 이제 profiles/suite_tiers.tsv(fast | nightly | weekly) — 이 파일은 밤 층에서 추가로 빼는 예외만 둔다.
+# 남은 2종 = 대상이 '등록 해제된 훅'이지만 다른 생산 코드가 아직 참조해 삭제 보류(재확인 필요):
+# 대상 = hooks/ast_spec_gate.sh(미등록 · hook_e2e_battery.py · policies/router_dispatch.json · ast_verify.py 가 참조)
 08_Tests/hooks/test_ast_spec_gate.sh
-# 대상 = auto_alpha_gate.R · lean_verify_build.py(퇴역)
-08_Tests/hooks/test_auto_alpha_gate_grade_axis.R
-08_Tests/ops/test_auto_alpha_gate_tiers.sh
-# 대상 = data/naver_benchmark_update.py(10-17 퇴역)
-08_Tests/hooks/test_benchmark_scale_seam.py
-# 대상 = hooks/research_continuity_guard.sh(등록 해제)
+# 대상 = hooks/research_continuity_guard.sh(미등록 · handbook_facts_audit.sh · milestone_commit.sh · memory_knowledge_health.R 가 참조)
 08_Tests/hooks/test_continuity_w3_director_freeze.py
-# 대상 = hooks/hypothesis_precheck_gate.sh(등록 해제)
-08_Tests/hooks/test_hypothesis_precheck_gate.sh
-# 대상 = mode_queue_research_run.sh · research_effect_signature.py(퇴역)
-08_Tests/ops/test_effect_signature_progress.sh
-# 대상 = paper_dispatch_backfill.sh · paper_research_dispatch.R(퇴역)
-08_Tests/ops/test_paper_dispatch_backfill.sh
-08_Tests/ops/test_screen_axes_check.R
-08_Tests/ops/test_sigma_ab_freshness_gate.R

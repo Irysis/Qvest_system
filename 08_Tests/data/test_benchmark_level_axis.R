@@ -272,10 +272,8 @@ PINNED <- c(
   #   1908.01112: 시장 레벨 창을 min-max 정규화한 AR 사상 · cor(가격, 시장 레벨) · 열 단위 노름 정규화 OLS(식 5)에만 쓴다 → 척도 배수에
   #     예측·순위 불변(절대 문턱은 분모 가드 EPS_RANGE 1e-12 뿐). engine.rejected_preaudit1.R = engine.R 과 바이트 동일한 기각 사본.
   #   FIDELITY.json 둘 = 벤치 원천 서술(계산 없음). 셋 다 ABS_LEVEL 아님
-  "04_Research/strategies/RP_AUTO_2202_05702/FIDELITY.json",
   "04_Research/strategies/RP_AUTO_2202_05702/engine.R",
   "04_Research/strategies/RP_AUTO_2202_05702/engine.rejected1.R",
-  "04_Research/strategies/RP_AUTO_CLEAN_1908_01112/FIDELITY.json",
   "04_Research/strategies/RP_AUTO_CLEAN_1908_01112/engine.R",
   "04_Research/strategies/RP_AUTO_CLEAN_1908_01112/engine.rejected_preaudit1.R",
   "04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2007_081/engine.R",
@@ -327,7 +325,12 @@ ABS_LEVEL <- c(
 #   PF="$ADIR/prompt_${KIND}.txt" — 2026-10-13 v10.01 격자 러너 퇴역 때 삭제 · 산출물만 남았다). BM_Close 는 이미 등재된 소비자
 #   pg2_risk_overlay.R 의 '그 파일만 쓰는 이름' 목록(식별자 인벤토리 1줄 · 10-04~10-10 판 7개)에만 나온다 — 계산이 없다.
 #   그 프롬프트가 낳은 arm 코드(gen_*.R)는 그대로 분모에 남는다. 패턴은 이 이름 꼴만 가린다(S3 가 양방향으로 못박는다).
-GENERATED_TEXT <- c("^02_Infrastructure/reinforcement/overlay_arms/prompt_gen_[0-9]{8}_[0-9]{6}[.]txt$")
+# ★(2026-11-10 H1 TRIM) 충실구현 감사 기록(04_Research/strategies/<id>/FIDELITY.json · fidelity_*.json · prompt.txt)도 소비자가 아니다 —
+#   LLM 감사가 코드 본문을 인용해 BM_Close 문자열을 담을 뿐 계산이 없다. 종전엔 충실구현 1편마다 새 소비자로 잡혀 S1 이 빨갰다(야간 11-10).
+#   그 디렉터리의 엔진 코드(*.R · *.py)와 다른 깊이 · 다른 폴더의 같은 이름은 그대로 분모에 남는다(S3 음성 예시가 못박는다).
+GENERATED_TEXT <- c("^02_Infrastructure/reinforcement/overlay_arms/prompt_gen_[0-9]{8}_[0-9]{6}[.]txt$",
+                    "^04_Research/strategies/[^/]+/(FIDELITY|fidelity_[A-Za-z0-9_]+)[.]json$",
+                    "^04_Research/strategies/[^/]+/prompt[.]txt$")
 gen_re <- paste(GENERATED_TEXT, collapse = "|")
 scan_dirs <- c("02_Infrastructure", "05_Production", "04_Research/strategies")
 found <- character(0)
@@ -357,11 +360,18 @@ chk("S2 절대-레벨 소비자 목록이 표면 안에 있다",
     all(ABS_LEVEL %in% PINNED), "")
 # S3 — 제외 패턴 양방향: 생성 프롬프트 이름은 가리고(양성), 그 프롬프트가 낳은 arm 코드 · 같은 이름의 코드 ·
 #   다른 꼴의 텍스트 · 다른 폴더 · 등재 소비자 전부는 가리지 않는다(음성). 패턴이 넓어지면 소비자가 조용히 분모에서 빠진다.
-s3_pos <- "02_Infrastructure/reinforcement/overlay_arms/prompt_gen_20261004_084327.txt"
+s3_pos <- c("02_Infrastructure/reinforcement/overlay_arms/prompt_gen_20261004_084327.txt",
+            "04_Research/strategies/RP_AUTO_CLEAN_1309_7119/FIDELITY.json",
+            "04_Research/strategies/RP_AUTO_CLEAN_1309_7119/fidelity_axis_signal.json",
+            "04_Research/strategies/RP_AUTO_2511_12129/prompt.txt")
 s3_neg <- c("02_Infrastructure/reinforcement/overlay_arms/gen_20261004_084327.R",
             "02_Infrastructure/reinforcement/overlay_arms/prompt_gen_20261004_084327.R",
             "02_Infrastructure/reinforcement/overlay_arms/prompt_gen_notes.txt",
             "04_Research/strategies/RP_AUTO_X/prompt_gen_20261004_084327.txt",
+            "04_Research/strategies/RP_AUTO_CLEAN_1309_7119/run_all.R",
+            "04_Research/strategies/RP_AUTO_CLEAN_1309_7119/engine.py",
+            "04_Research/strategies/RP_AUTO_CLEAN_1309_7119/sub/FIDELITY.json",
+            "02_Infrastructure/data/FIDELITY.json",
             PINNED)
 chk("S3 생성 프롬프트 제외 패턴 양방향 — 생성 프롬프트만 가린다(같은 폴더 arm 코드 · 다른 꼴 텍스트 · 다른 폴더 · 등재 소비자는 그대로)",
     all(grepl(gen_re, s3_pos)) && !any(grepl(gen_re, s3_neg)),

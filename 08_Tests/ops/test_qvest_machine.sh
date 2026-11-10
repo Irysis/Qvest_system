@@ -87,5 +87,5 @@ expect settled_hold_other   0 "$(QVEST_HOST=OTHERPC bash "$QM" settled "$R" >/de
 rm -f "$T/m/hold_TESTPC"; mkdir -p "$R/.cache/machine"; echo x > "$R/.cache/machine/hold_TESTPC"
 expect settled_hold_repo    1 "$(QVEST_HOST=TESTPC bash "$QM" settled "$R" >/dev/null 2>&1; echo $?)"
 
-echo "{\"pass\":$pass,\"fail\":$fail}"
+echo "{\"test\":\"qvest_machine\",\"pass\":$pass,\"fail\":$fail,\"total\":$((pass+fail))}"   # (2026-11-10 H1) 배터리 요약 키 test 추가 — 없으면 미측정으로 계상된다
 [ "$fail" -eq 0 ]

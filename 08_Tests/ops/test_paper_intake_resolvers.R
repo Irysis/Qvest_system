@@ -59,8 +59,13 @@ chk <- function(label, got, want) {
 }
 
 cat("== 위반 주입: 일부러 스텁 경로를 넣었을 때 판별자가 발화하는가 ==\n")
-chk("Sys.which('python3') (실제 회귀 입력·단축경로)", is_store_stub(Sys.which("python3")), TRUE)
-chk("Sys.which('python')  (단축경로)",                is_store_stub(Sys.which("python")),  TRUE)
+# (2026-11-10 H1) 종전엔 Sys.which() 의 실제 값을 넣었다 — PATH 의 python3 가 Store 스텁인 기계에서만 양성이었고,
+#   메인 PC(Python 3.15 전환 뒤 PATH 에 python 별칭 없음)에서는 빈 문자열이라 이 두 사례가 '환경' 때문에 빨갰다(야간 2건).
+#   스텁이 실제로 PATH 에 있으면 그 값을, 없으면 Sys.which 가 스텁일 때 돌려주는 8.3 단축형 그대로를 넣는다 — 판별자 입력 형태 · 사례 수 불변.
+.sw <- function(nm) { v <- unname(Sys.which(nm)); if (nzchar(v) && grepl("WINDOW~1|WindowsApps", v)) v else
+  sprintf("C:/Users/x/AppData/Local/MICROS~1/WINDOW~1/%s.exe", nm) }
+chk("Sys.which('python3') 형태 (실제 회귀 입력·단축경로)", is_store_stub(.sw("python3")), TRUE)
+chk("Sys.which('python')  형태 (단축경로)",                is_store_stub(.sw("python")),  TRUE)
 chk("긴 이름 스텁 경로",
     is_store_stub("C:/Users/x/AppData/Local/Microsoft/WindowsApps/python3.exe"), TRUE)
 chk("역슬래시 8.3 단축형 리터럴",

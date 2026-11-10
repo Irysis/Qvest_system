@@ -71,6 +71,18 @@ else
     bad "E1 UNKNOWN — SUITES 배열의 닫는 괄호를 못 찾음"
   else
     ENROLLED=$(sed -n "${S_LINE},${E_LINE}p" "$RUNNER" | grep -oE '"[^"]*\.(R|sh|py)"' | tr -d '"' | sed 's|.*/||' | sort -u)
+    # (2026-11-10 H1) 러너의 자동 편입 글롭(AUTO_ENROLL_GLOBS=(...) 한 줄)에 맞는 실재 파일도 편입으로 센다 —
+    #   러너가 실제로 그 글롭을 펼쳐 돌린다(run_all_hooks.sh '자동 편입' 절). 글롭 줄이 없으면 종전과 같다.
+    _AUTO_LINE=$(grep -m1 '^AUTO_ENROLL_GLOBS=(' "$RUNNER" 2>/dev/null || true)
+    if [ -n "$_AUTO_LINE" ]; then
+      _AUTO=""
+      # 글롭 문자열은 read 로 받는다 — $(...) 를 단어 분리하면 현재 작업 폴더 기준으로 먼저 펼쳐져 엉뚱한 트리를 센다(실측)
+      while IFS= read -r _g; do
+        [ -n "$_g" ] || continue
+        for _f in "$PROJECT"/$_g; do [ -f "$_f" ] && _AUTO="$_AUTO$(basename "$_f")\n"; done
+      done < <(printf '%s' "$_AUTO_LINE" | grep -oE '"[^"]+"' | tr -d '"')
+      ENROLLED=$(printf '%s\n%b' "$ENROLLED" "$_AUTO" | grep . | sort -u)
+    fi
     n_enrolled=$(printf '%s\n' "$ENROLLED" | grep -c . || true)
     if [ "$n_enrolled" -eq 0 ]; then
       bad "E1 UNKNOWN — SUITES 배열에서 항목 0건 추출 (통과로 위장 금지)"

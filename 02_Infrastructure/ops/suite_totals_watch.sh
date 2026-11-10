@@ -128,12 +128,29 @@ collect() {
   # (2026-11-10) 러너 출력을 버리지 않는다 — 종전엔 표준출력을 변수로만 받고 표준오류는 /dev/null 로 보내, 실패한 단언의 내용이
   #   어디에도 남지 않았다(총계 fail=107 만 보이고 무엇이 왜 실패했는지는 다시 돌려야 알 수 있었다). 마지막 1회분을 남긴다.
   mkdir -p "$DIR/.cache/test_results"
-  local tier="${QVEST_SUITES_TIER:-$(st_pick_tier "$DIR/08_Tests/hooks/profiles/tiers.json")}" excl="${QVEST_SUITES_EXCLUDE:-}"
+  # (2026-11-10 H1) 층 = QVEST_BATTERY_TIER(일일 체인이 넘김 · fast | nightly | weekly | full) → 없으면 tiers.json 요일 규칙
+  #   (full_weekday = weekly · 그 밖 = nightly). 러너에는 같은 변수로 넘기고, 밤 층이면 nightly.exclude 예외도 함께 뺀다.
+  #   구 변수 QVEST_SUITES_TIER(full | nightly)는 BATTERY_TIER 가 없을 때만 읽는다(full → weekly).
+  local tier excl="${QVEST_SUITES_EXCLUDE:-}"
+  tier="${QVEST_BATTERY_TIER:-}"
+  if [ -z "$tier" ]; then
+    tier="${QVEST_SUITES_TIER:-$(st_pick_tier "$DIR/08_Tests/hooks/profiles/tiers.json")}"
+    [ "$tier" = "full" ] && tier="weekly"
+  fi
   if [ "$tier" = "nightly" ] && [ -z "$excl" ]; then excl="$(st_profile_regex "$DIR/08_Tests/hooks/profiles/nightly.exclude")"; fi
-  [ -n "$excl" ] || tier="full"                                    # 뺀 것이 없으면 그 실행은 전체다
-  _hooks_raw=$(cd "$DIR" && CLAUDE_PROJECT_DIR="$DIR" QVEST_SUITES_TIER="$tier" QVEST_SUITES_EXCLUDE="$excl" bash 08_Tests/hooks/run_all_hooks.sh 2>"$DIR/.cache/test_results/run_all_hooks_last.stderr.log")
+  local _res="$DIR/.cache/test_results/hook_dryrun_results.json" _st0 _rm
+  _st0=$(date +%s)
+  _hooks_raw=$(cd "$DIR" && CLAUDE_PROJECT_DIR="$DIR" QVEST_BATTERY_TIER="$tier" QVEST_SUITES_EXCLUDE="$excl" bash 08_Tests/hooks/run_all_hooks.sh 2>"$DIR/.cache/test_results/run_all_hooks_last.stderr.log")
   printf '%s\n' "$_hooks_raw" > "$DIR/.cache/test_results/run_all_hooks_last.log" 2>/dev/null || true
   hooks_out=$(st_pick_hooks_final "$_hooks_raw")
+  # (2026-11-10 H1) ★FINAL 을 집었어도 그것이 '이번 러너'의 것인지 확인한다 — 11-10 07:14 실행은 러너 꼬리가 깨져 결과 파일을
+  #   다시 쓰지 못했는데, 자식 시험의 'FINAL … 9 total' 줄을 집어 hooks=9 로 기록했다. 결과 파일이 이번 실행 시작 뒤에
+  #   쓰이지 않았으면 총계를 숫자가 아니라 null 로 둔다(check 가 '수집 실패'로 경고한다 · 숫자로 위장하지 않는다).
+  _rm=$(date -r "$_res" +%s 2>/dev/null || echo 0)
+  if [ -z "$hooks_out" ] || [ "${_rm:-0}" -lt "$_st0" ]; then
+    echo "[suite-totals] ⚠ 러너 FINAL/결과 파일이 이번 실행의 것이 아님(FINAL='${hooks_out:-없음}' · 결과 파일 mtime ${_rm} < 시작 ${_st0}) — 총계 null"
+    hooks_out=""
+  fi
   unset _hooks_raw
   hooks=$(printf '%s' "$hooks_out" | grep -oE '[0-9]+ total' | grep -oE '[0-9]+')
   hooks_fail=$(printf '%s' "$hooks_out" | grep -oE '[0-9]+ fail' | grep -oE '[0-9]+')
@@ -261,7 +278,8 @@ if fail_hits:
 
 # (2026-11-10) 단계가 다른 수집은 총계를 견주지 않는다 — 밤(nightly) 수집을 전체(full) 기준선과 비교하면 일부러 뺀 만큼이 '감소'로 뜬다.
 #   fail 축(위)은 단계와 무관하게 그대로 본다.
-lt, bt = (l.get("tier") or "full"), (b.get("tier") or "full")
+_n = lambda t: "full" if (t or "full") in ("full", "weekly") else t   # weekly = 전체(모든 스위트) — 같은 단계로 본다
+lt, bt = _n(l.get("tier")), _n(b.get("tier"))
 tier_skip = ("hooks", "regime") if lt != bt else ()
 if tier_skip:
     print("[suite-totals] 단계 %s 수집 — 기준선(%s)과 총계 비교 생략(%s). 전체 실행에서 비교한다" % (lt, bt, " · ".join(tier_skip)))
@@ -295,7 +313,7 @@ promote() {
   "$PY" - "$LATEST" "$BASELINE" <<'PYEOF'
 import io, json, sys
 l = json.load(io.open(sys.argv[1], encoding="utf-8"))
-if (l.get("tier") or "full") != "full":
+if (l.get("tier") or "full") not in ("full", "weekly"):
     print("단계 %s 수집 — 기준선 승격 거부(전체 실행만 기준선이 된다 · QVEST_SUITES_TIER=full 로 --collect --force)" % l.get("tier"))
     sys.exit(1)
 if any(v is None for k, v in l.items() if k not in ("collected_at", "tree_head", "tier")):

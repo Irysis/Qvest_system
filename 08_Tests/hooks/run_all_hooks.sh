@@ -6,6 +6,53 @@
 
 set -uo pipefail
 
+#─────────────────────────────────────────────────────
+# ★자기 사본으로 다시 실행 (2026-11-10 v10.2 시험 정리 · H1)
+#   bash 는 스크립트를 바이트 오프셋으로 이어 읽는다. 11-10 두 번째 리프레시(07:14~12:15) 동안 이 파일이
+#   네 번 커밋됐고(09:15 · 10:13 · 11:36 · 12:10), 루프 뒤 꼬리(결과 JSON · FINAL)가 밀린 오프셋에서 깨져
+#   결과 파일이 다시 쓰이지 않았다 — suite_totals 는 자식 시험의 'FINAL … 9 total' 을 집어 hooks=9 로 적었다.
+#   ⇒ 시작하자마자 자기 사본을 임시 파일로 떠서 그 사본을 실행한다. 원본 편집은 다음 실행부터 반영된다.
+#   앵커(_SELF_DIR)는 사본이 아니라 원본 위치로 잡는다(QVEST_RUNNER_ORIG). 사본 여부는 '그 변수 = 내 BASH_SOURCE'
+#   로만 판정한다 — 배터리 안에서 다른 러너 사본(샌드박스 시험)을 띄우면 그쪽은 제 사본을 따로 뜬다.
+#   양성 대조: 08_Tests/hooks/test_runner_parallel_tiers.sh 축 C(실행 중 원본 훼손 → 결과 불변 · 사본 끄면 깨짐).
+#─────────────────────────────────────────────────────
+if [[ "${QVEST_RUNNER_NO_COPY:-0}" != "1" && "${QVEST_RUNNER_COPY:-}" != "${BASH_SOURCE[0]}" ]]; then
+  _qv_orig="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+  # 끝에서 지우지 못한 사본(Windows 는 읽는 중인 파일 삭제가 실패할 수 있다)은 하루 지나면 여기서 치운다
+  find "${TMPDIR:-/tmp}" -maxdepth 1 \( -name 'qvest_runner.*' -o -name 'qvest_par.*' \) -mmin +1440 -exec rm -rf {} + 2>/dev/null || true
+  _qv_cp="$(mktemp "${TMPDIR:-/tmp}/qvest_runner.XXXXXX" 2>/dev/null)"
+  if [[ -n "$_qv_cp" ]] && cp "$_qv_orig" "$_qv_cp" 2>/dev/null; then
+    export QVEST_RUNNER_COPY="$_qv_cp" QVEST_RUNNER_ORIG="$_qv_orig"
+    exec bash "$_qv_cp" "$@"
+  fi
+  echo "⚠ 러너 자기 사본 생성 실패 — 원본 그대로 실행(실행 중 편집에 취약)" >&2
+fi
+if [[ -n "${QVEST_RUNNER_COPY:-}" && "${QVEST_RUNNER_COPY}" == "${BASH_SOURCE[0]}" && -n "${QVEST_RUNNER_ORIG:-}" ]]; then
+  _QV_SELF_SRC="$QVEST_RUNNER_ORIG"
+else
+  _QV_SELF_SRC="${BASH_SOURCE[0]}"; unset QVEST_RUNNER_COPY QVEST_RUNNER_ORIG
+fi
+
+# ── 인자 (2026-11-10) ── --tier fast|nightly|weekly|full · --jobs N. 인자가 환경변수보다 우선.
+#   층 환경변수 = QVEST_BATTERY_TIER(일일 체인이 넘김) · 병렬 슬롯 = QVEST_SUITES_JOBS(기본 4).
+_QV_TIER_ARG=""; _QV_JOBS_ARG=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --tier) _QV_TIER_ARG="${2:-}"; shift; [[ $# -gt 0 ]] && shift ;;
+    --tier=*) _QV_TIER_ARG="${1#--tier=}"; shift ;;
+    --jobs) _QV_JOBS_ARG="${2:-}"; shift; [[ $# -gt 0 ]] && shift ;;
+    --jobs=*) _QV_JOBS_ARG="${1#--jobs=}"; shift ;;
+    *) echo "⚠ 알 수 없는 인자 무시: $1" >&2; shift ;;
+  esac
+done
+QV_TIER="${_QV_TIER_ARG:-${QVEST_BATTERY_TIER:-full}}"
+case "$QV_TIER" in
+  fast|nightly|weekly|full) ;;
+  *) echo "❌ 알 수 없는 층 '$QV_TIER' — fast | nightly | weekly | full" >&2; exit 2 ;;
+esac
+QV_JOBS="${_QV_JOBS_ARG:-${QVEST_SUITES_JOBS:-4}}"
+[[ "$QV_JOBS" =~ ^[0-9]+$ && "$QV_JOBS" -ge 1 ]] || QV_JOBS=1
+
 #──────────────────────────────────────────────────────────────────────────────
 # (2026-07-25) bare python3 → $QVEST_PY_BIN. PATH의 python3는 Windows Store 스텁이라
 # "Python"만 찍고 스크립트를 실행하지 않는다 → 각 suite의 JSON 요약 라인 파싱이 전량
@@ -18,7 +65,7 @@ set -uo pipefail
 # ★ 앵커는 PROJ_DIR이 아니라 BASH_SOURCE — PROJ_DIR 오설정이야말로 이 suite가
 #   보고해야 할 실패라, 그 경우에도 해석기는 살아 있어야 한다.
 #──────────────────────────────────────────────────────────────────────────────
-_SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+_SELF_DIR="$(cd "$(dirname "$_QV_SELF_SRC")" && pwd)"
 _SHARED_PARSE="$_SELF_DIR/../../02_Infrastructure/hooks/_shared_parse.sh"
 if [[ -f "$_SHARED_PARSE" ]]; then
   QVEST_PARSE_TRAP=caller
@@ -156,7 +203,7 @@ SUITES=(
   #   ④사본 선삭제 ⑤NOT_AUDITED 넘김(통과 후보 유실 직전) ⑥형식 census 표본이 기지 반례 누락.
   #   규약 = (A)기지사례 범위 검증 (B)작으면 전수·기지사례 강제포함 (C)0건에 신뢰상한 병기.
   #   검사기는 "강제포함 없으면 20중 18 놓침" 대조로 도구 필요성 자체를 실증한다.
-  "08_Tests/contracts/test_census_helper.R"
+  # (2026-11-10 H1 삭제 — 대상 contracts/census_helper.R 호출처 0(함께 삭제)) 08_Tests/contracts/test_census_helper.R
   # 2026-08-22 추가(DFA R54): FR 배분 규칙 표현력 진단. compute_regime_module_weights 는
   #   *비중*(합=1)에 softmax(tau=0.6)를 걸어서 모듈 수 n 이 커지면 score 가 1/n 근처로 몰려
   #   출력이 rp 앵커로 수렴한다 — n=21 실측 retention 0.0796(신호 92% 압축), 정적 EW 와
@@ -253,7 +300,7 @@ SUITES=(
   #   같은 날 3회 근접 사고(FQ-095 D2 / FQ-004 카드 추월 / R4 임의착수금지)를 기계화.
   #   ★스크린 초판이 카드 축에서 0건을 반환하고 그 0 이 '충돌 없음'으로 읽혔다 —
   #    도구 자신이 "빈 결과 = 합격"을 재현. 그 차단 실효를 이 검사기가 실측한다.
-  "08_Tests/data/test_frontier_coherence.R"
+  # (2026-11-10 H1 삭제 — 대상 ops/frontier_registry_coherence.R 호출처 0(함께 삭제)) 08_Tests/data/test_frontier_coherence.R
   # 2026-07-26 추가: 부팅 자기-정합 검사(boot_currency_check) 위반 주입 — 부팅 최신화 자동 배선의 가드
   "08_Tests/hooks/test_boot_currency.sh"
   # v10 (2026-08-29): 비중 상한 폐지의 양방향 검증 — w=0.35 통과 + 잔존 3축(25종·long-only·Σw) 차단
@@ -352,7 +399,7 @@ SUITES=(
   #   그 체크는 이 러너의 산출을 읽는다 — 즉 여기가 **자기 소비자를 감시하는 자리**다.
   #   원 결함이 정확히 "러너가 산출 경로를 옮겼는데 게이트가 못 따라옴"이었으므로
   #   E 축(배선 대조)이 이 러너의 RESULTS_FILE 과 게이트 상수를 매 실행 대조한다.
-  "08_Tests/validation/test_v8_readiness_hook_dryrun.R"
+  # (2026-11-10 H1 삭제 — 대상 v8_readiness_gate.R 코드 호출처 0 · v8 강제 계층 퇴역) 08_Tests/validation/test_v8_readiness_hook_dryrun.R
   # 2026-07-26 추가(T1): DART 수집 후보집합(제출창+커버리지) 위반 주입 테스트.
   #   원 결함 P2-01 = 후보집합을 **달력**으로 생성 → FY2025 사업보고서(2026-03 제출)가
   #   2025년엔 존재하지 않고 2026년엔 요청되지 않아 50/714 corps 로 영구 결손.
@@ -465,7 +512,7 @@ SUITES=(
   "08_Tests/contracts/test_grade_unification.R"
   # v9.21 축 1-c — 무인 게이트의 등급 축(권위 {F} vs proxy {C,F}) + 구조 라우팅 3종 근거.
   #   게이트를 실제 실행해 판정을 본다(자구 grep 아님). 돌연변이 통제 2건 포함.
-  "08_Tests/hooks/test_auto_alpha_gate_grade_axis.R"
+  # (2026-11-10 H1 삭제 — 대상 auto_alpha_gate.R · lean_verify_build.py v10 08-29 무인 리서치 레인 퇴역(★RETIRED)) 08_Tests/hooks/test_auto_alpha_gate_grade_axis.R
   # v9.21 축 3-a — 모드 개명(factor_rotation→strategy_rotation) 양방향 + prefix 맵 3종 정합.
   #   ★옛 라벨 존치·FR prefix 유지·overlay_research 부채 봉합(OVL 11건 GEN 폴백 방지)을 못박는다.
   "08_Tests/contracts/test_mode_rename_strategy_rotation.R"
@@ -536,7 +583,7 @@ SUITES=(
   #   ★둘째 축 = source 스탬프. 구판이 source 를 안 찍어 NA 였고 그 NA 가 역설적으로
   #     검거 지문이 됐다 — 이제 지문이 아니라 선언으로 강제한다.
   #   벤치 parity(위 줄)와 **같은 계통**(두 writer·다른 스케일·정합 없는 접합)이라 나란히 둔다.
-  "08_Tests/data/test_size_scale_integrity.R"
+  # (2026-11-10 H1 삭제 — 대상 naver_data_collector.R 퇴역 RAWDATA-QW-ONLY-20261017) 08_Tests/data/test_size_scale_integrity.R
   # 2026-08-02 추가: ast_verify 방언 수용 + 빈 순회 차단 (ALB-007 CRITICAL 수리 고정).
   #   원 결함 = 정적검증기가 컴파일러 방언(args/type:leaf/params)을 순회 못 해
   #   **leaf_count=0 으로 PASS 를 발행** — 실행되는 트리의 PIT 검증이 사실상 사망.
@@ -836,10 +883,10 @@ SUITES=(
   #     ([[project-gate-cd-not-on-scheduled-path-20260808]])의 검사기 판본이다.
   #   ① Σ-A/B 신선도 게이트 — 구판 `ov_csv>=carrier` 단독이 **영구 참**이라 7주간 캐시
   #      1벌을 매일 "오늘의 optimizer 판정"으로 재발송했다(book_ir 1.209 고정).
-  "08_Tests/ops/test_sigma_ab_freshness_gate.R"
+  # (2026-11-10 H1 삭제 — 대상 paper_research_dispatch.R · auto_sigma_weighting_ab.R v10 08-29 무인 리서치 레인 퇴역(★RETIRED)) 08_Tests/ops/test_sigma_ab_freshness_gate.R
   #   ② STEP 1-b 2축(shrinkage_builtin/statistic_order/screen_priority) 존재 **및 enum** 검사.
   #      존재만 보면 enum 밖 값이 통과해 소비단이 우선순위를 못 매긴다(= 없는 것과 같다).
-  "08_Tests/ops/test_screen_axes_check.R"
+  # (2026-11-10 H1 삭제 — 대상 paper_research_dispatch.R v10 08-29 무인 리서치 레인 퇴역(★RETIRED)) 08_Tests/ops/test_screen_axes_check.R
   #   ③ 논문 어댑터 계약 — 08-08 실사고: normalize_long_only 가 cap 을 정규화 **전**에 걸어
   #      minvar/MVO 3종이 정확히 1/25 = EW 로 붕괴했는데 제약 검사 5종은 전부 통과했다
   #      (EW 도 유효 비중이므로). 검거 축은 "EW 와 구별되는가" 하나뿐이다.
@@ -1056,7 +1103,7 @@ SUITES=(
   #   ★D 축 = **표↔계약 배선** 확인(오늘 '계약은 있는데 호출부 0' 계통을 여러 번 봤다).
   #   ★미측정은 **NA**(0 위장 금지) · 표는 '자본 후보 아님' 경고를 함께 담는다(수치만 옮겨가는 것 방지).
   #   ⚠이 레버는 약한 재료를 덜 나쁘게 할 뿐 — 오버레이 후 최고 PORT_t +0.538.
-  "08_Tests/hooks/test_overlay_precheck.R"
+  # (2026-11-10 H1 삭제 — 대상 contracts/overlay_precheck.R 호출처 0(함께 삭제)) 08_Tests/hooks/test_overlay_precheck.R
   # 2026-08-16 추가: P0 루프 닫기 수리 4건 (L1 자동 스폰 설계, 도훈 승인) 위반 주입.
   #   ①hypothesis_index 원천 (g) overlay_ab_results 파서/스테일 감시 ②drain_verdict dv_v1
   #   판정 코드화 + **양성 대조**(07-10 실측 16건 재판정 = 세션 수기 INFERIOR 전건 일치)
@@ -1137,15 +1184,15 @@ SUITES=(
   "08_Tests/contract_regression/test_canonical_screen_bt.R"
   "08_Tests/contract_regression/test_register_module.R"
   "08_Tests/contract_regression/test_required_effect_size.R"
-  "08_Tests/contract_regression/test_proxy_axis.R"
+  # (2026-11-10 H1 삭제 — 대상 contracts/proxy_axis.R 호출처 0(함께 삭제)) 08_Tests/contract_regression/test_proxy_axis.R
   "08_Tests/contract_regression/test_basis_channels.R"
-  "08_Tests/contract_regression/test_subsample_null.R"
+  # (2026-11-10 H1 삭제 — 대상 contracts/subsample_null.R 호출처 0(함께 삭제)) 08_Tests/contract_regression/test_subsample_null.R
   "08_Tests/contract_regression/test_book_marginal_ci.R"
   "08_Tests/contract_regression/test_governor_dir_resolution.R"
-  "08_Tests/contract_regression/test_report_guard.R"
-  "08_Tests/contract_regression/test_harness_compliance.R"
-  "08_Tests/contract_regression/test_moment_fragility.R"
-  "08_Tests/contract_regression/test_claim_state.R"
+  # (2026-11-10 H1 삭제 — 대상 contracts/report_guard.R 호출처 0(함께 삭제)) 08_Tests/contract_regression/test_report_guard.R
+  # (2026-11-10 H1 삭제 — 대상 contracts/harness_compliance.R 호출처 0(함께 삭제)) 08_Tests/contract_regression/test_harness_compliance.R
+  # (2026-11-10 H1 삭제 — 대상 contracts/moment_fragility.R 호출처 0(함께 삭제)) 08_Tests/contract_regression/test_moment_fragility.R
+  # (2026-11-10 H1 삭제 — 대상 ops/claim_state.R 호출처 0(함께 삭제)) 08_Tests/contract_regression/test_claim_state.R
   "08_Tests/contract_regression/test_bm_park.R"
   # ── 2026-08-20 추가: 미편입 15건 (요약 계약 정합 후 등재) ──────────────────
   #   3건은 이미 배터리 JSON 을 내고 있었는데 SUITES 에 없어서 안 돌았고(순수 열거 누락),
@@ -1153,7 +1200,7 @@ SUITES=(
   #   ★test_c15_load_path_scan 은 카운터가 main() 지역변수라 최상위 발행이 죽었다 —
   #     스코프 안에서 발행하도록 고쳤다(같은 형태를 만들면 'object not found' 로 죽는다).
   "08_Tests/ops/test_frontier_queue_io.R"
-  "08_Tests/ops/test_paper_dispatch_backfill.sh"
+  # (2026-11-10 H1 삭제 — 대상 paper_dispatch_backfill.sh v10 08-29 무인 리서치 레인 퇴역(★RETIRED)) 08_Tests/ops/test_paper_dispatch_backfill.sh
   "08_Tests/worktask/test_wt_inflight_lock.R"
   "08_Tests/regime/test_briefing_partial.R"
   "08_Tests/regime/test_fred_robust.R"
@@ -1197,16 +1244,16 @@ SUITES=(
   "08_Tests/portfolio/test_cdar_lp_solver_parity.R"
   "08_Tests/portfolio/test_pg2_coherence_check.R"
   "08_Tests/data/test_dart_account_id_fallback.R"
-  "08_Tests/ops/test_frontier_citation_scan.R"
+  # (2026-11-10 H1 삭제 — 대상 ops/frontier_registry_coherence.R 호출처 0(함께 삭제)) 08_Tests/ops/test_frontier_citation_scan.R
   "08_Tests/ops/test_paper_intake_resolvers.R"
   "08_Tests/hooks/test_c15_load_path_scan.R"
   # ── 2026-08-20 추가: integration 3 + hooks 셸 3 (요약 계약 정합 후 등재) ────
   #   test_weight_bound_basis 는 08-16 분류에서 "PASS 1 / FAIL 2" 였는데 venv 복구 후
   #   3/0 으로 회복 — 그 실패는 결함이 아니라 **환경 결손의 하류**였다(오진 방지 기록).
   "08_Tests/integration/test_execution_path_unified.R"
-  "08_Tests/integration/test_v8_readiness_gate.R"
+  # (2026-11-10 H1 삭제 — 대상 v8_readiness_gate.R 코드 호출처 0 · v8 강제 계층 퇴역) 08_Tests/integration/test_v8_readiness_gate.R
   "08_Tests/integration/test_wt_lifecycle_e2e.R"
-  "08_Tests/hooks/test_hypothesis_precheck_gate.sh"
+  # (2026-11-10 H1 삭제 — 대상 hooks/hypothesis_precheck_gate.sh 미등록 · 코드 호출처 0) 08_Tests/hooks/test_hypothesis_precheck_gate.sh
   #   (2026-09-23 샌드박스 이관) 구판은 운영 루트에서 하베스터 실행·positive_context 삭제 후 훅 발화 → 운영 원장 hook_fired
   #   · axiom_inject_last 열화 기록(HARD_10) · 축소 주입 창. 이제 쓰기 루트 = 샌드박스 · Z1~Z3 운영 무쓰기 단정 · ZM/ZN 검출기 양방향
   "08_Tests/hooks/test_inject_usage_ranking.sh"
@@ -1265,26 +1312,26 @@ SUITES=(
   #   기록한 "편입 드리프트 40건" 과 같은 계통이 즉시 재발한 것(검사기를 만드는 일과 배터리에
   #   거는 일은 별개 사건이다). 여기 등재로 회귀 방어에 편입한다.
   "08_Tests/ops/test_paper_router_backlog_axis.sh"
-  "08_Tests/ops/test_mode_queue_research_run.sh"
+  # (2026-11-10 H1 삭제 — 대상 mode_queue_research_run.sh v10 08-29 무인 리서치 레인 퇴역(★RETIRED)) 08_Tests/ops/test_mode_queue_research_run.sh
   "08_Tests/ops/test_morning_run_live_pid_guard.sh"
   "08_Tests/ops/test_scheduler_alert_surface.sh"
   "08_Tests/ops/test_credential_scope_wiring.sh"
   "08_Tests/ops/test_failure_classify_window.sh"
-  "08_Tests/ops/test_effect_signature_progress.sh"
+  # (2026-11-10 H1 삭제 — 대상 mode_queue_research_run.sh · research_effect_signature.py v10 08-29 무인 리서치 레인 퇴역(★RETIRED)) 08_Tests/ops/test_effect_signature_progress.sh
   "08_Tests/ops/test_factor_evidence_backfill.py"
   "08_Tests/ops/test_research_queue_lanes.py"
   # 완주 알림 — 1급 축은 알림기 내부가 아니라 **호출 배선**이다(만들고 안 부르면 조용하다).
   "08_Tests/ops/test_run_completion_notify.sh"
   # 2026-08-22: 편입 검사기가 .py 를 탐색하지 않아 **08-09 신설분이 2주간 배터리 밖**이었다.
   #   (배터리는 .py 를 실행할 수 있는데 검사기의 분모에만 없었다 — 능력이 아니라 시야의 결손.)
-  "08_Tests/hooks/test_benchmark_scale_seam.py"
+  # (2026-11-10 H1 삭제 — 대상 naver_benchmark_update.py 퇴역 BENCHMARK-QW-ONLY-20261017) 08_Tests/hooks/test_benchmark_scale_seam.py
   # 2026-08-22 논문 라우터 감사 후속 — 상태라인 정직성 + 정체 경보(내 timeout 제거 회귀).
   "08_Tests/ops/test_scheduler_status_line_honesty.sh"
   "08_Tests/ops/test_stall_lock_alert.sh"
   "08_Tests/ops/test_orchestrator_stage_gate.sh"
   # 무인 판정 게이트의 계층(ADOPT/SCREEN_TIER/QUARANTINE)·입력계약 2갈래·권위 서명.
   #   구판 대조 실증: 같은 검사가 구판에서 FAIL 10건.
-  "08_Tests/ops/test_auto_alpha_gate_tiers.sh"
+  # (2026-11-10 H1 삭제 — 대상 auto_alpha_gate.R v10 08-29 무인 리서치 레인 퇴역(★RETIRED)) 08_Tests/ops/test_auto_alpha_gate_tiers.sh
   # 무음 사망 탐지 — 정체 경보(살아 매달림)와 다른 축(죽어 증발). 실사고 18:30 검거.
   "08_Tests/ops/test_orphan_run_scan.py"
   # 논문 id 정규화 정본 — 같은 대상 수치가 셋이던 문제(좌초 154/62/61)의 수리.
@@ -1489,7 +1536,7 @@ SUITES=(
   "08_Tests/axiom/test_lcode_cell_relabel.R"
   # 2026-09-23 실사고(장중 catch-up 이 코스피200 진행 중 봉 1120.74 를 종가로 적재) — 네이버 벤치 마감 가드:
   #   16:40 양성 · 14:25 차단 · 가드 끈 돌연변이 검거 · trading_calendar.R:311 규칙과 단일성 대조(운영 파일 무접촉)
-  "08_Tests/data/test_naver_benchmark_confirmed_cutoff.py"
+  # (2026-11-10 H1 삭제 — 대상 naver_benchmark_update.py 퇴역 BENCHMARK-QW-ONLY-20261017) 08_Tests/data/test_naver_benchmark_confirmed_cutoff.py
   # 2026-09-23 W-02(RAWDATA.Size 09-10~22 100% 결측 · factor_db_202609 V/S/L26 27종 0행) — Size 수리·경보:
   #   디코더(UTF-8 재시도·명시 에러) · SPA 구조 변경 명시 에러 · API 정수 주식수 · 크기 앵커 복원(창 안만 = no_matching_day 돌연변이)
   #   · fill_rate VALUE_FAIL(축 제거 돌연변이 PASS) · emission 게이트 · daily_refresh [1z]/[6a-gate] 실블록 실행(적재 줄 삭제 돌연변이 침묵)
@@ -1497,7 +1544,7 @@ SUITES=(
   # 2026-09-23 도훈 결정 "복원 Size 의 PIT 엄격화 = 퀀티와이즈 데이터로 대체" — rawdata_size_from_quantiwise.R:
   #   실물 수출본 형식 판독(코드 뒤 옛 선언 셀 무시) · 거부 8종(지평선 미달·구간 구멍·선언/측정 단위·구간 배율·채움률·잠금·보정 미측정)
   #   · 실행 = Size 만 교체(독립 열 대조) · 러너 설정 두 줄 토글·바이트 복원 · 재빌드는 러너 정지 중 · 돌연변이 4종(대조·지평선·정지·앵커)
-  "08_Tests/data/test_rawdata_size_from_quantiwise.R"
+  # (2026-11-10 H1 삭제 — 대상 data/rawdata_size_from_quantiwise.R(09-23 1회성 교체 도구) 호출처 0(함께 삭제)) 08_Tests/data/test_rawdata_size_from_quantiwise.R
   # 2026-09-23 적대 검증 [높음] qw_refresh.ps1 무조건 저장 → [0b] 가 전진 없는 xlsx 를 적재해 naver 이음매 Ret 오염 — OHLCVS 적재 안전 관문:
   #   7시트 날짜축 지평선 일치 ∧ 직전 적재(RAWDATA 퀀티 출처 max) 대비 전진 · 지평선 행 빈 값 시트 거부 · 거부 = RAWDATA 무접촉·처리 완료 미기록·끝 stop(DR_FAILED)
   #   · 합성 실물 형식 xlsx · 양성 대조(통과 후 적재 경로 도달) · 돌연변이 6종 red
@@ -2011,7 +2058,83 @@ SUITES=(
   #   infra_update.py 계획 분류(보류 · 라운드 고정 · 메이저 · 공유 venv 는 메인에서만) — 오프라인 · 돌연변이 4종 잡힘(11-08 실측)
   "08_Tests/ops/test_infra_currency.py"
   # <<< 11-08 Infra
+  # >>> 11-10 v10.2 시험 정리(H1) — 살아 있는 대상의 신규 시험 3 + 미편입(ORPHAN) 14. 감사 재고표 = 레인 H1 tests_inventory.tsv.
+  #   (08_Tests/scenarios/test_scn_* 는 아래 AUTO_ENROLL_GLOBS 로 자동 편입 — 여기 적지 않는다)
+  "08_Tests/programs/test_grade_v3_backfill_mark.R"
+  "08_Tests/programs/test_round_candidate_gate.R"
+  "08_Tests/ops/test_standing_board_run.sh"
+  "08_Tests/data/test_freshness_audit_outputs.R"
+  "08_Tests/data/test_global_macro_ingest.py"
+  "08_Tests/data/test_hygiene_flag_coverage.R"
+  "08_Tests/data/test_qw_ext_ingest.py"
+  "08_Tests/factor_db/test_fdc_read_fastpath.R"
+  "08_Tests/methods/test_eigen_clean_markowitz.R"
+  "08_Tests/methods/test_p3r03_adapters.R"
+  "08_Tests/ops/test_qvest_machine.sh"
+  "08_Tests/ops/test_rf_verify_report_composition.R"
+  "08_Tests/ops/test_tg_scope_key.R"
+  "08_Tests/programs/test_round_kit_pair_alpha.R"
+  "08_Tests/programs/test_round_kit_shard.R"
+  "08_Tests/reinforcement/test_rf_overlay_full_cash.R"
+  "08_Tests/validation/test_lookahead_c17_comment.R"
+  # 러너 자신(자기 사본 · 병렬 슬롯 · 층 · 자동 편입)의 양성 대조
+  "08_Tests/hooks/test_runner_parallel_tiers.sh"
+  # 다른 레인이 11-10 오후에 쓴 신규 시험(편입 검사기가 미편입으로 잡음)
+  "08_Tests/programs/test_rx_generator_scorecard.R"
+  "08_Tests/reinforcement/test_rf_cdar_construct.R"
+  "08_Tests/reinforcement/test_rf_factor_cov.R"
+  # 11-10 저녁 편입분(편입 검사기 E2 가 잡은 5건) — 선택 예산 재현성 · 현금 통과 · 벤치 CDaR 예산 · 부팅 메모 · 훅 사전 거름 등가(주간 층)
+  "08_Tests/programs/test_trial_budget_rc.R"
+  "08_Tests/reinforcement/test_rf_cash_budget_link.R"
+  "08_Tests/reinforcement/test_rf_cdar_bench_budget.R"
+  "08_Tests/ops/test_boot_lean_memo.sh"
+  "08_Tests/hooks/test_hook_dispatch_equivalence.sh"
+  # <<< 11-10 H1
 )
+
+#──────────────────────────────────────────────────────────────────────────────
+# 자동 편입 · 층(tier) · 병렬 레인 (2026-11-10 v10.2 시험 정리 · H1)
+#   ① 자동 편입: 아래 글롭에 맞는 시험은 SUITES 에 적지 않아도 돈다(시나리오 시험은 여러 레인이 계속 쓴다 —
+#      목록에 적는 방식은 등록 누락을 만든다). 편입 검사기(ops/suite_enrollment_check.sh)도 이 줄을 읽는다.
+#   ② 층: profiles/suite_tiers.tsv (스위트 → fast | nightly | weekly · 레인 · 근거 한 줄).
+#      --tier fast = fast 만 · nightly = fast+nightly · weekly | full = 전부. 인자 > QVEST_BATTERY_TIER > full.
+#      ★배정 없는 스위트는 nightly(조용히 빠지지 않는다) — 실행 첫머리에 그 수를 찍는다.
+#   ③ 레인: 같은 파일의 lane 열 = parallel 인 스위트만 병렬 슬롯(QV_JOBS)에서 먼저 돈다. 나머지(배정 없음 포함)는
+#      종전처럼 직렬 + 스위트마다 등록부 지문. 병렬 구간은 구간 앞뒤 지문으로 잰다(쓰기가 있으면 실패로 계상).
+#──────────────────────────────────────────────────────────────────────────────
+AUTO_ENROLL_GLOBS=("08_Tests/scenarios/test_scn_*.R" "08_Tests/scenarios/test_scn_*.sh" "08_Tests/scenarios/test_scn_*.py")
+declare -A _QV_IN=()
+for _s in "${SUITES[@]}"; do _QV_IN["$_s"]=1; done
+_QV_AUTO=()
+shopt -s nullglob
+for _g in "${AUTO_ENROLL_GLOBS[@]}"; do
+  for _f in "$PROJ_DIR"/$_g; do
+    [[ -f "$_f" ]] || continue
+    _r="${_f#"$PROJ_DIR"/}"
+    [[ -n "${_QV_IN[$_r]:-}" ]] && continue
+    _QV_AUTO+=("$_r"); _QV_IN["$_r"]=1
+  done
+done
+shopt -u nullglob
+QV_TIER_FILE="$PROJ_DIR/08_Tests/hooks/profiles/suite_tiers.tsv"
+declare -A _QV_T=() _QV_L=()
+if [[ -f "$QV_TIER_FILE" ]]; then
+  while IFS=$'\t' read -r _p _t _l _why || [[ -n "${_p:-}" ]]; do
+    _p="${_p%$'\r'}"; _t="${_t%$'\r'}"; _l="${_l%$'\r'}"
+    [[ -z "$_p" || "$_p" == \#* || "$_p" == "suite" ]] && continue
+    _QV_T["$_p"]="$_t"; _QV_L["$_p"]="$_l"
+  done < "$QV_TIER_FILE"
+fi
+case "$QV_TIER" in fast) _QV_MAXR=1 ;; nightly) _QV_MAXR=2 ;; *) _QV_MAXR=3 ;; esac
+_QV_SEL=(); QV_N_DECLARED=$(( ${#SUITES[@]} + ${#_QV_AUTO[@]} )); QV_N_UNASSIGNED=0
+for _s in "${SUITES[@]}" "${_QV_AUTO[@]}"; do
+  _t="${_QV_T[$_s]:-}"
+  if [[ -z "$_t" ]]; then _t=nightly; QV_N_UNASSIGNED=$((QV_N_UNASSIGNED + 1)); fi
+  case "$_t" in fast) _rk=1 ;; weekly) _rk=3 ;; *) _rk=2 ;; esac
+  (( _rk <= _QV_MAXR )) && _QV_SEL+=("$_s")
+done
+unset SUITES; declare -a SUITES=("${_QV_SEL[@]}")   # (앞머리를 SUITES=( 로 두지 않는다 — 배열 경계 파서들이 그 줄을 목록 시작으로 읽는다)
+echo "층 = $QV_TIER · 선택 ${#SUITES[@]} / 등록 $QV_N_DECLARED (자동 편입 ${#_QV_AUTO[@]} · 층 미배정 $QV_N_UNASSIGNED → nightly) · 병렬 슬롯 $QV_JOBS"
 
 
 #──────────────────────────────────────────────────────────────────────────────
@@ -2111,9 +2234,23 @@ _fp_one() {                 # md5 + mtime 둘 다 (복원-성공 쓰기까지 �
     "$(md5sum "$PROJ_DIR/$f" 2>/dev/null | cut -d' ' -f1)" \
     "$(date -r "$PROJ_DIR/$f" +%s 2>/dev/null || echo 0)" 
 }
+# (2026-11-10 H1) 같은 '경로 md5 mtime' 줄을 파일마다 md5sum · date 두 번씩(6 파일 = 12 프로세스 · 부하 중 약 2초/스위트) 띄우던 것을
+#   md5sum 1회 + stat 1회로 묶는다. 출력 형식 · 부재 표기(ABSENT ABSENT) · 값은 _fp_one 과 같다(양성 대조 = test_runner_parallel_tiers B).
+_fp_many() {
+  local f h p t; local -a ex=(); local -A M=() T=()
+  for f in "$@"; do [[ -f "$PROJ_DIR/$f" ]] && ex+=("$PROJ_DIR/$f"); done
+  if (( ${#ex[@]} )); then
+    while read -r h p; do p="${p#\*}"; M["$p"]="$h"; done < <(md5sum "${ex[@]}" 2>/dev/null)
+    while read -r t p; do T["$p"]="$t"; done < <(stat -c '%Y %n' "${ex[@]}" 2>/dev/null)
+  fi
+  for f in "$@"; do
+    if [[ -f "$PROJ_DIR/$f" ]]; then printf '%s %s %s\n' "$f" "${M[$PROJ_DIR/$f]:-}" "${T[$PROJ_DIR/$f]:-0}"
+    else printf '%s ABSENT ABSENT\n' "$f"; fi
+  done
+}
 _reg_fp_strict() {
   local f
-  for f in "${REGISTRY_GUARD_STRICT[@]}"; do _fp_one "$f"; done
+  _fp_many "${REGISTRY_GUARD_STRICT[@]}"
   # ②Distilled 카드 = provenance 오염 표면. 재정제/추출 외엔 안 바뀌므로 STRICT.
   if [[ -d "$PROJ_DIR/qepm/memory/axioms/distilled" ]]; then
     printf 'qepm/memory/axioms/distilled/ %s -\n' \
@@ -2124,7 +2261,7 @@ _reg_fp_strict() {
 }
 _reg_fp_adv() {
   local f
-  for f in "${REGISTRY_GUARD_ADVISORY[@]}"; do _fp_one "$f"; done
+  _fp_many "${REGISTRY_GUARD_ADVISORY[@]}"
   return 0
 }
 # 변경된 **파일명**만 뽑는다. 양쪽(`<`·`>`) 을 다 집는다 — `>` 만 보면 **삭제**가 지문
@@ -2156,6 +2293,60 @@ print(("ok %s %s %s" % (d0.get("pass",0), d0.get("fail",0), d0.get("skipped",0))
 ' 2>/dev/null
 }
 
+# ── 병렬 구간 (2026-11-10 · H1) ────────────────────────────────────────────────
+#   lane=parallel 로 선언된 스위트만 QV_JOBS 슬롯에서 먼저 돌려 출력 · 종료 코드 · 초를 파일로 받아 둔다. 집계는 아래 본 루프가
+#   SUITES 순서 그대로(직렬과 같은 코드)로 한다 — 합계 · 상태 · 종료 코드 규칙이 직렬과 한 벌이다.
+#   등록부 지문은 병렬 구간 앞뒤로 한 번 잰다 — 바뀌면 '[병렬 구간]' 으로 REGISTRY_DIRTY(실패 계상)에 올린다.
+#   QVEST_RP_JLOG 는 스위트마다 따로 둔다(동시 추가 쓰기 엉킴 방지 · 운영 원장과 무관한 임시 싱크다).
+_qv_par_one() {   # <스위트 경로> <출력 접두>
+  local s="$1" o="$2" t0 rc
+  t0=$(date +%s)
+  export QVEST_RP_JLOG="${QVEST_RP_JLOG}.${o##*/}"
+  case "$s" in
+    *.R)  Rscript "$PROJ_DIR/$s" > "$o.raw" 2>&1 ;;
+    *.py) "$QVEST_PY_BIN" "$PROJ_DIR/$s" > "$o.raw" 2>&1 ;;
+    *)    bash "$PROJ_DIR/$s" > "$o.raw" 2>&1 ;;
+  esac
+  rc=$?
+  printf '%s %s\n' "$rc" "$(( $(date +%s) - t0 ))" > "$o.meta"
+}
+declare -A _QV_PIDX=(); _QV_PDIR=""; QV_N_PARALLEL=0
+if (( QV_JOBS > 1 )); then
+  _QV_PAR=()
+  for _s in "${SUITES[@]}"; do
+    [[ "${_QV_L[$_s]:-serial}" == "parallel" ]] || continue
+    [[ -n "${QVEST_SUITES_EXCLUDE:-}" && "$_s" =~ $QVEST_SUITES_EXCLUDE ]] && continue
+    [[ -n "${QVEST_SUITES_ONLY:-}" && ! "$_s" =~ $QVEST_SUITES_ONLY ]] && continue
+    _QV_PAR+=("$_s")
+  done
+  QV_N_PARALLEL=${#_QV_PAR[@]}
+  if (( QV_N_PARALLEL > 0 )); then
+    _QV_PDIR="$(mktemp -d "${TMPDIR:-/tmp}/qvest_par.XXXXXX")"
+    echo "=== 병렬 구간: $QV_N_PARALLEL 스위트 · 슬롯 $QV_JOBS ==="
+    _pg0="$(_reg_fp_strict)"; _pa0="$(_reg_fp_adv)"
+    _i=0
+    for _s in "${_QV_PAR[@]}"; do
+      _i=$((_i + 1)); _QV_PIDX["$_s"]=$_i
+      while (( $(jobs -rp | wc -l) >= QV_JOBS )); do wait -n 2>/dev/null || true; done
+      echo "─── Launch(병렬 $_i/$QV_N_PARALLEL): $(basename "$_s") ───"
+      _qv_par_one "$_s" "$_QV_PDIR/$_i" &
+    done
+    wait
+    _pg1="$(_reg_fp_strict)"; _pa1="$(_reg_fp_adv)"
+    if [[ "$_pg0" != "$_pg1" ]]; then
+      while IFS= read -r _dl; do
+        [[ -n "$_dl" ]] && REGISTRY_DIRTY+=("[병렬 구간 ${QV_N_PARALLEL} 스위트 — 개별 귀속은 QVEST_SUITES_JOBS=1 재실행] :: $_dl")
+      done < <(_reg_diff_names "$_pg0" "$_pg1")
+    fi
+    if [[ "$_pa0" != "$_pa1" ]]; then
+      while IFS= read -r _dl; do
+        [[ -n "$_dl" ]] && REGISTRY_ADVISORY+=("[병렬 구간] :: $_dl")
+      done < <(_reg_diff_names "$_pa0" "$_pa1")
+    fi
+    echo "=== 병렬 구간 끝 — 아래는 SUITES 순서의 집계(병렬분은 저장 출력 재생) ==="
+  fi
+fi
+
 for test_script in "${SUITES[@]}"; do
   # 프로필 필터 (설명은 SUITES 위 프로필 필터 주석 참조). 2026-08-24 사전 스캔 제거 후
   #   이 루프가 유일한 실행 루프이므로 필터 지점도 여기 하나뿐이다.
@@ -2164,7 +2355,9 @@ for test_script in "${SUITES[@]}"; do
   # ★지문 재사용(2026-11-10): 앞 스위트의 '뒤' 지문이 곧 이 스위트의 '앞' 지문이다 — 둘 사이에는 러너의 장부 정리뿐이라
   #   다시 잴 이유가 없다(등록부 6개 + Distilled 카드 477장 해시 = 약 1.4초 · 스위트마다 두 번 재던 것을 한 번으로).
   #   첫 스위트 · 필터로 건너뛴 직후에는 '앞' 지문이 없으므로 새로 잰다.
-  if [[ -n "${_rg_prev:-}" ]]; then _rg0="$_rg_prev"; _ra0="$_ra_prev"
+  _isp="${_QV_PIDX[$test_script]:-}"
+  if [[ -n "$_isp" ]]; then :
+  elif [[ -n "${_rg_prev:-}" ]]; then _rg0="$_rg_prev"; _ra0="$_ra_prev"
   else _rg0="$(_reg_fp_strict)"; _ra0="$(_reg_fp_adv)"; fi
   _name="$(basename "$test_script")"; _name="${_name%.*}"
   # 헤더는 **실행 전에** 낸다 — 멈춘 suite 를 이름으로 특정할 수 있어야 한다.
@@ -2180,14 +2373,18 @@ for test_script in "${SUITES[@]}"; do
   #   나타났다(무엇이 잘못됐는지는 안 보임). 해석기는 bare python3 금지 — Windows
   #   Store 스텁이라 스크립트를 실행하지 않는다
   #   ([[reference-python3-windows-stub-use-qvest-py]]). 헤더가 세운 QVEST_PY_BIN 경유.
-  if [[ "$test_script" == *.R ]]; then
+  if [[ -n "$_isp" ]]; then
+    # 병렬 구간에서 이미 돌았다 — 저장 출력 · 종료 코드 · 초를 읽는다(메타 없음 = 워커 사망 → RC 125 · 요약 없음 → 미측정+실패)
+    RAW="$(cat "$_QV_PDIR/$_isp.raw" 2>/dev/null)"
+    RC=125; _pdt=0; read -r RC _pdt < "$_QV_PDIR/$_isp.meta" 2>/dev/null || true
+  elif [[ "$test_script" == *.R ]]; then
     RAW=$(Rscript "$PROJ_DIR/$test_script" 2>&1); RC=$?
   elif [[ "$test_script" == *.py ]]; then
     RAW=$("$QVEST_PY_BIN" "$PROJ_DIR/$test_script" 2>&1); RC=$?
   else
     RAW=$(bash "$PROJ_DIR/$test_script" 2>&1); RC=$?
   fi
-  _dt=$((SECONDS - _t0))
+  _dt=$((SECONDS - _t0)); [[ -n "$_isp" ]] && _dt="${_pdt:-0}"
   OUT=$(printf '%s\n' "$RAW" | _last_summary_json)
   # _last_summary_json 은 두 줄을 낸다 — 요약 JSON(없으면 빈 줄) · 수치 줄. 파이썬 줄끝(CR)을 걷고 가른다.
   OUT="${OUT//$'\r'/}"; _SUMLINE="${OUT##*$'\n'}"
@@ -2196,8 +2393,8 @@ for test_script in "${SUITES[@]}"; do
   #   같은 출력이고, 실행은 한 번뿐이다.
   echo "$RAW"
   echo ""
-  _rg1="$(_reg_fp_strict)"; _ra1="$(_reg_fp_adv)"
-  _rg_prev="$_rg1"; _ra_prev="$_ra1"
+  if [[ -n "$_isp" ]]; then _rg_prev=""; _ra_prev=""; _rg0=""; _rg1=""; _ra0=""; _ra1=""   # 병렬분 지문 = 구간 앞뒤(위)
+  else _rg1="$(_reg_fp_strict)"; _ra1="$(_reg_fp_adv)"; _rg_prev="$_rg1"; _ra_prev="$_ra1"; fi
   if [[ "$_rg0" != "$_rg1" ]]; then
     while IFS= read -r _dl; do
       [[ -n "$_dl" ]] && REGISTRY_DIRTY+=("$(basename "$test_script") :: $_dl")
@@ -2291,7 +2488,12 @@ cat > "$RESULTS_FILE" <<EOF
                  _e="${_l//\\/\\\\}"; _e="${_e//\"/\\\"}"
                  if [[ -n "$_j" ]]; then _j+=","; fi; _j+="\"$_e\""
                done; printf '%s' "$_j")],
-  "tier": "${QVEST_SUITES_TIER:-full}",
+  "tier": "$QV_TIER",
+  "jobs": $QV_JOBS,
+  "n_parallel": $QV_N_PARALLEL,
+  "n_selected": ${#SUITES[@]},
+  "n_declared": $QV_N_DECLARED,
+  "n_unassigned_tier": $QV_N_UNASSIGNED,
   "elapsed_sec": $SECONDS,
   "timings": [$TIMINGS_JSON],
   "tests": [$TESTS_JSON]
@@ -2355,4 +2557,5 @@ echo "════════════════════════�
 # ★미측정도 비-0 종료로 신고한다 — 호출자 대부분은 !=0 만 본다. 255 초과 랩어라운드로
 #   많은 실패가 0(성공)으로 접히는 것을 막기 위해 250 에서 자른다.
 _rc=$((TOTAL_FAIL + TOTAL_UNMEASURED)); (( _rc > 250 )) && _rc=250
-exit $_rc
+[[ -n "$_QV_PDIR" ]] && rm -rf "$_QV_PDIR" 2>/dev/null
+[[ -n "${QVEST_RUNNER_COPY:-}" ]] && rm -f "$QVEST_RUNNER_COPY" 2>/dev/null; exit $_rc

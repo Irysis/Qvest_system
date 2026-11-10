@@ -1,0 +1,461 @@
+# suite_tiers.tsv — 스위트 → 층 · 레인 · 근거 (2026-11-10 v10.2 시험 정리 · H1 · 생성 = 정적 판정 + 실측 메모)
+# 층: fast(커밋 전 · 훅/관문/계약 핵심) ⊂ nightly(매일 밤 · 합성 자료 위주) ⊂ weekly(전체 — 실데이터 · 느린 끝단).
+# 레인: parallel = 병렬 슬롯에서 먼저(샌드박스 · 보호 등록부 미참조 · git/러너 미호출 · 실 .cache 쓰기 없음) · serial = 직렬 + 스위트별 지문.
+# 배정 없는 스위트 = nightly · serial(러너가 그 수를 찍는다). 줄을 바꾸면 근거 열도 함께 바꾼다. 소요 시간 실측(결과 파일 timings)이 쌓이면 재배정.
+suite	tier	lane	reason
+08_Tests/hooks/test_worktask_sequence_gate.sh	nightly	serial	기본(합성 자료 위주 · rs 3 proc 10 data 0)
+08_Tests/hooks/test_agent_role_guard.sh	nightly	serial	기본(합성 자료 위주 · rs 0 proc 14 data 0)
+08_Tests/hooks/test_cert_rules.R	fast	parallel	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 1s(11-10 부하 중 · 직렬) · 샌드박스 · 보호 등록부 미참조
+08_Tests/hooks/test_r_portability.R	nightly	serial	기본(합성 자료 위주 · rs 5 proc 22 data 0)
+08_Tests/factor_db/test_ic_completion_guard.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 1)
+08_Tests/contracts/test_no_signal_control.R	nightly	serial	fast 후보였으나 실측 58s(11-10 부하 중 직렬) > 15s → nightly · 실측 58s(11-10 부하 중 · 직렬)
+08_Tests/contracts/test_nosignal_wiring_reach.R	fast	parallel	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 2s(11-10 부하 중 · 직렬) · 샌드박스 · 보호 등록부 미참조
+08_Tests/contracts/test_fr_weight_expressiveness.R	fast	serial	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 2s(11-10 부하 중 · 직렬)
+08_Tests/factor_db/test_ic_frontier_check.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 1)
+08_Tests/factor_db/test_build_hash_provenance.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 3 data 0)
+08_Tests/factor_db/test_emission_guard.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 1) · 샌드박스 · 보호 등록부 미참조
+08_Tests/factor_db/test_inv13_beta_asof.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 5) · 샌드박스 · 보호 등록부 미참조
+08_Tests/factor_db/test_fdb_state_gate.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 1 data 1) · 샌드박스 · 보호 등록부 미참조
+08_Tests/factor_db/test_emission_identity_axes.R	weekly	parallel	실측 47s(부하 중) · 실 패널 별칭 대조(N6) · 샌드박스 · 보호 등록부 미참조
+08_Tests/hooks/test_auto_commit_valve.sh	nightly	serial	기본(합성 자료 위주 · rs 0 proc 35 data 0)
+08_Tests/portfolio/test_lineage_resolver.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/portfolio/test_resolve_admitted_slot.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/portfolio/test_standalone_track_queue.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/hooks/test_lineage_git_state.R	nightly	parallel	fast 후보였으나 실측 31s(11-10 부하 중 직렬) > 15s → nightly · 실측 31s(11-10 부하 중 · 직렬) · 샌드박스 · 보호 등록부 미참조
+08_Tests/hooks/test_lookahead_unscanned.R	nightly	parallel	fast 후보였으나 실측 22s(11-10 부하 중 직렬) > 15s → nightly · 실측 22s(11-10 부하 중 · 직렬) · 샌드박스 · 보호 등록부 미참조
+08_Tests/hooks/test_prereq_skip_contract.sh	nightly	serial	기본(합성 자료 위주 · rs 10 proc 51 data 1)
+08_Tests/data/test_contract_panel.R	nightly	parallel	기본(합성 자료 위주 · rs 1 proc 1 data 4) · 샌드박스 · 보호 등록부 미참조
+08_Tests/hooks/test_boot_currency.sh	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 10 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/hooks/test_worktask_constraint_enforcer_v10.sh	nightly	serial	기본(합성 자료 위주 · rs 0 proc 11 data 0)
+08_Tests/contracts/test_replication_harness.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 1) · 샌드박스 · 보호 등록부 미참조
+08_Tests/contracts/test_replication_exec_parity.R	fast	parallel	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 11s(11-10 부하 중 · 직렬) · 샌드박스 · 보호 등록부 미참조
+08_Tests/contracts/test_replication_weekly.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 1 data 2) · 샌드박스 · 보호 등록부 미참조
+08_Tests/contracts/test_replication_ls_combination.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 1) · 샌드박스 · 보호 등록부 미참조
+08_Tests/validation/test_overlay_window_cutoff.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/contracts/test_measurement_axis.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 3)
+08_Tests/contracts/test_replication_exec_golden.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 5)
+08_Tests/contracts/test_remeasure_from_holdings.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 3) · 샌드박스 · 보호 등록부 미참조
+08_Tests/worktask/test_reinforce_ledger.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/contracts/test_l2_pool_grade_floor.R	fast	serial	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 2s(11-10 부하 중 · 직렬)
+08_Tests/contracts/test_book_registry.R	fast	parallel	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 4s(11-10 부하 중 · 직렬) · 샌드박스 · 보호 등록부 미참조
+08_Tests/hooks/test_book_write_guard.sh	fast	serial	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 8) · 실측 15s(11-10 부하 중 · 직렬)
+08_Tests/ops/test_morning_run_rewire.sh	nightly	serial	기본(합성 자료 위주 · rs 1 proc 8 data 0)
+08_Tests/regime/test_m4_append_candidate_filter.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/ops/test_qw_autologin_preflight.sh	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 13 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/hooks/test_suite_enrollment.sh	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 13 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/data/test_cache_freshness_worse_of.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/data/test_telegram_send_contract.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/data/test_benchmark_currency_gate.R	nightly	parallel	기본(합성 자료 위주 · rs 1 proc 1 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/data/test_benchmark_level_axis.R	weekly	parallel	실측 135s(부하 중) · 저장소 3폴더 전수 읽기 · 샌드박스 · 보호 등록부 미참조
+08_Tests/data/test_daily_refresh_r_blocks.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/data/test_dart_candidate_years.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/data/test_cache_content_reach.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/data/test_kr_factor_returns.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/data/test_qw_fund_v2_ingest.py	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/data/test_qw_fund_v2_tax_ingest.py	weekly	serial	실데이터 · arrow 로드 많음(data 0 · arrow 3)
+08_Tests/data/test_build_fundamental_v2.py	weekly	serial	실데이터 · arrow 로드 많음(data 3 · arrow 3)
+08_Tests/data/test_build_fundamental_merged_v2.py	weekly	serial	실데이터 · arrow 로드 많음(data 2 · arrow 5)
+08_Tests/factor_db/test_factor_combinable.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 1 data 5) · 샌드박스 · 보호 등록부 미참조
+08_Tests/factor_db/test_load_daily_factors.R	weekly	serial	실데이터 · arrow 로드 많음(data 10 · arrow 1)
+08_Tests/factor_db/test_factor_direction_basis.py	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/factor_db/test_direction_sync.py	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/factor_db/test_xf_fill_merge.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/factor_db/test_rebuild_factor_subset.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 1)
+08_Tests/data/test_dart_reprt_quarter_map.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 1)
+08_Tests/ops/test_tier1_silent_failures.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/ops/test_hook_fire_coverage.sh	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 20 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/hooks/test_resolve_project_marker.sh	nightly	serial	기본(합성 자료 위주 · rs 0 proc 23 data 0)
+08_Tests/hooks/test_runner_accounting.R	nightly	serial	fast 후보였으나 실측 23s(11-10 부하 중 직렬) > 15s → nightly · 실측 23s(11-10 부하 중 · 직렬)
+08_Tests/contracts/test_atomic_json_write.R	nightly	serial	기본(합성 자료 위주 · rs 2 proc 2 data 0)
+08_Tests/hooks/test_knowledge_index_consumer_heal.R	nightly	serial	기본(합성 자료 위주 · rs 3 proc 1 data 0)
+08_Tests/contracts/test_audit_check15_lookahead_self_scan.R	fast	parallel	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 3s(11-10 부하 중 · 직렬) · 샌드박스 · 보호 등록부 미참조
+08_Tests/hooks/test_backtest_contract_audit_gate.R	nightly	parallel	fast 후보였으나 실측 27s(11-10 부하 중 직렬) > 15s → nightly · 실측 27s(11-10 부하 중 · 직렬) · 샌드박스 · 보호 등록부 미참조
+08_Tests/contracts/test_weight_method_gate.R	fast	parallel	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 3s(11-10 부하 중 · 직렬) · 샌드박스 · 보호 등록부 미참조
+08_Tests/contracts/test_grade_unification.R	fast	serial	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 3s(11-10 부하 중 · 직렬)
+08_Tests/contracts/test_mode_rename_strategy_rotation.R	fast	serial	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 2s(11-10 부하 중 · 직렬)
+08_Tests/portfolio/test_deployed_holdings_check.sh	nightly	serial	기본(합성 자료 위주 · rs 0 proc 42 data 0)
+08_Tests/hooks/test_ast_spec_gate.sh	weekly	serial	대상 훅 미등록(삭제 보류 · nightly.exclude 와 같은 뜻)
+08_Tests/contract_regression/test_ast_sidecar.R	fast	parallel	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 2s(11-10 부하 중 · 직렬) · 샌드박스 · 보호 등록부 미참조
+08_Tests/hooks/test_scheduler_task_health_verdict.sh	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 97 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/hooks/test_stranded_triage.sh	nightly	serial	기본(합성 자료 위주 · rs 0 proc 36 data 0)
+08_Tests/hooks/test_wiring_map.R	fast	parallel	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 1 · proc 1) · 실측 10s(11-10 부하 중 · 직렬) · 샌드박스 · 보호 등록부 미참조
+08_Tests/data/test_benchmark_source_parity.R	weekly	serial	실데이터 · arrow 로드 많음(data 9 · arrow 1)
+08_Tests/data/test_parity_direction_axes.R	weekly	serial	실데이터 · arrow 로드 많음(data 8 · arrow 1)
+08_Tests/ops/test_suite_totals_anchor.sh	nightly	serial	기본(합성 자료 위주 · rs 0 proc 42 data 0)
+08_Tests/hooks/test_ast_verify_dialect.sh	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 28 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_paper_router_trigger.sh	nightly	serial	기본(합성 자료 위주 · rs 0 proc 11 data 0)
+08_Tests/ops/test_paper_router_prefilter.sh	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 28 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_queue_id_schema_tolerance.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/ops/test_hypothesis_index_paper_lane.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/ops/test_worktree_stranded_axis.sh	nightly	serial	기본(합성 자료 위주 · rs 0 proc 16 data 0)
+08_Tests/ops/test_hygiene_worktree_maxpath_axes.R	nightly	parallel	기본(합성 자료 위주 · rs 1 proc 1 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_weekly_worktree_prune.R	nightly	parallel	기본(합성 자료 위주 · rs 1 proc 2 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_cleaner_distill.sh	nightly	serial	기본(합성 자료 위주 · rs 8 proc 21 data 0)
+08_Tests/ops/test_cleaner_distill_lcode.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_cleaner_tg_headline.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/ops/test_alpha_queue_pending.py	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 1 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_sched_failure_classify.sh	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 31 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/hooks/test_tripwire_reachability.R	fast	serial	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 1s(11-10 부하 중 · 직렬)
+08_Tests/contract_regression/test_label_eligibility_gate.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 2)
+08_Tests/ops/test_factor_recheck_pending.py	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 1 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_mode_queue_dispatch_schema.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 1 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_research_pool_status_axes.py	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/hooks/test_runner_anchor_selffirst.sh	nightly	parallel	기본(합성 자료 위주 · rs 1 proc 24 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/contract_regression/test_ast_monthly_asof_label.R	weekly	serial	실데이터 · arrow 로드 많음(data 21 · arrow 1)
+08_Tests/hooks/test_auto_commit_worktree_target.sh	nightly	serial	기본(합성 자료 위주 · rs 0 proc 50 data 0)
+08_Tests/hooks/test_ax001_defense_scope.R	nightly	parallel	fast 후보였으나 실측 158s(11-10 부하 중 직렬) > 15s → nightly · 실측 158s(11-10 부하 중 · 직렬) · 샌드박스 · 보호 등록부 미참조
+08_Tests/worktask/test_judge_verdict_v2.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/hooks/test_telegram_entity_scan.R	fast	parallel	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 3s(11-10 부하 중 · 직렬) · 샌드박스 · 보호 등록부 미참조
+08_Tests/contract_regression/test_sample_alignment_empty.R	fast	serial	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 9s(11-10 부하 중 · 직렬)
+08_Tests/data/test_contract_parser_v3.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/contract_regression/test_module_registry_exclusivity.R	nightly	parallel	기본(합성 자료 위주 · rs 2 proc 1 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/factor_db/test_ev_term_not_inert.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 6) · 샌드박스 · 보호 등록부 미참조
+08_Tests/hooks/test_factor_dup_scan.R	fast	serial	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 3s(11-10 부하 중 · 직렬)
+08_Tests/factor_db/test_factor_dedup_consumption.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 4) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_method_adapter_contract.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/ops/test_risk_lane_verdict.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/ops/test_exposure_adapter_contract.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/ramp/test_liquidity_ruler.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/factor_db/test_cons_window_quarterly.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 1)
+08_Tests/factor_db/test_streak_quarter_unit.R	weekly	serial	실데이터 · arrow 로드 많음(data 5 · arrow 4)
+08_Tests/contracts/test_liquidity_ruler_restore.R	fast	serial	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 14s(11-10 부하 중 · 직렬)
+08_Tests/contracts/test_distribution_target_screen.R	nightly	parallel	fast 후보였으나 실측 37s(11-10 부하 중 직렬) > 15s → nightly · 실측 37s(11-10 부하 중 · 직렬) · 샌드박스 · 보호 등록부 미참조
+08_Tests/contracts/test_score_composite.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 6) · 샌드박스 · 보호 등록부 미참조
+08_Tests/contracts/test_overlay_bt_recon.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/contracts/test_weight_catalog.R	nightly	serial	기본(합성 자료 위주 · rs 2 proc 1 data 0)
+08_Tests/methods/test_ctx_characteristics.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 4) · 샌드박스 · 보호 등록부 미참조
+08_Tests/methods/test_new_adapter_scaffold.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/methods/test_nearest_arm_axis.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/hooks/test_label_gate_wiring.R	fast	serial	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 7s(11-10 부하 중 · 직렬)
+08_Tests/hooks/test_label_gate_schema_hook.py	nightly	parallel	fast 후보였으나 실측 19s(11-10 부하 중 직렬) > 15s → nightly · 실측 19s(11-10 부하 중 · 직렬) · 샌드박스 · 보호 등록부 미참조
+08_Tests/hooks/test_lineage_cwd_root.R	fast	parallel	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 6s(11-10 부하 중 · 직렬) · 샌드박스 · 보호 등록부 미참조
+08_Tests/hooks/test_power_bar_nw_factor.R	fast	serial	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 4s(11-10 부하 중 · 직렬)
+08_Tests/hooks/test_cluster_power.R	fast	serial	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 2s(11-10 부하 중 · 직렬)
+08_Tests/hooks/test_close_round_baseline.R	fast	serial	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 2s(11-10 부하 중 · 직렬)
+08_Tests/hooks/test_dryrun_no_side_effects.R	fast	parallel	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 3s(11-10 부하 중 · 직렬) · 샌드박스 · 보호 등록부 미참조
+08_Tests/hooks/test_p0_loop_closure.R	fast	serial	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 7s(11-10 부하 중 · 직렬)
+08_Tests/hooks/test_auto_spawn_layers.R	fast	serial	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 9s(11-10 부하 중 · 직렬)
+08_Tests/hooks/test_frontier_axes_derive.sh	nightly	serial	fast 후보였으나 실측 20s(11-10 부하 중 직렬) > 15s → nightly · 실측 20s(11-10 부하 중 · 직렬)
+08_Tests/hooks/test_axiom_inject_tau_d.sh	nightly	serial	기본(합성 자료 위주 · rs 0 proc 17 data 0)
+08_Tests/hooks/test_gvs_constitution_order.R	fast	serial	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 1s(11-10 부하 중 · 직렬)
+08_Tests/hooks/test_map_freshness_content.R	nightly	serial	fast 후보였으나 실측 374s(11-10 부하 중 직렬) > 15s → nightly · 실측 374s(11-10 부하 중 · 직렬)
+08_Tests/hooks/test_promote_crash_exit.R	nightly	parallel	기본(합성 자료 위주 · rs 3 proc 3 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/hooks/test_draft_marker_approval.R	fast	serial	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 14s(11-10 부하 중 · 직렬)
+08_Tests/hooks/test_knowledge_index_stale.R	nightly	serial	fast 후보였으나 실측 46s(11-10 부하 중 직렬) > 15s → nightly · 실측 46s(11-10 부하 중 · 직렬)
+08_Tests/hooks/test_sot_access_paths.R	fast	serial	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 2s(11-10 부하 중 · 직렬)
+08_Tests/hooks/test_sot_access_paths_py.py	fast	serial	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 1s(11-10 부하 중 · 직렬)
+08_Tests/hooks/test_mvo_doc_default_parity.R	fast	serial	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 3s(11-10 부하 중 · 직렬)
+08_Tests/contract_regression/test_essence_score.R	fast	serial	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 52s(11-10 부하 중 · 직렬)
+08_Tests/contract_regression/test_hurdle_gate.R	fast	serial	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 7s(11-10 부하 중 · 직렬)
+08_Tests/contract_regression/test_canonical_screen_bt.R	fast	serial	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 3s(11-10 부하 중 · 직렬)
+08_Tests/contract_regression/test_register_module.R	fast	parallel	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 4s(11-10 부하 중 · 직렬) · 샌드박스 · 보호 등록부 미참조
+08_Tests/contract_regression/test_required_effect_size.R	fast	serial	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 1s(11-10 부하 중 · 직렬)
+08_Tests/contract_regression/test_basis_channels.R	fast	serial	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 7s(11-10 부하 중 · 직렬)
+08_Tests/contract_regression/test_book_marginal_ci.R	fast	serial	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 6s(11-10 부하 중 · 직렬)
+08_Tests/contract_regression/test_governor_dir_resolution.R	fast	serial	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 2s(11-10 부하 중 · 직렬)
+08_Tests/contract_regression/test_bm_park.R	fast	serial	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 2s(11-10 부하 중 · 직렬)
+08_Tests/ops/test_frontier_queue_io.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/worktask/test_wt_inflight_lock.R	nightly	parallel	기본(합성 자료 위주 · rs 3 proc 1 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/regime/test_briefing_partial.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/regime/test_fred_robust.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/regime/test_ktri_v3_builder.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 2) · 샌드박스 · 보호 등록부 미참조
+08_Tests/regime/test_msm_daily_refit.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/regime/test_msm_asof.R	weekly	serial	실데이터 · arrow 로드 많음(data 4 · arrow 4)
+08_Tests/regime/test_regime_signal_msm_asof.R	weekly	serial	실데이터 · arrow 로드 많음(data 10 · arrow 8)
+08_Tests/ops/test_gate_msm_asof.sh	nightly	serial	기본(합성 자료 위주 · rs 3 proc 53 data 0)
+08_Tests/ops/test_book_runner_no_interference.sh	weekly	serial	sleep 6 · Rscript 9 · 끝단
+08_Tests/regime/test_regime_signal_merge.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/regime/test_daily_tail_guard.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/regime/test_monthly_incomplete_hold.R	weekly	serial	실데이터 · arrow 로드 많음(data 1 · arrow 3)
+08_Tests/regime/test_m4_bocpd_guard.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 1)
+08_Tests/regime/test_regime_l3_ramp.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 1)
+08_Tests/portfolio/test_mvo_turnover_penalty.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/portfolio/test_optimizer_breadth.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/portfolio/test_cdar_lp_solver_parity.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/portfolio/test_pg2_coherence_check.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/data/test_dart_account_id_fallback.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/ops/test_paper_intake_resolvers.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/hooks/test_c15_load_path_scan.R	weekly	serial	실데이터 · arrow 로드 많음(data 11 · arrow 1)
+08_Tests/integration/test_execution_path_unified.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 3 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/integration/test_wt_lifecycle_e2e.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 4 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/hooks/test_inject_usage_ranking.sh	nightly	serial	기본(합성 자료 위주 · rs 0 proc 70 data 0)
+08_Tests/hooks/test_weight_bound_basis.sh	nightly	parallel	fast 후보였으나 실측 41s(11-10 부하 중 직렬) > 15s → nightly · 실측 41s(11-10 부하 중 · 직렬) · 샌드박스 · 보호 등록부 미참조
+08_Tests/hooks/test_benchmark_values_plausible.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 1)
+08_Tests/hooks/test_blunt_anchor_failclosed.R	nightly	serial	fast 후보였으나 실측 50s(11-10 부하 중 직렬) > 15s → nightly · 실측 50s(11-10 부하 중 · 직렬)
+08_Tests/hooks/test_continuity_marker_identity.py	nightly	parallel	기본(합성 자료 위주 · rs 4 proc 2 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/hooks/test_continuity_verdict_artifact_identity.py	fast	parallel	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 1) · 실측 11s(11-10 부하 중 · 직렬) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_paper_router_backlog_axis.sh	nightly	serial	기본(합성 자료 위주 · rs 0 proc 30 data 0)
+08_Tests/ops/test_morning_run_live_pid_guard.sh	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 16 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_scheduler_alert_surface.sh	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 15 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_credential_scope_wiring.sh	nightly	serial	기본(합성 자료 위주 · rs 0 proc 14 data 0)
+08_Tests/ops/test_failure_classify_window.sh	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 13 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_factor_evidence_backfill.py	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 1 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_research_queue_lanes.py	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/ops/test_run_completion_notify.sh	nightly	parallel	기본(합성 자료 위주 · rs 7 proc 34 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_scheduler_status_line_honesty.sh	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 15 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_stall_lock_alert.sh	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 17 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_orchestrator_stage_gate.sh	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 22 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_orphan_run_scan.py	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 1 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_paper_id_norm.py	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/ops/test_router_backfill_paths.sh	nightly	serial	기본(합성 자료 위주 · rs 0 proc 13 data 0)
+08_Tests/ops/test_stage_timeout_and_recharge_stall.sh	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 10 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_curated_sources_isolation.sh	nightly	parallel	기본(합성 자료 위주 · rs 6 proc 16 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/contracts/test_beta_controlled_alpha.R	fast	serial	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 1s(11-10 부하 중 · 직렬)
+08_Tests/regime/test_ae_monthly_plumbing.py	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 1 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/portfolio/test_ae_consumer_freshness.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 1) · 샌드박스 · 보호 등록부 미참조
+08_Tests/book/test_book_rebalance_preflight.py	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 2 data 5) · 샌드박스 · 보호 등록부 미참조
+08_Tests/data/test_parquet_atomic_write.R	weekly	serial	실데이터 · arrow 로드 많음(data 8 · arrow 2)
+08_Tests/data/test_ingest_autoextend.py	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/ops/test_replication_lane.sh	weekly	parallel	레인 끝단(서브셸 67) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_rf_backfill_idempotence.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/reinforcement/test_rf_cell_engine_smoke.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 1) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_rf_claim.R	nightly	parallel	기본(합성 자료 위주 · rs 1 proc 1 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_rf_grid_contract.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/reinforcement/test_rf_holdings_axis.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/reinforcement/test_rf_overlay_arms.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_rf_pick_key.py	nightly	serial	기본(합성 자료 위주 · rs 0 proc 1 data 0)
+08_Tests/reinforcement/test_rf_root_papers.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_rp_portfolio_spec.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/reinforcement/test_overlay_probe.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/reinforcement/test_rf_mechanism_map.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/hooks/test_arm_gen_read_guard.sh	nightly	serial	기본(합성 자료 위주 · rs 4 proc 162 data 0)
+08_Tests/reinforcement/test_rf_fidelity_audit.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_rf_block_design.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_rf_axiom_inject.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 1 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_rf_retry_feedback.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/reinforcement/test_rf_fidelity_fanout.R	nightly	parallel	기본(합성 자료 위주 · rs 3 proc 3 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_rf_queue_mirror.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/contracts/test_rolling_defensive.R	fast	serial	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 15s(11-10 부하 중 · 직렬)
+08_Tests/contracts/test_ds_convex_retired.R	fast	serial	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 2s(11-10 부하 중 · 직렬)
+08_Tests/reinforcement/test_rf_block_design_schema.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/ops/test_rp_commission_basis.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/ops/test_rp_count_paper.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 1 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_rp_telegram_relaxed.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/reinforcement/test_rf_jlog_isolation.R	nightly	serial	기본(합성 자료 위주 · rs 1 proc 1 data 0)
+08_Tests/ops/test_rf_fanout_merge_root.sh	nightly	serial	기본(합성 자료 위주 · rs 0 proc 19 data 0)
+08_Tests/ops/test_rf_audit_disposition_required.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_rf_audit_tg_brief.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_rf_audit_not_run_blocks_open.R	nightly	parallel	기본(합성 자료 위주 · rs 1 proc 1 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_boot_lean_rf_budget.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 1 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_rf_record_decision.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_rf_l2_auto.sh	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 23 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_rf_l2_driver.R	nightly	parallel	기본(합성 자료 위주 · rs 1 proc 1 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_run_wf_env_defaults.R	nightly	serial	기본(합성 자료 위주 · rs 2 proc 2 data 0)
+08_Tests/hooks/test_continuity_w3_director_freeze.py	weekly	parallel	대상 훅 미등록(삭제 보류 · nightly.exclude 와 같은 뜻) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_rf_prompt_quote_parity.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_rf_prompt_format_safety.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 1 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_rf_reimplement_queue.R	nightly	parallel	기본(합성 자료 위주 · rs 1 proc 1 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_rp_env_failure_classify.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 6 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_rf_verify_extract_pkgs.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_rf_block_design_catalog_parity.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_rf_block_design_code_follows_pick.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_rf_claim_pid_reuse.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 3 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_rf_reopen_attempt.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_rf_weight_arms_explore.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/regime/test_l2_pool_admission.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/contracts/test_module_admission_seam.R	fast	parallel	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 1 · proc 0) · 실측 9s(11-10 부하 중 · 직렬) · 샌드박스 · 보호 등록부 미참조
+08_Tests/data/test_seam_scale_guard.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 2 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/data/test_basis_regression_guard.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/data/test_rawdata_source_priority.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 1) · 샌드박스 · 보호 등록부 미참조
+08_Tests/data/test_naver_adjusted_collector.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/reinforcement/test_rf_selection_accounting.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_rf_verify_tg_target.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_decision_register.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 1 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_llm_lane_wiring.sh	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 11 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_rf_llm_fallback.sh	nightly	serial	기본(합성 자료 위주 · rs 0 proc 30 data 0)
+08_Tests/axiom/test_lcode_cell_relabel.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 2 data 0)
+08_Tests/data/test_rawdata_size_guard.R	nightly	serial	기본(합성 자료 위주 · rs 2 proc 1 data 2)
+08_Tests/data/test_ohlcvs_update_gate.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 6) · 샌드박스 · 보호 등록부 미참조
+08_Tests/data/test_rawdata_bm_ret_sync.R	weekly	serial	실데이터 · arrow 로드 많음(data 9 · arrow 1)
+08_Tests/axiom/test_axiom_engine_status_switch.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/axiom/test_lcode_retraction_filter.py	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/axiom/test_cleaner_inject_len_worst.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 1 data 0)
+08_Tests/reinforcement/test_rf_mark_vintage.R	nightly	parallel	기본(합성 자료 위주 · rs 2 proc 1 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_rf_base_cache_key.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 1 data 5) · 샌드박스 · 보호 등록부 미참조
+08_Tests/validation/test_pit_quarantine_c11.R	weekly	serial	실데이터 · arrow 로드 많음(data 2 · arrow 3)
+08_Tests/data/test_fred_availability.R	weekly	serial	실데이터 · arrow 로드 많음(data 2 · arrow 3)
+08_Tests/data/test_fred_availability.py	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/regime/test_ae_c11_pit_features.py	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 1 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_pg2_c11_consumers.R	nightly	parallel	기본(합성 자료 위주 · rs 2 proc 2 data 2) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_refresh_barrier.sh	weekly	parallel	Rscript 21회 · timeout 300 보유자 · 잠금 장벽 끝단 · 샌드박스 · 보호 등록부 미참조
+08_Tests/factor_db/test_daily_fdb_pit_c11.R	weekly	serial	실데이터 · arrow 로드 많음(data 9 · arrow 11)
+08_Tests/ops/test_style_brief_mtd_window.R	nightly	parallel	기본(합성 자료 위주 · rs 1 proc 1 data 2) · 샌드박스 · 보호 등록부 미참조
+08_Tests/regime/test_c11_consumers.R	weekly	serial	실데이터 · arrow 로드 많음(data 0 · arrow 3)
+08_Tests/regime/test_regime_c11_asof.R	weekly	serial	실데이터 · arrow 로드 많음(data 10 · arrow 4)
+08_Tests/factor_db/test_c11_monthly_fdb.R	weekly	serial	실데이터 · arrow 로드 많음(data 13 · arrow 2)
+08_Tests/ops/test_morning_run_retry_marker.sh	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 25 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_scheduler_bat_locale.sh	nightly	parallel	기본(합성 자료 위주 · rs 3 proc 21 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_telegram_literal_homogeneity.py	nightly	parallel	기본(합성 자료 위주 · rs 5 proc 1 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/data/test_dr_fail_signature.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/data/test_dr_freshness_gate.py	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 2 data 1) · 샌드박스 · 보호 등록부 미참조
+08_Tests/validation/test_pit_c11_positive_control.R	weekly	serial	실데이터 · arrow 로드 많음(data 42 · arrow 7)
+08_Tests/data/test_fred_avail_history_bound.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 1) · 샌드박스 · 보호 등록부 미참조
+08_Tests/regime/test_c11_wf_module_window.R	nightly	serial	기본(합성 자료 위주 · rs 1 proc 1 data 0)
+08_Tests/regime/test_c11_panel_contract.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 1 data 0)
+08_Tests/validation/test_c11_detector_r1.R	weekly	serial	실데이터 · arrow 로드 많음(data 18 · arrow 5)
+08_Tests/reinforcement/test_rf_adversary_exec_regime.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/contracts/test_essence_oos_components.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 1 data 2) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_rf_rebase.R	nightly	parallel	기본(합성 자료 위주 · rs 2 proc 1 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_rf_a_eligibility.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_rf_selection_asof.R	weekly	serial	실데이터 · arrow 로드 많음(data 8 · arrow 7)
+08_Tests/reinforcement/test_rf_sleeve.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_rf_capcore.R	weekly	serial	실데이터 · arrow 로드 많음(data 1 · arrow 3)
+08_Tests/reinforcement/test_rf_axes.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/contracts/test_sleeve_delivery.R	fast	parallel	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 8s(11-10 부하 중 · 직렬) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_rf_overlay_pit_mask.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 2 data 3) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_rf_engine_overlay_stack.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 2 data 1) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_rf_arm_coverage_basis.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 1) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_cert_backfill_main_guard.R	nightly	parallel	기본(합성 자료 위주 · rs 2 proc 1 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/regime/test_jm_causal.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 1) · 샌드박스 · 보호 등록부 미참조
+08_Tests/regime/test_regime_ledger_c11.R	nightly	parallel	기본(합성 자료 위주 · rs 1 proc 5 data 3) · 샌드박스 · 보호 등록부 미참조
+08_Tests/regime/test_m4_append_c11_inherit.R	nightly	serial	기본(합성 자료 위주 · rs 2 proc 1 data 1)
+08_Tests/regime/test_ae_monthly_c11_recompute.py	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 1 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/portfolio/test_fw_d3_c11_label.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 1) · 샌드박스 · 보호 등록부 미참조
+08_Tests/regime/test_fr_v4_measurement.R	nightly	serial	기본(합성 자료 위주 · rs 1 proc 1 data 0)
+08_Tests/ops/test_rf_backfill_lifecycle.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/factor_db/test_rebuild_fdb_columns.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 2) · 샌드박스 · 보호 등록부 미참조
+08_Tests/factor_db/test_phase9b_standalone_regime_key.R	nightly	parallel	기본(합성 자료 위주 · rs 1 proc 1 data 7) · 샌드박스 · 보호 등록부 미참조
+08_Tests/worktask/test_qepm_freeze_entrypoints.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 2 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/worktask/test_qepm_advisor_contract.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/worktask/test_qepm_freeze_residual.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/portfolio/test_mba_main_guard.R	nightly	parallel	기본(합성 자료 위주 · rs 2 proc 1 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_llm_single_entry.sh	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 70 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/hooks/test_safety_guard_memory.sh	nightly	parallel	기본(합성 자료 위주 · rs 4 proc 57 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/contracts/test_replication_a_gate.R	nightly	parallel	fast 후보였으나 실측 33s(11-10 부하 중 직렬) > 15s → nightly · 실측 33s(11-10 부하 중 · 직렬) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_rf_a_gate_lineage_flags.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 2)
+08_Tests/contracts/test_register_module_root_failclosed.R	nightly	parallel	기본(합성 자료 위주 · rs 2 proc 2 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/data/test_pin_fingerprint.R	weekly	serial	실데이터 · arrow 로드 많음(data 17 · arrow 3)
+08_Tests/reinforcement/test_rf_data_vintage.R	weekly	serial	실데이터 · arrow 로드 많음(data 6 · arrow 5)
+08_Tests/contracts/test_tilt_attribution.R	weekly	serial	실데이터 · arrow 로드 많음(data 1 · arrow 3)
+08_Tests/reinforcement/test_rf_prereg.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/validation/test_cond_ic_asof_guard.R	nightly	serial	기본(합성 자료 위주 · rs 4 proc 2 data 0)
+08_Tests/reinforcement/test_rf_consume_hold.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/contracts/test_b_ewcw_paired.R	nightly	parallel	fast 후보였으나 실측 70s(11-10 부하 중 직렬) > 15s → nightly · 실측 70s(11-10 부하 중 · 직렬) · 샌드박스 · 보호 등록부 미참조
+08_Tests/contracts/test_selection_accounting.R	nightly	parallel	fast 후보였으나 실측 397s(11-10 부하 중 직렬) > 15s → nightly · 실측 397s(11-10 부하 중 · 직렬) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_rf_spec_axes.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_rf_lane_rules.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_dr_record_machine.R	nightly	parallel	기본(합성 자료 위주 · rs 1 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_dr_register_concurrency.R	nightly	parallel	기본(합성 자료 위주 · rs 2 proc 1 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_rf_trial_log.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_rf_reopen_entry.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_rf_prereg_min.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/reinforcement/test_rf_organic_boundary.R	nightly	parallel	기본(합성 자료 위주 · rs 2 proc 1 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_rf_organic_adapter_columns.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_rf_clean_lane.sh	weekly	serial	가짜 claude/Rscript 레인 끝단(서브셸 232)
+08_Tests/reinforcement/test_rf_a_gate_entry_base_flags.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/regime/test_l2_pool_close_t1.R	nightly	parallel	기본(합성 자료 위주 · rs 1 proc 1 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/contracts/test_behavior_card.R	fast	serial	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 9s(11-10 부하 중 · 직렬)
+08_Tests/programs/test_program_registry.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/programs/test_program_paper_sync.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/programs/test_program_report.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/programs/test_mechanism_atlas.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/programs/test_paper_atlas_run.sh	nightly	parallel	기본(합성 자료 위주 · rs 1 proc 10 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_boot_lean_programs_line.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 1 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_boot_lean_lane_tick.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 1 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_rf_request_guard.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/contracts/test_strategy_role.R	fast	serial	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 9s(11-10 부하 중 · 직렬)
+08_Tests/data/test_benchmark_axis_rebuild.py	nightly	parallel	기본(합성 자료 위주 · rs 1 proc 4 data 2) · 샌드박스 · 보호 등록부 미참조
+08_Tests/data/test_nps_refresh_append.py	weekly	serial	실데이터 · arrow 로드 많음(data 0 · arrow 4)
+08_Tests/data/test_incremental_update_file_guards.R	weekly	serial	실데이터 · arrow 로드 많음(data 1 · arrow 3)
+08_Tests/data/test_incremental_update_gates.R	nightly	parallel	기본(합성 자료 위주 · rs 4 proc 3 data 2) · 샌드박스 · 보호 등록부 미참조
+08_Tests/data/test_qw_refresh_anchor.sh	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 28 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/data/test_quantiwise_fetch.py	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 4 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_rf_factor_autoregister_brief.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/ops/test_rf_overlay_audit.sh	nightly	serial	기본(합성 자료 위주 · rs 3 proc 75 data 0)
+08_Tests/ops/test_rf_panel_axis_freshness.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 1 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_rf_preaudit.py	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 9 data 1) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_overlay_probe_allowlist.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 2 data 1) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_overlay_probe_calendar.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/reinforcement/test_rf_base_cache_seed.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 1) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_rf_overlay_admit_source.R	nightly	serial	기본(합성 자료 위주 · rs 3 proc 2 data 0)
+08_Tests/reinforcement/test_rf_overlay_adversary.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 1) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_rf_rebalance.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/contracts/test_grade_v3.R	fast	parallel	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 58s(11-10 부하 중 · 직렬) · 샌드박스 · 보호 등록부 미참조
+08_Tests/contracts/test_grade_v3_fa_notch.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/contracts/test_selection_reality_check.R	fast	parallel	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 66s(11-10 부하 중 · 직렬) · 샌드박스 · 보호 등록부 미참조
+08_Tests/programs/test_selection_regrade.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/contracts/test_factor_db_vintage.R	fast	parallel	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 2s(11-10 부하 중 · 직렬) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_rf_cell_factor_direction.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 2) · 샌드박스 · 보호 등록부 미참조
+08_Tests/programs/test_round_core_v1_p4_chain.R	nightly	parallel	기본(합성 자료 위주 · rs 2 proc 1 data 2) · 샌드박스 · 보호 등록부 미참조
+08_Tests/contracts/test_matched_controls.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 1)
+08_Tests/contracts/test_diagnosis_packet.R	weekly	serial	실데이터 · arrow 로드 많음(data 4 · arrow 6)
+08_Tests/programs/test_rx_round.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/programs/test_tau_d_date_nonbmp.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/programs/test_trial_budget.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/programs/test_round_core_v1.R	fast	parallel	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 1 · proc 1) · 실측 7s(11-10 부하 중 · 직렬) · 샌드박스 · 보호 등록부 미참조
+08_Tests/programs/test_round_core_v1_flow.R	fast	parallel	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 12s(11-10 부하 중 · 직렬) · 샌드박스 · 보호 등록부 미참조
+08_Tests/programs/test_round_core_v1_standing.R	weekly	serial	실데이터 · arrow 로드 많음(data 24 · arrow 0)
+08_Tests/programs/test_round_core_measure_server.R	weekly	serial	실데이터 · arrow 로드 많음(data 13 · arrow 5)
+08_Tests/programs/test_round_core_v1_p2.R	nightly	serial	기본(합성 자료 위주 · rs 1 proc 1 data 1)
+08_Tests/programs/test_superfan_watch.R	nightly	parallel	기본(합성 자료 위주 · rs 2 proc 4 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/programs/test_q_judgment_ledger.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 2 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/programs/test_session_resume.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 2 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_rf_verify_pit_preflight.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_rf_verify_judge_hold.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_rf_paper_text.py	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 4 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/contracts/test_bt_contract_exposure.R	fast	serial	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 3s(11-10 부하 중 · 직렬)
+08_Tests/ops/test_rf_verify_variants.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 2) · 샌드박스 · 보호 등록부 미참조
+08_Tests/data/test_qw_updatefile_unattended.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 7 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/data/test_daily_refresh_qw_block.sh	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 50 data 6) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_ensure_data_current_qw.sh	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 25 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/hooks/test_hook_fastpath_equivalence.sh	nightly	parallel	기본(합성 자료 위주 · rs 11 proc 27 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/hooks/test_hook_backslash_paths.sh	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 11 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/hooks/test_telegram_guard_forms.sh	nightly	parallel	기본(합성 자료 위주 · rs 18 proc 12 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/hooks/test_hook_powershell_coverage.sh	nightly	parallel	기본(합성 자료 위주 · rs 7 proc 15 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/hooks/test_auto_commit_session_scope.sh	nightly	serial	기본(합성 자료 위주 · rs 0 proc 116 data 0)
+08_Tests/ops/test_qv_lock.py	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 13 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_qv_lock_cross.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 2 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_replication_slots.py	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 6 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_replication_slots_lane.sh	weekly	parallel	레인 슬롯 끝단(서브셸 111) · 샌드박스 · 보호 등록부 미참조
+08_Tests/programs/test_ledger_write_locks.py	nightly	serial	기본(합성 자료 위주 · rs 4 proc 8 data 0)
+08_Tests/ops/test_qv_bash.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 8 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_qv_psock.R	nightly	parallel	기본(합성 자료 위주 · rs 1 proc 1 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_claude_cli_update.sh	weekly	parallel	고정 sleep ≈17s · 잠금 경쟁 재현 · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_infra_currency.py	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/programs/test_grade_v3_backfill_mark.R	fast	serial	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 2s(11-10 부하 중 · 직렬)
+08_Tests/programs/test_round_candidate_gate.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_standing_board_run.sh	nightly	serial	기본(합성 자료 위주 · rs 0 proc 32 data 1)
+08_Tests/data/test_freshness_audit_outputs.R	weekly	serial	실데이터 · arrow 로드 많음(data 6 · arrow 6)
+08_Tests/data/test_global_macro_ingest.py	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 1 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/data/test_hygiene_flag_coverage.R	weekly	serial	실데이터 · arrow 로드 많음(data 10 · arrow 8)
+08_Tests/data/test_qw_ext_ingest.py	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/factor_db/test_fdc_read_fastpath.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 5) · 샌드박스 · 보호 등록부 미참조
+08_Tests/methods/test_eigen_clean_markowitz.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/methods/test_p3r03_adapters.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 3)
+08_Tests/ops/test_qvest_machine.sh	nightly	serial	기본(합성 자료 위주 · rs 0 proc 43 data 0)
+08_Tests/ops/test_rf_verify_report_composition.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/ops/test_tg_scope_key.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/programs/test_round_kit_pair_alpha.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/programs/test_round_kit_shard.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/reinforcement/test_rf_overlay_full_cash.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 1 data 1) · 샌드박스 · 보호 등록부 미참조
+08_Tests/validation/test_lookahead_c17_comment.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/hooks/test_runner_parallel_tiers.sh	nightly	serial	기본(합성 자료 위주 · rs 0 proc 35 data 0)
+08_Tests/programs/test_rx_generator_scorecard.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 0) · 샌드박스 · 보호 등록부 미참조
+08_Tests/reinforcement/test_rf_cdar_construct.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/reinforcement/test_rf_factor_cov.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/scenarios/test_scn_advisor_dryrun.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/scenarios/test_scn_book_registration.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/scenarios/test_scn_construct_pit_leak.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/scenarios/test_scn_data_chain_failure.sh	nightly	serial	기본(합성 자료 위주 · rs 1 proc 24 data 0)
+08_Tests/scenarios/test_scn_data_fdv_coverage.sh	nightly	serial	기본(합성 자료 위주 · rs 0 proc 30 data 0)
+08_Tests/scenarios/test_scn_data_freshness_session.R	nightly	serial	기본(합성 자료 위주 · rs 1 proc 3 data 2)
+08_Tests/scenarios/test_scn_data_refresh_heal.sh	nightly	serial	기본(합성 자료 위주 · rs 1 proc 91 data 0)
+08_Tests/scenarios/test_scn_data_task_never_run.sh	nightly	serial	기본(합성 자료 위주 · rs 0 proc 41 data 0)
+08_Tests/scenarios/test_scn_knowledge_distill.sh	nightly	serial	기본(합성 자료 위주 · rs 1 proc 10 data 0)
+08_Tests/scenarios/test_scn_knowledge_index.R	nightly	serial	기본(합성 자료 위주 · rs 1 proc 1 data 0)
+08_Tests/scenarios/test_scn_knowledge_loop.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/scenarios/test_scn_l1_chain_e2e.R	nightly	serial	기본(합성 자료 위주 · rs 2 proc 2 data 3)
+08_Tests/scenarios/test_scn_l2_a_gate.R	nightly	serial	기본(합성 자료 위주 · rs 1 proc 1 data 0)
+08_Tests/scenarios/test_scn_morning_chain.sh	nightly	serial	기본(합성 자료 위주 · rs 0 proc 27 data 0)
+08_Tests/scenarios/test_scn_paper_collect.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/scenarios/test_scn_paper_queue.py	nightly	serial	기본(합성 자료 위주 · rs 0 proc 2 data 0)
+08_Tests/scenarios/test_scn_repl_lane.sh	nightly	serial	기본(합성 자료 위주 · rs 4 proc 67 data 1)
+08_Tests/scenarios/test_scn_repl_measure_record.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/scenarios/test_scn_rx_construct_link.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 1 data 2)
+08_Tests/scenarios/test_scn_tg_alert_noise.py	nightly	serial	기본(합성 자료 위주 · rs 2 proc 6 data 0)
+08_Tests/scenarios/test_scn_tg_emitter.R	nightly	serial	기본(합성 자료 위주 · rs 0 proc 0 data 0)
+08_Tests/programs/test_trial_budget_rc.R	nightly	serial	기본(합성 자료 위주) · 11-10 저녁 편입
+08_Tests/reinforcement/test_rf_cash_budget_link.R	nightly	serial	기본(합성 자료 위주) · 11-10 저녁 편입
+08_Tests/reinforcement/test_rf_cdar_bench_budget.R	nightly	serial	기본(합성 자료 위주) · 11-10 저녁 편입
+08_Tests/ops/test_boot_lean_memo.sh	nightly	serial	부팅 메모 판정 불변(샌드박스 · 부하 중 실측 약 3분)
+08_Tests/hooks/test_hook_dispatch_equivalence.sh	weekly	serial	느린 끝단 — 훅 사전 거름 등가 174쌍 + 돌연변이 8종(부하 중 실측 24분) · 훅 빠른 길을 고치면 수동 실행

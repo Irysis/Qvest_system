@@ -149,27 +149,26 @@ chk("C2  rename 실패 주입(대상 핸들 점유) → stop + 원본 불변 + t
 ## ── D. 배선 도달 — 정본을 **실제로 쓰는가** ─────────────────────────────────
 ##   "만들었다" 와 "부른다" 는 다른 명제다. 구 결함이 정확히 3벌 인라인 복제였으므로
 ##   소비자 쪽에서 선삭제가 사라졌는지까지 본다.
-chk("D1  소비자 배선 — krx_build_rawdata.R / rawdata_sanitize.R 가 정본을 호출", {
+## (2026-11-10 H1 TRIM) krx_build_rawdata.R 축 제거 — 퇴역(RAWDATA-QW-ONLY-20261017 · 일일 체인 호출 0). 남은 소비자 rawdata_sanitize.R 만 본다.
+chk("D1  소비자 배선 — rawdata_sanitize.R 가 정본을 호출", {
   miss <- character(0)
-  for (f in c("02_Infrastructure/data/krx_build_rawdata.R",
-              "02_Infrastructure/data/rawdata_sanitize.R")) {
+  for (f in c("02_Infrastructure/data/rawdata_sanitize.R")) {
     s <- paste(readLines(file.path(ROOT, f), warn = FALSE), collapse = "\n")
     if (!grepl("qvest_atomic_write_parquet", s, fixed = TRUE)) miss <- c(miss, f)
   }
   if (length(miss)) stop(sprintf("정본 미호출: %s", paste(miss, collapse = ", ")))
-  "2/2 호출"
+  "1/1 호출"
 })
 
 chk("D2  ★선삭제 잔재 0 — BM_CACHE/RAWDATA_CACHE 를 지우고 쓰는 코드가 없다", {
   hits <- character(0)
-  for (f in c("02_Infrastructure/data/krx_build_rawdata.R",
-              "02_Infrastructure/data/rawdata_sanitize.R")) {
+  for (f in c("02_Infrastructure/data/rawdata_sanitize.R")) {
     ln <- readLines(file.path(ROOT, f), warn = FALSE)
     h <- grep("file\\.remove\\((BM_CACHE|RAWDATA_CACHE)\\)", ln)
     if (length(h)) hits <- c(hits, sprintf("%s:%s", f, paste(h, collapse = ",")))
   }
   if (length(hits)) stop(sprintf("선삭제 잔존: %s", paste(hits, collapse = " | ")))
-  "2/2 청소됨"
+  "1/1 청소됨"
 })
 
 chk("D3  정본 자신은 선삭제도 copy 폴백도 갖지 않는다", {
