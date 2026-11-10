@@ -802,6 +802,11 @@ HI_INVALIDATION_FIELDS <- c("pit_invalid", "retracted_by")   # = lcode_schema.R:
   rd <- vapply(paths, function(p) !is.null(tryCatch(fromJSON(p, simplifyVector = FALSE), error = function(e) NULL)), logical(1), USE.NAMES = FALSE)
   list(exclude = ex & rd, basis = paste0("fallback_presence(", canon, ")"))
 }
+## 원본 L-code 파일의 l_code 키(보충 스캔 dedup 과 같은 규칙 = .hi_raw_lcode_entry) — 못 읽으면 파일명 L-<숫자> 복원 · 그것도 없으면 ""
+.hi_raw_key <- function(p, root = QM_ROOT) {
+  tryCatch(.hi_join(.hi_raw_lcode_entry(p, root)$l_code), error = function(e) {
+    m <- regmatches(basename(p), regexpr("L-[0-9]+", basename(p))); if (length(m)) m else "" })
+}
 
 # --------------------------------------------------------------------
 # (h) v10.2 학습 원장 (2026-11-10 감사 레인 K) — 결과 원장 round_outcomes.jsonl + P4 걸음 원장 chain_steps.jsonl.
@@ -819,9 +824,40 @@ HI_INVALIDATION_FIELDS <- c("pit_invalid", "retracted_by")   # = lcode_schema.R:
   c(file.path(root, "06_Registry", "round_outcomes.jsonl"),
     Sys.glob(file.path(root, "04_Research", "programs", "P4_ASSEMBLY", "*", "chain_steps.jsonl")))
 }
-.hi_parse_outcomes <- function(path) {
+## (11-10(2) 감사 U11) 결과 원장은 설계 입력과 같은 규율로만 읽는다 — 공용 읽기 = memory/knowledge_loop_metrics.R::klm_read_outcomes
+##   (안에서 round_core v1/outcomes.R 의 rc_outcomes_read · tau_clean = τ_D 를 그대로 부른다): 격리된 줄 · 처방 입력 검사 미통과 줄은 빠지고
+##   건수는 coverage(v102_outcomes_quarantined · v102_outcomes_input_excluded · v102_outcomes_bad_lines)에 따로 남는다 · 반파 줄은 경고.
+##   읽기 도구를 못 찾으면 멈춘다 → 빌더가 그 원천만 건너뛴다(규율 없이 색인하지 않는다 · fail-closed).
+.HI_SELF_ROOT <- local({
+  p <- NULL
+  for (i in rev(seq_len(sys.nframe()))) {
+    f <- sys.frame(i)
+    if (is.character(f$ofile) && length(f$ofile) == 1L) { p <- f$ofile; break }
+    if (is.character(f$file) && length(f$file) == 1L && grepl("hypothesis_index[^/\\\\]*\\.R$", f$file)) { p <- f$file; break }
+  }
+  if (is.null(p)) { a <- sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE)); if (length(a) && grepl("hypothesis_index", a[1])) p <- a[1] }
+  if (is.null(p)) NA_character_ else {
+    p <- gsub("\\\\", "/", p); if (!grepl("^([A-Za-z]:|/)", p)) p <- file.path(gsub("\\\\", "/", getwd()), p)
+    dirname(dirname(dirname(p)))
+  }
+})
+.HI_KLM <- new.env(parent = emptyenv())
+.hi_outcome_recs <- function(path, root = QM_ROOT) {
+  if (!file.exists(path)) return(list(recs = list(), bad = 0L, quarantined = 0L, input_excluded = 0L))
+  if (is.null(.HI_KLM$e)) {
+    rel <- "02_Infrastructure/memory/knowledge_loop_metrics.R"
+    cand <- unique(c(if (!is.na(.HI_SELF_ROOT)) file.path(.HI_SELF_ROOT, rel), file.path(gsub("\\\\", "/", root), rel),
+                     if (nzchar(Sys.getenv("QM_ROOT", ""))) file.path(gsub("\\\\", "/", Sys.getenv("QM_ROOT")), rel)))
+    kp <- cand[file.exists(cand)][1]
+    if (is.na(kp)) stop("결과 원장 공용 읽기(knowledge_loop_metrics.R)를 찾지 못했다 — 규율 없이 색인하지 않는다")
+    e <- new.env(parent = globalenv()); suppressMessages(sys.source(kp, envir = e, keep.source = FALSE)); .HI_KLM$e <- e
+  }
+  .HI_KLM$e$klm_read_outcomes(path, root = root)
+}
+.hi_parse_outcomes <- function(path, root = QM_ROOT) {
   out <- list()
-  for (r in .hi_jsonl(path)) {
+  rd <- .hi_outcome_recs(path, root)
+  for (r in rd$recs) {
     if (!identical(r$schema, "round_outcome_v1") || !identical(r$kind %||% "round", "round")) next
     rid <- as.character(r$round_id %||% "")[1]; if (!nzchar(rid)) next
     les <- unlist(r$lessons %||% list()); prb <- unlist(r$probes %||% list())
@@ -842,6 +878,7 @@ HI_INVALIDATION_FIELDS <- c("pit_invalid", "retracted_by")   # = lcode_schema.R:
       research_mode = if (identical(r$template, "p4_chain")) "p4_chain" else "program_round",
       date = substr(as.character(r$at %||% ""), 1, 10))
   }
+  attr(out, "read") <- list(bad = rd$bad %||% NA_integer_, quarantined = rd$quarantined %||% NA_integer_, input_excluded = rd$input_excluded %||% NA_integer_)
   out
 }
 .hi_parse_chain_steps <- function(path, root = QM_ROOT) {
@@ -851,7 +888,10 @@ HI_INVALIDATION_FIELDS <- c("pit_invalid", "retracted_by")   # = lcode_schema.R:
     k <- as.character(o$k %||% "?")[1]
     rr <- Filter(function(x) identical(as.character(x$k %||% ""), k), res)
     dec <- if (length(rr)) as.character(rr[[1]]$decision %||% "") else ""
-    codes <- if (length(rr)) unique(sub(":.*$", "", unlist(rr[[1]]$reasons %||% list()))) else character(0)
+    ## (2026-11-10 감사 U11) 측정 실패로 포기한 걸음은 가설 기각이 아니다 — 원장은 호환을 위해 decision 'reject' + abandoned TRUE 로 남기므로
+    ##   여기서 따로 가른다(STEP_ABANDONED · 기각 사유 코드에 싣지 않는다). 과거 negative 조회가 '미측정'을 '기각'으로 읽지 않게.
+    abn <- length(rr) > 0L && isTRUE(rr[[1]]$abandoned)
+    codes <- if (length(rr) && !abn) unique(sub(":.*$", "", unlist(rr[[1]]$reasons %||% list()))) else character(0)
     ttl <- sprintf("%s 걸음 %s [%s] %s", chain, k, o$block_type %||% "?", o$hypothesis %||% "")
     text <- .hi_lc(c(ttl, o$mechanism %||% ""))
     out[[length(out) + 1L]] <- list(
@@ -859,7 +899,7 @@ HI_INVALIDATION_FIELDS <- c("pit_invalid", "retracted_by")   # = lcode_schema.R:
       hypothesis_signature = .hi_signature(.hi_infer_family(text), .hi_infer_signal_group(text, ttl), "p4_chain",
                                            paste0("block_", o$block_type %||% "unknown")),
       title = ttl,
-      verdict = if (identical(dec, "accept")) "STEP_ACCEPT" else if (identical(dec, "reject")) "STEP_REJECT" else "STEP_PENDING",
+      verdict = if (identical(dec, "accept")) "STEP_ACCEPT" else if (abn) "STEP_ABANDONED" else if (identical(dec, "reject")) "STEP_REJECT" else "STEP_PENDING",
       grade = "",
       key_metrics = list(reject_codes = paste(codes, collapse = ";"), generator = as.character(o$generator_version %||% "")),
       source_paths = sub(paste0("^", root, "/"), "", gsub("\\\\", "/", path)),
@@ -915,23 +955,62 @@ build_hypothesis_index <- function(root = QM_ROOT, out_path = HI_INDEX_PATH,
     }
   }
 
-  # --- (b) lcode corpus ---
+  # --- (b0) 철회 집합 먼저 (2026-11-10(2) 감사 U11 — 철회 수리의 나머지 절반) ---
+  #   철회 집합 = corpus.invalidated_lcodes(수확기 판정) ∪ corpus 보다 새 원본 가운데 정본 판정기(lcode_validity.py check)가 철회 · PIT 무효로 본 것.
+  #   이 집합을 (b) corpus 사본 적재 · (b+) 보충 스캔 **모든 추가 경로**에 건다(corpus 가 낡았어도). 전에는 (b+) 만 걸러서,
+  #   수확 당시 유효해 corpus.lcodes 에 들어간 L-code 는 원본에 나중에 철회 표식을 달아도 다음 수확까지 lookup 에 '과거 negative' 로 남았다.
+  #   판정은 여기서 재구현하지 않는다 — 수확기 산출과 정본 판정기 결과를 소비만 한다.
   lc_path <- file.path(root, ".cache/lcode_corpus.json")
   lc_seen <- character(0)   # (task#54-1) corpus 반영된 l_code 키 — 보충 스캔 dedup (corpus 우선)
+  lc_retracted <- character(0)
+  cov$lcode_corpus_retracted_excluded <- 0L
   lc_mtime <- if (file.exists(lc_path)) file.info(lc_path, extra_cols = FALSE)$mtime
               else as.POSIXct("1970-01-01", tz = "UTC")   # corpus 부재 → 전체 원본 스캔
-  if (file.exists(lc_path)) {
-    lc <- tryCatch(fromJSON(lc_path, simplifyVector = FALSE), error = function(e) NULL)
-    # ★2026-09-23 (Axiom 전수감사 K3 · 도훈 AX-D4): harvester 가 철회·PIT 무효 표식으로 **뺀** L-code
-    #   (corpus.invalidated_lcodes — 판정 = lcode_validity.py::lcode_invalidation)를 dedup 키에 먼저 넣는다.
-    #   안 넣으면 표식 파일이 수확 뒤에 다시 수정됐을 때(mtime > corpus) 아래 (b+) 보충 스캔이 원천을 직접 파싱해
-    #   **다시 색인**한다. 판정을 여기서 재구현하지 않는다 — harvester 산출을 소비만 한다.
-    for (iv in (lc$invalidated_lcodes %||% list())) {
-      k <- .hi_join(iv$l_code); if (nzchar(k)) lc_seen <- c(lc_seen, k)
-      cov$lcode_invalidated_excluded <- cov$lcode_invalidated_excluded + 1L
+  lc <- if (file.exists(lc_path)) tryCatch(fromJSON(lc_path, simplifyVector = FALSE), error = function(e) NULL) else NULL
+  # ★2026-09-23 (Axiom 전수감사 K3 · 도훈 AX-D4): harvester 가 철회·PIT 무효 표식으로 **뺀** L-code
+  #   (corpus.invalidated_lcodes — 판정 = lcode_validity.py::lcode_invalidation)를 dedup 키에 먼저 넣는다.
+  #   안 넣으면 표식 파일이 수확 뒤에 다시 수정됐을 때(mtime > corpus) 아래 (b+) 보충 스캔이 원천을 직접 파싱해
+  #   **다시 색인**한다. 판정을 여기서 재구현하지 않는다 — harvester 산출을 소비만 한다.
+  for (iv in (lc$invalidated_lcodes %||% list())) {
+    k <- .hi_join(iv$l_code); if (nzchar(k)) { lc_seen <- c(lc_seen, k); lc_retracted <- c(lc_retracted, k) }
+    cov$lcode_invalidated_excluded <- cov$lcode_invalidated_excluded + 1L
+  }
+  # (b+) 보충 스캔 대상 원본 — 경로 패턴은 harvester(lcode_harvester.py)와 동일: mode-분리 + flat back-compat.
+  raw_lc_paths <- c(
+    Sys.glob(file.path(root, "stage_artifacts/l_code/*/l_code_*.json")),
+    Sys.glob(file.path(root, "stage_artifacts/l_code_*.json"))
+  )
+  raw_new <- character(0)
+  if (length(raw_lc_paths)) {
+    fi_raw <- file.info(raw_lc_paths, extra_cols = FALSE)   # (11-10) extra_cols=FALSE — OneDrive 1,945파일 실측 12.7초 → 2.6초
+    raw_new <- raw_lc_paths[!is.na(fi_raw$mtime) & fi_raw$mtime > lc_mtime]
+    # ★2026-11-10 (감사 레인 K): 보충 스캔도 철회 · PIT 무효 표식을 거른다. corpus 가 정체된 동안(11-07 이후 수확기 0회)
+    #   새로 철회 표식을 단 원본은 corpus.invalidated_lcodes 에 없어서, 이 스캔이 원본을 직접 파싱해 **다시 색인**했다.
+    #   판정은 단일 정본(lcode_validity.py::lcode_invalidation · CLI check)을 부른다 — R 재구현 금지(lcode_schema.R 규약).
+    if (length(raw_new)) {
+      inv <- .hi_raw_invalid(raw_new, root)
+      if (any(inv$exclude)) {
+        cov$lcode_supplement_invalidated_excluded <- sum(inv$exclude)
+        cov$lcode_supplement_validity_basis <- inv$basis
+        rk <- vapply(raw_new[inv$exclude], .hi_raw_key, "", root = root, USE.NAMES = FALSE)
+        lc_retracted <- c(lc_retracted, rk[nzchar(rk)])   # (11-10(2)) 아래 (b) corpus 사본 적재에도 같은 철회 집합
+        if (any(!nzchar(rk))) {
+          cov$lcode_retracted_key_unknown <- sum(!nzchar(rk))
+          message(sprintf("[hypothesis_index][WARN] 철회 원본 %d개의 l_code 키를 못 읽었다 — corpus 사본과 맞출 수 없다(수확기 재실행 필요): %s",
+                          sum(!nzchar(rk)), paste(basename(raw_new[inv$exclude][!nzchar(rk)]), collapse = ",")))
+        }
+        raw_new <- raw_new[!inv$exclude]
+      }
     }
+  }
+  lc_retracted <- unique(lc_retracted)
+
+  # --- (b) lcode corpus ---
+  if (!is.null(lc)) {
     for (e in (lc$lcodes %||% list())) {
-      k <- .hi_join(e$l_code); if (nzchar(k)) lc_seen <- c(lc_seen, k)
+      k <- .hi_join(e$l_code)
+      if (nzchar(k) && k %in% lc_retracted) { cov$lcode_corpus_retracted_excluded <- cov$lcode_corpus_retracted_excluded + 1L; next }
+      if (nzchar(k)) lc_seen <- c(lc_seen, k)
       pe <- tryCatch(.hi_parse_lcode(e), error = function(err) {
         message(sprintf("[hypothesis_index][WARN] lcode parse 실패 skip: %s (%s)",
                         e$l_code %||% e$strategy_id %||% "?", conditionMessage(err)))
@@ -945,25 +1024,8 @@ build_hypothesis_index <- function(root = QM_ROOT, out_path = HI_INDEX_PATH,
   # --- (b+) L-code 보충 스캔 (2026-07-13 task#54-1 — corpus 정체 시 게이트 실명 재발 방지) ---
   #   corpus mtime보다 새 원본 L-code 파일을 직접 파싱해 보충. dedup 키 = l_code
   #   (corpus 항목 우선 — corpus에 이미 있으면 skip). 파싱 실패는 skip + 카운트.
-  #   경로 패턴은 harvester(lcode_harvester.py)와 동일: mode-분리 + flat back-compat.
-  raw_lc_paths <- c(
-    Sys.glob(file.path(root, "stage_artifacts/l_code/*/l_code_*.json")),
-    Sys.glob(file.path(root, "stage_artifacts/l_code_*.json"))
-  )
-  if (length(raw_lc_paths)) {
-    fi_raw <- file.info(raw_lc_paths, extra_cols = FALSE)   # (11-10) extra_cols=FALSE — OneDrive 1,945파일 실측 12.7초 → 2.6초
-    raw_new <- raw_lc_paths[!is.na(fi_raw$mtime) & fi_raw$mtime > lc_mtime]
-    # ★2026-11-10 (감사 레인 K): 보충 스캔도 철회 · PIT 무효 표식을 거른다. corpus 가 정체된 동안(11-07 이후 수확기 0회)
-    #   새로 철회 표식을 단 원본은 corpus.invalidated_lcodes 에 없어서, 이 스캔이 원본을 직접 파싱해 **다시 색인**했다.
-    #   판정은 단일 정본(lcode_validity.py::lcode_invalidation · CLI check)을 부른다 — R 재구현 금지(lcode_schema.R 규약).
-    if (length(raw_new)) {
-      inv <- .hi_raw_invalid(raw_new, root)
-      if (any(inv$exclude)) {
-        cov$lcode_supplement_invalidated_excluded <- sum(inv$exclude)
-        cov$lcode_supplement_validity_basis <- inv$basis
-        raw_new <- raw_new[!inv$exclude]
-      }
-    }
+  #   대상(raw_new)과 철회 거르기는 위 (b0) 가 정했다(철회 원본은 이미 빠졌다).
+  if (length(raw_new)) {
     for (p in raw_new) {
       pe <- tryCatch({
         d <- .hi_raw_lcode_entry(p, root)
@@ -1065,8 +1127,13 @@ build_hypothesis_index <- function(root = QM_ROOT, out_path = HI_INDEX_PATH,
   # --- (h) v10.2 학습 원장 (2026-11-10 — 결과 원장 + P4 걸음 원장 · 위 .hi_parse_outcomes 머리말) ---
   cov$v102_round_outcomes_indexed <- 0L; cov$v102_chain_steps_indexed <- 0L
   for (p in .hi_v102_sources(root)) {
-    ents <- tryCatch(if (basename(p) == "round_outcomes.jsonl") .hi_parse_outcomes(p) else .hi_parse_chain_steps(p, root),
-                     error = function(err) { message(sprintf("[hypothesis_index][WARN] v10.2 원장 parse 실패 skip: %s (%s)", basename(p), conditionMessage(err))); list() })
+    ents <- tryCatch(if (basename(p) == "round_outcomes.jsonl") .hi_parse_outcomes(p, root) else .hi_parse_chain_steps(p, root),
+                     error = function(err) { message(sprintf("[hypothesis_index][WARN] v10.2 원장 parse 실패 skip: %s (%s)", basename(p), conditionMessage(err)))
+                       if (basename(p) == "round_outcomes.jsonl") cov$v102_outcomes_reader_error <<- conditionMessage(err)
+                       list() })
+    rd <- attr(ents, "read")
+    if (!is.null(rd)) { cov$v102_outcomes_bad_lines <- as.integer(rd$bad); cov$v102_outcomes_quarantined <- as.integer(rd$quarantined)
+                        cov$v102_outcomes_input_excluded <- as.integer(rd$input_excluded) }
     for (e in ents) if (add_entry(e)) {
       if (identical(e$source_types, "round_outcomes")) cov$v102_round_outcomes_indexed <- cov$v102_round_outcomes_indexed + 1L
       else cov$v102_chain_steps_indexed <- cov$v102_chain_steps_indexed + 1L

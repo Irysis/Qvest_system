@@ -97,8 +97,9 @@ Rscript 02_Infrastructure/ops/cleaner_distill_lib.R gate
 - 각 실험: 가설 1줄 / 결론(PASS·FAIL·screen-tier 등) / 핵심 수치(출처 파일 경로) / 후속 여부.
 
 **학습 고리 현황 (의무 절 — v10.2 · 2026-11-10)**:
-- 재료 §1b(`02_Infrastructure/memory/knowledge_loop_metrics.R` — 결과 원장 · 상설 원장 · 레인 저널의 **개수 · 비율만**)를 digest 에 옮긴다: 주별 닫힌 라운드 · 사슬 · 새 탐침/이어받음 · 상설 자격 · 사전 감사 1차 통과율 · 충실도 1회 통과 · 개정 근거로 안 쓴 닫힌 사슬 수. 사슬 걸음 지표(채택률 · 걸음당 개선 · 되풀이 기각)는 `02_Infrastructure/programs/rx_generator_scorecard.R` 가 정본이다.
-- 닫힌 라운드 0 · 열린 탐침만 쌓임 · 원장 손상 경고가 있으면 맨 위 1줄.
+- 재료 §1b(`02_Infrastructure/memory/knowledge_loop_metrics.R` — 결과 원장 · 상설 원장 · 레인 저널의 **개수 · 비율만**)를 digest 에 옮긴다: 주별 닫힌 라운드 · 사슬 · 새 탐침/이어받음 · 상설 자격 · 사전 감사 1차 통과율(논문별 첫 검사 통과/논문 수 — 재시도 뒤 통과 · 회차 소진 · 논문 키 없는 사건은 따로 · 분모 0 = NA) · 충실도 1회 통과 · 개정 근거로 안 쓴 닫힌 사슬 수. 사슬 걸음 지표(채택률 · 걸음당 개선 · 되풀이 기각)는 `02_Infrastructure/programs/rx_generator_scorecard.R` 가 정본이고 재료 §1b 에 없다 — digest 에 옮기지 않으며, 원장을 직접 세거나 추정해 채우지 않는다(없으면 '미측정'). (11-10(2) 감사 U11)
+- 결과 원장은 설계 입력과 같은 규율로 읽힌다(격리 줄 · 처방 입력 검사 미통과 줄 제외 — `klm_read_outcomes` → `rc_outcomes_read(tau_clean = τ_D)`). 뺀 줄 경고가 있으면 그 건수를 그대로 옮긴다.
+- 닫힌 라운드 0 · 열린 탐침만 쌓임 · 원장 손상 경고 · 뺀 줄 경고가 있으면 맨 위 1줄.
 
 **★ 공리 사이클 · DIST 초안 — v10.2 퇴역 (2026-11-10 · `AXIOM-ENGINE-DISPOSITION-20261110`)**:
 - 승격 기계(`promote` · `refine_statement` · 회로차단기)와 DIST 수명주기(`cluster_extractor` · `distilled.R` · `draft_proposed` · `approve_proposed` · `morning_steps/axiom_approval_queue.R` 노출)는 `99_Archive/axiom_engine_v10_2_20261110/` 로 보관됐다. 스위치 = `06_Registry/axiom_engine_status.json::promotion_enabled = false` — 주간 스윕은 수확(harvester)만 돌고, 증류 재료 §2 · §3 은 '퇴역' 한 줄로 바뀌며, 무인 레인은 DIST 초안을 내지 않는다(`dist_drafts` = 빈 배열 · 내더라도 apply 가 퇴역 사유로 버린다).

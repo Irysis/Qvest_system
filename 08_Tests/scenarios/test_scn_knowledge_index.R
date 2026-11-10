@@ -12,6 +12,8 @@
 #   I8 교체 쓰기: 기존 인덱스 위로 rename(먼저 지우지 않음 — 소스 대조 + 동작)
 #   I9 DIST 퇴역 상태면 날짜 순 · 아니면 DIST 우선(구 동작 보존)
 #   I10 벡터화 매칭 = 구 항목별 매칭(.hi_entry_matches)과 같은 결과
+#   I12 (11-10(2) 감사 U11) 수확 뒤 철회 — corpus 사본도 빠진다 · invalidated 와 겹친 corpus 키도 빠진다 · [돌연변이] 건너뛰기 줄 삭제 → 다시 색인
+#   I13 (11-10(2) 감사 U11) 결과 원장 = 설계 입력과 같은 규율(격리 · 처방 입력 미통과 줄 제외 · 반파 줄 경고 · coverage 건수) · [돌연변이] 직접 읽기 복원 → 다시 색인
 #==============================================================================
 suppressPackageStartupMessages(library(jsonlite))
 self <- sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE)[1])
@@ -40,6 +42,8 @@ write_json(list(l_code = "L-RP-NEW-B", strategy_id = "RP_NEW_B", grade = "B", le
                 metric_type = "backtested", pit_invalid = TRUE, retracted_by = "L-RP-FIX-1", retracted_at = "2026-11-08"), lb, auto_unbox = TRUE)
 vp <- mk("02_Infrastructure/axiom/lcode_validity.py"); file.copy(file.path(CR, "02_Infrastructure/axiom/lcode_validity.py"), vp, overwrite = TRUE)
 op <- mk("06_Registry/round_outcomes.jsonl")
+## τ_D 정본(behavior_card.json::tau_d) — 색인의 결과 원장 읽기는 설계 입력과 같은 처방 입력 검사를 쓴다(없으면 fail-closed 로 전부 빠진다 · 11-10(2))
+invisible(file.copy(file.path(CR, "06_Registry/behavior_card.json"), mk("06_Registry/behavior_card.json")))
 writeLines(as.character(toJSON(list(schema = "round_outcome_v1", kind = "round", at = "2026-11-09T10:00:00+0900", program = "P2_DEFENSE", round_id = "P2R90",
   template = "p2_device", epoch = "all_hyg_px1000_2000_v1", verdict_label = "기각", n_cells = 3, n_variants = 2, note = "해석",
   probes = list("하락 국면 노출 경로", "위기 분해"), lessons = list("모멘텀 붕괴 구간에서 방어 장치가 늦다"), r7 = "noise"), auto_unbox = TRUE)), op)
@@ -86,6 +90,17 @@ chk(identical(ent$key_metrics$reject_codes, "d_dd_capture_median_vis;uc_vis") &&
     "I4c 사유는 코드만 · 보는 창 수치(0.031)는 옮기지 않는다")
 chk(grepl("all_hyg_px1000_2000_v1", Filter(function(e) identical(e$strategy_id, "RO_P2R90"), x$entries)[[1]]$hypothesis_signature, fixed = TRUE),
     "I4d 결과 원장 항목 서명에 측정 축 epoch")
+## I4e (2026-11-10 감사 U11) 측정 실패로 포기한 걸음 = STEP_ABANDONED(가설 기각 아님) · 기각 사유 코드에 싣지 않는다. 같은 원장의 진짜 기각은 그대로.
+abd <- file.path(S, "abn_chain", "P4C_ABN"); dir.create(abd, recursive = TRUE, showWarnings = FALSE)
+writeLines(c(
+  '{"event":"step_open","k":1,"block_type":"overlay","hypothesis":"포기 걸음 시험","mechanism":"m","at":"2026-11-10T10:00:00"}',
+  '{"event":"step_result","k":1,"decision":"reject","abandoned":true,"reasons":["measure_failed: 3회"]}',
+  '{"event":"step_open","k":2,"block_type":"overlay","hypothesis":"기각 걸음 시험","mechanism":"m","at":"2026-11-10T11:00:00"}',
+  '{"event":"step_result","k":2,"decision":"reject","reasons":["uc_vis: x"]}'), file.path(abd, "steps.jsonl"), useBytes = TRUE)
+pa <- q(E$.hi_parse_chain_steps(file.path(abd, "steps.jsonl"), root = S))
+va <- vapply(pa, function(e) e$verdict, ""); ca <- vapply(pa, function(e) e$key_metrics$reject_codes, "")
+chk(identical(va, c("STEP_ABANDONED", "STEP_REJECT")) && identical(ca, c("", "uc_vis")),
+    "I4e 포기 걸음 = STEP_ABANDONED · 사유 코드 비움 / 진짜 기각 = STEP_REJECT · 코드 유지", paste(va, ca, collapse = " | "))
 
 cat("\n[I5] stale 감지\n")
 Sys.setFileTime(IDX, Sys.time() - 60); Sys.setFileTime(op, Sys.time())
@@ -145,6 +160,60 @@ for (n in names(old_env)) if (is.na(old_env[[n]])) Sys.unsetenv(n) else do.call(
 st <- attr(out, "status") %||% 0L
 chk(st == 0L && any(grepl("^\\[hypothesis_index\\] [0-9]+ hits \\(FAIL", out)) && !any(grepl("Error|unexpected", out)),
     "I11c CLI lookup regime --no-rebuild = 종료 0 · 요약 1줄 · 오류 없음", paste(utils::tail(out, 3), collapse = " | "))
+
+cat("\n[I12] 수확 뒤 철회 — corpus 사본도 색인에서 빠진다(11-10(2) 감사 U11 · 철회 수리 나머지 절반)\n")
+S2 <- paste0(S, "_hv")
+mk2 <- function(rel) { p <- file.path(S2, rel); dir.create(dirname(p), recursive = TRUE, showWarnings = FALSE); p }
+lc2 <- function(id, sid, txt) list(l_code = id, strategy_id = sid, grade = "F", lesson_text = txt, research_mode = "paper_replication", mtime = "2026-11-01T00:00:00")
+cp2 <- mk2(".cache/lcode_corpus.json")
+write_json(list(lcodes = list(lc2("L-HV-1", "RP_HV_1", "harvested then retracted carry"), lc2("L-HV-2", "RP_HV_2", "harvested valid carry"),
+                              lc2("L-HV-3", "RP_HV_3", "listed in both carry")),
+                invalidated_lcodes = list(list(l_code = "L-HV-3", why = "retracted_by"))), cp2, auto_unbox = TRUE)
+Sys.setFileTime(cp2, old)
+h1 <- mk2("stage_artifacts/l_code/paper_replication/l_code_RP_HV_1.json")   # 수확 뒤(mtime > corpus) 철회 표식을 단 원본
+write_json(list(l_code = "L-HV-1", strategy_id = "RP_HV_1", grade = "F", lesson_text = "harvested then retracted carry", research_mode = "paper_replication",
+                metric_type = "backtested", pit_invalid = TRUE, retracted_by = "L-HV-FIX", retracted_at = "2026-11-09"), h1, auto_unbox = TRUE)
+invisible(file.copy(file.path(CR, "02_Infrastructure/axiom/lcode_validity.py"), mk2("02_Infrastructure/axiom/lcode_validity.py"), overwrite = TRUE))
+x12 <- q(E$build_hypothesis_index(root = S2, out_path = file.path(S2, "idx.json"), verbose = FALSE))
+ids12 <- vapply(x12$entries, function(e) e$strategy_id, "")
+chk(!("RP_HV_1" %in% ids12) && "RP_HV_2" %in% ids12, "I12a 수확 뒤 철회된 L-code 는 corpus 사본으로도 색인되지 않는다 · 유효한 것은 남는다", paste(ids12, collapse = ","))
+chk(!("RP_HV_3" %in% ids12), "I12b corpus.invalidated_lcodes 에 있는 키는 corpus lcodes 에 같이 있어도 뺀다(모든 추가 경로에 같은 철회 집합)")
+chk(identical(x12$coverage$lcode_corpus_retracted_excluded, 2L), "I12c coverage = corpus 사본 제외 2", paste(x12$coverage$lcode_corpus_retracted_excluded %||% "NULL"))
+src12 <- readLines(HI, warn = FALSE, encoding = "UTF-8")
+tgt12 <- "      if (nzchar(k) && k %in% lc_retracted) { cov$lcode_corpus_retracted_excluded <- cov$lcode_corpus_retracted_excluded + 1L; next }"
+mut12 <- file.path(S2, "hi_mut12.R"); writeLines(src12[src12 != tgt12], mut12, useBytes = TRUE)
+chk(sum(src12 == tgt12) == 1L, "I12d 치환 1곳 성사")
+xm12 <- q(load_hi(mut12)$build_hypothesis_index(root = S2, out_path = file.path(S2, "mut_idx.json"), verbose = FALSE))
+chk("RP_HV_1" %in% vapply(xm12$entries, function(e) e$strategy_id, ""), "I12e [돌연변이] 건너뛰기 줄을 지우면 철회된 corpus 사본이 다시 색인된다")
+unlink(S2, recursive = TRUE)
+
+cat("\n[I13] 결과 원장 — 설계 입력과 같은 규율(격리 · 처방 입력 미통과 줄 제외 · 반파 줄 경고 · 11-10(2) 감사 U11)\n")
+S3 <- paste0(S, "_ro"); dir.create(file.path(S3, "06_Registry"), recursive = TRUE, showWarnings = FALSE)
+invisible(file.copy(file.path(CR, "06_Registry/behavior_card.json"), file.path(S3, "06_Registry/behavior_card.json")))
+op3 <- file.path(S3, "06_Registry/round_outcomes.jsonl")
+rec3 <- function(id, lesson) as.character(toJSON(list(schema = "round_outcome_v1", kind = "round", at = "2026-11-09T10:00:00+0900", program = "P2_DEFENSE",
+  round_id = id, template = "p2_device", epoch = "all_hyg_px1000_2000_v1", verdict_label = "기각", n_cells = 2, n_variants = 1, note = "해석",
+  probes = list("탐침 하나", "탐침 둘"), lessons = list(lesson), r7 = "noise"), auto_unbox = TRUE))
+writeLines(c(rec3("P2R71", "깨끗한 교훈 carry"), rec3("P2R72", "전기간 A등급 후보 carry"), rec3("P2R73", "격리할 교훈 carry"),
+             '{"schema":"round_outcome_v1","kind":"round",'), op3, useBytes = TRUE)
+RE <- new.env(parent = globalenv())
+for (f in c("util.R", "standing.R", "outcomes.R")) q(sys.source(file.path(CR, "04_Research/programs/_lib/round_core/v1", f), envir = RE))
+invisible(RE$rc_outcomes_quarantine(op3, 3L, "시험 — 격리"))
+w13 <- character(0)
+x13 <- withCallingHandlers(suppressMessages(E$build_hypothesis_index(root = S3, out_path = file.path(S3, "idx.json"), verbose = FALSE)),
+                           warning = function(w) { w13 <<- c(w13, conditionMessage(w)); invokeRestart("muffleWarning") })
+ids13 <- vapply(x13$entries, function(e) e$strategy_id, "")
+chk("RO_P2R71" %in% ids13 && !("RO_P2R72" %in% ids13) && !("RO_P2R73" %in% ids13), "I13a 깨끗한 줄만 색인 · 미통과(A등급 · 전기간) · 격리 줄은 빠진다", paste(ids13, collapse = ","))
+cv13 <- x13$coverage
+chk(identical(cv13$v102_outcomes_input_excluded, 1L) && identical(cv13$v102_outcomes_quarantined, 1L) && identical(cv13$v102_outcomes_bad_lines, 1L),
+    "I13b coverage = 미통과 1 · 격리 1 · 반파 1(따로 센다)", paste(cv13$v102_outcomes_input_excluded %||% "NULL", cv13$v102_outcomes_quarantined %||% "NULL", cv13$v102_outcomes_bad_lines %||% "NULL"))
+chk(any(grepl("반파|판독 불가", w13)), "I13c 반파 줄은 조용히 버리지 않고 경고", paste(w13, collapse = " | "))
+src13 <- readLines(HI, warn = FALSE, encoding = "UTF-8"); tgt13 <- "  rd <- .hi_outcome_recs(path, root)"
+mut13 <- file.path(S3, "hi_mut13.R"); writeLines(sub(tgt13, "  rd <- list(recs = .hi_jsonl(path))", src13, fixed = TRUE), mut13, useBytes = TRUE)
+chk(sum(src13 == tgt13) == 1L, "I13d 치환 1곳 성사")
+xm13 <- q(load_hi(mut13)$build_hypothesis_index(root = S3, out_path = file.path(S3, "mut_idx.json"), verbose = FALSE))
+chk("RO_P2R72" %in% vapply(xm13$entries, function(e) e$strategy_id, ""), "I13e [돌연변이] 공용 읽기를 원래 직접 읽기로 되돌리면 미통과 줄이 다시 색인된다")
+unlink(S3, recursive = TRUE)
 
 unlink(S, recursive = TRUE)
 cat(sprintf('{"test":"test_scn_knowledge_index","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))

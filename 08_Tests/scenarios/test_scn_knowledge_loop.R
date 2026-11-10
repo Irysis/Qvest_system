@@ -15,6 +15,8 @@
 #   L11 (11-10(2) 감사 U11) 교훈 · 탐침 · 라벨의 흔한 등급 표기(A등급 · B→A · A급) · τ_D 뒤 연도(2023~2025 · 23년 · Mar 2023 · 20230315 ·
 #       2023H1 · FY2024) · 시험 창 수치 → 기록 거부 / τ_D 이전 연도 · 칸 · 블록 라벨은 받음 / 옛 나쁜 줄은 처방 입력 읽기만 빼고 건수 경고
 #   K1 계기: 주별 표(라운드 1 · 사슬 1 · 탐침) · 개정 근거로 안 쓴 사슬 1 → 근거 등록 뒤 0 · 허용 목록 밖 열 거부(돌연변이)
+#   K2 (11-10(2) 감사 U11) 사전 감사 1차 통과율 = 논문별 첫 검사 verdict=pass / 논문 수 · 재시도 뒤 통과 · 회차 소진 · 키 없음 따로 · 빈 저널 NA
+#   K3 (11-10(2) 감사 U11) 계기의 결과 원장 읽기 = 설계 입력과 같은 규율(격리 · 처방 입력 미통과 줄 제외 · 건수 따로 · 반파 줄 경고)
 #==============================================================================
 suppressPackageStartupMessages({ library(jsonlite); library(data.table) })
 self <- sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE)[1])
@@ -170,8 +172,9 @@ tb2 <- tb; tb2$cagr <- 0.2
 chk(grepl("허용 목록 밖", err(klm_assert_clean(tb2))), "K1d [돌연변이] 성과 열(cagr)이 끼면 거부")
 # 레인 저널 · 걸음 원장 · 상설 원장 합성
 LL <- file.path(S, "lane.jsonl"); now <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S+0900")
-writeLines(c(sprintf('{"ts":"%s","event":"preaudit","rc":"0","result":"action=proceed"}', now),
-             sprintf('{"ts":"%s","event":"preaudit","rc":"10","result":"action=reimplement"}', now),
+## 레인 저널 실제 형식(rf_replication_auto.sh jl preaudit — rc · result = rf_preaudit.py --gate 마지막 줄 · paper 키) — 11-10(2) 1차 통과 정의가 논문 키를 쓴다
+writeLines(c(sprintf('{"ts":"%s","event":"preaudit","rc":"0","result":"action=proceed verdict=pass why=pass n_fail=0 codes=","paper":"PX1"}', now),
+             sprintf('{"ts":"%s","event":"preaudit","rc":"10","result":"action=reimplement verdict=findings why=findings n_fail=1 codes=x","paper":"PX2"}', now),
              sprintf('{"ts":"%s","event":"fidelity_audit_verdict","action":"proceed","retries":0}', now)), LL)
 SL <- file.path(S, "stage_artifacts/programs/P1_RETURN/P1S01/standing_ledger.jsonl"); dir.create(dirname(SL), recursive = TRUE, showWarnings = FALSE)
 writeLines(sprintf('{"schema":"rc_standing_ledger_v1","at":"%s","event":"verdict","code":"e1","qualify":true}', now), SL)
@@ -180,6 +183,48 @@ chk(tb3$standing_qualified == 1L &&
       tb3$preaudit_n == 2L && tb3$first_pass_rate == 0.5 && tb3$fidelity_first_pass == 1L, "K1e 상설 자격 · 1차 통과율(걸음 지표는 rxg_scorecard 정본)",
     paste(capture.output(print(tb3)), collapse = " / "))
 chk(!any(grepl("(^|_)(ds|cagr|sharpe|calmar|grade|mdd)(_|$)", names(tb3), ignore.case = TRUE)), "K1f 출력 열에 성과 수치 없음")
+
+cat("\n[K2] 사전 감사 1차 통과율 = 논문별 첫 사전 감사(11-10(2) 감사 U11 — 재시도 · 회차 소진 통과는 1차 통과가 아니다)\n")
+safe <- function(expr) tryCatch(isTRUE(expr), error = function(e) FALSE)
+LL2 <- file.path(S, "lane2.jsonl")
+pa <- function(paper, rc, res) if (is.na(paper)) sprintf('{"ts": "%s", "event": "preaudit", "rc": "%s", "result": "%s"}', now, rc, res) else
+  sprintf('{"ts": "%s", "event": "preaudit", "rc": "%s", "result": "%s", "paper": "%s"}', now, rc, res, paper)
+writeLines(c(pa("P1", "10", "action=reimplement verdict=findings why=findings n_fail=2 codes=x"),     # P1 첫 검사 지적 → 보정 뒤 통과(재시도 통과)
+             pa("P1", "0", "action=proceed verdict=pass why=pass n_fail=0 codes="),
+             pa("P2", "0", "action=proceed verdict=pass why=pass n_fail=0 codes="),                   # P2 첫 검사 통과(1차 통과) · 같은 논문 재실행
+             pa("P2", "0", "action=proceed verdict=pass why=pass n_fail=0 codes="),
+             pa("P3", "0", "action=proceed verdict=findings why=rounds_exhausted n_fail=1 codes=y"),  # P3 회차 소진 진행(rc 0 · fail-open) — 통과 아님
+             pa(NA, "0", "action=proceed verdict=pass why=pass n_fail=0 codes=")), LL2)                # 논문 키 없음 — 분모 밖 · 따로 센다
+t2 <- klm_weekly(klm_collect(S, outcomes_path = OP, standing_files = character(0), lane_log = LL2), 1)
+chk(safe(t2$preaudit_n == 3L && t2$preaudit_pass == 1L && t2$first_pass_rate == round(1 / 3, 3)),
+    "K2a 분모 = 논문 3 · 분자 = 첫 검사 verdict=pass 1(P2) — 사건 단위 rc 0(5/6)이 아니다", paste(capture.output(print(t2)), collapse = " / "))
+chk(safe(t2$preaudit_retry_pass == 1L && t2$preaudit_exhausted == 1L && t2$preaudit_unkeyed == 1L && t2$preaudit_events == 6L),
+    "K2b 재시도 뒤 통과 1 · 회차 소진 1 · 논문 키 없음 1 · 사건 6 을 따로 싣는다")
+t2e <- klm_weekly(klm_collect(S, outcomes_path = file.path(S, "none2.jsonl"), standing_files = character(0), lane_log = file.path(S, "none3.jsonl")), 1)
+chk(safe(t2e$preaudit_n == 0L && is.na(t2e$first_pass_rate)), "K2c 빈 저널 → 1차 통과율 NA(0 으로 접지 않는다)")
+chk(safe(any(grepl("1차 통과 1/3(0.33) · 재시도 뒤 통과 1 · 회차 소진 1 · 사건 6 · 키 없음 1", klm_format(t2), fixed = TRUE))),
+    "K2d 형식화 출력에 분자/분모 · 따로 센 열", paste(klm_format(t2), collapse = " / "))
+
+cat("\n[K3] 계기 = 설계 입력과 같은 규율 — 격리 · 처방 입력 미통과 줄 제외 · 건수 따로(11-10(2) 감사 U11)\n")
+OPk <- file.path(S, "k3_outcomes.jsonl"); invisible(file.copy(OP, OPk))
+bk <- rec_of("P4C95", program = "P4_ASSEMBLY", template = "p4_chain", probes = c("k3 탐침 하나", "k3 탐침 둘"), lessons = "교훈 자리"); bk$lessons <- list(U11)
+.rc_outcome_write(bk, OPk)                                                                   # 옛 나쁜 줄(쓰기 검사 우회)
+.rc_outcome_write(rec_of("P2R96", probes = c("격리 탐침 하나", "격리 탐침 둘"), lessons = "격리될 교훈"), OPk)
+invisible(rc_outcomes_quarantine(OPk, length(readLines(OPk, warn = FALSE)), "시험 — 격리"))
+evk <- suppressWarnings(klm_collect(S, outcomes_path = OPk, standing_files = character(0), lane_log = file.path(S, "none.jsonl")))
+snk <- klm_snapshot(evk, S, generator_path = GP)
+sn0 <- klm_snapshot(suppressWarnings(klm_collect(S, outcomes_path = OP, standing_files = character(0), lane_log = file.path(S, "none.jsonl"))), S, generator_path = GP)
+chk(safe(snk$closed_rounds_total == sn0$closed_rounds_total && snk$open_probes == sn0$open_probes),
+    "K3a 미통과 줄 · 격리 줄은 닫힌 라운드 누계 · 열린 탐침에 들지 않는다", sprintf("%s/%s vs %s/%s", snk$closed_rounds_total, snk$open_probes, sn0$closed_rounds_total, sn0$open_probes))
+chk(safe(snk$excluded$input_check == 1L && snk$excluded$quarantined == 1L && identical(unlist(snk$excluded$input_check_ids), "P4C95")),
+    "K3b 뺀 건수 따로(처방 입력 미통과 1 = P4C95 · 격리 1)")
+chk(safe(sum(klm_weekly(evk, 1)$chains_closed) == sum(klm_weekly(suppressWarnings(klm_collect(S, outcomes_path = OP, standing_files = character(0),
+      lane_log = file.path(S, "none.jsonl"))), 1)$chains_closed)), "K3c 주별 표 사슬 닫힘에도 미통과 줄이 들지 않는다")
+chk(safe(any(grepl("처방 입력 검사 미통과 1(P4C95)", klm_format(klm_weekly(evk, 1), snk), fixed = TRUE))), "K3d 형식화 출력에 뺀 줄 경고")
+OPh <- file.path(S, "k3_half.jsonl"); invisible(file.copy(OP, OPh)); cat("{\"schema\":\"round_outcome_v1\",\"kind\":\"round\",\n", file = OPh, append = TRUE)
+wk3 <- character(0); invisible(withCallingHandlers(klm_collect(S, outcomes_path = OPh, standing_files = character(0), lane_log = file.path(S, "none.jsonl")),
+                                                    warning = function(w) { wk3 <<- c(wk3, conditionMessage(w)); invokeRestart("muffleWarning") }))
+chk(any(grepl("반파", wk3)), "K3e 반파 줄은 조용히 버리지 않고 경고(건수)", paste(wk3, collapse = " | "))
 
 unlink(S, recursive = TRUE)
 cat(sprintf('{"test":"test_scn_knowledge_loop","pass":%d,"fail":%d,"total":%d,"gap":%d}\n', PASS, FAIL, PASS + FAIL, GAP))

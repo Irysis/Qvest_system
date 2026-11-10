@@ -76,19 +76,13 @@ ROOT <- .cd_root()
   st <- .cd_read_json(file.path(ROOT, "06_Registry", "axiom_engine_status.json"), NULL)
   !is.null(st) && identical(st[["promotion_enabled"]], FALSE)
 }
-## 결과 원장의 열린 탐침(이어받지 않은 것) — round_core v1/outcomes.R::rc_open_probes 와 같은 정의(읽기만 · 손상 줄은 건너뛰고 계기가 따로 센다)
-.cd_open_probes <- function(path) {
-  if (!file.exists(path)) return(character(0))
-  R <- Filter(Negate(is.null), lapply(readLines(path, warn = FALSE, encoding = "UTF-8"), function(s)
-    tryCatch(jsonlite::fromJSON(s, simplifyVector = FALSE), error = function(e) NULL)))
-  R <- Filter(function(r) identical(r$schema, "round_outcome_v1"), R)
-  used <- vapply(Filter(function(r) identical(r$kind, "probe_consumed"), R), function(r) as.character(r$ref %||% ""), "")
-  out <- character(0)
-  for (r in Filter(function(r) identical(r$kind %||% "round", "round"), R)) for (i in seq_along(r$probes)) {
-    ref <- sprintf("%s#%d", r$round_id, i)
-    if (!(ref %in% used)) out <- c(out, sprintf("%s (%s): %s", ref, r$program %||% "?", as.character(r$probes[[i]])))
-  }
-  out
+## 결과 원장의 열린 탐침(이어받지 않은 것) — 11-10(2) 감사 U11: 따로 다시 읽지 않는다. 계기(klm_collect)가 공용 읽기
+##   (knowledge_loop_metrics.R::klm_read_outcomes → round_core v1/outcomes.R::rc_open_probes · tau_clean = τ_D)로 읽은 값을 그대로 싣는다 —
+##   격리된 줄 · 처방 입력 검사 미통과 줄의 탐침은 설계 입력과 똑같이 빠지고, 뺀 건수 · 반파 줄 경고는 §1b 첫 줄(klm_format)에 실린다.
+.cd_open_probes <- function(ev) {
+  P <- ev$outcomes$open_probes
+  if (is.null(P)) stop("열린 탐침은 klm_collect 결과(ev$outcomes$open_probes)에서만 읽는다")
+  vapply(P, function(p) sprintf("%s (%s): %s", p$ref, p$program %||% "?", as.character(p$text)), "")
 }
 
 # ── jsonl 이벤트 로그 (b1_design 과 같은 싱크 규약 — 검사가 운영 로그를 오염 못 하게 분리) ──
@@ -322,7 +316,8 @@ cd_materials <- function(out_path) {
     sys.source(file.path(ROOT, "02_Infrastructure", "memory", "knowledge_loop_metrics.R"), envir = e)
     ev <- e$klm_collect(ROOT)
     c(e$klm_format(e$klm_weekly(ev, 2L), e$klm_snapshot(ev, ROOT)),
-      vapply(utils::head(.cd_open_probes(ev$outcomes_path), 10L), function(p) sprintf("- 열린 탐침 %s", p), ""))
+      vapply(utils::head(.cd_open_probes(ev), 10L), function(p) sprintf("- 열린 탐침 %s", p), ""),
+      "- (이 절에 없는 지표 — 사슬 걸음 채택률 · 걸음당 개선 · 되풀이 기각 등 — 는 재료에 없다: 계산 · 추정하지 말고 '미측정')")
   }, error = function(err) sprintf("⚠ 학습 고리 계기 실패: %s — digest 에 '미측정'으로 적어라", conditionMessage(err)))
   for (x in kl) ad("%s", x)
   ad("")
