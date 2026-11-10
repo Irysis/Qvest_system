@@ -81,6 +81,7 @@ _log() { echo "[edc $(date '+%H:%M:%S')] $*"; }
 
 # ── 1) 진행 중 리프레시 대기 ────────────────────────────────────────────────
 # 여기서 기다리지 않으면 아래 감사가 "갱신 중 스냅샷"을 재고, 그 판정으로 브리핑이 나간다.
+EDC_WAITED_S=0
 _wait_running() {
   local waited=0 pid
   while [ -d "$LOCKDIR" ]; do
@@ -94,7 +95,7 @@ _wait_running() {
       return 2
     fi
     [ "$waited" = 0 ] && _log "리프레시 진행 중(PID=$pid) — 완료까지 대기 (상한 ${MAX_WAIT}s)"
-    sleep 20; waited=$((waited + 20))
+    sleep 20; waited=$((waited + 20)); EDC_WAITED_S=$waited
   done
   [ "$waited" -gt 0 ] && _log "리프레시 완료 감지 (대기 ${waited}s)"
   return 0
@@ -247,6 +248,12 @@ if [ -f "$PLANNER" ]; then
 fi
 _ONLY=""; [ "$HEAL_PLAN" != "FULL" ] && _ONLY="$HEAL_PLAN"
 HEAL_TIMEOUT_S="${QVEST_EDC_HEAL_TIMEOUT_S:-$(( ${QVEST_EDC_HEAL_TIMEOUT_MIN:-150} * 60 ))}"
+# (11-10 적대적 검토 2차) 상한은 예약 작업 상한(192분)에서 역산한 값이라, 앞서 진행 중 리프레시를 기다린 시간(최대 MAX_WAIT 40분)을 뺀다 —
+#   안 빼면 대기 40 + 복구 150 + 감사 · 브리핑이 192분을 넘어 작업이 강제 종료되고 자손 정리 · 알림이 실행되지 않는다(11-10 사고 경로).
+#   초 단위 상한을 직접 준 경우(QVEST_EDC_HEAL_TIMEOUT_S — 시험 · 수동)는 그 값을 그대로 쓴다. 남는 시간이 10분 미만이면 10분.
+if [ -z "${QVEST_EDC_HEAL_TIMEOUT_S:-}" ] && [ "${EDC_WAITED_S:-0}" -gt 0 ]; then
+  HEAL_TIMEOUT_S=$(( HEAL_TIMEOUT_S - EDC_WAITED_S )); [ "$HEAL_TIMEOUT_S" -lt 600 ] && HEAL_TIMEOUT_S=600
+fi
 _edc_notify() {   # 1통 — 모의 발송기(QVEST_EDC_TG_MOCK=<파일>) · 무인 실행(QVEST_UNATTENDED=1)만 실발송 · 그 밖은 로그만
   if [ -n "${QVEST_EDC_TG_MOCK:-}" ]; then printf '%s\n' "$1" >> "$QVEST_EDC_TG_MOCK"; return 0; fi
   [ "${QVEST_UNATTENDED:-0}" = "1" ] || { _log "(발송 생략 — 무인 실행 아님) $1"; return 0; }

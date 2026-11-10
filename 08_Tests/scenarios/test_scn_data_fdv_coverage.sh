@@ -38,6 +38,13 @@ printf '{"schema":"factor_db_full_rebuild/v1","stamp":"20261109_114145","result"
 chk "V4 decision 없는 전체 재빌드 · all 항목이 덮음 → OK" OK "$( run "$B" >/dev/null; field status)"
 B=$(box v5); led "$B" "$E1"; dreg "$B" '{"id":"REP-A-20261110"}'; sub_ "$B" factor_subset_repair_20261110_090109.json 20261110_090109 성공 REP-A-20261110; fdb "$B" "2026-11-10 09:00"
 chk "V5 당월이 수리 완료보다 앞 → rc 3" 3 "$(run "$B")"; chk "V5 current_month old_code" "old_code(factor_db_202611.parquet)" "$(field current_month)"
+# (11-10 검토 2차) 기준 = 수리 실행 시작(요약 stamp) — 당월을 교체한 뒤 완료 시각을 적는 자연스러운 순서가 헛 GAP 이 되면 안 된다
+B=$(box v5b); led "$B" "$E1"; dreg "$B" '{"id":"REP-A-20261110"}'; sub_ "$B" factor_subset_repair_20261110_090109.json 20261110_090109 성공 REP-A-20261110; fdb "$B" "2026-11-10 10:30"
+chk "V5b 당월이 수리 시작(09:01) 뒤 · 완료 기록(11:26) 앞에 쓰임 → OK(새 코드가 쓴 파일)" "0 ok(factor_db_202611.parquet)" "$(run "$B") $(field current_month)"
+B=$(box v5c); led "$B" "$E1"; dreg "$B" '{"id":"REP-A-20261110"}'; fdb "$B" "2026-11-10 10:30"
+chk "V5c 수리 요약이 없으면 완료 시각 기준 그대로 → old_code" "3 old_code(factor_db_202611.parquet)" "$(run "$B") $(field current_month)"
+B=$(box v5d); led "$B" '{"id":"REP-A-20261110","completed_at":"2026-11-10T02:26:00Z","scope":{"factors":["X"]},"decision":"REP-A-20261110(도훈)"}'; dreg "$B" '{"id":"REP-A-20261110"}'; fdb "$B" "2026-11-10 11:00"
+chk "V5d 완료 시각이 UTC 표기(02:26Z = 11:26 KST) → 현지 시각으로 읽어 11:00 파일은 old_code(구판은 02:26 으로 읽어 OK)" "3 old_code(factor_db_202611.parquet)" "$(run "$B") $(field current_month)"
 B=$(box v6); led "$B" "$E1"; dreg "$B" '{"id":"OTHER-20261101"}'; sub_ "$B" factor_subset_repair_20261110_090109.json 20261110_090109 성공 REP-A-20261110; fdb "$B" "2026-11-10 11:30"
 chk "V6 결정 기록 누락 보고 · 판정은 OK" "OK REP-A-20261110" "$( run "$B" >/dev/null; echo "$(field status) $(field decision_unregistered)")"
 B=$(box v7)

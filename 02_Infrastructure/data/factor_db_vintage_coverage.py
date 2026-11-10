@@ -38,7 +38,14 @@ def _t(s):
     s = str(s or "").strip()
     if not s:
         return None
-    s = re.sub(r"([+-]\d{2}):?(\d{2})$", "", s)       # 원장 · 요약 모두 KST — 시간대 표기는 뗀다(계약 .fdv_time 과 같은 규칙)
+    # (11-10 검토 2차) 시간대 표기(+09:00 · Z)가 있으면 그 오프셋을 적용해 이 기계의 현지 시각(파일 mtime 과 같은 축)으로 바꾼다 —
+    #   구판은 표기를 떼기만 해서 KST 가 아닌 오프셋으로 적힌 완료 시각을 틀리게 읽었다(계약 .fdv_time 의 엄격 해석과 같은 방향).
+    if re.search(r"(Z|[+-]\d{2}:?\d{2})$", s):
+        try:
+            z = re.sub(r"Z$", "+00:00", s); z = re.sub(r"([+-]\d{2})(\d{2})$", r"\1:\2", z)
+            return datetime.fromisoformat(z).astimezone().replace(tzinfo=None)
+        except ValueError:
+            return None
     for f in ("%Y-%m-%dT%H:%M:%S", "%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M", "%Y%m%d_%H%M%S", "%Y-%m-%d"):
         try:
             return datetime.strptime(s, f)
@@ -88,16 +95,25 @@ def audit(root: str) -> dict:
         if not cov:
             unrecorded.append(s["file"])
     in_prog = [e.get("id") for e in entries if not str(e.get("completed_at") or "").strip()]
-    # M 당월 — 원장 최신 완료 시각 뒤에 당월 파일이 다시 쓰였나
+    # M 당월 — 원장 최신 수리 뒤에 당월 파일이 다시 쓰였나.
+    #   기준 시각 = 그 수리의 실행 시작(요약 stamp · 결정 id 로 짝) — 없으면 완료 시각. (11-10 검토 2차) 구판은 완료 시각만 봐서,
+    #   자연스러운 순서(당월 교체 → 완료 시각 기록)로 수리를 마치면 파일이 완료 시각보다 앞서 매일 밤 헛 GAP 을 냈다.
+    #   수리 시작 뒤에 쓰인 당월 파일은 새 코드가 쓴 것이다(수리는 코드 수정 뒤에 시작한다).
     done = [(_t(e.get("completed_at")), e.get("id")) for e in entries if _t(e.get("completed_at"))]
     cm = {"state": "na"}
     fdb = sorted(glob.glob(os.path.join(root, ".cache", "factor_db", "factor_db_[0-9][0-9][0-9][0-9][0-9][0-9].parquet")))
     if done and fdb:
         last_t, last_id = max(done)
+        last_e = next((e for e in entries if e.get("id") == last_id), {})
+        starts = [_t(x.get("stamp")) for x in summ if x.get("result") == "성공" and x.get("decision")
+                  and (x["decision"] == last_id or x["decision"] in str(last_e.get("decision") or ""))]
+        starts = [t for t in starts if t is not None and t <= last_t]
+        ref_t = min(starts) if starts else last_t
         f = fdb[-1]
         mt = datetime.fromtimestamp(os.path.getmtime(f))
-        cm = {"state": "ok" if mt >= last_t else "old_code", "file": os.path.basename(f),
-              "mtime": mt.strftime("%Y-%m-%dT%H:%M:%S"), "after": last_id}
+        cm = {"state": "ok" if mt >= ref_t else "old_code", "file": os.path.basename(f),
+              "mtime": mt.strftime("%Y-%m-%dT%H:%M:%S"), "after": last_id,
+              "basis": "repair_start" if starts else "completed_at"}
     # D 결정 기록
     dr_ids = set()
     try:

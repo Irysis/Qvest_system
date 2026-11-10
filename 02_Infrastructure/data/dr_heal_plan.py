@@ -29,7 +29,7 @@ DOWN = {
     "ingest": ["qw", "universe", "macro", "krf", "fdb"],
     "qw": ["universe", "macro", "krf", "fdb"],
     "universe": ["macro", "krf", "fdb"],
-    "macro": ["fdb"],
+    "macro": ["krf", "fdb"],   # krf([5c] FF 요인)의 무위험 금리 = macro 단계가 받는 ECOS 채권 금리(.cache/ecos_bond_rates.parquet) — 11-10 검토 2차
     "dart": ["krf", "fdb"],
     "krf": [], "fdb": [], "nonret": [],
 }

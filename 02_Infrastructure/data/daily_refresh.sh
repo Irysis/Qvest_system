@@ -19,16 +19,22 @@ set -uo pipefail
 #   읽던 자리가 밀려 엉뚱한 줄을 실행한다(09-18 exit_2 · 11-10 10:08 편집 → 실행 중 후처리 구문 오류). 시작 때 자신을
 #   임시 사본으로 떠서 사본을 exec 한다(같은 pid — 잠금 · 예약 작업 rc 불변). 원본 디렉터리는 QVEST_DR_SRC_DIR 로 넘긴다.
 #   사본 실패면 원본으로 계속(막지 않는다). 끄기: QVEST_DR_NO_SNAPSHOT=1 · 시험: 08_Tests/scenarios/test_scn_data_refresh_heal.sh
-if [ -z "${QVEST_DR_SNAPSHOT:-}" ] && [ "${QVEST_DR_NO_SNAPSHOT:-0}" != "1" ]; then
-  _dr_self="${BASH_SOURCE[0]:-$0}"
+#   ★사본 여부는 '표식 = 내 경로'로만 판정하고, 표식은 자식에게 물려주지 않는다(11-10 적대적 검토 2차). 구판은 표식을 export 해서
+#   [9] 시험 배터리 속 중첩 호출(시나리오 시험의 --dry-run)이 '이미 사본'으로 오인했다 — 사본 · 묵은 사본 정리를 건너뛰고 부모의 실행 사본을 지웠다.
+_dr_self="${BASH_SOURCE[0]:-$0}"
+if [ "${QVEST_DR_NO_SNAPSHOT:-0}" != "1" ] && [ "${QVEST_DR_SNAPSHOT:-}" != "$_dr_self" ]; then
   _dr_srcdir="$(cd "$(dirname "$_dr_self")" && pwd)"
   find "${TMPDIR:-/tmp}" -maxdepth 1 -name 'qm_dr_snapshot_*.sh' -mtime +2 -delete 2>/dev/null
   if _dr_snap="$(mktemp "${TMPDIR:-/tmp}/qm_dr_snapshot_XXXXXX.sh")" && cp "$_dr_self" "$_dr_snap"; then
-    export QVEST_DR_SNAPSHOT="$_dr_snap" QVEST_DR_SRC_DIR="$_dr_srcdir"
-    exec "${BASH:-bash}" "$_dr_snap" "$@"
+    QVEST_DR_SNAPSHOT="$_dr_snap" QVEST_DR_SRC_DIR="$_dr_srcdir" exec "${BASH:-bash}" "$_dr_snap" "$@"
   fi
 fi
-DR_SRC_DIR="${QVEST_DR_SRC_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)}"
+if [ -n "${QVEST_DR_SNAPSHOT:-}" ] && [ "${QVEST_DR_SNAPSHOT:-}" = "$_dr_self" ] && [ -n "${QVEST_DR_SRC_DIR:-}" ]; then
+  DR_SNAPSHOT="$QVEST_DR_SNAPSHOT"; DR_SRC_DIR="$QVEST_DR_SRC_DIR"
+else
+  DR_SNAPSHOT=""; DR_SRC_DIR="$(cd "$(dirname "$_dr_self")" && pwd)"   # 사본이 아니다(사본 끔 · 사본 실패 · 부모에게 물려받은 남의 표식)
+fi
+unset QVEST_DR_SNAPSHOT QVEST_DR_SRC_DIR   # 자식(배터리 · 후처리)에게 새지 않게
 DR_DRYRUN=0; for _a in "$@"; do [ "$_a" = "--dry-run" ] && DR_DRYRUN=1; done
 
 if [ "$DR_DRYRUN" = "0" ]; then
@@ -37,7 +43,7 @@ exec > >(tee -a "$LOGFILE") 2>&1
 fi
 
 echo "=== Daily Refresh v2 @ $(date) ==="
-[ -n "${QVEST_DR_SNAPSHOT:-}" ] && echo "[snapshot] 실행 사본 $QVEST_DR_SNAPSHOT (원본 $DR_SRC_DIR/daily_refresh.sh — 실행 중 편집 무관)"
+[ -n "$DR_SNAPSHOT" ] && echo "[snapshot] 실행 사본 $DR_SNAPSHOT (원본 $DR_SRC_DIR/daily_refresh.sh — 실행 중 편집 무관)"
 
 # ── 재진입 가드 (2026-06-11): 동시 2+ 인스턴스가 DART 쿼터 소진(10905종목 × N중복)·캐시 경합 유발 ──
 #   실증: 2026-06-10 21:31/21:32 + 06-11 00:03/07:55/08:24 — 12시간 내 5중복 관측
@@ -146,7 +152,11 @@ dr_stage_end() {
 _dr_js() { printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'; }
 dr_state_write() {   # $1 = running | done · $2 = 종료 코드(done 때)
   [ "$DR_DRYRUN" = "1" ] && return 0
-  local f="${QVEST_DR_STATE:-$BASE/.cache/daily_refresh_state.json}" tmp i s="" fl=""
+  local f="${QVEST_DR_STATE:-$BASE/.cache/daily_refresh_state.json}" tmp i s="" fl="" cur=""
+  # (11-10 적대적 검토 2차) 더 늦게 시작한 실행의 상태는 덮지 않는다 — 밤 실행은 잠금을 푼 뒤에도 후처리 · 배터리를 돌며 이 파일을 쓰는데,
+  #   그 사이 시작한 아침 자가 복구의 기록(mode selfheal · reported)을 밤 실행의 마지막 쓰기가 덮으면 보고 판정과 다음 계획이 밤 상태로 되돌아간다.
+  [ -f "$f" ] && cur="$(sed -n 's/.*"started_at":"\([^"]*\)".*/\1/p' "$f" 2>/dev/null | head -n 1)"
+  if [ -n "$cur" ] && [ "$cur" \> "$DR_RUN_AT" ]; then echo "[state] 더 늦게 시작한 실행($cur)이 상태 파일을 쓰고 있다 — 이 실행($DR_RUN_AT)은 덮어쓰지 않음"; return 0; fi
   for i in "${DR_STAGE_REC[@]+"${DR_STAGE_REC[@]}"}"; do s="$s${s:+,}{\"name\":\"${i%%:*}\",\"status\":\"$(printf '%s' "$i" | cut -d: -f2)\",\"sec\":${i##*:}}"; done
   for i in "${DR_FAILED[@]+"${DR_FAILED[@]}"}"; do fl="$fl${fl:+,}\"$(_dr_js "$i")\""; done
   tmp="$f.tmp$$"
@@ -158,7 +168,8 @@ dr_state_write() {   # $1 = running | done · $2 = 종료 코드(done 때)
 #   러너 계약(테스트 레인): QVEST_BATTERY_TIER=nightly|weekly. 층을 모르는 옛 러너는 변수를 무시하고 전체를 돈다(깨지지 않는다).
 dr_battery_tier() {
   [ -n "${QVEST_BATTERY_TIER:-}" ] && { echo "$QVEST_BATTERY_TIER"; return; }
-  local now_s dow; now_s=$(date -d "${QVEST_DR_NOW:-now}" +%s 2>/dev/null || date +%s)
+  # 기준 시각 = 체인 시작(DR_RUN_T0) — 배터리 시작 시각으로 재면 적재가 6시간 넘게 걸린 일요일 00:03 체인이 nightly 로 접힌다(11-10 검토 2차)
+  local now_s dow; if [ -n "${QVEST_DR_NOW:-}" ]; then now_s=$(date -d "$QVEST_DR_NOW" +%s 2>/dev/null || date +%s); else now_s="${DR_RUN_T0:-$(date +%s)}"; fi
   dow=$(date -d "@$(( now_s - 21600 ))" +%u 2>/dev/null || date +%u)
   [ "$dow" = "${QVEST_BATTERY_WEEKLY_DOW:-6}" ] && echo weekly || echo nightly
 }
@@ -173,7 +184,7 @@ if [ "$DR_DRYRUN" = "1" ]; then
   for _s in $DR_STAGES_ORDER; do dr_selected "$_s" && echo "DR_PLAN	$_s	run" || echo "DR_PLAN	$_s	skip"; done
   echo "DR_PLAN	verify	run"; echo "DR_PLAN	report	run"
   [ "$DR_MODE" = "selfheal" ] && echo "DR_PLAN	post	skip" || echo "DR_PLAN	post	run"
-  [ -n "${QVEST_DR_SNAPSHOT:-}" ] && rm -f "$QVEST_DR_SNAPSHOT" 2>/dev/null
+  [ -n "$DR_SNAPSHOT" ] && rm -f "$DR_SNAPSHOT" 2>/dev/null
   exit 0
 fi
 
@@ -1092,6 +1103,7 @@ cd "$INFRA"
 export DR_FAILED_SO_FAR="$(dr_fail_summary)"
 # ★v10.4 (2026-09-24) [0c] 가 낸 적재 미달 항목명(숫자 없는 이름) — [7] 실패 서명의 재료(dr_fail_signature.R).
 export DR_STALE_NAMES="${DR_STALE_NAMES:-}"
+export QVEST_DR_TGSENT_NAME="dr_tgsent_$$.txt"; rm -f "$BASE/.cache/$QVEST_DR_TGSENT_NAME" 2>/dev/null
 run_r '
   library(data.table)
   source("config.R")
@@ -1135,12 +1147,17 @@ run_r '
                error = function(e) cat("[7] 서명 상태 기록 실패:", conditionMessage(e), "\n"))
     }
     cat(sprintf("[7] tg_sent=%s reported=%s\n", if (.ok) "TRUE" else "FALSE", .fails))
+    # (11-10 검토 2차) 발송 성사를 셸에 알린다 — 상태 파일의 reported 는 실제로 나간 보고만 센다
+    .tgf <- Sys.getenv("QVEST_DR_TGSENT_NAME", ""); if (nzchar(.tgf)) try(writeLines(if (.ok) "TRUE" else "FALSE", file.path("..", ".cache", .tgf)), silent = TRUE)
   } else {
     cat("[tg guard] QVEST_REFRESH_TG=0 — 발송 skip. msg:\n", msg, "\n")
     cat(sprintf("[7] tg_sent=SKIPPED reported=%s\n", .fails))
   }
 '
-DR_REPORTED=1; dr_state_write running
+# reported = [7] 보고가 실제로 발송됐을 때만 1(구판은 R 블록이 죽거나 발송이 실패해도 1 → 자가 복구의 알림 · 사후 감사가 모두 꺼져 0통)
+#   발송 성사 표식 = R 블록이 .cache/<이름> 에 TRUE|FALSE 를 적는다(R 은 /tmp 를 못 읽으므로 프로젝트 .cache · 블록의 작업 폴더 = $INFRA 기준 상대 경로).
+DR_REPORTED=0; [ "$(tr -d '\r\n ' < "$BASE/.cache/$QVEST_DR_TGSENT_NAME" 2>/dev/null)" = "TRUE" ] && DR_REPORTED=1
+rm -f "$BASE/.cache/$QVEST_DR_TGSENT_NAME" 2>/dev/null; echo "[7] reported=$DR_REPORTED"; dr_state_write running
 
 # ── 후처리 · 배터리 — 자가 복구 실행이면 건너뛴다(밤 실행이 이미 돌렸다 · 11-10 아침 브리핑 5시간 40분 지연의 대부분) ──
 if [ "$DR_MODE" = "selfheal" ]; then
@@ -1258,7 +1275,7 @@ fi   # ── 후처리 · 배터리(자가 복구면 건너뜀) 끝 ──
 #   "Done" 이 무조건 찍히던 구판은 크론·bootstrap 어느 쪽에도 실패 신호를 주지 못했다.
 _dr_final_rc=0; [ "${#DR_FAILED[@]}" -gt 0 ] && _dr_final_rc=1
 dr_state_write done "$_dr_final_rc"
-[ -n "${QVEST_DR_SNAPSHOT:-}" ] && rm -f "$QVEST_DR_SNAPSHOT" 2>/dev/null   # 실행 사본 정리(실패해도 다음 실행이 2일 지난 사본을 지운다)
+[ -n "$DR_SNAPSHOT" ] && rm -f "$DR_SNAPSHOT" 2>/dev/null   # 실행 사본 정리(실패해도 다음 실행이 2일 지난 사본을 지운다)
 echo "[run] 총 소요 $(( $(date +%s) - DR_RUN_T0 ))초 · 모드 $DR_MODE${DR_ONLY:+ · 단계 $DR_ONLY}"
 if [ "${#DR_FAILED[@]}" -gt 0 ]; then
   echo "=== Daily Refresh v2 Done — ★실패 ${#DR_FAILED[@]}스텝: $(dr_fail_summary) @ $(date) ==="

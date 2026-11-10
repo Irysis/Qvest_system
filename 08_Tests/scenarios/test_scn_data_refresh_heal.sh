@@ -83,6 +83,8 @@ chk "P6 dart 만 실패 → dart,krf,fdb" "dart,krf,fdb" "$(plan)"
 chk "P7 모르는 낡은 항목 → FULL" FULL "$(plan --stale 'mystery(STALE)')"
 st 2026-11-10 full done "$(S ingest ok),$(S qw ok),$(S universe ok),$(S macro ok),$(S dart ok),$(S krf ok),$(S fdb ok),$(S nonret ok)"
 chk "P8 실패 0 · rawdata 낡음 → qw 와 하류" "qw,universe,macro,krf,fdb" "$(plan --stale 'rawdata(STALE,lag=3d)')"
+st 2026-11-10 full done "$(S ingest ok),$(S qw ok),$(S universe ok),$(S macro failed),$(S dart ok),$(S krf ok),$(S fdb ok),$(S nonret ok)"
+chk "P8b macro 만 실패 → macro 와 하류(krf 포함 — FF 요인의 무위험 금리가 macro 의 ECOS 금리)" "macro,krf,fdb" "$(plan)"
 n=$(sub1 "$PLN" "$TMP/plan_mut.py" '"qw": ["universe", "macro", "krf", "fdb"],' '"qw": [],')
 chk "P9 돌연변이 치환 1곳" 1 "$n"
 st 2026-11-10 full done "$ALLOK"
@@ -151,7 +153,7 @@ chk "K4b 돌연변이(트리 종료 무력화) → 자식 생존" ALIVE "$(kill 
 kill -KILL "${cpid:-0}" 2>/dev/null
 
 # ── X 실행 사본 ──
-awk '/^if \[ -z "\$\{QVEST_DR_SNAPSHOT:-\}" \] && \[ "\$\{QVEST_DR_NO_SNAPSHOT:-0\}" != "1" \]; then$/{f=1} f{print} f&&/^fi$/{exit}' "$DR" > "$TMP/snaphead.sh"
+awk '/^_dr_self="\$\{BASH_SOURCE\[0\]:-\$0\}"$/{f=1} f{print} f&&/^fi$/{exit}' "$DR" > "$TMP/snaphead.sh"
 chk "X0 사본 머리 추출" YES "$(grep -q 'exec "${BASH:-bash}" "$_dr_snap"' "$TMP/snaphead.sh" && echo YES || echo NO)"
 mkx() { rm -f "$TMP/x.started"; { echo '#!/usr/bin/env bash'; cat "$TMP/snaphead.sh"; echo ': > "$TMP/x.started"'; echo 'sleep 3'; echo 'echo LINE_A'; echo 'echo LINE_B'; } > "$TMP/x.sh"; }
 edit_mid() { local i=0; until [ -e "$TMP/x.started" ] || [ "$i" -ge 200 ]; do sleep 0.1; i=$((i+1)); done   # 머리(사본 exec)를 지난 뒤에 고친다 — 부하에서 경합 제거
@@ -166,4 +168,21 @@ chk "X4 dry-run 계획 — qw · fdb 만 run · 후처리 skip" "qw fdb post:ski
 : > "$TMP/qm_dr_snapshot_OLD000.sh"; touch -d "3 days ago" "$TMP/qm_dr_snapshot_OLD000.sh"
 ( cd "$PROJ" && TMPDIR="$TMP" bash "$DR" --dry-run >/dev/null 2>&1 )
 chk "X5 2일 지난 실행 사본은 다음 실행이 지운다" NO "$([ -e "$TMP/qm_dr_snapshot_OLD000.sh" ] && echo YES || echo NO)"
+# (11-10 적대적 검토 2차) 부모 체인의 표식을 물려받은 중첩 호출(밤 배터리 속 시나리오 시험) — 제 사본을 뜨고 · 부모 사본을 지우지 않고 · 묵은 사본 정리도 한다
+: > "$TMP/qm_dr_snapshot_PARENT.sh"; : > "$TMP/qm_dr_snapshot_OLD111.sh"; touch -d "3 days ago" "$TMP/qm_dr_snapshot_OLD111.sh"
+DRY2=$(cd "$PROJ" && TMPDIR="$TMP" QVEST_DR_SNAPSHOT="$TMP/qm_dr_snapshot_PARENT.sh" QVEST_DR_SRC_DIR="/nonexistent_parent_dir" bash "$DR" --dry-run 2>&1)
+chk "X6 물려받은 남의 표식 → 제 사본으로 돈다(부모 사본 경로가 아님) · 계획 출력 정상" YES "$(printf '%s\n' "$DRY2" | grep '^\[snapshot\] 실행 사본' | grep -vq 'qm_dr_snapshot_PARENT' && printf '%s\n' "$DRY2" | grep -q '^DR_PLAN' && echo YES || echo NO)"
+chk "X6b 부모 사본은 남는다 · 묵은 사본은 정리된다" "KEEP GONE" "$([ -e "$TMP/qm_dr_snapshot_PARENT.sh" ] && echo KEEP || echo LOST) $([ -e "$TMP/qm_dr_snapshot_OLD111.sh" ] && echo STAY || echo GONE)"
+chk "X7 표식을 자식에게 물려주지 않는다(export 없음 · unset 있음)" YES "$(! grep -q 'export QVEST_DR_SNAPSHOT' "$DR" && grep -q '^unset QVEST_DR_SNAPSHOT QVEST_DR_SRC_DIR' "$DR" && echo YES || echo NO)"
+# 보고 표식 — [7] 발송이 실제로 성사됐을 때만 reported=1 (구판: 무조건 1 → 발송 실패한 자가 복구가 0통으로 끝났다)
+awk '/^DR_REPORTED=0; \[/{print; exit}' "$DR" > "$TMP/rep.sh"
+rep_of() { ( BASE="$TMP/repb"; mkdir -p "$BASE/.cache"; QVEST_DR_TGSENT_NAME="t.txt"; rm -f "$BASE/.cache/t.txt"; [ "$1" = "-" ] || printf '%s\n' "$1" > "$BASE/.cache/t.txt"; DR_REPORTED=9; . "$TMP/rep.sh"; echo "$DR_REPORTED" ); }
+chk "R1 발송 성사(TRUE) → reported 1 · 실패(FALSE) → 0 · 표식 없음(R 블록 사망 · 발송 생략) → 0" "1 0 0" "$(rep_of TRUE) $(rep_of FALSE) $(rep_of -)"
+chk "R2 보고 표식 줄 추출 · 무조건 1 로 적는 구판 줄 없음" YES "$([ -s "$TMP/rep.sh" ] && ! grep -q '^DR_REPORTED=1; dr_state_write' "$DR" && echo YES || echo NO)"
+# 상태 파일 — 더 늦게 시작한 실행의 기록을 덮지 않는다
+awk '/^dr_state_write\(\) \{/{f=1} f{print} f&&/^\}$/{exit}' "$DR" > "$TMP/sw.sh"
+sw_of() { ( DR_DRYRUN=0; BASE="$TMP/swb"; mkdir -p "$BASE/.cache"; QVEST_DR_STATE="$BASE/.cache/st.json"; printf '{"schema":"daily_refresh_state_v1","started_at":"%s","mode":"selfheal","reported":1}\n' "$1" > "$QVEST_DR_STATE"
+  DR_STAGE_REC=(); DR_FAILED=(); DR_RUN_DATE=2026-11-10; DR_RUN_AT="2026-11-10T00:03:00"; DR_MODE=full; DR_ONLY=""; DR_REPORTED=0; DR_STALE_NAMES=""; _dr_js() { printf '%s' "$1"; }
+  . "$TMP/sw.sh"; dr_state_write done 1 >/dev/null; grep -o '"mode":"[a-z]*"' "$QVEST_DR_STATE" ); }
+chk "W1 더 늦게 시작한 자가 복구 상태(07:10)는 밤 실행(00:03)이 덮지 않는다 · 앞선 상태(어제)는 덮는다" '"mode":"selfheal" "mode":"full"' "$(sw_of 2026-11-10T07:10:00) $(sw_of 2026-11-09T00:03:00)"
 fin "$PASS" "$FAIL"
