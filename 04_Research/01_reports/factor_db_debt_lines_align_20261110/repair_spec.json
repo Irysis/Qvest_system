@@ -1,0 +1,16 @@
+{
+  "schema": "factor_subset_repair_spec/v1",
+  "decision": "FACTOR-DB-DEBT-LINE-PERIOD-ALIGN-20261110",
+  "title": "차입 두 줄 기간 완비(옛 차입 줄 섞임 수리)",
+  "why": "도훈 2026-11-10 '옛 차입 줄 섞임 — 여기서 고쳐줘'. 결함: 소비자는 항목마다 Factor_Date 최신 행을 따로 고르는데, 단기 · 장기차입금 줄 하나가 원천에서 빠지면 마지막 옛 값이 그 뒤 모든 달에 섞였다(2025-06 R18 vs Q16 차이 > 자산 1% = 781/3,513). 수리 = 병합기가 한 줄만 있는 기간의 없는 줄을 0 행으로 써 두 줄을 기간 완비로(병합 표 · 분기 표) + AC24 둘 다 없음 = NA.",
+  "targets_source": "같은 코드로 재무 표만 바꾼(정본 vs 후보) build_factor_db(save = FALSE) 3달(2012-06 · 2019-06 · 2025-06) 비교 — 세 달 모두 같은 19팩터가 바뀌었다(358~360 중). 여기에 두 줄을 따로 쓰거나 XF 채움으로 닿는 4팩터(AC02 · AC03 · AC16 = 단기 줄 변화량 · Q04 = XF 피오트로스키 채움)를 더했다 — 세 달에는 값 변화가 없었지만 다른 달에는 닿을 수 있다(같은 모듈이라 비용 추가 없음).",
+  "targets": [
+    "AC02_Total_Accruals_BS", "AC03_WC_Accruals", "AC04_NCO_Accruals", "AC05_NOA", "AC07_Operating_Accruals",
+    "AC08_Financial_Accruals", "AC09_NNI", "AC16_BS_vs_CF_Diff", "AC24_NOA_Growth",
+    "IN05_Net_Debt_Issuance", "Q04_Piotroski_F", "Q15_Debt_to_Equity",
+    "R17_Market_Leverage", "R18_Book_Leverage", "R19_Composite_Risk",
+    "V07_EV_EBITDA", "V13_EV_Sales", "V14_EBIT_EV", "V15_NetDebt_Adj_EP", "V19_Debt_to_Market", "V22_FCFF_EV",
+    "XF_LL01_DebtToCapital", "XF_LL02_NetDebt"
+  ],
+  "modules": ["value", "quality", "quality_xf_native", "accrual", "growth", "risk", "xlsx_fund"]
+}

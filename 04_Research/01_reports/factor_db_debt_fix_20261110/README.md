@@ -19,6 +19,8 @@
    정정 의심 연도: 차입 원계정 2 + 파생 9(`DEBT_ITEMS`)는 DART 기록에서 빼고 퀀티 값을 v2 가 미룬 날짜(다음 회계연도 사업보고서 뒤 · PIT 안전)로.
 2. `02_Infrastructure/data/fundamental_derive_items.R` — 둘 다 결측 = `TotalDebt` NA(행 없음 · 파생 함수가 NA 를 버린다). 한쪽만 있으면 다른 쪽 0
    (FnGuide 는 없는 줄을 0 으로 명시한다 — 재무상태표의 68~78% 에 0 이 명시된 차입 줄이 있다).
+   ★정정(같은 날 · `../factor_db_debt_lines_align_20261110/README.md`): 0 을 적는 것은 유동 두 줄(CurrentBorr · CurrentBonds)뿐이다 — 비유동 두 줄은
+   없으면 줄을 뺀다(두 줄 칸 140,568 중 DLTT = 0 은 0건). '한쪽만 있으면 다른 쪽 0' 규칙 자체는 이자발생부채 대조로 맞다(DLC 만 칸 중앙 비율 1.000).
 3. 팩터 모듈의 같은 결함(둘 다 결측 → 0): `compute_risk.R`(R17 · R18) · `compute_accrual.R`(AC05 · AC07 · AC09) · `compute_growth.R`(IN05) ·
    `xlsx_factor_calculator.R`(`.xf_debt` — XF_A02 · L01 · LL01 · LL02 · F-score 부채 성분).
 4. 재계산 도구: `rebuild_factor_subset.R` 수리 명세(`QVEST_RFS_SPEC`) · `run_factor_subset_repair.sh --no-wait`.
@@ -69,5 +71,6 @@
   2025-06 차입 성분이 최신 재무상태표보다 옛 기간인 종목 1,567 / 3,535(44%) · 저장된 R18(성분 합) 대 Q16(같은 기간 총부채 항목) 차이 > 자산의 1% =
   781 / 3,513(> 5% = 467 · 전부 R18 쪽이 부채가 더 크다). 예: 002290 Q16 0 대 R18 −0.0377(2001년 장기차입금 32억이 2025년에 섞임) ·
   001000 −0.4766 대 −0.5288. 수리 = 성분을 재무상태표와 같은 기간에서만 읽기(또는 기간 맞춘 TotalDebt 항목 사용) + 영향 팩터 재계산 — 별도 과제.
+  → 같은 날 수리(도훈 "여기서 고쳐줘"): 병합기가 한 줄만 있는 기간의 없는 줄을 0 행으로 써 두 줄을 기간 완비로 만든다 — `../factor_db_debt_lines_align_20261110/README.md`.
 - 일간 팩터 DB(`.cache/factor_db_daily/`)도 같은 재무 표를 읽는다 — 당월은 밤 증분이 고친 정본을 반영하지만 과거 달은 수동 전체 재빌드(수 시간)에서만 바뀐다.
 - 이 수리 전 팩터 DB 로 낸 판정 · 등급 중 위 27팩터를 쓴 것은 이 결함 위에 있다(decision_register FUND-V2-PRIOR-GRADES-REMEASURE-ON-CITE-20261109 와 같은 처리 — 인용 전 재측정).

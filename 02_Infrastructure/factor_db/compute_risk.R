@@ -199,8 +199,10 @@ compute_risk <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
     if (!is.null(lev_wide) && nrow(lev_wide) > 0L) {
       .sc_lw <- function(col) if (col %in% names(lev_wide)) lev_wide[[col]] else rep(NA_real_, nrow(lev_wide))
       # 2026-11-10: both debt lines absent = unknown (NA), not a debt-free firm — the old zero-fill gave R17/R18 = 0 to every
-      #   ticker without a debt line. One line present = the other is 0 (the vendor reports zero lines explicitly).
-      #   ShortTermBorr / LongTermBorr are DLC / DLTT incl. bonds since the same day (build_fundamental_merged_v2.R DEBT_TO).
+      #   ticker without a debt line. One line present = the other is 0 (the vendor omits nil non-current lines — 11-10 measured:
+      #   DLTT = 0 never appears). ShortTermBorr / LongTermBorr are DLC / DLTT incl. bonds since the same day (build_fundamental_merged_v2.R
+      #   DEBT_TO), and since 2026-11-10(2) the merged table writes the missing line's 0 row itself (period-complete debt lines) — the
+      #   latest row of each line now comes from the same period (before, a line that stopped being reported kept its last old value).
       std <- .sc_lw("ShortTermBorr"); ltd <- .sc_lw("LongTermBorr")
       td  <- fifelse(is.na(std) & is.na(ltd), NA_real_, fifelse(is.na(std), 0, std) + fifelse(is.na(ltd), 0, ltd))
       lev_wide[, TotalDebt := td]

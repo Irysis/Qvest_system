@@ -55,6 +55,40 @@
       "decision": "FACTOR-DB-TOTALDEBT-ZERO-REPAIR-20261110(도훈 11-10 '팩터 DB의 총부채(TotalDebt) 수리해 0으로 나와')",
       "note": "총부채 0 수리(결측 = 0 · 사채 누락 · 정정 의심 연도 차입) — 영향 27팩터 · 442달 재계산 11:15:32 '성공' · 이번 달(202611) 파일 재작성 11:26. 범위 = 그 27팩터(팩터 목록을 선언한 칸만 비켜 간다 · 임의 코드 엔진은 닿은 것으로 본다).",
       "evidence": "04_Research/01_reports/factor_db_debt_fix_20261110/{README.md,repair_spec.json,chain_state.json} · .cache/scheduler_logs/factor_subset_repair_20261110_090109.json(result 성공)"
+    },
+    {
+      "id": "FACTOR-DB-DEBT-LINE-PERIOD-ALIGN-20261110",
+      "completed_at": null,
+      "scope": {
+        "factors": [
+          "AC02_Total_Accruals_BS",
+          "AC03_WC_Accruals",
+          "AC04_NCO_Accruals",
+          "AC05_NOA",
+          "AC07_Operating_Accruals",
+          "AC08_Financial_Accruals",
+          "AC09_NNI",
+          "AC16_BS_vs_CF_Diff",
+          "AC24_NOA_Growth",
+          "IN05_Net_Debt_Issuance",
+          "Q04_Piotroski_F",
+          "Q15_Debt_to_Equity",
+          "R17_Market_Leverage",
+          "R18_Book_Leverage",
+          "R19_Composite_Risk",
+          "V07_EV_EBITDA",
+          "V13_EV_Sales",
+          "V14_EBIT_EV",
+          "V15_NetDebt_Adj_EP",
+          "V19_Debt_to_Market",
+          "V22_FCFF_EV",
+          "XF_LL01_DebtToCapital",
+          "XF_LL02_NetDebt"
+        ]
+      },
+      "decision": "FACTOR-DB-DEBT-LINE-PERIOD-ALIGN-20261110(도훈 11-10 '옛 차입 줄 섞임 — 여기서 고쳐줘')",
+      "note": "차입 두 줄 기간 완비(병합기가 한 줄만 있는 기간의 없는 줄을 0 행으로 · 병합 표 · 분기 표) + AC24 둘 다 없음 = NA — 영향 23팩터 전 기간 재계산 진행 중(completed_at 비움 = 범위에 닿는 측정 전부 낡음 · 끝나면 완료 시각을 적는다).",
+      "evidence": "04_Research/01_reports/factor_db_debt_lines_align_20261110/{README.md,repair_spec.json,chain_state.json}"
     }
   ]
 }

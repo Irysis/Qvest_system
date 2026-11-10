@@ -19,9 +19,17 @@
   T8 Source = 지금 병합 표의 역할 표지: 분기 원계정 XLSX · 분기 파생 xlsx_derived · 연간(퀀티 · DART 모두) DART
   T9 분기 표(--out-xlsx): fundamental_xlsx.parquet 꼴(열 순서 · 원계정 41개 이름 안) · 같은 순서 계약 ·
      A 201412 RetainedEarnings = 7 · D 201512 Revenue 버림
+  T10~T12 차입금 = DLC · DLTT(사채 포함) · 차입 줄 없는 기간 = TotalDebt 없음 · 정정 의심 연도 차입 = 퀀티 미룬 값
+  T13 차입 두 줄 기간 완비(11-10(2)): I 201406 장기 줄이 원천에서 빠짐 → 장기차입금 0 행(같은 날) · 최신 장기 줄 = 201406(옛 201403 의 8 아님) ·
+     G(사채만) · E(장기만 · 정정 미룸) 단기차입금 0 행 · H(차입 줄 없음) 두 줄 다 없음 · 분기 표도 같음
+  T14 불변식: 병합 표 · 분기 표의 모든 (종목, 기간)에서 두 줄이 함께 있고 날짜가 같다 · 병합 표 두 줄 합 = TotalDebt
+  T15 저장 파일 R 메타데이터에 data.table 자동 색인('index') 없음 — 새 단정이 D[Item == ...] 로 고르면 색인이 실려 파일이 3배가 됐다(11-10 실측)
   TC 대조군: B 의 Check 를 agree 로 바꾸면 TotalAssets = 퀀티 120 · Origin QW_V2 — T3 의 DART 값은 정정 의심에서만
   TM 돌연변이: 병합 표의 순서 계약 호출을 지운 사본(소스 텍스트 치환 1곳 확인) → 산출이 T4 순서 검사에 걸린다
      (검사가 실제로 위반을 잡는다 = 양성 대조)
+  TM2~TM4 차입 수리를 하나씩 되돌린 사본 → T10 · T11 · T12 가 잡는다(TM4 는 병합기 단정도 끈다 — 단정이 먼저 멈추므로)
+  TM5a 0 행 채우기를 지운 사본 → 병합기 단정(.check_debt_lines)이 rc 1 로 멈춘다 · TM5b 채우기 + 단정을 지운 사본 → T13 이 잡는다
+  TM6 색인 막는 두 겹(사본 위 검사 · 쓰기 전 setindex)을 모두 지운 사본 → T15 가 잡는다
 실행: .venv_qvest_ml/Scripts/python.exe -X utf8 08_Tests/data/test_build_fundamental_merged_v2.py
 """
 import datetime as dt
@@ -127,6 +135,12 @@ def setup(t: Path, b_check="restated"):
              qrow("H", "201412", "Revenue", 10, "2015-03-20", "pre2015")]
     bfd = "2018-03-22" if b_check == "restated" else "2017-03-24"
     rows += [qrow("B", "201612", "CurrentBorr", 7, bfd, b_check), qrow("B", "201612", "Bonds", 3, bfd, b_check)]
+    # (2026-11-10(2) 차입 두 줄 기간 완비) I: 201403 단기 5 · 장기 8 → 201406 장기 줄이 원천에서 빠짐(퀀티는 비유동 0 을 적지 않는다 ·
+    #   유동 두 줄은 0 도 적는다) — 구판은 201406 뒤에도 장기차입금 최신 행 = 201403 의 8 이었다(옛 줄 섞임)
+    rows += [qrow("I", "201403", it, v, "2014-05-15", "pre2015") for it, v in [("TotalAssets", 200), ("CurrentBorr", 5),
+                                                                              ("CurrentBonds", 0), ("LongTermBorr", 8)]]
+    rows += [qrow("I", "201406", it, v, "2014-08-14", "pre2015") for it, v in [("TotalAssets", 210), ("CurrentBorr", 6),
+                                                                              ("CurrentBonds", 0)]]
     q = pd.DataFrame(rows)
     pq.write_table(pa.Table.from_pandas(q, preserve_index=False), t / ".cache/fundamental_v2/fund_v2_quarterly.parquet")
     ck = pd.DataFrame([dict(Ticker="B", FY=2016, Item="TotalAssets", QW_Value=120.0, DART_Value=999.0, Rel_Diff=0.88,
@@ -136,7 +150,7 @@ def setup(t: Path, b_check="restated"):
                        dict(Ticker="E", FY=2017, Item="TotalAssets", QW_Value=130.0, DART_Value=777.0, Rel_Diff=0.83,
                             DART_Date=D("2020-01-09"), DART_Factor_Date=D("2020-01-10"), Same=False)])
     pq.write_table(pa.Table.from_pandas(ck, preserve_index=False), t / ".cache/fundamental_v2/fund_v2_annual_check.parquet")
-    pd.DataFrame({"Ticker": list("ABCDEFGH"), "FiscalMonth": ["12"] * 8, "fetched_at": ["x"] * 8}).to_parquet(t / ".cache/qw_fund_v2/fiscal_month.parquet")
+    pd.DataFrame({"Ticker": list("ABCDEFGHI"), "FiscalMonth": ["12"] * 9, "fetched_at": ["x"] * 9}).to_parquet(t / ".cache/qw_fund_v2/fiscal_month.parquet")
     # DART 당시 기록의 차입 = 이름 일치로만 잡은 불완전한 값(실측 LG화학 FY2019~2025 TotalDebt 0 형태) — 정정 의심 연도에서도 쓰면 안 된다
     pd.DataFrame({"Ticker": ["B", "E"], "bsns_year": [2016, 2017], "Factor_Date": [D("2017-03-31"), D("2018-03-31")],
                   "TotalAssets": [999.0, 777.0], "Revenue": [101.0, 90.0], "ROA": [0.05, 0.1],
@@ -171,6 +185,34 @@ def strictly_ordered(m) -> bool:
     s = m.sort_values(["Ticker", "Item", "Period_Date"])
     g = s.groupby(["Ticker", "Item"], sort=False)["Factor_Date"].diff()
     return bool((g.dropna() > pd.Timedelta(0)).all())
+
+
+def latest(m, tk, item):
+    """소비자가 고르는 행 = (종목, 항목) 안 Factor_Date 최신(팩터 모듈 .SD[.N] · rank 1 과 같은 선택)."""
+    r = m[(m["Ticker"] == tk) & (m["Item"] == item)]
+    return None if r.empty else r.sort_values("Factor_Date").iloc[-1]
+
+
+def r_attrs(p):
+    """R 이 이 parquet 을 읽을 때 되살리는 속성 이름(arrow R 메타데이터) — data.table 자동 색인 'index' 가 실리면 안 된다."""
+    ps = str(p).replace("\\", "/")
+    r = subprocess.run([RS, "--vanilla", "-e", f'suppressMessages(library(arrow)); cat(names(attributes(read_parquet("{ps}"))), sep = ",")'],
+                       capture_output=True, text=True, encoding="utf-8", errors="replace")
+    return r.stdout.strip().split(",") if r.returncode == 0 else None
+
+
+def debt_lines_complete(m, with_total) -> bool:
+    """모든 (종목, 기간)에서 단기 · 장기차입금이 함께 있고 날짜가 같다 · (병합 표) 두 줄 합 = 같은 기간 TotalDebt."""
+    cols = ["Ticker", "Period", "Factor_Date", "Value"]
+    j = m[m["Item"] == "ShortTermBorr"][cols].merge(m[m["Item"] == "LongTermBorr"][cols], on=["Ticker", "Period"],
+                                                    how="outer", suffixes=("_s", "_l"))
+    good = bool(len(j) and j["Factor_Date_s"].notna().all() and j["Factor_Date_l"].notna().all() and
+                (j["Factor_Date_s"] == j["Factor_Date_l"]).all())
+    if with_total:
+        k = j.merge(m[m["Item"] == "TotalDebt"][["Ticker", "Period", "Value"]].rename(columns={"Value": "td"}),
+                    on=["Ticker", "Period"], how="inner")
+        good = good and len(k) > 0 and bool(((k["Value_s"] + k["Value_l"] - k["td"]).abs() <= 1e-9 * k["td"].abs().clip(lower=1)).all())
+    return good
 
 
 T = Path(tempfile.mkdtemp(prefix="mergedv2_"))
@@ -227,7 +269,8 @@ try:
                     xF=(get(xx, "F", "201412", "ShortTermBorr"), get(xx, "F", "201412", "LongTermBorr")),
                     B={k: get(mm, "B", "201612", k) for k in ("ShortTermBorr", "LongTermBorr", "TotalDebt", "BorrowingDependency")},
                     B_dart_debt=bool((mm["Ticker"].eq("B") & mm["Origin"].eq("DART_RESTATED") &
-                                      mm["Item"].isin(["ShortTermBorr", "LongTermBorr", "TotalDebt", "BorrowingDependency"])).any()))
+                                      mm["Item"].isin(["ShortTermBorr", "LongTermBorr", "TotalDebt", "BorrowingDependency"])).any()),
+                    I_lt=latest(mm, "I", "LongTermBorr"), xI_lt=latest(xx, "I", "LongTermBorr"))
     df_ = debt_facts(m, x)
     t10 = all(df_["F"][k] is not None for k in df_["F"]) and df_["F"]["ShortTermBorr"]["Value"] == 5 and \
         df_["F"]["LongTermBorr"]["Value"] == 14 and abs(df_["F"]["TotalDebt"]["Value"] - 19) < 1e-9 and \
@@ -243,6 +286,26 @@ try:
         abs(bb["BorrowingDependency"]["Value"] - 10 / 120) < 1e-9 and bb["BorrowingDependency"]["Origin"] == "QW_V2_derived"
     ok("T12 정정 의심 연도: DART 차입 기록(0) 안 씀 · 퀀티 차입 7 · 3 미룬 날짜 · TotalDebt 10 퀀티 파생") if t12 else \
         ng(f"T12 dart_debt={df_['B_dart_debt']} {bb}")
+    # T13 · T14 (2026-11-10(2) 차입 두 줄 기간 완비 — 옛 차입 줄 섞임 수리)
+    i_lt, i_st, i_td = (get(m, "I", "201406", k) for k in ("LongTermBorr", "ShortTermBorr", "TotalDebt"))
+    g_st, g_lt, e_st = get(m, "G", "201412", "ShortTermBorr"), get(m, "G", "201412", "LongTermBorr"), get(m, "E", "201712", "ShortTermBorr")
+    h_lines = m[m["Ticker"].eq("H") & m["Item"].isin(["ShortTermBorr", "LongTermBorr"])]
+    x_lt = get(x, "I", "201406", "LongTermBorr")
+    t13 = i_lt is not None and i_lt["Value"] == 0 and fd(i_lt) == "2014-08-14" and i_st is not None and i_st["Value"] == 6 and \
+        fd(i_st) == "2014-08-14" and i_td is not None and abs(i_td["Value"] - 6) < 1e-9 and \
+        df_["I_lt"] is not None and df_["I_lt"]["Period"] == "201406" and df_["I_lt"]["Value"] == 0 and \
+        g_st is not None and g_st["Value"] == 0 and g_lt is not None and fd(g_st) == fd(g_lt) and \
+        e_st is not None and e_st["Value"] == 0 and e_st["Origin"] == "QW_V2_DELAYED" and fd(e_st) == "2019-03-22" and \
+        h_lines.empty and x_lt is not None and x_lt["Value"] == 0 and fd(x_lt) == "2014-08-14" and \
+        df_["xI_lt"] is not None and df_["xI_lt"]["Period"] == "201406"
+    ok("T13 기간 완비: I 장기 줄 빠진 201406 = 장기 0 행(같은 날) · 최신 장기 줄 201406 · G · E 단기 0 행 · H 없음 · 분기 표 같음") if t13 else \
+        ng(f"T13 I={i_lt} / {i_st} / {i_td} latest={df_['I_lt']} G={g_st} E={e_st} H={len(h_lines)} X={x_lt}")
+    t14 = debt_lines_complete(m, with_total=True) and debt_lines_complete(x, with_total=False)
+    ok("T14 불변식: 모든 (종목, 기간) 두 줄 함께 · 같은 날짜 · 병합 표 두 줄 합 = TotalDebt") if t14 else \
+        ng(f"T14 merged={debt_lines_complete(m, True)} xlsx={debt_lines_complete(x, False)}")
+    am, ax = r_attrs(out), r_attrs(outx)
+    ok("T15 저장 파일에 data.table 자동 색인 없음(R 메타데이터 · 두 표)") if am is not None and ax is not None and \
+        "index" not in am and "index" not in ax else ng(f"T15 merged={am} xlsx={ax}")
     c = T / "c"; setup(c, b_check="agree")
     rc, log, out, _ = run(c)
     mc = load(out) if rc == 0 else None
@@ -270,6 +333,10 @@ try:
     # TM2~TM4 (2026-11-10): 차입 수리를 하나씩 되돌린 사본 → 해당 사례가 잡힌다(치환 1곳 단정 · 사본 = 병합기 + 파생식 한 쌍)
     src0, dsrc = SUT.read_text(encoding="utf-8"), DERIVE.read_text(encoding="utf-8")
     # 치환 = (파일, 옛 문자열, 새 문자열) 쌍 목록 — 구판 동작 그대로 되돌린다(한쪽만 되돌린 사본은 병합기의 중복 키 검사에 먼저 걸린다)
+    # 병합기 단정 끄기(11-10(2)) — 구판 동작이 단정에 먼저 멈추는 사본에서 시험 자체가 잡는지 보려고(TM4 · TM5b)
+    GUARD_OFF = [("sut", 'dlm <- .check_debt_lines(M, "병합", with_total = TRUE)', "dlm <- list()"),
+                 ("sut", 'dlx <- .check_debt_lines(X, "분기 표")', "dlx <- list()")]
+    FILL_OFF = ("sut", "dq <- rbind(dq, debt_fill, use.names = TRUE)", "dq <- dq")
     muts = [
         ("TM2 사채 빼기(구판 DEBT_TO)", [("sut",
           'DEBT_TO <- c(CurrentBorr = "CurrentBorr", CurrentBonds = "CurrentBorr", LongTermBorr = "LongTermBorr", Bonds = "LongTermBorr")',
@@ -280,8 +347,10 @@ try:
          lambda f: f["H"] is not None and f["H"]["Value"] == 0),
         ("TM4 정정 의심 연도 DART 차입 그대로(구판)", [("sut", "dl <- dl[!Item %in% DEBT_ITEMS]", "dl <- dl"),
           ("sut", "dB <- rbind(dB[!RS, on = .(Ticker, FY)], dB[RS, on = .(Ticker, FY), nomatch = 0L][Item %in% DEBT_ITEMS])",
-           "dB <- dB[!RS, on = .(Ticker, FY)]")],
+           "dB <- dB[!RS, on = .(Ticker, FY)]")] + GUARD_OFF,
          lambda f: f["B_dart_debt"]),
+        ("TM5b 차입 0 행 채우기 + 단정 지움(구판 옛 줄 섞임)", [FILL_OFF] + GUARD_OFF,
+         lambda f: f["I_lt"] is not None and f["I_lt"]["Period"] == "201403" and f["I_lt"]["Value"] == 8),
     ]
     for name, pairs, caught in muts:
         srcs = {"sut": src0, "derive": dsrc}
@@ -299,6 +368,34 @@ try:
             ng(f"{name} 사본 실행 실패 rc={rc}: {log[-600:]}"); continue
         f_ = debt_facts(load(out_), load(outx_))
         ok(f"{name} → 시험이 잡는다") if caught(f_) else ng(f"{name} → 잡지 못함 {f_}")
+    # TM5a (2026-11-10(2)): 0 행 채우기만 지운 사본 → 병합기 단정이 멈춘다(rc 1 · 두 줄 기간 · 날짜 갈림) = 단정의 양성 대조
+    if src0.count(FILL_OFF[1]) != 1:
+        ng(f"TM5a 치환 대상이 {src0.count(FILL_OFF[1])}곳 (1곳이어야 한다)")
+    else:
+        d5 = T / "m_TM5a"; d5.mkdir()
+        (d5 / SUT.name).write_text(src0.replace(FILL_OFF[1], FILL_OFF[2]), encoding="utf-8")
+        shutil.copy(DERIVE, d5 / DERIVE.name)
+        w5 = T / "w_TM5a"; setup(w5)
+        rc, log, _, _ = run(w5, sut=d5 / SUT.name)
+        ok("TM5a 채우기 지운 사본 → 병합기 단정이 rc 1 로 멈춘다") if rc == 1 and "차입 두 줄(단기 · 장기차입금)의 기간 · 날짜가 갈린 칸" in log else \
+            ng(f"TM5a 단정이 멈추지 않았다 rc={rc}: {log[-600:]}")
+    # TM6 (2026-11-10(2)): 색인 막는 두 겹(사본 위 검사 · 쓰기 전 setindex)을 모두 지운 사본 → T15 가 잡는다(한 겹만 지우면 다른 겹이 막는다)
+    pairs6 = [("w <- D[, .(Ticker, Period, Item, Factor_Date, Value)]", "w <- D"), ("setindex(D, NULL)", "invisible(NULL)")]
+    bad6 = [a_[:40] for a_, _ in pairs6 if src0.count(a_) != 1]
+    if bad6:
+        ng(f"TM6 치환 대상이 1곳이 아니다: {bad6}")
+    else:
+        s6 = src0
+        for a_, b_ in pairs6:
+            s6 = s6.replace(a_, b_)
+        d6 = T / "m_TM6"; d6.mkdir()
+        (d6 / SUT.name).write_text(s6, encoding="utf-8")
+        shutil.copy(DERIVE, d6 / DERIVE.name)
+        w6 = T / "w_TM6"; setup(w6)
+        rc, log, out6, outx6 = run(w6, sut=d6 / SUT.name)
+        a6 = r_attrs(out6) if rc == 0 else None
+        ok("TM6 색인 막는 두 겹 지운 사본 → T15 가 잡는다(파일에 'index')") if a6 is not None and "index" in a6 else \
+            ng(f"TM6 → 잡지 못함 rc={rc} attrs={a6}")
 except SystemExit:
     pass
 except Exception as e:  # noqa: BLE001

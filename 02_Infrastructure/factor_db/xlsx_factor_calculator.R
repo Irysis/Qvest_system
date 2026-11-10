@@ -65,8 +65,10 @@ if (nzchar(XLSX_FUND_PATH)) {
 # ─── Borrowings = ShortTermBorr + LongTermBorr (2026-11-10) ──────────────────
 # Both lines absent = unknown (NA), not debt-free. The old inline zero-fill gave XF_L01 / LL01 = 0, LL02 = −Cash and
 #   XF_A02 operating liabilities = TotalLiab to every ticker without a debt line. One line present = the other is 0
-#   (the vendor reports zero lines explicitly). Since the same day ShortTermBorr / LongTermBorr are DLC / DLTT incl. bonds
-#   (build_fundamental_merged_v2.R DEBT_TO) — the quarterly table carries the corrected lines under the same names.
+#   (the vendor omits nil non-current lines — 11-10 measured: DLTT = 0 never appears). Since the same day ShortTermBorr /
+#   LongTermBorr are DLC / DLTT incl. bonds (build_fundamental_merged_v2.R DEBT_TO) — the quarterly table carries the corrected
+#   lines under the same names — and since 2026-11-10(2) it writes the missing line's 0 row itself (period-complete debt lines),
+#   so curr / prev of both lines come from the same quarter.
 .xf_debt <- function(stb, ltb) {
   fifelse(is.na(stb) & is.na(ltb), NA_real_, fifelse(is.na(stb), 0, stb) + fifelse(is.na(ltb), 0, ltb))
 }

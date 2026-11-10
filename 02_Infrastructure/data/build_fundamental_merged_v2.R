@@ -124,14 +124,40 @@ DEBT_ITEMS <- c("ShortTermBorr", "LongTermBorr", "TotalDebt", "NetDebt", "ROIC",
 dq <- q[Item %in% names(DEBT_TO)]
 debt_n_in <- dq[, .N, by = Item]
 dq[, To := DEBT_TO[Item]]
+# 사채가 값을 보탠 칸 표지는 묶기 전에 단다 — 묶음 이름 Item = To 가 j 안에서 원래 Item 열을 가려 구판 any(Item %in% ...)는 늘 FALSE 였다
+#   (11-10 확인 · 로그 '사채 포함 0' · 값 합에는 영향 없음)
+dq[, bond_part := Item %in% c("CurrentBonds", "Bonds") & Value != 0]
 debt_mixed <- dq[, .(k = uniqueN(Check), pd = uniqueN(Period_Date)), by = .(Ticker, Period, To)][k > 1L | pd > 1L, .N]
 dq <- dq[, .(Period_Date = Period_Date[1L], Value = sum(Value), Factor_Date = max(Factor_Date), Check = Check[1L],
-             with_bonds = any(Item %in% c("CurrentBonds", "Bonds"))), by = .(Ticker, Period, Item = To)]
-cat(sprintf("[merged-v2] 차입금 = 차입 + 사채(DLC · DLTT): 성분 %s → %s칸(사채 포함 %s · 성분끼리 기간 말일이나 정정 표지가 갈린 칸 %d)\n",
+             with_bonds = any(bond_part)), by = .(Ticker, Period, Item = To)]
+debt_cells_reported <- nrow(dq)
+# ★2026-11-10(2) 차입 두 줄 = 기간 완비(도훈 '옛 차입 줄 섞임 — 여기서 고쳐줘'): 한 기간에 DLC · DLTT 가운데 하나만 있으면 없는 줄을
+#   값 0 행으로 같은 날짜 · 같은 표지에 둔다. 왜: 소비자(팩터 모듈 · 전략 엔진)는 항목마다 Factor_Date 최신 행을 따로 고른다. 줄 하나가
+#   어느 해부터 원천에서 빠지면 마지막으로 보고된 옛 값이 그 뒤 모든 달에 섞였다(2025-06 저장값 R18(두 줄 합) vs Q16(같은 기간 TotalDebt)
+#   차이 > 자산 1% = 781/3,513 종목 · 002290 = 2001년 장기차입금 32억이 2025년 레버리지에). '없는 줄 = 0'은 TotalDebt 파생 · 모듈 합산 규칙
+#   (한쪽만 있으면 다른 쪽 0)이 이미 쓰는 관례다 — 그 관례를 줄 단위로 내려 두 줄 합 = TotalDebt 가 기간마다 맞게 한다(아래 .check_debt_lines 단정).
+#   근거(원천 fund_v2_quarterly · 재무상태표 칸 218,044 · 11-10 실측): 퀀티는 유동 두 줄(CurrentBorr · CurrentBonds)은 0 도 적지만 비유동 두 줄
+#   (LongTermBorr · Bonds)은 없으면 줄을 뺀다(두 줄 칸 140,568 가운데 DLTT = 0 은 0건). DLC 만 67,602칸 = 이자발생부채(M113800) ÷ DLC 중앙 1.000 ·
+#   차이 ≤ 자산 2% 86.2%(두 줄 칸 90.1%) → 없는 DLTT = 0. DLTT 만 6,255칸 = 은행 · 증권 · 보험 87%(유동 · 비유동 구분 없는 서식이라 유동 차입
+#   줄 자체가 없다) → DLC = 0. 둘 다 없는 3,619칸은 채우지 않는다(TotalDebt 도 없다 = 미지).
+#   날짜: 원천은 (종목, 기간) 안 항목 날짜가 하나다(실측 예외 0). 두 줄이 갈리면 늦은 날로 맞춘다(늦추기만 · 합은 둘 다 안 뒤에 안다).
+debt_fill <- dq[, if (.N == 1L) .SD, by = .(Ticker, Period)]
+debt_fill[, `:=`(Item = fifelse(Item == "CurrentBorr", "LongTermBorr", "CurrentBorr"), Value = 0, with_bonds = FALSE)]
+debt_fill_n <- debt_fill[, .N, by = Item]
+dq <- rbind(dq, debt_fill, use.names = TRUE)
+dq[, fd_max := max(Factor_Date), by = .(Ticker, Period)]
+debt_redated <- dq[Factor_Date < fd_max, .N]
+dq[, Factor_Date := fd_max][, fd_max := NULL]
+.fill_n <- function(it) { n <- debt_fill_n[Item == it, N]; if (length(n)) n else 0L }
+cat(sprintf(paste0("[merged-v2] 차입금 = 차입 + 사채(DLC · DLTT): 성분 %s → %s칸(사채 포함 %s · 성분끼리 기간 말일이나 정정 표지가 갈린 칸 %d) · ",
+                   "한 줄만 있는 칸의 없는 줄 = 0 행: DLC %s · DLTT %s · 두 줄 날짜 맞춤 %d\n"),
             paste(debt_n_in[, sprintf("%s %s", Item, format(N, big.mark = ","))], collapse = " · "),
-            format(nrow(dq), big.mark = ","), format(dq[with_bonds == TRUE, .N], big.mark = ","), debt_mixed))
-debt_stats <- list(parts_in = setNames(as.list(debt_n_in$N), debt_n_in$Item), cells = nrow(dq),
-                   cells_with_bonds = dq[with_bonds == TRUE, .N], cells_mixed_check = debt_mixed)
+            format(debt_cells_reported, big.mark = ","), format(dq[with_bonds == TRUE, .N], big.mark = ","), debt_mixed,
+            format(.fill_n("CurrentBorr"), big.mark = ","), format(.fill_n("LongTermBorr"), big.mark = ","), debt_redated))
+debt_stats <- list(parts_in = setNames(as.list(debt_n_in$N), debt_n_in$Item), cells = debt_cells_reported,
+                   cells_with_bonds = dq[with_bonds == TRUE, .N], cells_mixed_check = debt_mixed,
+                   zero_line_written = list(ShortTermBorr = .fill_n("CurrentBorr"), LongTermBorr = .fill_n("LongTermBorr")),
+                   lines_redated = debt_redated)
 dq[, with_bonds := NULL]
 q <- rbind(q[!Item %in% names(DEBT_TO)], dq, use.names = TRUE)
 q <- q[Item %in% MAP]
@@ -246,6 +272,7 @@ miss_rs <- RSk[is.na(DART_Factor_Date), .N]
   if (nrow(bad)) { cat("[merged-v2] 오류:", label, "Factor_Date 가 없거나 기간 말 이전인 행", nrow(bad), "\n"); print(head(bad)); quit(status = 1) }
 }
 .write_atomic <- function(D, path) {
+  setindex(D, NULL)   # 자동 색인을 파일에 싣지 않는다(R 메타데이터로 저장돼 읽을 때 되살아난다 · 11-10 · 위 .check_debt_lines)
   tmp <- paste0(path, ".tmp", Sys.getpid())
   write_parquet(D, tmp, compression = "zstd", compression_level = 5L, write_statistics = FALSE)
   if (file.exists(path)) unlink(path)
@@ -256,11 +283,41 @@ miss_rs <- RSk[is.na(DART_Factor_Date), .N]
               label, format(s$dropped, big.mark = ","), format(s$holes_created, big.mark = ","),
               format(s$shifted, big.mark = ","), as.integer(s$max_shift_days)))
 }
+# 차입 두 줄 기간 완비 단정(★2026-11-10(2) · 위 debt_fill): 단기 · 장기차입금은 같은 (종목, 기간)에 함께 있고 날짜가 같다 —
+#   그래야 '항목마다 최신 행'을 고르는 소비자가 두 줄을 같은 기간에서 읽는다. 병합 표는 두 줄 합 = 같은 기간 TotalDebt 도 단정한다
+#   (TotalDebt 만 있거나 두 줄만 있는 칸 = 파생 날짜를 직전 연도 날짜로 늦춘 행이 순서 계약에서 갈린 것 — 세어서 보고).
+.check_debt_lines <- function(D, label, with_total = FALSE) {
+  # 사본 위에서 고른다 — D[Item == ...] 는 data.table 자동 색인을 D 에 남기고, 이미 정렬된 표에는 쓰기 직전 setorder 가 아무 일도 안 해서
+  #   그 색인이 parquet R 메타데이터로 저장 · 읽을 때 되살아난다(11-10 실측: 병합 표 56 → 175 MB · 아래 .write_atomic 도 색인을 지운다)
+  w <- D[, .(Ticker, Period, Item, Factor_Date, Value)]
+  s <- w[Item == "ShortTermBorr", .(Ticker, Period, fs = Factor_Date, vs = Value)]
+  l <- w[Item == "LongTermBorr", .(Ticker, Period, fl = Factor_Date, vl = Value)]
+  j <- merge(s, l, by = c("Ticker", "Period"), all = TRUE)
+  bad <- j[is.na(fs) | is.na(fl) | fs != fl]
+  if (nrow(bad)) {
+    cat("[merged-v2] 오류:", label, "차입 두 줄(단기 · 장기차입금)의 기간 · 날짜가 갈린 칸", nrow(bad), "\n"); print(head(bad)); quit(status = 1)
+  }
+  st <- list(cells = nrow(j))
+  if (with_total) {
+    k <- merge(j[, .(Ticker, Period, sl = vs + vl)], w[Item == "TotalDebt", .(Ticker, Period, td = Value)],
+               by = c("Ticker", "Period"), all = TRUE)
+    badv <- k[!is.na(sl) & !is.na(td) & abs(sl - td) > 1e-9 * pmax(1, abs(td))]
+    if (nrow(badv)) {
+      cat("[merged-v2] 오류:", label, "두 줄 합 ≠ 같은 기간 TotalDebt", nrow(badv), "칸\n"); print(head(badv)); quit(status = 1)
+    }
+    st$lines_without_total <- k[is.na(td), .N]
+    st$total_without_lines <- k[is.na(sl), .N]
+  }
+  cat(sprintf("[merged-v2] %s 차입 두 줄 기간 완비: %s칸 · 날짜 같음%s\n", label, format(st$cells, big.mark = ","),
+              if (with_total) sprintf(" · 합 = TotalDebt(두 줄만 %d · TotalDebt 만 %d)", st$lines_without_total, st$total_without_lines) else ""))
+  st
+}
 M <- rbindlist(list(A, A2, dA, B, dB, DR, RQ), use.names = TRUE)
 .check_keys(M, "병합")
 oc <- order_contract(M); M <- oc$D
 .say_order("병합", oc$stats)
 .check_keys(M, "병합(계약 뒤)")
+dlm <- .check_debt_lines(M, "병합", with_total = TRUE)
 # Source = 소비자 호환 역할 표지(지금 병합 표의 뜻 그대로: XLSX 분기 원계정 · xlsx_derived 분기 파생 · DART 연간 원계정 +
 #   파생) — 전략 엔진 약 20곳이 Source == "DART" / "XLSX" 로 연간 · 분기 행을 가른다(11-09 전수 검색 · 엔진 파일은 연구
 #   산출물이라 고치지 않는다). 실제 출처는 Origin(QW_V2 · QW_V2_UNVERIFIED · QW_V2_DELAYED · DART_RESTATED · QW_V2_derived).
@@ -276,6 +333,7 @@ X <- q[Old %in% FUND_RAW_ITEMS, .(Ticker, Period, Item = Old, Value, Period_Date
 ox <- order_contract(X); X <- ox$D
 .say_order("분기 표", ox$stats)
 .check_keys(X, "분기 표(계약 뒤)")
+dlx <- .check_debt_lines(X, "분기 표")
 setcolorder(X, c("Ticker", "Period", "Item", "Value", "Period_Date", "Factor_Date"))
 setorder(X, Ticker, Item, Factor_Date)
 .write_atomic(X, OUTX)
@@ -286,8 +344,10 @@ rep <- list(schema = "fundamental_merged_v2_report/v2", built_at = format(Sys.ti
             by_source = setNames(as.list(src$N), paste(src$Freq, src$Source, src$Origin)),
             restated_company_years = nrow(RSk), restated_dart_record = nrow(RS), restated_qw_delayed = nrow(RSQ),
             restated_without_dart = miss_rs,
-            debt = c(debt_stats, list(definition = "ShortTermBorr = CurrentBorr + CurrentBonds (DLC) · LongTermBorr = LongTermBorr + Bonds (DLTT) · TotalDebt NA when both absent",
-                                      dart_debt_rows_dropped_restated = n_dart_debt_dropped)),
+            debt = c(debt_stats, list(definition = paste("ShortTermBorr = CurrentBorr + CurrentBonds (DLC) · LongTermBorr = LongTermBorr + Bonds (DLTT) ·",
+                                                         "TotalDebt NA when both absent · period-complete lines: one line present -> the other written as 0 (same date)"),
+                                      dart_debt_rows_dropped_restated = n_dart_debt_dropped,
+                                      lines_check = list(merged = dlm, xlsx = dlx))),
             annual_company_years = uniqueN(M[Freq == "A", .(Ticker, Period)]),
             annual_date_raised_to_latest_quarter = n_key_late,
             derived_date_raised_to_prior_year = list(qw = n_der_redate, dart = n_dr_redate),

@@ -102,6 +102,13 @@ compute_accrual <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
     fifelse(!is.na(num) & !is.na(den) & abs(den) > 1e-8, num / den, NA_real_)
   }
 
+  # ---- Helper: missing → 0 · borrowings = ShortTermBorr + LongTermBorr ----
+  # Both debt lines absent = unknown (NA), not a debt-free firm (2026-11-10). One line present = the other is 0 — since
+  #   2026-11-10(2) the merged table writes that 0 row itself (period-complete debt lines, build_fundamental_merged_v2.R),
+  #   so the latest row of each line comes from the same period.
+  .zna  <- function(x) { x[is.na(x)] <- 0; x }
+  .debt <- function(a, b) fifelse(is.na(a) & is.na(b), NA_real_, .zna(a) + .zna(b))
+
   # ---- Price snapshot for AC25 (size interaction) ----
   snap <- NULL
   if ("Size" %in% names(RAWDATA)) {
@@ -211,8 +218,7 @@ compute_accrual <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
     ta  <- .sc(fw5, "TotalAssets")
     cas <- .sc(fw5, "CashAndEquiv"); cas[is.na(cas)] <- 0
     # 2026-11-10: both debt lines absent = unknown → AC05 NA (the old zero-fill treated a missing debt line as debt-free).
-    std <- .sc(fw5, "ShortTermBorr"); ltd <- .sc(fw5, "LongTermBorr")
-    debt <- fifelse(is.na(std) & is.na(ltd), NA_real_, fifelse(is.na(std), 0, std) + fifelse(is.na(ltd), 0, ltd))
+    debt <- .debt(.sc(fw5, "ShortTermBorr"), .sc(fw5, "LongTermBorr"))
     mi  <- .sc(fw5, "MinorityInterest"); mi[is.na(mi)] <- 0
     ps  <- .sc(fw5, "PreferredStock"); ps[is.na(ps)] <- 0
     ce  <- .sc(fw5, "TotalEquity"); ce[is.na(ce)] <- 0
@@ -251,9 +257,7 @@ compute_accrual <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
   if (!is.null(tp7)) {
     m7 <- merge(tp7$curr, tp7$prev, by = "Ticker", suffixes = c("", "_p"), all = FALSE)
     if (nrow(m7) > 0L) {
-      .zna <- function(x) { x[is.na(x)] <- 0; x }
       # 2026-11-10: both debt lines absent = unknown (NA) — operating liabilities are not TotalLiab when the debt lines are missing
-      .debt <- function(a, b) fifelse(is.na(a) & is.na(b), NA_real_, .zna(a) + .zna(b))
       ncoa_c <- .sc(m7, "TotalAssets") - .zna(.sc(m7, "CashAndEquiv")) - .zna(.sc(m7, "Investments"))
       ncoa_p <- .sc(m7, "TotalAssets_p") - .zna(.sc(m7, "CashAndEquiv_p")) - .zna(.sc(m7, "Investments_p"))
       ol_c   <- .sc(m7, "TotalLiabilities") - .debt(.sc(m7, "ShortTermBorr"), .sc(m7, "LongTermBorr"))
@@ -288,8 +292,6 @@ compute_accrual <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
   if (!is.null(tp9)) {
     m9 <- merge(tp9$curr, tp9$prev, by = "Ticker", suffixes = c("", "_p"), all = FALSE)
     if (nrow(m9) > 0L) {
-      .zna <- function(x) { x[is.na(x)] <- 0; x }
-      .debt <- function(a, b) fifelse(is.na(a) & is.na(b), NA_real_, .zna(a) + .zna(b))   # 2026-11-10 (AC07 과 같은 규칙)
       nca_c <- .sc(m9, "TotalAssets") - .zna(.sc(m9, "CashAndEquiv"))
       nca_p <- .sc(m9, "TotalAssets_p") - .zna(.sc(m9, "CashAndEquiv_p"))
       nl_c  <- .sc(m9, "TotalLiabilities") - .debt(.sc(m9, "ShortTermBorr"), .sc(m9, "LongTermBorr"))
@@ -568,12 +570,12 @@ compute_accrual <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
   if (!is.null(tp24)) {
     m24 <- merge(tp24$curr, tp24$prev, by = "Ticker", suffixes = c("", "_p"), all = FALSE)
     if (nrow(m24) > 0L) {
-      .zna <- function(x) { x[is.na(x)] <- 0; x }
+      # 2026-11-10(2): both debt lines absent = unknown → AC24 NA (AC05 NOA 와 같은 규칙 — 구판은 차입 줄 없는 기간을 무차입으로 셌다)
       noa_c <- (.sc(m24, "TotalAssets") - .zna(.sc(m24, "CashAndEquiv"))) -
-               (.sc(m24, "TotalAssets") - .zna(.sc(m24, "ShortTermBorr")) - .zna(.sc(m24, "LongTermBorr")) -
+               (.sc(m24, "TotalAssets") - .debt(.sc(m24, "ShortTermBorr"), .sc(m24, "LongTermBorr")) -
                 .zna(.sc(m24, "MinorityInterest")) - .zna(.sc(m24, "PreferredStock")) - .zna(.sc(m24, "TotalEquity")))
       noa_p <- (.sc(m24, "TotalAssets_p") - .zna(.sc(m24, "CashAndEquiv_p"))) -
-               (.sc(m24, "TotalAssets_p") - .zna(.sc(m24, "ShortTermBorr_p")) - .zna(.sc(m24, "LongTermBorr_p")) -
+               (.sc(m24, "TotalAssets_p") - .debt(.sc(m24, "ShortTermBorr_p"), .sc(m24, "LongTermBorr_p")) -
                 .zna(.sc(m24, "MinorityInterest_p")) - .zna(.sc(m24, "PreferredStock_p")) - .zna(.sc(m24, "TotalEquity_p")))
       lag_ta <- .sc(m24, "TotalAssets_p")
       m24[, AC24 := .sdiv(-(noa_c - noa_p), lag_ta)]
