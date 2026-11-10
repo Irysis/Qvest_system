@@ -38,7 +38,7 @@
 ##
 ## 사용(CLI):
 ##   Rscript regime_append_only.R [--series monthly|daily] [--as-of YYYY-MM-DD] [--root DIR]
-##                                [--candidate PATH | --from-candidate] [--init] [--dry-run]
+##                                [--candidate PATH | --from-candidate] [--init] [--dry-run] [--allow-incomplete]
 ##   Rscript regime_append_only.R --republish [--series monthly|daily|all] [--rebuild | --candidate-monthly P --candidate-daily P]
 ##                                [--archive-dir DIR] [--plan-out FILE] [--expect-plan FILE] [--execute]
 ##     권장 순서: ① --republish --rebuild --plan-out P (dry-run · 후보 = .cache/_regime_candidate/) → 검토
@@ -69,6 +69,11 @@ REGIME_LEDGER_ARCHIVE_TAG   <- "pre_c11"
 REGIME_LEDGER_MSM_COL       <- "msm_estimator"
 REGIME_LEDGER_MSM_ATTR      <- "msm_estimator"
 REGIME_LEDGER_MSM_LEGACY    <- "msm:legacy"
+## ★입력 미도달 표식(2026-11-10 전수점검): 생산자 regime_signal.R 가 '국내 자료 층이 그 달의 마지막 KRX 거래일에 못 미친 달'을
+##   파일 속성 input_incomplete_dates(문자 벡터 YYYY-MM-DD = 행 Date)로 남긴다. 병합은 그 행을 동결하지 않는다 — 진행 중 행으로
+##   두고(라이브 · 발행본에는 그대로 실린다) 입력이 찬 뒤의 병합에서 동결한다. 속성이 없는 후보(구판 · 일간)는 종전과 같다.
+##   덜 찬 값이 한 번 굳으면 append-only 규약상 되돌릴 길이 재기준선뿐이라, 굳히기 전에 막는다.
+REGIME_LEDGER_INCOMPLETE_ATTR <- "input_incomplete_dates"
 
 `%||rl%` <- function(a, b) if (is.null(a)) b else a
 .rl_say <- function(verbose, ...) if (isTRUE(verbose)) cat(sprintf(...))
@@ -237,7 +242,7 @@ regime_ledger_rules_key <- function(root = NULL) {
 ## 1. 병합 (append) — 라이브를 쓰는 유일한 경로
 ## ═════════════════════════════════════════════════════════════════════════════
 regime_ledger_append <- function(series = "monthly", root = NULL, as_of = Sys.Date(), candidate = NULL,
-                                 init = FALSE, dry_run = FALSE, verbose = TRUE) {
+                                 init = FALSE, dry_run = FALSE, verbose = TRUE, allow_incomplete = FALSE) {
   P <- regime_ledger_paths(series, root); as_of <- as.Date(as_of)
   fail <- function(code, msg, ...) {
     .rl_say(verbose, "[regime-append] %s %s\n", if (code == 3L) "★EPOCH" else "ERROR", msg)
@@ -257,6 +262,22 @@ regime_ledger_append <- function(series = "monthly", root = NULL, as_of = Sys.Da
   cur_start <- .rl_cur_start(series, as_of)
   completed <- live[Date < cur_start]
   if (!nrow(completed)) return(fail(2L, sprintf("완료 구간이 비어 있음 (경계 %s)", cur_start)))
+  ## ── 입력 미도달 행은 동결하지 않는다(2026-11-10 · 생산자 표식 REGIME_LEDGER_INCOMPLETE_ATTR) ──────────────
+  ##   이미 동결된 행(≤ 발행 원장 frozen_through)은 대상이 아니다. allow_incomplete = TRUE(수동 · --allow-incomplete)는 보류를 끈다.
+  held <- as.Date(character(0))
+  if (!isTRUE(allow_incomplete)) {
+    inc <- suppressWarnings(as.Date(as.character(unlist(C$attrs[[REGIME_LEDGER_INCOMPLETE_ATTR]]))))
+    inc <- inc[!is.na(inc)]
+    ft0 <- tryCatch(as.Date(fromJSON(P$meta)$frozen_through), error = function(e) as.Date(NA))
+    if (length(ft0) != 1L) ft0 <- as.Date(NA)
+    held <- completed[Date %in% inc & (is.na(ft0) | Date > ft0)]$Date
+    if (length(held)) {
+      completed <- completed[Date < min(held)]
+      .rl_say(verbose, "[regime-append] ★입력 미도달 %d행(%s) — 동결 보류: 진행 중 행으로 둔다(입력이 차면 다음 병합에서 동결)\n",
+              length(held), paste(as.character(held), collapse = " "))
+      if (!nrow(completed)) return(fail(2L, sprintf("완료 구간이 비어 있음 (입력 미도달 보류 뒤 · 경계 %s)", cur_start)))
+    }
+  }
   ft_new <- max(completed$Date)
   .rl_say(verbose, "[regime-append] 완료 경계 %s → 동결 대상 종점 %s · 진행중 행 %d개 · epoch %s\n",
           cur_start, ft_new, nrow(live[Date >= cur_start]), if (ec$kind == "keyed") ec$key else "legacy(표식 없음)")
@@ -357,7 +378,7 @@ regime_ledger_append <- function(series = "monthly", root = NULL, as_of = Sys.Da
   res <- list(status = status, series = series, written = FALSE, n = nrow(final),
               frozen_through_prev = as.character(ft_prev), frozen_through_new = as.character(ft_write),
               n_newly_frozen = n_newfrozen, n_open = n_open, epoch = if (ec$kind == "keyed") ec$key else "legacy",
-              hard = hard, soft = soft, final = final)
+              held_incomplete = as.character(held), hard = hard, soft = soft, final = final)
   if (dry_run) { .rl_say(verbose, "[regime-append] dry-run — 기록 안 함\n"); return(res) }
 
   ts <- format(Sys.time(), "%Y%m%d_%H%M%S")
@@ -382,6 +403,7 @@ regime_ledger_append <- function(series = "monthly", root = NULL, as_of = Sys.Da
                   n_newly_frozen = n_newfrozen, n_open = n_open,
                   epoch = if (ec$kind == "keyed") ec$key else "legacy",
                   candidate = if (is.null(candidate)) "live" else "candidate",
+                  held_incomplete = as.list(as.character(held)),
                   schema_note = schema_note,
                   drift_hard = lapply(hard, function(r) list(col = r$col, n = r$n, ex = r$ex)),
                   drift_soft = lapply(soft, function(r) list(col = r$col, n = r$n, max = r$mx))),
@@ -419,6 +441,9 @@ regime_ledger_rebuild_publish <- function(root = NULL, as_of = Sys.Date(), serie
       tryCatch(regime_ledger_append(s, root = root, as_of = as_of, candidate = b$paths[[s]], verbose = verbose),
                error = function(e) list(status = 2L, series = s, written = FALSE, msg = conditionMessage(e)))
     r$final <- NULL
+    if (length(r$held_incomplete))
+      cat(sprintf("[regime-ledger/%s] ★입력 미도달 %d행(%s) 동결 보류 — 국내 자료가 그 달 말까지 오면 다음 병합에서 동결\n",
+                  s, length(r$held_incomplete), paste(r$held_incomplete, collapse = " ")))
     cat(sprintf("[regime-ledger/%s] %s\n", s, switch(as.character(r$status),
       "0" = "OK — 라이브 = 원장",
       "1" = "!! 동결 구간 재서술 시도 검출 — 발행본 보존됨(상류 확인 필요) · 라이브 = 원장",
@@ -676,7 +701,8 @@ regime_ledger_restore <- function(archive_dir, root = NULL, execute = FALSE, ver
   cand <- if ("--from-candidate" %in% a) regime_ledger_paths(series, root)$cand else getarg("--candidate", NULL)
   if (length(cand) && is.na(cand)) cand <- NULL
   r <- regime_ledger_append(series, root = root, as_of = as_of, candidate = cand,
-                            init = "--init" %in% a, dry_run = "--dry-run" %in% a)
+                            init = "--init" %in% a, dry_run = "--dry-run" %in% a,
+                            allow_incomplete = "--allow-incomplete" %in% a)   # 입력 미도달 행도 동결(수동 판단 때만 · 기본 = 보류)
   r$status
 }
 if (sys.nframe() == 0L) {

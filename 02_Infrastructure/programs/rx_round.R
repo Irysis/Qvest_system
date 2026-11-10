@@ -100,11 +100,20 @@ rx_paths <- function(program, round_id, root = NULL) {
                                                       label = .rx_or(z$label, ""), status = .rx_or(z$status, ""),
                                                       notes = as.character(.rx_or(z$notes, "")))))[status == "active"]
 }
+# 등록부 설명문에 붙은 유지보수 주석은 처방 입력이 아니다 — 첫 날짜 표기부터 끝까지 잘라 낸다(2026-11-10 전수점검).
+#   11-09 팩터 방향 수리가 정의문 2건에 수리 이력을 붙였다: R19 '… (2026-11-09 fix: …)' · L35 '… stored negated. 2026-11-09: text aligned …'.
+#   그 날짜가 τ_D 뒤라 .rx_assert_clean 이 도구 상자 생성을 멈췄다(fail-closed 는 옳게 동작 — 처방 루프 도구가 등록부 주석으로 죽어 있었다).
+#   정의 본문에는 달력 날짜가 필요 없다(날짜 = 수리 · 저장 이력). 날짜 앞에 열린 괄호가 있으면 그 괄호부터 자른다.
+#   ★검사는 그대로다 — 이 정리 뒤에도 τ_D 뒤 날짜가 남으면 .rx_assert_clean 이 멈춘다.
+.rx_strip_dated_notes <- function(x) {
+  sub("\\s*\\(?\\s*(19|20)[0-9]{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01]).*$", "", x, perl = TRUE)
+}
 .rx_factor_vocab <- function(root) {
   fr <- fromJSON(file.path(root, "02_Infrastructure/factor_db/factor_registry.json"), simplifyVector = FALSE)
   out <- rbindlist(lapply(names(fr), function(k) { z <- fr[[k]]
     data.table(id = k, name = as.character(.rx_or(z$name, "")), category = as.character(.rx_or(z$category, "")),
-               direction = as.character(.rx_or(z$direction, "")), definition = as.character(.rx_or(z$definition, ""))) }))
+               direction = as.character(.rx_or(z$direction, "")),
+               definition = .rx_strip_dated_notes(as.character(.rx_or(z$definition, "")))) }))
   # custom 범주 = 측정된 전략 신호의 자동 등록(등록 조건 자체가 전기간 등급 B+ · 정의문에 등급 · 시험 창 날짜) — 처방 입력에서 뺀다(R4)
   out[category != "custom"]
 }
@@ -175,7 +184,9 @@ rx_toolbox_md <- function(root = NULL) {
   # 비정상 UTF-8 바이트(pdftotext 산출 등)가 있으면 정규식이 그 문자열을 건너뛴다(경고만 내고 미검사 = 거짓 통과) — 먼저 정리한다
   txt <- iconv(paste(txt, collapse = "\n"), from = "UTF-8", to = "UTF-8", sub = "")
   if (is.na(txt)) stop("[rx_round] ", what, " 인코딩 판독 불가 — 검사할 수 없다(fail-closed)")
-  d <- regmatches(txt, gregexpr("(19|20)\\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])", txt))[[1]]
+  # ★perl = TRUE 필수(2026-11-10 전수점검): 기본 엔진의 gregexpr + regmatches 는 BMP 밖 문자(수식 기호 등) 뒤에서
+  #   위치가 어긋나 그 뒤 날짜를 놓친다(1~3자 선행 시 미검출 = 거짓 통과). 바로 아래 연월 · 등급 검사는 이미 perl 이다.
+  d <- regmatches(txt, gregexpr("(19|20)\\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])", txt, perl = TRUE))[[1]]
   bad <- d[suppressWarnings(as.Date(d)) > tau]
   ym <- regmatches(txt, gregexpr("(?<![0-9-])(19|20)\\d{2}-(0[1-9]|1[0-2])(?![0-9-])", txt, perl = TRUE))[[1]]
   bad <- c(bad, ym[ym > format(tau, "%Y-%m")])

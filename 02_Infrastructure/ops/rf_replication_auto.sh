@@ -766,6 +766,11 @@ ${SELF_AUDIT_SEC}
 - **PIT C1~C15 절대**: 모든 창의 종점은 t-1. 전 표본 통계 금지(rolling/expanding만).
   팩터 DB 는 \`load_month_factors()\` 경유(C15), \`Z_Score_Aligned\` 만 소비(C13).
   이 값은 원값이 아니라 변환값(횡단면 절단·z-score·방향 정렬)이므로 그 사실을 changed 에 적는다.
+  ★방향 정렬(2026-11-10): 기본값 \`direction = \"ic_asof\"\` 는 그 날까지의 IC 부호로 지표 부호를 **신호일마다 다시** 정한다.
+  (a) 논문이 정렬 방향을 고정한 신호(예: '값이 높은 쪽을 산다') (b) 여러 시점의 횡단면을 한 모형에 넣는 학습(학습 창과 채점 창의 부호가
+  달라진다) 에는 \`load_month_factors(..., direction = \"registry\")\` 를 써라 — 등록부에 미리 선언된 방향이라 자료를 보지 않고 날마다 같다
+  (일간 \`load_daily_factors\` 도 같은 인자). 등록부 방향(factor_registry.json 의 direction · 저장값 기준)과 논문의 매수 쪽 대응을
+  factor_mapping 의 deviation 에 적어라. 값에 −1 을 곱하는 수동 반전은 그대로 금지다(C13).
   ★\`detect_lookahead\` 는 비선언 idiom(전 표본 cov()/mean() · shift(-1) · 수동 미래 인덱싱)을
   못 잡는다 — 통과를 근거로 삼지 말고 **구조로** 보장하라.
 - 원문 접근이 불가하면 **지어내지 마라**. \`${WDIR}/ABORT.txt\` 에 사유를 쓰고 끝내라.

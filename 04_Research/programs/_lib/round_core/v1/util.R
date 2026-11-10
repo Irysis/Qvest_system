@@ -49,7 +49,8 @@ rc_safe <- function(f, ..., what = "") {
   tau <- as.Date(tau); ok <- !is.na(s)
   if (!any(ok)) return(s)
   tau_ym <- format(tau, "%Y-%m"); x <- s[ok]
-  m <- gregexpr("(19|20)[0-9]{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])", x)
+  # ★perl = TRUE 필수(2026-11-10): 기본 엔진은 BMP 밖 문자 뒤에서 위치가 어긋나 그 뒤 날짜를 가리지 못한다(가림과 누출 검사가 같은 약점을 공유했다)
+  m <- gregexpr("(19|20)[0-9]{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])", x, perl = TRUE)
   regmatches(x, m) <- lapply(regmatches(x, m), function(v) { if (!length(v)) return(v); d <- suppressWarnings(as.Date(v))
                                                               ifelse(!is.na(d) & d > tau, RC_REDACT, v) })
   m2 <- gregexpr("(?<![0-9-])(19|20)[0-9]{2}-(0[1-9]|1[0-2])(?![0-9-])", x, perl = TRUE)
@@ -69,7 +70,7 @@ rc_after_tau_leaks <- function(x, tau) {
   tau <- as.Date(tau); tau_ym <- format(tau, "%Y-%m"); out <- character(0)
   walk <- function(v) {
     if (is.character(v)) {
-      d <- unlist(regmatches(v, gregexpr("(19|20)[0-9]{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])", v)))
+      d <- unlist(regmatches(v, gregexpr("(19|20)[0-9]{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])", v, perl = TRUE)))
       dd <- suppressWarnings(as.Date(d)); out <<- c(out, d[!is.na(dd) & dd > tau])
       ym <- unlist(regmatches(v, gregexpr("(?<![0-9-])(19|20)[0-9]{2}-(0[1-9]|1[0-2])(?![0-9-])", v, perl = TRUE)))
       out <<- c(out, ym[ym > tau_ym])

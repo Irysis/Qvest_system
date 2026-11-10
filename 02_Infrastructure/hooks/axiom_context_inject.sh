@@ -50,10 +50,15 @@ try:
     print(ti.get("subagent_type","") or ti.get("description",""))
     _t = str(ti.get("prompt","")) + " " + str(ti.get("description",""))
     print("reinforcement" if re.search(r"WT-R[0-9]{8}_[0-9]{3}", _t) else "")
+    # 3행(2026-11-10): 정보 경계 τ_D 대상 스폰인가 — Superfan(판단 · 철학 · 구성요소). 정의가 세션 목록에 없어
+    #   범용 에이전트로 띄우는 경우(스킬 지침: 정의 파일을 먼저 읽고 따르라)도 프롬프트 앞부분의 이름으로 잡는다.
+    _who = str(ti.get("subagent_type","")) + " " + str(ti.get("description","")) + " " + str(ti.get("prompt",""))[:1500]
+    print("tau_d" if re.search(r"superfan", _who, re.I) else "")
 except Exception:
-    print(""); print("")' 2>/dev/null || echo "")
+    print(""); print(""); print("")' 2>/dev/null || echo "")
 AGENT_NAME=$(sed -n '1p' <<< "$_AX_META")
 ROUND_TYPE=$(sed -n '2p' <<< "$_AX_META")
+TAUD_AGENT=$(sed -n '3p' <<< "$_AX_META")
 AGENT_NAME_LC=$(printf '%s' "$AGENT_NAME" | tr "[:upper:]" "[:lower:]")
 
 ACTIVE_DIR="$DIR/qepm/memory/axioms/active"
@@ -143,7 +148,7 @@ CLAUDE_MD="$DIR/CLAUDE.md"
 # (v9 2026-08-23) 변동부 단일 원천 — lcode_harvester.py::write_positive_context() 산출물.
 POSITIVE_CTX="$DIR/.cache/positive_context.json"
 ESC=$(printf '%s' "$HEADER" | CB="$CACHE_BODY" PC="$POSITIVE_CTX" CM="$CLAUDE_MD" \
-      ML="$CACHE_ML" IL="$INJECT_LAST" QVEST_INJECT_AGENT="$AGENT_NAME_LC" QVEST_ROUND_TYPE="$ROUND_TYPE" "$QVEST_PY_BIN" -c "
+      ML="$CACHE_ML" IL="$INJECT_LAST" QVEST_INJECT_AGENT="$AGENT_NAME_LC" QVEST_ROUND_TYPE="$ROUND_TYPE" QVEST_INJECT_TAUD="$TAUD_AGENT" "$QVEST_PY_BIN" -c "
 import json, os, sys
 def rd(p):
     try:
@@ -287,6 +292,15 @@ CLEAN = os.environ.get('QVEST_CLEAN_LANE', '') == '1'
 if CLEAN:
     pos_lines, dist_lines, rec_lines, dead_line = [], [], [], '[청정 레인 — 성과·교훈·dead 문맥 제외(결정 FA-CLEAN-BASE-PATH)]'
     pc_status = 'clean_lane_excluded'
+# (2026-11-10 전수점검) 정보 경계 대상 스폰 = Superfan. 에이전트 정의는 2022-12-31 뒤 성과 수치를 읽지 않는다고 못박는데
+#   이 훅이 스폰마다 전 기간 성과 줄(최고 전략의 PORT_t · SR · CAGR · MDD · OOS 와 최근 교훈의 등급 · SR)을 넣고 있었다.
+#   Superfan 의 P1 · P2 의견은 다음 설계로 돌아가므로 경계 위반 경로다. 변동부를 청정 레인과 같은 방식으로 뺀다
+#   (고정부 = 공리 · 고정 축 · 정체성 · 프론티어는 수치가 없어 그대로). 검사 = 08_Tests/hooks/test_axiom_inject_tau_d.sh
+#   ★이 블록은 셸 -c 큰따옴표 안이다 — 주석에도 큰따옴표 · 백틱 · 달러 금지.
+TAUD = os.environ.get('QVEST_INJECT_TAUD', '') == 'tau_d'
+if TAUD and not CLEAN:
+    pos_lines, dist_lines, rec_lines, dead_line = [], [], [], '[정보 경계 대상 스폰 — 성과·교훈·dead 문맥 제외(2022-12-31 뒤 수치를 읽지 않는 에이전트)]'
+    pc_status = 'tau_d_agent_excluded'
 
 H_POS = '[현재 최고 연구-tier 전략 — 여기서 출발·결합할 것]'
 H_DIST = '[검증된 양성 지식]'
@@ -398,6 +412,7 @@ try:
                        'agent': os.environ.get('QVEST_INJECT_AGENT', ''),
                        'pc_status': pc_status,
                        'clean_lane': CLEAN,
+                       'tau_d_agent': TAUD,
                        'markers': {'positive': H_POS[:20] in ctx,
                                    'recent': '[최근 교훈' in ctx,
                                    'dead': 'dead configs' in ctx,

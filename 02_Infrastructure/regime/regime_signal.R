@@ -136,6 +136,25 @@ load_msm_signal <- function() {
   fred_kr_calendar(file.path(CACHE_DIR, "trading_calendar.parquet"))
 }
 
+# 각 YM 의 마지막 KRX 거래일 — **자료와 독립**(주말 + 06_Registry/krx_holidays.json 의 평일 휴장일만으로 센다 · 2026-11-10).
+#   거래일 달력(trading_calendar.parquet)은 수집 자료가 늘리므로 자료가 뒤처지면 달력도 함께 뒤처진다 — '입력이 그 달 말까지 왔나'의
+#   기준이 될 수 없다(아래 .rs_month_decision_dates 는 그 달력을 쓴다). 등록부가 그 해를 싣지 않거나 못 읽으면 NA(판정 불가).
+.rs_month_last_session <- function(yms, reg_path = file.path(PROJECT_ROOT, "06_Registry", "krx_holidays.json")) {
+  out <- rep(as.Date(NA), length(yms))
+  reg <- tryCatch(jsonlite::fromJSON(reg_path, simplifyVector = FALSE), error = function(e) NULL)
+  if (is.null(reg) || is.null(reg$years) || is.null(reg$holidays)) return(out)
+  yrs <- suppressWarnings(as.integer(unlist(reg$years)))
+  hol <- suppressWarnings(as.Date(names(reg$holidays)))
+  for (i in seq_along(yms)) {
+    m1 <- as.Date(paste0(yms[i], "-01"), format = "%Y-%m-%d")              # 형식을 명시 — 틀린 문자열은 오류가 아니라 NA
+    if (is.na(m1) || !(as.integer(format(m1, "%Y")) %in% yrs)) next
+    d <- seq(as.Date(cut(m1 + 31, "month")) - 1, m1, by = "-1 day")        # 그 달 말일 → 1일
+    d <- d[!(as.POSIXlt(d)$wday %in% c(0L, 6L)) & !(d %in% hol)]
+    if (length(d)) out[i] <- d[1]
+  }
+  out
+}
+
 # 각 YM 의 결정일 = 그 달 말일 이하 마지막 한국 거래일 (없으면 NA)
 .rs_month_decision_dates <- function(yms, cal) {
   me <- as.Date(cut(as.Date(paste0(yms, "-01")) + 31, "month")) - 1
@@ -596,6 +615,31 @@ build_regime_signal_table <- function(save_path = NULL, daily = FALSE, ...) {
   .msm_stamp(signal_dt)   # MSM 추정기 표식(행 열 + 파일 속성) — c11 키와 별도
   signal_dt[, Category_basis := classify_regime_basis(Regime_Score, MSM_Crisis_Prob)]   # 라벨 근거(score · msm_override) — 끝 열에 덧붙임
 
+  # >>> input-incomplete-flag (2026-11-10 전수점검 · 검사 08_Tests/regime/test_monthly_incomplete_hold.R 이 이 블록을 꺼내 실행한다)
+  # 월 행의 MSM 은 그 달 일별 값의 평균, KTRI 는 그 달 마지막 가용 행이다. 달이 바뀐 뒤 첫 병합(regime_append_only.R)이 지난달 행을
+  # 영구 동결하는데, 그 시점에 국내 자료가 월말까지 오지 않았으면(리프레시 실패 · 지연) 덜 찬 값이 그대로 굳는다(일간 계열의 같은 길은
+  # 꼬리 가드로 막았다). 국내 자료 층(MSM · KTRI)의 마지막 날짜가 그 달의 마지막 KRX 거래일(자료와 독립)에 못 미친 달을 파일 속성
+  # input_incomplete_dates 로 남긴다 — 원장 병합은 그 달을 동결하지 않고 진행 중 행으로 둔다(입력이 차면 다음 병합에서 동결).
+  # 층 끝이 속한 달부터만 본다(그 앞 달은 이미 닿았다 — 과거의 결측 달을 미도달로 세지 않는다). FRED 층은 결정일 가용분으로 만들므로
+  # 보지 않는다. 판정 불가(휴장일 등록부 미수록 해)는 표시하지 않고 경고만 낸다.
+  .inc_ends <- as.Date(character(0))                                 # c(NULL, Date) 는 Date 속성을 잃는다
+  if (nrow(msm_dt) > 0)  .inc_ends <- c(.inc_ends, max(msm_dt$Date))
+  if (nrow(ktri_dt) > 0) .inc_ends <- c(.inc_ends, max(ktri_dt$Date))
+  .inc_dates <- as.Date(character(0))
+  if (length(.inc_ends) >= 1L) {
+    .inc_lim  <- min(.inc_ends)
+    .inc_tail <- signal_dt$Date >= as.Date(format(.inc_lim, "%Y-%m-01"))
+    .inc_need <- .rs_month_last_session(signal_dt$YM)
+    if (anyNA(.inc_need[.inc_tail]))
+      cat(sprintf("[regime_signal] ⚠ 휴장일 등록부로 월말 거래일을 못 구한 달 %d개 — 입력 도달 판정 불가(표시 없음)\n", sum(is.na(.inc_need[.inc_tail]))))
+    .inc_dates <- signal_dt$Date[.inc_tail & !is.na(.inc_need) & .inc_need > .inc_lim]
+    if (length(.inc_dates))
+      cat(sprintf("[regime_signal] 입력 미도달 달 %d개(%s) — 국내 자료 층 끝 %s · 원장은 이 달을 동결하지 않는다\n",
+                  length(.inc_dates), paste(format(.inc_dates, "%Y-%m"), collapse = " "), .inc_lim))
+  }
+  setattr(signal_dt, "input_incomplete_dates", as.character(.inc_dates))
+  # <<< input-incomplete-flag
+
   # ── Summary ──
   cat("\n[regime_signal] ═══ Distribution ═══\n")
   cat_summary <- signal_dt[, .N, by = Category]
@@ -909,6 +953,28 @@ build_regime_signal_table_daily <- function(save_path = NULL,
     if (l3_ok) ktri_dt$Date else as.Date(character(0))
   )))
   if (length(all_dates) == 0) stop("[regime_signal/daily] Empty date spine.")
+
+  # ── 꼬리 가드 (2026-11-10 전수점검) ──────────────────────────────────────────
+  #   척추는 층 날짜의 합집합이라, 한 층(벤치 기반 MSM)만 새 거래일에 닿고 다른 층(RAWDATA 기반 KTRI)이 아직
+  #   안 닿은 날에도 행이 생긴다. 그 행의 빈 층은 아래 LOCF 가 직전 값으로 채우고 Active_Layers 도 L1+L2+L3 로
+  #   찍히며, 원장 병합(regime_append_only.R)은 오늘보다 앞선 행을 첫 병합에서 동결한다 — 덜 온 입력으로 만든 행이
+  #   발행본에 영구히 남는다(11-10 아침 조건: 벤치 11-09 · RAWDATA/KTRI 11-06).
+  #   → 켜진 시장 자료 층(L1 · L3)이 모두 닿은 마지막 날까지만 행을 만든다. 그 뒤 날짜는 자료가 온 다음 실행이 만든다
+  #     (후보에 없는 날짜 = 라이브 불변 · 늦게 만드는 쪽이 틀리게 굳는 쪽보다 낫다). FRED(L2)는 척추 날짜에 as-of 로
+  #     붙는 층이라 꼬리를 정하지 않는다. 검사: 08_Tests/regime/test_daily_tail_guard.R
+  .tail_ends <- as.Date(character(0))          # c(NULL, Date) 는 Date 속성을 잃는다 — 빈 Date 에서 이어 붙인다
+  if (l1_ok) .tail_ends <- c(.tail_ends, max(msm_dt$Date))
+  if (l3_ok) .tail_ends <- c(.tail_ends, max(ktri_dt$Date))
+  if (length(.tail_ends) >= 1L) {
+    .tail_lim <- min(.tail_ends)
+    n_tail <- sum(all_dates > .tail_lim)
+    if (n_tail > 0) {
+      if (verbose) cat(sprintf("[regime_signal/daily] ★꼬리 가드: %s 뒤 %d일은 일부 층 미도달(L1 끝 %s · L3 끝 %s) — 행을 만들지 않는다\n",
+                               format(.tail_lim), n_tail,
+                               if (l1_ok) format(max(msm_dt$Date)) else "-", if (l3_ok) format(max(ktri_dt$Date)) else "-"))
+      all_dates <- all_dates[all_dates <= .tail_lim]
+    }
+  }
 
   base <- data.table(Date = all_dates)
   base[, YM := format(Date, "%Y-%m")]
