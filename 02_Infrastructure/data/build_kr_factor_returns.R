@@ -21,6 +21,12 @@
 #     빠진다(정정 의심 표지 = 다음 해 보고서를 봐야 생기는 정보 → 표본 선택 미래참조 · 2016~ 정렬 비율 0.66~0.75).
 #     v1.1 = 그 기업-연도는 DART 당시 보고서 기록(접수 다음 거래일)을 쓴다(.krf_pick · 병합 표 RS 와 같은 규칙).
 #     기록 표(RS)가 없으면 빌드하지 않는다(조용히 v1.0 규칙으로 돌아가지 않는다).
+#     진단(11-10 · 규칙 불변): 정렬마다 유니버스 행의 배타 원인(퀀티 · DART 기록 편입 / 퀀티 공시 자체가 구성일 뒤 ·
+#     정정 의심인데 기록 없음 · 판 근거 미상 · 정정 의심 기록 날짜 뒤 · 기록 값 없음 · 자료 없음 · 보유 DART 판 접수일 뒤 ·
+#     분모 ≤ 0 · 신규 상장)을 연도별로 meta annual_sort_causes 에 싣는다(원인 = v2 표의 Check · Avail_Basis). 보유 DART 판이
+#     구성일 뒤 기재정정본인 군(Avail_Basis = dart_rcept · excl_late_dart_version)만 처분 도훈 결정 대기 —
+#     meta restated_record.late_version_pending.
+#     원인 편입 칸 합 ≠ 정렬 종목 수면 멈춘다(진단이 규칙과 어긋남).
 #   수익 = 일간 상한 가치가중(전날 시총을 직전 월말 Big 시총 80 분위에서 자른다 · Jensen-Kelly-Pedersen 2023 · 설정 weighting)
 #     → 월간 = 포트폴리오 일간 수익을 달 안에서 복리 → 요인 = 포트폴리오 수익의 조합 · 시장(MKT) = 상한 없는 가치가중
 #
@@ -94,18 +100,82 @@ KRF_FUND_ITEMS <- c("EquityParent", "TotalEquity", "NonControllingInt", "Preferr
   fifelse(!is.na(d) & d <= at, v, fifelse(!is.na(dr) & dr <= at & is.finite(vr), vr, NA_real_))
 }
 
+# 진단 전용(값을 고르지 않는다) — .krf_pick 이 그 값을 어디서 가져왔나 / 왜 결측인가(11-10 · 규칙 불변)
+#   quantiwise · dart_record = 쓴 값 · late_restated = 정정 의심 기록의 날짜가 구성일 뒤 ·
+#   기록 없음(RS 행 없음)인데 퀀티 판 날짜가 구성일 뒤 = 그 판 날짜의 근거 k(.krf_basis_code)로 가른다:
+#     late_dart_version = v2 표가 보유 DART 판 접수일로 Factor_Date 를 미룬 군(Avail_Basis = dart_rcept · 결정 대상) ·
+#     late_filing = 퀀티 공시(또는 고정일 규칙) 자체가 구성일 뒤(정당한 PIT 결측) ·
+#     late_restated_no_record = 정정 의심(Check = restated)인데 DART 접수일이 없어 기록이 없음 · late_unknown_basis = 근거 열 없음
+#   record_no_value = 기록 날짜는 앞인데 값 없음 · no_data = 값 없음
+#   ★late_dart_version 처분((i) 결측 유지 = 현행 / (ii) 최초 공시일로 편입)은 도훈 결정 대기 — 여기서는 세기만 한다
+.krf_avail_cause <- function(v, d, vr, dr, at, k = NULL) {
+  if (is.null(k)) k <- rep(NA_character_, length(v))
+  q <- !is.na(d) & d <= at
+  late <- is.na(dr) & is.finite(v) & !is.na(d)
+  fcase(q & is.finite(v), "quantiwise",
+        q, "no_data",
+        !is.na(dr) & dr <= at & is.finite(vr), "dart_record",
+        !is.na(dr) & dr > at, "late_restated",
+        !is.na(dr), "record_no_value",
+        late & k %in% "dart_version", "late_dart_version",
+        late & k %in% "filing", "late_filing",
+        late & k %in% "restated", "late_restated_no_record",
+        late, "late_unknown_basis",
+        default = "no_data")
+}
+# 판 날짜 근거(진단 전용) — v2 1단계 표의 Check · Avail_Basis(build_fundamental_v2.py) → restated · dart_version · filing · unknown
+.krf_basis_code <- function(check, basis) {
+  fcase(check %in% "restated", "restated",
+        basis %in% "dart_rcept", "dart_version",
+        basis %in% c("qw_report", "rule"), "filing",
+        default = "unknown")
+}
+# 합성 항목(BE · OPN)의 근거 = 합성 날짜(pmax)를 정한 구성 항목의 근거 — ... = (날짜, 근거) 쌍을 차례로(먼저 맞는 쌍)
+.krf_bind_k <- function(target, ...) {
+  a <- list(...); out <- rep(NA_character_, length(target))
+  for (i in seq(1L, length(a), by = 2L)) {
+    hit <- is.na(out) & !is.na(target) & !is.na(a[[i]]) & a[[i]] == target
+    out[hit] <- a[[i + 1L]][hit]
+  }
+  out
+}
+KRF_SORT_CAUSES <- c("sorted_quantiwise", "sorted_dart_record", "excl_late_filing", "excl_late_restated_no_record",
+                     "excl_late_unknown_basis", "excl_late_restated", "excl_record_no_value", "excl_no_data",
+                     "excl_late_dart_version", "excl_nonpositive", "excl_new_listing")
+# 정렬 유니버스 행마다 배타 원인 하나 — causes = 그 정렬이 쓰는 항목별 .krf_avail_cause · pos_ok = 분모 양수(고른 값 기준) ·
+#   no_dec = 12월 말 시총 없음(B/M 만 · 신규 상장 — 재무 규칙과 무관하게 빠지므로 먼저 센다)
+#   차례: 결정 (ii) 로도 남는 원인을 먼저 센다 → late_dart_version 은 결측 원인 가운데 마지막(그 칸 = 보유 DART 판 날짜만이
+#   막은 행 · 분모 부호는 고른 값으로만 알 수 있어 BE ≤ 0 은 그 뒤)
+.krf_sort_cause <- function(causes, pos_ok, no_dec = NULL) {
+  n <- length(causes[[1L]]); out <- rep(NA_character_, n)
+  if (!is.null(no_dec)) out[no_dec] <- "excl_new_listing"
+  for (p in c("late_filing", "late_restated_no_record", "late_unknown_basis", "late_restated", "record_no_value", "no_data",
+              "late_dart_version")) {
+    hit <- is.na(out) & Reduce(`|`, lapply(causes, function(z) z == p))
+    out[hit] <- paste0("excl_", p)
+  }
+  out[is.na(out) & !(pos_ok %in% TRUE)] <- "excl_nonpositive"
+  dr <- Reduce(`|`, lapply(causes, function(z) z == "dart_record"))
+  out[is.na(out)] <- fifelse(dr[is.na(out)], "sorted_dart_record", "sorted_quantiwise")
+  out
+}
+
 ## ── 재무: 연간(달력연도) 값 + 그 값을 쓸 수 있는 날 ─────────────────────────
 #' FUND: data.table(Ticker, Period(YYYYMM 문자), Item, Value, Factor_Date(Date)) — v2 1단계 표의 열
 #' RS: 정정 의심 기업-연도의 DART 당시 기록 data.table(Ticker, fy, BE_r, TA_r, OPN_r, R_d) — krf_restated_record() 산출 ·
 #'   정정 의심이 없는 자료면 0행 표를 준다(NULL 은 거부 — 기록 없이 v1.0 규칙으로 돌아가지 않는다)
-#' @return data.table(Ticker, fy, BE, BE_d, TA, TA_d, OPN, OPN_d, BE_r, TA_r, OPN_r, R_d)
+#'   FUND 의 Check · Avail_Basis 열(있으면)은 진단 전용 — 판 날짜 근거 BE_k · TA_k · OPN_k(.krf_basis_code · 값 고르기에 안 쓴다 ·
+#'   열이 없으면 unknown)
+#' @return data.table(Ticker, fy, BE, BE_d, TA, TA_d, OPN, OPN_d, BE_k, TA_k, OPN_k, BE_r, TA_r, OPN_r, R_d)
 krf_annual_fund <- function(FUND, RS) {
   if (missing(RS) || is.null(RS)) stop("[krf] 정정 의심 연도 DART 기록(RS)이 없다 — v1.0 규칙(정정 의심 기업을 정렬에서 뺌 · 표본 선택 미래참조)으로 돌아가지 않는다")
   need_rs <- c("Ticker", "fy", "BE_r", "TA_r", "OPN_r", "R_d")
   if (length(setdiff(need_rs, names(RS)))) stop("[krf] RS 열 없음: ", paste(setdiff(need_rs, names(RS)), collapse = ","))
   if (anyDuplicated(RS, by = c("Ticker", "fy"))) stop("[krf] RS (Ticker, fy) 겹침 — 기업-연도마다 기록 하나")
-  F <- FUND[Item %in% KRF_FUND_ITEMS & is.finite(Value) & !is.na(Factor_Date),
-            .(Ticker, Period = as.character(Period), Item, Value = as.numeric(Value), Factor_Date = as.Date(Factor_Date))]
+  col_or_na <- function(c) if (c %in% names(FUND)) as.character(FUND[[c]]) else rep(NA_character_, nrow(FUND))
+  F <- data.table(Ticker = FUND$Ticker, Period = as.character(FUND$Period), Item = FUND$Item, Value = as.numeric(FUND$Value),
+                  Factor_Date = as.Date(FUND$Factor_Date), k = .krf_basis_code(col_or_na("Check"), col_or_na("Avail_Basis")))
+  F <- F[Item %in% KRF_FUND_ITEMS & is.finite(Value) & !is.na(Factor_Date)]
   F[, `:=`(fy = as.integer(substr(Period, 1, 4)), mo = substr(Period, 5, 6))]
   F <- F[mo %in% c("03", "06", "09", "12")]
   dup <- F[, .N, by = .(Ticker, Period, Item)][N > 1L]
@@ -113,13 +183,14 @@ krf_annual_fund <- function(FUND, RS) {
   bs <- F[mo == "12"]
   A <- unique(F[, .(Ticker, fy)])
   for (it in c("EquityParent", "TotalEquity", "NonControllingInt", "PreferredCapital", "TotalAssets")) {
-    s <- bs[Item == it, .(Ticker, fy, v = Value, d = Factor_Date)]
-    setnames(s, c("v", "d"), c(it, paste0(it, "_d")))
+    s <- bs[Item == it, .(Ticker, fy, v = Value, d = Factor_Date, k)]
+    setnames(s, c("v", "d", "k"), c(it, paste0(it, "_d"), paste0(it, "_k")))
     A <- merge(A, s, by = c("Ticker", "fy"), all.x = TRUE)
   }
-  fl <- F[Item %in% c("OperatingProfit", "InterestExp"), .(v = sum(Value), nq = .N, d = max(Factor_Date)), by = .(Ticker, fy, Item)]
-  A <- merge(A, fl[Item == "OperatingProfit" & nq == 4L, .(Ticker, fy, OP4 = v, OP4_d = d)], by = c("Ticker", "fy"), all.x = TRUE)
-  A <- merge(A, fl[Item == "InterestExp", .(Ticker, fy, IE = v, IE_d = d)], by = c("Ticker", "fy"), all.x = TRUE)
+  fl <- F[Item %in% c("OperatingProfit", "InterestExp"), .(v = sum(Value), nq = .N, d = max(Factor_Date), k = k[which.max(Factor_Date)]),
+          by = .(Ticker, fy, Item)]
+  A <- merge(A, fl[Item == "OperatingProfit" & nq == 4L, .(Ticker, fy, OP4 = v, OP4_d = d, OP4_k = k)], by = c("Ticker", "fy"), all.x = TRUE)
+  A <- merge(A, fl[Item == "InterestExp", .(Ticker, fy, IE = v, IE_d = d, IE_k = k)], by = c("Ticker", "fy"), all.x = TRUE)
   ep <- is.finite(A$EquityParent)
   A[, BE0 := fifelse(ep, EquityParent, TotalEquity - fcoalesce(NonControllingInt, 0))]
   A[, BE0_d := fifelse(ep, EquityParent_d, pmax(TotalEquity_d, NonControllingInt_d, na.rm = TRUE))]
@@ -127,7 +198,11 @@ krf_annual_fund <- function(FUND, RS) {
   A[, BE_d := pmax(BE0_d, PreferredCapital_d, na.rm = TRUE)]
   A[, OPN := OP4 - fcoalesce(IE, 0)]
   A[, OPN_d := fifelse(is.finite(OP4), pmax(OP4_d, IE_d, na.rm = TRUE), as.Date(NA))]
-  out <- A[, .(Ticker, fy, BE, BE_d, TA = TotalAssets, TA_d = TotalAssets_d, OPN, OPN_d)]
+  # 판 날짜 근거(진단 전용) — 합성 날짜를 정한 구성 항목의 근거
+  A[, BE0_k := fifelse(ep, EquityParent_k, .krf_bind_k(BE0_d, TotalEquity_d, TotalEquity_k, NonControllingInt_d, NonControllingInt_k))]
+  A[, BE_k := .krf_bind_k(BE_d, BE0_d, BE0_k, PreferredCapital_d, PreferredCapital_k)]
+  A[, OPN_k := fifelse(is.finite(OP4), .krf_bind_k(OPN_d, OP4_d, OP4_k, IE_d, IE_k), NA_character_)]
+  out <- A[, .(Ticker, fy, BE, BE_d, TA = TotalAssets, TA_d = TotalAssets_d, OPN, OPN_d, BE_k, TA_k = TotalAssets_k, OPN_k)]
   R <- as.data.table(RS)[, .(Ticker = as.character(Ticker), fy = as.integer(fy), BE_r = as.numeric(BE_r), TA_r = as.numeric(TA_r),
                              OPN_r = as.numeric(OPN_r), R_d = as.Date(R_d))]
   merge(out, R, by = c("Ticker", "fy"), all.x = TRUE)
@@ -197,18 +272,22 @@ krf_snap <- function(RAW, ME) {
 krf_annual_labels <- function(SNAP, AF, years, cfg) {
   share <- as.numeric(cfg$annual_sort$big_share); bp <- as.numeric(cfg$annual_sort$char_breakpoints)
   mb <- as.integer(cfg$guards$min_big_for_breakpoints); fm <- as.integer(cfg$annual_sort$formation_month)
-  L <- list(); D <- list()
+  L <- list(); D <- list(); CZ <- list()
   for (t in years) {
     f_ym <- t * 100L + fm; d_ym <- (t - 1L) * 100L + 12L
     J <- SNAP[ym == f_ym & member %in% TRUE & is.finite(ME) & ME > 0, .(Ticker, fdate = me_date, ME_f = ME)]
     if (nrow(J) < mb) next
     fdate <- J$fdate[1L]
     J <- merge(J, SNAP[ym == d_ym & is.finite(ME) & ME > 0, .(Ticker, ME_dec = ME)], by = "Ticker", all.x = TRUE)
-    J <- merge(J, AF[fy == t - 1L, .(Ticker, BE, BE_d, TA1 = TA, TA1_d = TA_d, OPN, OPN_d, BE_r, OPN_r, TA1_r = TA_r, R1_d = R_d)],
-               by = "Ticker", all.x = TRUE)
-    J <- merge(J, AF[fy == t - 2L, .(Ticker, TA2 = TA, TA2_d = TA_d, TA2_r = TA_r, R2_d = R_d)], by = "Ticker", all.x = TRUE)
+    J <- merge(J, AF[fy == t - 1L, .(Ticker, BE, BE_d, TA1 = TA, TA1_d = TA_d, OPN, OPN_d, BE_r, OPN_r, TA1_r = TA_r, R1_d = R_d,
+                                     BE_k, OPN_k, TA1_k = TA_k)], by = "Ticker", all.x = TRUE)
+    J <- merge(J, AF[fy == t - 2L, .(Ticker, TA2 = TA, TA2_d = TA_d, TA2_r = TA_r, R2_d = R_d, TA2_k = TA_k)], by = "Ticker", all.x = TRUE)
     # ★PIT — 구성일에 공개돼 있던 값만 쓴다(퀀티 공개일 ≤ 구성일 → 아니면 정정 의심 연도의 DART 당시 기록 → 아니면 결측).
     #   v1.0 은 정정 의심 연도를 결측으로 빼서 '나중에 정정될 회사'를 정렬에서 걸렀다(v1.1 수리 · 머리말)
+    cz <- list(BE  = .krf_avail_cause(J$BE,  J$BE_d,  J$BE_r,  J$R1_d, fdate, J$BE_k),
+               OPN = .krf_avail_cause(J$OPN, J$OPN_d, J$OPN_r, J$R1_d, fdate, J$OPN_k),
+               TA1 = .krf_avail_cause(J$TA1, J$TA1_d, J$TA1_r, J$R1_d, fdate, J$TA1_k),
+               TA2 = .krf_avail_cause(J$TA2, J$TA2_d, J$TA2_r, J$R2_d, fdate, J$TA2_k))
     J[, BE  := .krf_pick(BE,  BE_d,  BE_r,  R1_d, fdate)]
     J[, OPN := .krf_pick(OPN, OPN_d, OPN_r, R1_d, fdate)]
     J[, TA1 := .krf_pick(TA1, TA1_d, TA1_r, R1_d, fdate)]
@@ -218,15 +297,23 @@ krf_annual_labels <- function(SNAP, AF, years, cfg) {
       BM  = list(J[is.finite(ME_dec) & is.finite(BE) & BE > 0, .(Ticker, big, x = BE / ME_dec)], "L", "N", "H"),
       OP  = list(J[is.finite(BE) & BE > 0 & is.finite(OPN), .(Ticker, big, x = OPN / BE)], "W", "N", "R"),
       INV = list(J[is.finite(TA1) & is.finite(TA2) & TA2 > 0, .(Ticker, big, x = TA1 / TA2 - 1)], "C", "N", "A"))
+    # 원인 진단(배타 · 정렬 규칙을 바꾸지 않는다) — 편입 칸 합 ≠ 정렬 종목 수면 멈춘다(진단이 규칙과 어긋남 = 조용히 쓰지 않는다)
+    why <- list(BM  = .krf_sort_cause(cz["BE"], J$BE > 0, no_dec = !is.finite(J$ME_dec)),
+                OP  = .krf_sort_cause(cz[c("BE", "OPN")], J$BE > 0),
+                INV = .krf_sort_cause(cz[c("TA1", "TA2")], J$TA2 > 0))
     for (s in names(sorts)) {
       S <- sorts[[s]][[1]]
+      tb <- table(factor(why[[s]], levels = KRF_SORT_CAUSES))
+      if (sum(tb[c("sorted_quantiwise", "sorted_dart_record")]) != nrow(S))
+        stop("[krf] 정렬 원인 진단이 정렬 규칙과 어긋난다(", t, " ", s, " · 편입 ", sum(tb[1:2]), " vs 정렬 ", nrow(S), ") — 중단")
+      CZ[[length(CZ) + 1L]] <- as.data.table(c(list(fy = t, sort = s, n_universe = nrow(J)), as.list(setNames(as.integer(tb), KRF_SORT_CAUSES))))
       lb <- .krf_sort_labels(S$Ticker, S$big, S$x, sorts[[s]][[2]], sorts[[s]][[3]], sorts[[s]][[4]], bp, mb)
       if (!is.null(lb)) L[[length(L) + 1L]] <- lb[, `:=`(fy = t, sort = s)]
       D[[length(D) + 1L]] <- data.table(fy = t, sort = s, fdate = fdate, n_universe = nrow(J), n_sort = nrow(S),
                                         n_big = sum(S$big), ok = !is.null(lb))
     }
   }
-  list(labels = rbindlist(L, use.names = TRUE), diag = rbindlist(D, use.names = TRUE))
+  list(labels = rbindlist(L, use.names = TRUE), diag = rbindlist(D, use.names = TRUE), causes = rbindlist(CZ, use.names = TRUE))
 }
 
 ## ── 모멘텀 정렬(매월 말) ────────────────────────────────────────────────────
@@ -413,7 +500,7 @@ krf_build <- function(RAW, FUND, RFY, cfg, to = NULL, RS = NULL) {
   setnames(PMo, "me_date", "Date")
   list(daily = FD[Date >= st], monthly = FM[ym >= st_ym], ports_monthly = PMo[ym >= st_ym][order(sort, port, ym)],
        chars = CH, caps = CAP,
-       diag = list(annual = ANN$diag, mom = MOM$diag, ret_abs_gt50_by_year = ext, last_date = last,
+       diag = list(annual = ANN$diag, annual_causes = ANN$causes, mom = MOM$diag, ret_abs_gt50_by_year = ext, last_date = last,
                    weighting = as.character(cfg$weighting$rule %||% "vw"), capped_row_share = capped_share))
 }
 
@@ -435,8 +522,11 @@ krf_load_inputs <- function(root, cfg) {
   RAW[, c("Vol", "AdminStock", "TradingHalt", "UnfaithfulDisc") := NULL]
   fp <- file.path(root, cfg$fundamentals$table)
   items <- KRF_FUND_ITEMS
+  fcols <- c("Ticker", "Period", "Item", "Value", "Factor_Date", "Check", "Avail_Basis")   # Check · Avail_Basis = 정렬 원인 진단 전용
+  miss <- setdiff(fcols, names(open_dataset(fp)))
+  if (length(miss)) stop("[krf] 재무 표 열 없음: ", paste(miss, collapse = ","), " — 정렬 원인 진단을 가를 수 없다(중단)")
   FUND <- as.data.table(open_dataset(fp) |> dplyr::filter(Item %in% items) |>
-                          dplyr::select(dplyr::all_of(c("Ticker", "Period", "Item", "Value", "Factor_Date"))) |> dplyr::collect())
+                          dplyr::select(dplyr::all_of(fcols)) |> dplyr::collect())
   # v1.1 정정 의심 연도 DART 당시 기록 — 설정 · 세 파일 가운데 하나라도 없으면 빌드하지 않는다(fail-closed · 옛 요인 파일 유지)
   rr <- cfg$fundamentals$restated_record
   rr_keys <- c("check_table", "dart_annual", "dart_raw")
@@ -514,6 +604,26 @@ krf_write <- function(res, out, cfg, inputs, epoch, vintage = TRUE, rs_diag = NU
     if (!file.exists(vint)) write_parquet(res$monthly, vint)
   }
   ad <- res$diag$annual
+  cz <- res$diag$annual_causes
+  bmz <- if (is.data.frame(cz) && nrow(cz) && "sort" %in% names(cz))
+    cz[sort == "BM", .(fy, n_universe, excl_late_dart_version,
+                       share_late_dart_version = round(excl_late_dart_version / n_universe, 4),
+                       excl_late_filing, excl_late_restated_no_record, excl_late_unknown_basis, excl_late_restated)] else NULL
+  tot <- function(c) if (is.null(bmz)) 0L else as.integer(sum(bmz[[c]]))
+  late_pending <- list(
+    status = "dohoon_decision_pending", rule_changed = FALSE, current_rule = "결측 유지((i))",
+    options = c("(i) 결측 유지", "(ii) 최초 공시일로 편입"),
+    decision_target = "excl_late_dart_version",
+    doc = paste("결정 대상 = 보유 DART 판이 구성일 뒤 기재정정본이라 구성일에 쓸 판이 원천에 없는 기업-연도(v2 표 Avail_Basis = dart_rcept ·",
+                "Factor_Date 가 보유 판 접수일로 미뤄진 군 = excl_late_dart_version) — 처분 결정 전까지 결측으로 세기만 한다.",
+                "행마다 원인은 하나다: (ii) 로도 남는 원인(퀀티 공시 자체가 구성일 뒤 = excl_late_filing · 정정 의심인데 DART 기록 없음 =",
+                "excl_late_restated_no_record · 근거 미상 = excl_late_unknown_basis · 정정 의심 기록 날짜 뒤 = excl_late_restated ·",
+                "자료 없음)을 먼저 세고 excl_late_dart_version 은 결측 원인 가운데 마지막이다 — 결정 대상 칸에는 결정 대상 군만 든다.",
+                "B/M 정렬에서 12월 말 시총이 없는 신규 상장은 먼저 excl_new_listing 으로 센다(재무 규칙과 무관하게 빠진다)"),
+    bm_by_fy = bmz,
+    bm_total_late_dart_version = tot("excl_late_dart_version"),
+    bm_total_not_decision_target = list(late_filing = tot("excl_late_filing"), late_restated_no_record = tot("excl_late_restated_no_record"),
+                                        late_unknown_basis = tot("excl_late_unknown_basis"), late_restated = tot("excl_late_restated")))
   meta <- list(
     schema = "kr_factor_returns_meta_v1", builder = KRF_BUILDER, cfg_version = cfg$version,
     built_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
@@ -527,8 +637,10 @@ krf_write <- function(res, out, cfg, inputs, epoch, vintage = TRUE, rs_diag = NU
                    vintage_file = if (is.null(vint)) NULL else .krf_rel(vint, out)),
     summary_monthly = krf_summary(res$monthly),
     annual_sorts = ad[, .(fy, sort, fdate = format(fdate), n_universe, n_sort, n_big, ok)],
+    annual_sort_causes = cz,
     restated_record = c(list(rule = "quantiwise_if_public_else_dart_record",
-                             doc = "정정 의심 기업-연도는 DART 당시 보고서 기록(접수 다음 거래일)을 쓴다 — 정정 의심 표지로 표본을 거르지 않는다(v1.1)"),
+                             doc = "정정 의심 기업-연도는 DART 당시 보고서 기록(접수 다음 거래일)을 쓴다 — 정정 의심 표지로 표본을 거르지 않는다(v1.1)",
+                             late_version_pending = late_pending),
                         rs_diag %||% list()),
     momentum_sort_n = list(median = stats::median(res$diag$mom$n_sort), min = min(res$diag$mom$n_sort)),
     ret_abs_gt50_by_year = res$diag$ret_abs_gt50_by_year,
@@ -562,6 +674,12 @@ krf_main <- function(args = commandArgs(trailingOnly = TRUE)) {
   cat(sprintf("[krf] 일간 %d행(%s~%s) · 월간 %d행(%s~%s) · 특성 %d행 · 월간 내용 md5 %s (%.0fs)\n",
               meta$daily$rows, meta$daily$first, meta$daily$last, meta$monthly$rows, meta$monthly$first, meta$monthly$last,
               nrow(res$chars), substr(meta$monthly$content_md5, 1, 12), as.numeric(difftime(Sys.time(), t0, units = "secs"))))
+  lv <- meta$restated_record$late_version_pending
+  nt <- lv$bm_total_not_decision_target
+  cat(sprintf(paste0("[krf] B/M 정렬 결측 — 보유 DART 판 접수일 뒤(처분 도훈 결정 대기) 누계 %d · 결정 대상 밖: 퀀티 공시 뒤 %d · ",
+                     "정정 의심 기록 없음 %d · 근거 미상 %d · 정정 의심 기록 날짜 뒤 %d (연도별 = meta annual_sort_causes)\n"),
+              as.integer(lv$bm_total_late_dart_version), as.integer(nt$late_filing), as.integer(nt$late_restated_no_record),
+              as.integer(nt$late_unknown_basis), as.integer(nt$late_restated)))
   print(meta$summary_monthly)
   invisible(meta)
 }

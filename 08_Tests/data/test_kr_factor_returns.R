@@ -8,6 +8,9 @@
 #   ⑦ 완결 월만 월간 파일에 ⑧ MKT = MKT_TOTAL − RF ⑨ SMB5 = 세 SMB 평균 ⑩ 같은 입력 → 같은 내용 해시
 #   v1.1(11-10): (a) 정정 의심 연도 = DART 당시 기록으로 정렬 편입 (b) 기록 날짜 > 구성일이면 결측 (c) 퀀티 값이 공개된 해는 v1.0 과 같다
 #   (e) RS 없으면 멈춤 (f) krf_restated_record 계산 · (d) 돌연변이 M5~M7(v1.0 규칙 복귀 · 우선순위 뒤집기 · 날짜 검사 삭제)
+#   (g)(11-10) 정렬 원인 진단(배타 · 연도별 · meta annual_sort_causes · late_version_pending · 판 날짜 뒤 원인은
+#     Check · Avail_Basis 로 가른다 — 결정 대상 = 보유 DART 판 뒤만) · 돌연변이 M8 · M9 · M10 ·
+#     일치 검사(GUARD) 발화 M1 · M5g(고르기만 바꾸면 빌드가 멈춘다) — M1b · M5~M7 은 GUARD 를 함께 꺼서 원래 검사를 본다
 #==============================================================================
 suppressPackageStartupMessages({ library(data.table); library(jsonlite) })
 root <- gsub("\\\\", "/", Sys.getenv("QM_ROOT", Sys.getenv("CLAUDE_PROJECT_DIR", "")))
@@ -26,12 +29,15 @@ load_builder <- function(text = NULL) {
   sys.source(f, envir = e, keep.source = FALSE)
   e
 }
-mutant <- function(from, to) {
+mutant <- function(from, to) {                        # from · to = 같은 길이 문자 벡터(차례로 치환 · 각각 정확히 1곳)
   src <- readLines(BUILDER, encoding = "UTF-8", warn = FALSE)
   txt <- paste(src, collapse = "\n")
-  n <- lengths(regmatches(txt, gregexpr(from, txt, fixed = TRUE)))
-  if (n != 1L) stop("돌연변이 치환 대상이 정확히 1곳이 아니다(", n, "): ", from)
-  load_builder(sub(from, to, txt, fixed = TRUE))
+  for (k in seq_along(from)) {
+    n <- lengths(regmatches(txt, gregexpr(from[k], txt, fixed = TRUE)))
+    if (n != 1L) stop("돌연변이 치환 대상이 정확히 1곳이 아니다(", n, "): ", from[k])
+    txt <- sub(from[k], to[k], txt, fixed = TRUE)
+  }
+  load_builder(txt)
 }
 
 ## ── 합성 자료 ────────────────────────────────────────────────────────────────
@@ -201,11 +207,91 @@ e_dup <- tryCatch({ E$krf_restated_record(REST, rbind(CK, CK[1][, DART_Factor_Da
                   error = function(e) conditionMessage(e))
 ok(grepl("하나가 아니다", e_dup), "(f) DART 접수 날짜가 기업-연도마다 둘이면 멈춘다")
 
+## ── (g) 정렬 비율 원인 진단(11-10 · 규칙 불변 · 처분 = 도훈 결정 대기) ──────────────────────────────
+#   보유 DART 판이 구성일 뒤 기재정정본이라 구성일에 쓸 판이 없는 기업-연도(정정 의심 표지 밖 — 'agree' 인데
+#   Factor_Date 가 접수일로 미뤄진 군)는 결측이다. 규칙은 그대로 두고, 빠진 원인별 건수를 연도별로 진단에 싣는다.
+#   판 날짜 뒤(기록 없음) 원인은 v2 표의 Check · Avail_Basis 로 가른다 — 결정 대상(보유 DART 판 접수일 뒤 · dart_rcept)만
+#   late_version_pending 의 결정 대상 칸에 든다(재수리 11-10: 퀀티 지각 공시 · 정정 의심인데 기록 없음이 섞이지 않게).
+#   2011 B/M 정렬 유니버스(멤버 29 = T05 제외)의 배정(서로 배타):
+#     T12 = 정정 의심 · DART 기록 사용 · T18 = 정정 의심 · 기록 날짜가 구성일 뒤 ·
+#     T25 = agree · 보유 DART 판 접수일(dart_rcept)이 구성일 뒤(결정 대상) · T03 = 퀀티 공시(qw_report) 자체가 구성일 뒤 ·
+#     T14 = 정정 의심(restated)인데 DART 기록 없음 · T07 = BE ≤ 0 · T09 = 재무 없음 · T30 = 2010-12 말 시총 없음(신규 상장) ·
+#     나머지 21 = 퀀티 값
+cat("[test_kr_factor_returns] (g) 정렬 원인 진단\n")
+FUND3 <- copy(FUND2)[Ticker == "T07" & Period == "201012" & Item == "EquityParent", Value := -1e9]
+FUND3 <- FUND3[!(Ticker == "T09" & Period == "201012" & Item == "EquityParent")]
+FUND3[, `:=`(Check = "agree", Avail_Basis = "qw_report")]
+FUND3[Ticker %in% RST & substr(Period, 1, 4) == "2010", `:=`(Check = "restated", Avail_Basis = "restated_next_fy")]
+FUND3[Ticker == "T25" & Period == "201012" & Item == "EquityParent", Avail_Basis := "dart_rcept"]
+FUND3[Ticker == "T03" & Period == "201012" & Item == "EquityParent", Factor_Date := as.Date("2011-07-20")]   # 지각 공시(qw_report)
+FUND3[Ticker == "T14" & substr(Period, 1, 4) == "2010", `:=`(Factor_Date = as.Date("2012-03-15"), Check = "restated",
+                                                              Avail_Basis = "restated_next_fy")]           # RS2 에 T14 기록 없음
+RAW3 <- copy(RAW0)[!(Ticker == "T30" & Date < as.Date("2011-01-01"))]
+ann_of <- function(env, R, F, RS, yr = 2011L)
+  env$krf_annual_labels(env$krf_snap(copy(R)[, ME_l1 := NA_real_], env$krf_calendar(R, 1L)$me), env$krf_annual_fund(F, RS), yr, cfg)
+A3 <- ann_of(E, RAW3, FUND3, RS2)
+cz <- A3$causes
+want <- c(sorted_quantiwise = 21L, sorted_dart_record = 1L, excl_late_filing = 1L, excl_late_restated_no_record = 1L,
+          excl_late_unknown_basis = 0L, excl_late_restated = 1L, excl_record_no_value = 0L, excl_no_data = 1L,
+          excl_late_dart_version = 1L, excl_nonpositive = 1L, excl_new_listing = 1L)
+got <- if (is.data.frame(cz) && nrow(cz[fy == 2011L & sort == "BM"]) == 1L && all(names(want) %in% names(cz)))
+  unlist(cz[fy == 2011L & sort == "BM", names(want), with = FALSE]) else NULL
+ok(!is.null(got) && identical(as.integer(got), unname(want)) && identical(names(got), names(want)) && identical(E$KRF_SORT_CAUSES, names(want)),
+   sprintf("(g) 2011 B/M 정렬 원인 = 퀀티 21 · DART 기록 1 · 퀀티 공시 뒤 1 · 정정 의심 기록 없음 1 · 정정 의심 기록 날짜 뒤 1 · 자료 없음 1 · 보유 DART 판 뒤 1 · BE≤0 1 · 신규 상장 1 (got %s)",
+           paste(got, collapse = ",")))
+b3 <- A3$diag[fy == 2011L & sort == "BM"]
+ok(!is.null(got) && sum(got) == b3$n_universe && got[["sorted_quantiwise"]] + got[["sorted_dart_record"]] == b3$n_sort,
+   "(g) 원인 칸 합 = 정렬 유니버스 · 편입 칸 합 = 정렬 종목 수(배타 · 빠짐없음)")
+ok(is.data.frame(cz) && identical(sort(unique(cz[fy == 2011L]$sort)), c("BM", "INV", "OP")) &&
+     isTRUE(cz[fy == 2011L & sort == "OP", excl_late_dart_version] == 1L) && isTRUE(cz[fy == 2011L & sort == "INV", excl_late_dart_version] == 0L) &&
+     isTRUE(cz[fy == 2011L & sort == "INV", excl_late_restated_no_record] == 1L),
+   "(g) OP · INV 정렬에도 원인 칸(T25 는 BE 가 늦어 OP 에서 빠지고 TA 는 공개돼 INV 에는 있다 · T14 는 TA 도 정정 의심 기록 없음)")
+ok(setequal(A3$labels[sort == "BM"]$Ticker, setdiff(sprintf("T%02d", 1:30), c("T05", "T18", "T25", "T03", "T14", "T07", "T09", "T30"))),
+   "(g) 정렬 자체는 규칙 그대로(B/M 정렬 = 멤버 − 진단이 센 빠진 8종목 · T12 는 DART 기록으로 편입)")
+# 근거 열이 없으면 판 날짜 뒤 군은 '근거 미상'으로 센다 — 결정 대상 칸으로 부풀지 않는다
+A3u <- ann_of(E, RAW3, FUND3[, !c("Check", "Avail_Basis")], RS2)
+cu <- A3u$causes[fy == 2011L & sort == "BM"]
+ok(isTRUE(cu$excl_late_unknown_basis == 3L) && isTRUE(cu$excl_late_dart_version == 0L) && isTRUE(cu$excl_late_filing == 0L) &&
+     setequal(A3u$labels[sort == "BM"]$Ticker, A3$labels[sort == "BM"]$Ticker),
+   "(g) Check · Avail_Basis 열이 없으면 T25 · T03 · T14 = 근거 미상 3 · 결정 대상 0(부풀리지 않는다) · 정렬은 같다")
+# 합성 항목의 근거 = 합성 날짜를 정한 구성 항목 — BE(지배주주지분 없음 → 자본총계 − 비지배) · OPN(영업이익 4분기 − 이자비용)
+FC <- data.table(Ticker = "Z1", Period = c("201012", "201012", "201003", "201006", "201009", "201012", "201012"),
+                 Item = c("TotalEquity", "NonControllingInt", rep("OperatingProfit", 4L), "InterestExp"),
+                 Value = c(100, 5, 1, 1, 1, 1, 0.1),
+                 Factor_Date = as.Date(c("2011-03-15", "2011-08-01", "2010-05-15", "2010-08-14", "2010-11-15", "2011-03-15", "2011-09-01")),
+                 Check = "agree", Avail_Basis = c("qw_report", "dart_rcept", "qw_report", "qw_report", "qw_report", "qw_report", "qw_report"))
+AFc <- E$krf_annual_fund(FC, RS0)
+ok(identical(AFc$BE_k, "dart_version") && identical(AFc$OPN_k, "filing") && identical(AFc$BE_d, as.Date("2011-08-01")),
+   "(g) 합성 항목 근거 = 날짜를 정한 구성 항목(BE ← 늦은 비지배지분 dart_rcept · OPN ← 늦은 이자비용 qw_report)")
+# 메타 — annual_sort_causes 표 + restated_record 에 미결 처분(도훈 결정 대기)과 연도별 잔여분
+r3 <- E$krf_build(copy(RAW3), FUND3, RFY, cfg, RS = RS2)
+tdir <- file.path(tempdir(), "krf_meta_g"); dir.create(tdir, showWarnings = FALSE)
+m3 <- E$krf_write(r3, tdir, cfg, inputs = list(), epoch = list(id = "synthetic", universe = "synthetic"), vintage = FALSE,
+                  rs_diag = list(restated_company_years = 2L))
+mj <- fromJSON(file.path(tdir, cfg$outputs$meta), simplifyVector = TRUE)
+lv <- mj[["restated_record"]][["late_version_pending"]]               # [[ ]] = 정확 일치(`$` 는 목록 부분 일치)
+mc <- mj[["annual_sort_causes"]]
+bz <- lv[["bm_by_fy"]]; nt <- lv[["bm_total_not_decision_target"]]
+ok(is.data.frame(mc) && isTRUE(mc$excl_late_dart_version[mc$fy == 2011 & mc$sort == "BM"] == 1) &&
+     is.list(lv) && identical(lv[["status"]], "dohoon_decision_pending") && isTRUE(lv[["rule_changed"]] == FALSE) &&
+     identical(lv[["decision_target"]], "excl_late_dart_version") &&
+     is.data.frame(bz) && isTRUE(bz$excl_late_dart_version[bz$fy == 2011] == 1) && isTRUE(bz$excl_late_filing[bz$fy == 2011] == 1) &&
+     isTRUE(bz$excl_late_restated_no_record[bz$fy == 2011] == 1) && isTRUE(bz$excl_late_restated[bz$fy == 2011] == 1) &&
+     isTRUE(abs(bz$share_late_dart_version[bz$fy == 2011] - round(1 / 29, 4)) < 1e-12) &&
+     isTRUE(lv[["bm_total_late_dart_version"]] == 1) && is.list(nt) && isTRUE(nt[["late_filing"]] == 1) &&
+     isTRUE(nt[["late_restated_no_record"]] == 1) && isTRUE(nt[["late_unknown_basis"]] == 0) && isTRUE(nt[["late_restated"]] == 1) &&
+     is.null(lv[["bm_total_late_no_record"]]) && isTRUE(mj[["restated_record"]][["restated_company_years"]] == 2),
+   "(g) 메타 = 원인 표 + 미결 잔여분(결정 대상 = 보유 DART 판 뒤만 · 연도별 건수 · 비율 · 누계 1 · 결정 대상 밖 원인 누계 따로 · 처분 대기 · 규칙 불변)")
+
 ## ── 위반 주입(검사가 살아 있나) ─────────────────────────────────────────────
 cat("[test_kr_factor_returns] 위반 주입\n")
 M1 <- mutant("    J[, BE  := .krf_pick(BE,  BE_d,  BE_r,  R1_d, fdate)]\n", "")
-l1 <- labs_of(M1, FUND, RS0)
-ok("T25" %in% l1[sort == "BM"]$Ticker, "M1 BE 의 PIT 고르기를 지우면 T25 가 정렬에 들어온다(① 이 잡는다)")
+l1 <- tryCatch(labs_of(M1, FUND, RS0), error = function(e) conditionMessage(e))
+ok(is.character(l1) && grepl("어긋난다", l1), "M1 BE 의 PIT 고르기를 지우면 정렬 원인 진단의 일치 검사가 빌드를 멈춘다(fail-closed)")
+GUARD <- "      if (sum(tb[c(\"sorted_quantiwise\", \"sorted_dart_record\")]) != nrow(S))\n"
+M1b <- mutant(c("    J[, BE  := .krf_pick(BE,  BE_d,  BE_r,  R1_d, fdate)]\n", GUARD), c("", "      if (FALSE)\n"))
+l1b <- labs_of(M1b, FUND, RS0)
+ok("T25" %in% l1b[sort == "BM"]$Ticker, "M1b 일치 검사까지 지우면 T25 가 정렬에 들어온다(① 이 잡는다)")
 M2 <- mutant("prev = c(as.Date(NA), head(dates, -1L))", "prev = dates")
 rf2 <- M2$krf_build(copy(RAW0), FUND, RFY, cfg, RS = RS0)$daily[Date == as.Date("2011-07-15")]$rf_yield_pct
 ok(identical(rf2, 4), "M2 RF 를 그날 금리로 바꾸면 07-15 이 4% 가 된다(⑥ 이 잡는다)")
@@ -220,14 +306,31 @@ x_mkt <- merge(RAW0[Date == d1, .(Ticker, Ret)], RAW0[Date == as.Date("2011-07-0
 x_mkt <- x_mkt[Ticker %in% RAW0[Date == as.Date("2011-06-30") & member == TRUE]$Ticker]
 ok(isTRUE(abs(mk_mkt(res) - x_mkt[, sum(ME * Ret) / sum(ME)]) < 1e-12), "⑧ 대조 — 시장(MKT_TOTAL)은 상한 없는 가치가중(직전 월말 멤버)")
 PICK <- "fifelse(!is.na(d) & d <= at, v, fifelse(!is.na(dr) & dr <= at & is.finite(vr), vr, NA_real_))"
-M5 <- mutant(PICK, "fifelse(!is.na(d) & d <= at, v, NA_real_)")              # (d) v1.0 규칙(정정 의심 기업을 뺀다)으로 되돌림
+#   M5~M7 은 고르기 규칙만 바꾼 돌연변이 — 원인 진단의 일치 검사(GUARD)가 먼저 멈추므로(M5g) 검사를 함께 꺼서 (a)~(c) 가 직접 잡는지 본다
+NOG <- "      if (FALSE)\n"
+M5g <- mutant(PICK, "fifelse(!is.na(d) & d <= at, v, NA_real_)")
+e5g <- tryCatch({ labs_of(M5g, FUND2, RS2); "no_error" }, error = function(e) conditionMessage(e))
+ok(grepl("어긋난다", e5g), "M5g 고르기만 v1.0 규칙으로 되돌리면 원인 진단의 일치 검사가 빌드를 멈춘다(fail-closed)")
+M5 <- mutant(c(PICK, GUARD), c("fifelse(!is.na(d) & d <= at, v, NA_real_)", NOG))   # (d) v1.0 규칙(정정 의심 기업을 뺀다)으로 되돌림
 ok(!("T12" %in% labs_of(M5, FUND2, RS2)[sort == "BM", Ticker]), "M5(d) 고르기를 v1.0 규칙으로 되돌리면 T12 가 정렬에서 빠진다((a) 가 잡는다)")
-M6 <- mutant(PICK, "fifelse(!is.na(dr) & dr <= at & is.finite(vr), vr, fifelse(!is.na(d) & d <= at, v, NA_real_))")   # DART 기록을 먼저
+M6 <- mutant(c(PICK, GUARD), c("fifelse(!is.na(dr) & dr <= at & is.finite(vr), vr, fifelse(!is.na(d) & d <= at, v, NA_real_))", NOG))   # DART 기록을 먼저
 ok(!identical(labs_of(M6, FUND, RS3)[order(sort, Ticker)], lab[order(sort, Ticker)]) ||
      !identical(M6$.krf_content_md5(M6$krf_build(copy(RAW0), FUND, RFY, cfg, RS = RS3)$monthly, cols), E$.krf_content_md5(res$monthly, cols)),
    "M6 퀀티 우선을 DART 기록 우선으로 바꾸면 (c) 가 잡는다(정렬 또는 월간 해시가 달라진다)")
-M7 <- mutant("dr <= at & is.finite(vr)", "is.finite(vr)")                    # 기록 날짜 검사를 지움
+M7 <- mutant(c("fifelse(!is.na(dr) & dr <= at & is.finite(vr), vr,", GUARD), c("fifelse(!is.na(dr) & is.finite(vr), vr,", NOG))   # 기록 날짜 검사를 지움
 ok("T18" %in% labs_of(M7, FUND2, RS2)[sort == "BM", Ticker], "M7 기록 날짜 검사를 지우면 T18(구성일 뒤 기록)이 들어온다((b) 가 잡는다)")
+M8 <- mutant('late & k %in% "filing", "late_filing"', 'late & k %in% "filing", "late_dart_version"')   # 지각 공시를 결정 대상에 섞음(검증자 지적 결함)
+c8 <- ann_of(M8, RAW3, FUND3, RS2)$causes
+ok(isTRUE(c8[fy == 2011L & sort == "BM", excl_late_dart_version] == 2L),
+   "M8 퀀티 지각 공시를 결정 대상(보유 DART 판 뒤)에 섞으면 (g) 원인 칸이 달라진다(2 ≠ 1 · (g) 가 잡는다)")
+M10 <- mutant('k = .krf_basis_code(col_or_na("Check"), col_or_na("Avail_Basis"))', 'k = NA_character_')   # 근거 열을 버림
+c10 <- ann_of(M10, RAW3, FUND3, RS2)$causes
+ok(isTRUE(c10[fy == 2011L & sort == "BM", excl_late_dart_version] == 0L) && isTRUE(c10[fy == 2011L & sort == "BM", excl_late_unknown_basis] == 3L),
+   "M10 근거 열(Check · Avail_Basis)을 버리면 결정 대상 칸이 0 · 근거 미상 3 이 된다((g) 가 잡는다)")
+M9 <- mutant("    annual_sort_causes = ", "    annual_sort_causes_x = ")              # 메타에서 원인 표를 뺌
+m9 <- M9$krf_write(r3, tdir, cfg, inputs = list(), epoch = list(id = "synthetic", universe = "synthetic"), vintage = FALSE, rs_diag = list())
+ok(is.null(fromJSON(file.path(tdir, cfg$outputs$meta), simplifyVector = TRUE)[["annual_sort_causes"]]),
+   "M9 메타의 원인 표를 빼면 (g) 메타 검사가 잡는다(키가 없다)")
 
 cat(sprintf("[test_kr_factor_returns] %d PASS / %d FAIL\n", pass, fail))
 cat(toJSON(list(test = "kr_factor_returns", pass = pass, fail = fail, total = pass + fail), auto_unbox = TRUE), "\n")  # 배터리 요약 줄 — 키 test 필수(run_all_hooks.sh)
