@@ -286,3 +286,8 @@
 - 도훈 결정: PIT-C11-BOOK0001 '시간축 수리 뒤 게이트 이력 재산출 → A 면 Judge 스폰'(09-24 승인 · 미집행) · PIT-C1-MSM-PARAMS 'BOOK_0001 모수 핀 교체 · C11 2단계 재측정과 한 번에 → Judge'(미집행) · KQ150-PRELAUNCH(11-06) 'BOOK_0001 재측정은 하지마'(출범 전 KQ150 소급 투영 건 · 다시 상정하지 않는다).
 - 오버레이 카탈로그 40팔(추세 3 · 변동성 목표 3 · 낙폭 2 · 결합 2 · 횡단면 20 등) active · book_spec 1 suspended.
 - 프로그램 등록부: P0R01 not_reached · P2R03 falsified 14/14 · P2R04 falsified 8/8 · P3R03 partial · P4 라운드 0 · 열린 결정 5(23일).
+
+## 마감 기록 (11-10)
+- 레인 Q(전략강화 재설계) · 레인 O2(시험 목록 분류)는 보고 없이 중단됨(재개 불가 통지). 해당 영역의 결론은 README §2 · §3 · §5-2 — Q 직접 작성.
+- 추가 수리(README §5): 시험 2종 운영 상태 의존 제거 · 감시 계열 3종 편입 · 러너 간소화(timings · 파이썬 1회 · 지문 재사용) · suite_totals_watch(같은 날 건너뛰기 · 로그 보존 · 국면 합계 · 밤/주 단계) · 결과 원장(round_core outcomes.R) · 시행 예산(trial_budget.R) · Axiom 처분 스위치.
+- 커밋: 5c05969b80 · 72bae6a27 · 3b4651760 · 322d05514 · 98ddbcbf1(v10.2). 결정 상정 3건: LADDER-REFERENCE-ASSEMBLY-20261110 · DSR-GATE-FORM-20261110 · GRADE-V33-NOTCH-ASOF-AND-RULE-CHANGE-PROCEDURE-20261110.
