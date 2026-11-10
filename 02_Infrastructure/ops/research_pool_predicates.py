@@ -307,10 +307,31 @@ def alpha_pending(stage):
         d = _load_json(f)
         if isinstance(d, dict):
             scan(d.get("candidates") or [], os.path.basename(f))
+    # ★최신 판정 우선(2026-11-10 감사 레인 C): 라우터 v5 는 매 실행 전 후보를 다시 분류한다(실측 3회 실행 ·
+    #   같은 논문 엔진 뒤집힘 55/234 · testable↔그 외 37). 구판은 setdefault 로 **처음 본 testable** 을 붙잡아,
+    #   뒤 실행이 not_relevant/skip/data_pipeline_required 로 고친 논문도 큐에 남았다(11-10 실측 큐 74 중 9).
+    #   그래서 파일을 날짜순으로 훑으며 논문별 '마지막 결정 판정'을 기록하고, 그것이 testable 이 아니면 뺀다.
+    #   결정 판정이 아닌 것 = prefilter 스텁(generated_by=prefilter) · verdict=redundant('이미 판정함'이지 재판정이 아님).
+    #   레코드(표시 · 순서)는 처음 본 testable 그대로 둔다 — 큐 순서는 바꾸지 않는다(lean-loop '재정렬 금지').
+    last_decisive = {}
     for f in sorted(glob.glob(os.path.join(stage, "alpha_search_route_*.json"))):
         r = _load_json(f)
         if isinstance(r, dict):
             scan(r.get("papers") or [], os.path.basename(f))
+            if str(r.get("generated_by") or "").strip().lower() == "prefilter":
+                continue
+            for o in (r.get("papers") or []):
+                if not isinstance(o, dict):
+                    continue
+                fc = o.get("factor_candidate") or {}
+                v = str((fc.get("verdict") if isinstance(fc, dict) else "") or o.get("verdict") or "").strip().lower()
+                if v == "redundant":
+                    continue
+                p = pid_of(o, os.path.basename(f), warn=False)
+                if p:
+                    last_decisive[p] = is_testable(o)
+    for p in [k for k in pend if last_decisive.get(k) is False]:
+        del pend[p]
 
     # pg2 강화 큐 — id 없는 계열이라 키 파생 + 제목/DOI 대조를 따로 쓴다.
     pg2_files = sorted(glob.glob(os.path.join(stage, "pg2_reinforcement_queue_*.json")))

@@ -458,6 +458,24 @@ run_mcp_probe <- function() {
 
 mcp <- run_mcp_probe()
 log_line("[paper-recharge] MCP probe: status=%s candidates=%s out=%s", mcp$status, mcp$candidates, relative_path(mcp$out))
+# (2026-11-10 감사 레인 C) arXiv 축 사망은 로그 한 줄뿐이었다 — read_failed · python_unavailable · stale_not_rewritten ·
+#   mcp_runtime_unavailable · mcp_error 등에서 후보 0 · 종료 코드 0 · 텔레그램 0 이라 '신규 없음'과 겉보기가 같았다
+#   (실측 read_failed 3회 · 09-13 exit=143 포함 · 경보 0). arXiv 는 유일한 동적 원천이라 그 사망 = 수집 정지다.
+#   → 마커 1개(하루 1회 · morning_run 의 마커 집계가 1통으로 올린다 · 성공 런이 _resolved 로 옮긴다).
+if (!grepl("^mcp_ok", as.character(mcp$status %||% "")) && !identical(mcp$status, "mcp_suspect_empty") && !dry_run) {
+  tryCatch({
+    adir <- file.path(PROJECT_ROOT, ".cache", "scheduler_alerts")
+    dir.create(adir, recursive = TRUE, showWarnings = FALSE)
+    .rs <- substr(gsub("[^a-z_]+", "", sub("\\(.*$", "", tolower(as.character(mcp$status %||% "unknown")))), 1L, 40L)
+    .mk <- file.path(adir, sprintf("paper_recharge_arxiv_%s_%s.alert", if (nzchar(.rs)) .rs else "unknown", today))
+    if (!file.exists(.mk))
+      writeLines(c(sprintf("ts=%s", format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")), "component=paper_recharge",
+                   sprintf("reason=arxiv_%s", .rs),
+                   sprintf("detail=arXiv 탐색(유일한 동적 원천)이 실패했습니다: status=%s · 산출=%s. 후보 0 은 '신규 없음'이 아닙니다.",
+                           mcp$status, relative_path(mcp$out))), .mk, useBytes = TRUE)
+  }, error = function(e) log_line("[paper-recharge] arXiv 사망 마커 기록 실패: %s", conditionMessage(e)))
+  log_line("[paper-recharge] ★arXiv 축 실패(status=%s) — 경보 마커 기록", mcp$status)
+}
 if (identical(mcp$status, "mcp_suspect_empty")) {
   log_line("[paper-recharge] WARN: MCP 탐색 후보 0 붕괴 — 최근 실행(lookback 7) 중 prefilter>0 존재 (상류 의심). %s errors 필드 확인 필요",
            relative_path(mcp$out))
@@ -883,7 +901,16 @@ if (!dry_run) {
 #   '논문풀 일일 적재 완료' 는 downloaded=0 인 날에도 매일 나갔고(08-31·09-02 본문 '신규 없음'), 정보량 0 메시지의
 #   반복은 학습된 무시를 만든다. 붕괴 신호(mcp_suspect_empty)는 마커 외 가시성 유지를 위해 예외로 발송한다.
 .n_new_dl <- sum(summary_df$status == "downloaded")
-.tg_has_news <- (.n_new_dl > 0L) || (registry_added_total > 0L) || (n_curated_dead > 0L) ||
+# (2026-11-10) 죽은 링크는 '새로 죽은 것'이 있을 때만 소식이다 — 같은 2개(404)가 매 실행 1통을 만들었다(66일).
+#   판정 = paper_recharge_dead_links.R · 상태 = stage_artifacts/paper_recharge/curated_dead_alerted.json · 로그 줄은 그대로.
+.dead_news <- tryCatch({
+  source(file.path(PROJECT_ROOT, "02_Infrastructure", "tools", "paper_recharge_dead_links.R"), local = TRUE)
+  .dn <- if (n_curated > 0L) curated_health$file_name[!curated_health$ok] else character(0)
+  pr_dead_link_news(.dn, file.path(stage_root, "curated_dead_alerted.json"), write = !dry_run)$news
+}, error = function(e) { log_line("[paper-recharge] dead-link 판정 오류(종전 규칙으로): %s", conditionMessage(e)); n_curated_dead > 0L })
+if (n_curated_dead > 0L && !isTRUE(.dead_news))
+  log_line("[paper-recharge] 죽은 링크 %d개는 이미 알린 것 — 이것만으로는 발송하지 않는다", n_curated_dead)
+.tg_has_news <- (.n_new_dl > 0L) || (registry_added_total > 0L) || isTRUE(.dead_news) ||
                 identical(mcp$status, "mcp_suspect_empty")
 send_tg <- !no_tg && !dry_run && .tg_has_news
 if (!no_tg && !dry_run && !.tg_has_news) {
