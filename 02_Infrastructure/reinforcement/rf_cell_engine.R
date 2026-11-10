@@ -278,25 +278,46 @@ if (is.null(.flist)) {
     ##   "registry"(등록부에 미리 선언된 기대수익 방향) | "defensive"(등록부 방어 방향 — 방어 틸트 · 방어 슬리브용).
     ##   값은 정본 접근자의 direction 인자로만 간다(수동 부호 반전 없음 · C13). 필드가 없으면 호출 모양까지 종전과 같다.
     ##   방어 방향이 등록부에 없는 팩터에 "defensive" 를 요구하면 멈춘다(조용히 팩터가 빠지지 않게).
+    ## (2026-11-10 · 헌장 빈칸 15 "방어 틸트의 정렬이 방어 쪽이 아닌 달은 틸트 0 — 부호를 뒤집지 않는다") "defensive_only" =
+    ##   방어 쪽 한정 — 시그널일마다 그 날의 as-of 정렬(ic_asof)과 등록부 방어 방향(defensive)을 둘 다 정본 접근자로 받아,
+    ##   두 정렬의 부호가 같은 달(Σ z_ic · z_def > 0)은 정렬 값 그대로(= 방어 정렬 값) · 다른 달은 그 팩터 기여 0(아래 4절이 rank-Z 뒤 0 으로 둔다).
+    ##   값 열은 언제나 방어 정렬 값이다(커버리지 · 결합 조인이 두 모드와 같게) — 꺼진 달 목록은 attr def_off_dates 로 넘긴다. 접근자에는
+    ##   "defensive_only" 를 넘기지 않는다(접근자 어휘는 ic_asof | registry | defensive 그대로 · 수동 부호 반전 없음 · C13).
     .dir <- as.character(if (is.null(fs$direction)) "ic_asof" else fs$direction)[1]
-    if (!(.dir %in% c("ic_asof", "registry", "defensive")))
-      stop("[rf_cell_engine] 팩터 방향 어휘 밖: ", .dir, " (ic_asof | registry | defensive) — ", fs$id)
-    if (identical(.dir, "defensive")) {
+    if (!(.dir %in% c("ic_asof", "registry", "defensive", "defensive_only")))
+      stop("[rf_cell_engine] 팩터 방향 어휘 밖: ", .dir, " (ic_asof | registry | defensive | defensive_only) — ", fs$id)
+    if (.dir %in% c("defensive", "defensive_only")) {
       .reg <- jsonlite::fromJSON(file.path(.RF_ROOT, "02_Infrastructure/factor_db/factor_registry.json"), simplifyVector = FALSE)
       .ent <- (if (!is.null(.reg$factors)) .reg$factors else .reg)[[fs$id]]
       if (is.null(.ent) || is.null(.ent$direction_defensive) || !nzchar(as.character(.ent$direction_defensive)[1]))
-        stop("[rf_cell_engine] 팩터 ", fs$id, " 에는 등록부 방어 방향(direction_defensive)이 없다 — direction = \"defensive\" 불가")
+        stop("[rf_cell_engine] 팩터 ", fs$id, " 에는 등록부 방어 방향(direction_defensive)이 없다 — direction = \"", .dir, "\" 불가")
     }
+    .off <- as.Date(character(0))
     L <- lapply(.sig_dates, function(d) {
-      f <- tryCatch(if (identical(.dir, "ic_asof")) load_month_factors(d, factor_names = fs$id)
-                    else load_month_factors(d, factor_names = fs$id, direction = .dir), error = function(e) NULL)   # C15
+      .ld <- if (identical(.dir, "defensive_only")) "defensive" else .dir
+      f <- tryCatch(if (identical(.ld, "ic_asof")) load_month_factors(d, factor_names = fs$id)
+                    else load_month_factors(d, factor_names = fs$id, direction = .ld), error = function(e) NULL)   # C15
       if (is.null(f) || !nrow(f)) return(NULL)
       f <- as.data.table(f)
       if (!"Z_Score_Aligned" %in% names(f)) return(NULL)                                     # C13
+      if (identical(.dir, "defensive_only")) {
+        fi <- tryCatch(load_month_factors(d, factor_names = fs$id), error = function(e) NULL)   # 그 날의 as-of 정렬(C15 · 호출 모양 = 기본)
+        fi <- if (is.null(fi) || !nrow(fi) || !"Z_Score_Aligned" %in% names(fi)) NULL else as.data.table(fi)
+        ag <- if (is.null(fi)) NA_real_ else {
+          m <- merge(f[, .(Ticker, zd = as.numeric(Z_Score_Aligned))], fi[, .(Ticker, zi = as.numeric(Z_Score_Aligned))], by = "Ticker")
+          sum(m$zd * m$zi, na.rm = TRUE) }
+        if (!(is.finite(ag) && ag > 0)) .off <<- c(.off, as.Date(d))                          # 판정 불가(as-of 정렬 없음 · 0)도 끈다 — 방어 쪽 확인될 때만 켠다
+      }
       out <- data.table(Date = as.Date(d), Ticker = f$Ticker, v = as.numeric(f$Z_Score_Aligned))
       setnames(out, "v", tag); out
     })
-    rbindlist(Filter(Negate(is.null), L), use.names = TRUE)
+    res <- rbindlist(Filter(Negate(is.null), L), use.names = TRUE)
+    if (identical(.dir, "defensive_only")) {
+      setattr(res, "def_off_dates", sort(unique(.off)))
+      cat(sprintf("[rf_cell_engine] factor_direction | %s defensive_only — 방어 쪽이 아닌(꺼진) 시그널일 %d / %d\n",
+                  fs$id, length(unique(.off)), length(.sig_dates)))
+    }
+    res
   } else if (identical(fs$kind, "price")) {
     if (!identical(fs$id, "lowvol60")) stop("[rf_cell_engine] price factor 미지원: ", fs$id)
     if (!".sd60_l1" %in% names(DT)) {
@@ -342,10 +363,23 @@ if (is.null(.flist)) {
 PANEL <- PANEL[, .(Date, Ticker, .base_sig, .SizeLag,
                    Sector = if ("Sector_Lv2" %in% names(PANEL)) Sector_Lv2 else NA_character_)]
 .tags <- character(0)
+.def_off <- list()      # 태그 → 방어 쪽 한정(defensive_only) 팩터가 꺼진 시그널일(4절이 rank-Z 뒤 기여 0) · 다른 모드는 비어 있다(종전 경로 그대로)
+## 방어 쪽 한정 팩터의 꺼진 달 = 그 rank-Z 열 0(기여 0 · 다른 열 가중 불변). rank-Z 전에 값을 0 으로 두면 같은 날 동점 → sd 0 → NaN 이 되어
+##   행이 통째로 빠지므로(4절 is.finite(Score)) 반드시 rank-Z 뒤에 둔다.
+.zero_off <- function(P, zc, off) { if (length(off)) P[as.integer(Date) %in% as.integer(off), (zc) := 0]; invisible(P) }
+## 카탈로그 비중 마무리(P-2 · 2026-11-10) — 기본 = 종전 식 w / sum(w) 그대로 · allow_cash 칸만 Σw ≤ 1 을 두고 그 위는 멈춘다
+##   (허용 오차 1e-6 = method_registry.R wrap_adapter 사후 단언 abs(sum − 1) < 1e-6 과 같은 값)
+.rf_wt_finalize <- function(w, allow_cash) {
+  if (!isTRUE(allow_cash)) return(w / sum(w))
+  if (sum(w) > 1 + 1e-6) stop(sprintf("[rf_cell_engine] allow_cash 칸 비중 합 %.6f > 1 — 레버리지 금지(Σw ≤ 1)", sum(w)))
+  w
+}
 if (!.base_only) {
   for (k in seq_along(.flist)) {
     tg <- paste0(".fv", k)
-    PANEL <- merge(PANEL, .load_factor(.flist[[k]], tg), by = c("Date", "Ticker"))
+    .fl <- .load_factor(.flist[[k]], tg)
+    if (!is.null(attr(.fl, "def_off_dates"))) .def_off[[tg]] <- attr(.fl, "def_off_dates")
+    PANEL <- merge(PANEL, .fl, by = c("Date", "Ticker"))
     if (!nrow(PANEL)) stop("[rf_cell_engine] 팩터 ", k, " 결합 후 패널이 비었습니다 — 커버리지 확인")
     .tags <- c(.tags, tg)
   }
@@ -361,6 +395,7 @@ PANEL[, .zb := .rz(.base_sig), by = .grp]
 for (k in seq_along(.tags)) {
   tg <- .tags[k]; zc <- paste0(".z", k)
   PANEL[, (zc) := .rz(get(tg)), by = .grp]
+  if (!is.null(.def_off[[tg]])) .zero_off(PANEL, zc, .def_off[[tg]])      # 헌장 빈칸 15 — 방어 쪽이 아닌 달 기여 0
   .zt <- c(.zt, zc)
 }
 .zcols <- c(".zb", .zt)
@@ -436,7 +471,10 @@ if (!is.null(.SL)) {
   .sl_excl <- if (identical(.SL$exclude, "base_factors"))
                 unique(as.character(unlist(lapply(.flist, function(f) f$id %||% NULL)))) else NULL
   .sl_res <- rf_sl_resolve(.SL, .RF_ROOT, exclude_ids = .sl_excl)
-  .pdef <- .load_factor(list(kind = .SL$factor_kind %||% "db", id = .sl_res$id), ".zdef")  # db 면 C15 단일 경유
+  ## ★처치 방향 = 선정 방향(2026-11-10 · 감사 B7) — rf_sl_resolve 가 정한 실효 기준(defensive = 선정 IC 를 방어 부호로 본 것)을 그대로 적재에 넘긴다.
+  ##   ic_asof(factor_id 고정 재현) · native(비 db 원천)는 direction 을 넘기지 않는다 = 종전 호출 모양.
+  .pdef <- .load_factor(list(kind = .SL$factor_kind %||% "db", id = .sl_res$id,
+                             direction = if (identical(.sl_res$direction, "defensive")) "defensive" else NULL), ".zdef")  # db 면 C15 단일 경유
   if (is.null(.pdef) || !nrow(.pdef))
     stop(sprintf("[rf_cell_engine] 방어 팩터 %s 패널 부재 — 처치 불가", .sl_res$id))
   .PANEL_D <- merge(PANEL, .pdef, by = c("Date", "Ticker"), all.x = TRUE)
@@ -455,6 +493,7 @@ if (!is.null(.SL)) {
   #   판정 입력은 이 진단을 계약 contracts/sleeve_delivery.R 이 재도출한 산출물뿐 — 여기 로그 줄은 사람용.
   .sl_dl <- rf_sl_delivery(.sl_before, SEL, .SL, .N_MAX)
   .RF_DIAG$sleeve_delivery <- list(rule = .SL, resolved_id = .sl_res$id, basis = .sl_res$basis, asof = .sl_res$asof %||% NA_character_,
+                                   direction = .sl_res$direction %||% NA_character_,
                                    exclude_rule = .sl_res$exclude_rule %||% "", excluded_ids = .sl_res$excluded_ids %||% character(0),
                                    excluded_in_pool = .sl_res$excluded_in_pool %||% character(0),
                                    summary = .sl_dl$summary, rows = .sl_dl$rows)
@@ -503,6 +542,34 @@ if (identical(.wt$kind, "ew")) {
       .LB  <- as.integer(.wt$lookback_days %||% 252L)
       if (!".ret" %in% names(DT)) DT[, .ret := Close / shift(Close, 1L) - 1, by = Ticker]
       .nEW <- 0L; .nOK <- 0L
+      ## ── (2026-11-10 · 감사 E2 ← E3 연결 P-1 · P-2 · P-3) 칸 단위 선택지 — 셋 다 적지 않으면 종전과 같은 식 · 같은 순서(결과 불변) ──
+      ##   P-1 weighting.sigma_provider = "sample"(기본 · 252일 표본 공분산) | "factor:ts:<base|downside|dd_state>"(요인 위험모형 Σ —
+      ##       rf_factor_cov.R::rfc_sigma_ctx · 요인 수익은 Date < 신호일만 · R 행 날짜 전달 · 관측 요인을 못 쓰면 pca 로 내려가고 센다).
+      ##   P-2 weighting.allow_cash = true — Σw ≤ 1 을 재정규화하지 않는다(측정 축 MC5 · Σw ≤ 1 잔여 현금 · 축 완화 아님).
+      ##       ★카탈로그 정규형(method_registry.R wrap_adapter target_sum = 1)이 그대로면 현금은 생기지 않는다 → 현금을 만든 시그널일 0 이면 멈춘다(처치 미전달).
+      ##   P-3 weighting.lean_n_days = "native"(기본 · lean 빌트인 자기 창 60/120일) | "cell"(ctx$n_days = 칸 창 행 수) — 캐리어가 n_days 를 안 읽으면 멈춘다.
+      .SP  <- as.character(.wt$sigma_provider %||% "sample")[1]
+      .LND <- as.character(.wt$lean_n_days %||% "native")[1]
+      if (!is.null(.wt$allow_cash) && !(is.logical(.wt$allow_cash) && length(.wt$allow_cash) == 1L && !is.na(.wt$allow_cash)))
+        stop("[rf_cell_engine] weighting.allow_cash 는 true | false 한 값")
+      .CASH <- isTRUE(.wt$allow_cash)
+      if (!(identical(.SP, "sample") || grepl("^factor:ts:(base|downside|dd_state)$", .SP)))
+        stop("[rf_cell_engine] weighting.sigma_provider 어휘 밖: ", .SP, " (sample | factor:ts:base | factor:ts:downside | factor:ts:dd_state)")
+      if (!(.LND %in% c("native", "cell"))) stop("[rf_cell_engine] weighting.lean_n_days 어휘 밖: ", .LND, " (native | cell)")
+      .FCV <- NULL; .nSig <- 0L; .nFB <- 0L; .nProbe <- 0L; .nSame <- 0L; .nCash <- 0L
+      if (!identical(.SP, "sample")) {
+        .fe <- new.env(parent = globalenv())
+        invisible(utils::capture.output(suppressMessages(sys.source(file.path(.RF_ROOT, "02_Infrastructure/reinforcement/rf_factor_cov.R"), envir = .fe, keep.source = FALSE))))
+        .fcfg <- .fe$rfc_config(file.path(.RF_ROOT, "02_Infrastructure/reinforcement/rf_factor_cov.json"))
+        .FR <- .fe$rfc_load_factor_returns(max(.sig_dates) + 1L, root = .RF_ROOT, cfg = .fcfg)   # 마지막 신호일까지 · 신호일마다 Date < d 로 다시 자른다
+        if (is.null(.FR) || !nrow(.FR)) stop("[rf_cell_engine] sigma_provider ", .SP, " — 요인 수익 표 없음(fail-closed · 표본 공분산으로 조용히 내려가지 않는다)")
+        .FCV <- list(e = .fe, cfg = .fcfg, FR = as.data.table(.FR), variant = sub("^factor:ts:", "", .SP))
+      }
+      if (identical(.LND, "cell")) {
+        .car <- if (exists(".wc_lean_carrier_fn", mode = "function")) paste(deparse(body(.wc_lean_carrier_fn)), collapse = " ") else ""
+        if (!grepl("ctx$n_days", .car, fixed = TRUE))
+          stop("[rf_cell_engine] lean_n_days = cell — 카탈로그 lean 캐리어(weight_catalog.R .wc_lean_carrier_fn)가 ctx$n_days 를 읽지 않는다(처치 미전달 · 패치 P-3 필요)")
+      }
       ## ★종목 키 색인(2026-10-15 속도 수리 · 결과 동일) — 구판은 신호일마다(≈300회) DT 전체(1,200만 행)를 Ticker %in% 로 훑었다.
       ##   같은 행 집합(그 종목들 · Date < d)을 키 조인으로 꺼낸다 — 아래 dcast 가 Date · Ticker 로 정렬하므로 행 순서는 결과와 무관 ·
       ##   조인 키는 unique(nm)(중복 종목이 행을 복제하지 않게 — 구판 %in% 와 같은 집합)
@@ -518,16 +585,40 @@ if (identical(.wt$kind, "ew")) {
         if (length(keep) < 2L) return(NULL)
         R <- R[, keep, drop = FALSE]
         mu <- SEL[Date == d][match(keep, Ticker), Score]
+        .Sg <- stats::cov(R)
+        if (!is.null(.FCV)) {                     # P-1 — 요인 위험모형 Σ(Date < d 요인 수익 · R 행 날짜 정렬)
+          .so <- .FCV$e$rfc_sigma_ctx(list(assets = keep, R = R, R_dates = M$Date, decision_date = d,
+                                           factor_returns = function() .FCV$FR[Date < d]), .FCV$cfg, .FCV$variant)
+          .Sg <- .so$Sigma[keep, keep, drop = FALSE]; .nSig <<- .nSig + 1L
+          if (!identical(.so$model, "ts")) .nFB <<- .nFB + 1L
+        }
         ctx <- list(assets = keep, R = R, mu = stats::setNames(as.numeric(mu), keep),
-                    Sigma = stats::cov(R), ub = 1, lookback_days = nrow(R),
+                    Sigma = .Sg, ub = 1, lookback_days = nrow(R),
                     decision_date = d, eval_date = d)
+        if (identical(.LND, "cell")) ctx$n_days <- nrow(R)   # P-3(선택 시만 · 기본 ctx 모양 그대로)
         w <- tryCatch(as.numeric(.afn(ctx)), error = function(e) NULL)
         if (is.null(w) || length(w) != length(keep) || !all(is.finite(w)) || sum(w) <= 0) return(NULL)
-        w <- w / sum(w)
+        if (!is.null(.FCV) && .nProbe < 3L) {     # P-1 전달 확인 — 같은 신호일 표본 Σ 판과 비중이 같으면 Σ 를 안 쓰는 arm(처치 미전달)
+          .cs <- ctx; .cs$Sigma <- stats::cov(R); .ws <- tryCatch(as.numeric(.afn(.cs)), error = function(e) NULL)
+          .nProbe <<- .nProbe + 1L
+          if (!is.null(.ws) && length(.ws) == length(w) && isTRUE(all.equal(.ws / sum(.ws), w / sum(w), tolerance = 1e-10))) .nSame <<- .nSame + 1L
+        }
+        w <- .rf_wt_finalize(w, .CASH)
+        if (.CASH && sum(w) < 1 - 1e-6) .nCash <<- .nCash + 1L
         if (stats::sd(w) < 1e-10) .nEW <<- .nEW + 1L else .nOK <<- .nOK + 1L
         data.table(Date = d, Ticker = keep, w = w)
       }), use.names = TRUE)
       if (is.null(W) || !nrow(W)) stop("[rf_cell_engine] 카탈로그 arm 이 어떤 시점에도 비중을 못 냈다: ", .cid)
+      ## P-1 · P-2 처치 전달 가드(선택한 칸만 · 기존 EW 폴백 가드와 같은 규율 — 미전달은 '효과 없음'이 아니라 '미측정')
+      if (!is.null(.FCV)) {
+        if (.nFB * 2L > .nSig) stop(sprintf("[rf_cell_engine] sigma_provider %s — 관측 요인 모형이 아니라 pca 로 내려간 신호일 %d / %d(과반) · 측정 무효", .SP, .nFB, .nSig))
+        if (.nProbe > 0L && .nSame == .nProbe) stop(sprintf("[rf_cell_engine] sigma_provider %s — arm %s 비중이 표본 Σ 판과 같다(탐침 %d/%d · Σ 를 안 쓰는 arm · 처치 미전달)", .SP, .cid, .nSame, .nProbe))
+        cat(sprintf("[rf_cell_engine] sigma_provider %s | 요인 Σ 신호일 %d · pca 폴백 %d · 탐침 동일 %d/%d\n", .SP, .nSig, .nFB, .nSame, .nProbe))
+      }
+      if (.CASH) {
+        if (.nCash == 0L) stop(sprintf("[rf_cell_engine] allow_cash — arm %s 가 현금(Σw < 1)을 만든 신호일 0(카탈로그 정규형 Σw = 1 · 처치 미전달 — 패치 P-2b)", .cid))
+        cat(sprintf("[rf_cell_engine] allow_cash | 현금을 든 신호일 %d\n", .nCash))
+      }
       # ★조작확인 — 폴백이 조용하니 우리가 시끄럽게 만든다. 미전달은 '효과 없음' 이 아니라 '미측정' 이다.
       if (.nOK == 0L)
         stop(sprintf("[rf_cell_engine] arm %s 산출이 전 시점 EW 와 동일 — 처치 미전달(조용한 폴백). 측정 무효.", .cid))

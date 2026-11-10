@@ -147,16 +147,20 @@ rx_toolbox_md <- function(root = NULL) {
   a("- 노출 축소(현금)는 오버레이 층으로만 생긴다(Σw ≤ 1). 다른 축은 Σw = 1 이다.")
   a(""); a("## 1. factors — 기저 신호에 결합할 팩터 목록(0개 이상 · 팩터 DB id)")
   a("- 형식: `\"factors\": [{\"kind\": \"db\", \"id\": \"<팩터 id>\"}, ...]` · 빈 목록 = 논문 신호만.")
-  a("- 결합: 기저 신호 가중 고정 · 나머지를 팩터들이 나눈다. 팩터 값 = 팩터 DB 의 정렬 z-점수(방향 정렬 · PIT 적재).")
-  a("- 방향 필드(선택): `{\"kind\": \"db\", \"id\": \"<id>\", \"direction\": \"ic_asof\"|\"registry\"|\"defensive\"}` — 없으면 ic_asof.",
+  a("- 결합: 기저 신호 가중 고정 · 나머지를 팩터들이 나눈다. 팩터 값 = 팩터 DB 의 정렬 z-점수(방향 정렬 · PIT 적재 · 정렬 기준은 아래 방향 필드).")
+  a("- 방향 필드(선택): `{\"kind\": \"db\", \"id\": \"<id>\", \"direction\": \"ic_asof\"|\"registry\"|\"defensive\"|\"defensive_only\"}` — 없으면 ic_asof.",
     " ★엔진 값의 기본 정렬은 그 날까지의 IC 부호(ic_asof)이며 아래 표의 등록부 방향과 다를 수 있다.",
-    " 방어 틸트에는 direction = defensive(아래 '방어 방향' 칸이 있는 팩터만), 여러 시점에 걸친 고정 방향 신호에는 registry 를 쓴다.")
+    " 방어 틸트에는 direction = defensive(아래 '방어 방향' 칸이 있는 팩터만), 여러 시점에 걸친 고정 방향 신호에는 registry 를 쓴다.",
+    " defensive_only = 방어 쪽 한정(헌장 빈칸 15) — 그 달의 as-of 정렬이 등록부 방어 방향과 같은 달만 방어 정렬 값으로 싣고, 다른 달은 그 팩터 기여 0(부호를 뒤집지 않는다).")
   a(""); a("| id | 이름 | 범주 | 방향 | 방어 방향 | 정의 |"); a("|---|---|---|---|---|---|")
   for (i in seq_len(nrow(fa))) a("| ", fa$id[i], " | ", gsub("\\|", "/", fa$name[i]), " | ", fa$category[i], " | ", fa$direction[i], " | ",
                                  if (nzchar(fa$direction_defensive[i])) fa$direction_defensive[i] else "—", " | ",
                                  gsub("\\|", "/", R(substr(fa$definition[i], 1, 160))), " |")
   a(""); a("## 2. weighting — 선정된 종목 안의 비중")
   a("- 형식: `{\"kind\": \"ew\"}` · `{\"kind\": \"score_tilt\"}` · `{\"kind\": \"rank_weight\"}` · `{\"kind\": \"rank_weight_sqrt\"}` · `{\"kind\": \"inv_vol\", \"window\": <일수>}` · `{\"kind\": \"catalog\", \"catalog_id\": \"<id>\", \"label\": \"<라벨>\"}`")
+  a("- 카탈로그 칸 선택지(선택 · 적지 않으면 종전): `\"sigma_provider\": \"sample\"|\"factor:ts:base\"|\"factor:ts:downside\"|\"factor:ts:dd_state\"`(공분산 = 표본 · 요인 위험모형 FF6 관측 요인 — 결정일 이전 요인 수익만)",
+    " · `\"allow_cash\": true`(구성 층 현금 Σw ≤ 1 — 현금을 든 칸도 상승 포착 하한 · 현금 기계 판정을 그대로 받는다) · `\"lean_n_days\": \"cell\"`(lean 빌트인이 칸 창 길이를 쓴다).",
+    " Σ 를 쓰지 않는 arm 에 sigma_provider 를 주거나 현금을 못 만드는 arm 에 allow_cash 를 주면 엔진이 '처치 미전달'로 멈춘다.")
   a(""); a("| catalog_id | 계열 | 라벨 |"); a("|---|---|---|")
   for (i in seq_len(nrow(wt))) a("| ", wt$catalog_id[i], " | ", wt$family[i], " | ", wt$label[i], " |")
   a(""); a("## 3. universe — 후보 범위(측정 유니버스 안에서만 좁힌다)")
@@ -174,8 +178,8 @@ rx_toolbox_md <- function(root = NULL) {
   a(""); a("| arm_id | kind | 계열 | 방법 |"); a("|---|---|---|---|")
   for (i in seq_len(nrow(ov))) a("| ", ov$arm_id[i], " | ", ov$kind[i], " | ", ov$family[i], " | ", gsub("\\|", "/", R(substr(ov$basis[i], 1, 220))), " |")
   a(""); a("## 6. defense_sleeve — 보유 25종 중 k 자리를 방어 팩터 상위로 교체(총 종목 수 · 노출 불변)")
-  a("- 형식: `{\"kind\": \"factor_topk\", \"k\": <정수>, \"select\": \"ic_bad_rank_asof\", \"rank\": <정수>, \"exclude\": \"\"|\"base_factors\"}`",
-    " — 방어 팩터는 규칙이 고른다: 셀 시작일까지(as-of)의 KOSPI200 약세 보유월 횡단면 IC 순위. `factor_id` 로 직접 지정도 가능.",
+  a("- 형식: `{\"kind\": \"factor_topk\", \"k\": <정수>, \"select\": \"ic_bad_rank_asof\", \"rank\": <정수>, \"exclude\": \"\"|\"base_factors\", \"direction\": \"defensive\"}`",
+    " — 방어 팩터는 규칙이 고른다: 셀 시작일까지(as-of)의 KOSPI200 약세 보유월 횡단면 IC 순위(등록부 방어 방향으로 본 IC · 처치도 같은 방어 방향 — direction 기본 defensive · 방어 방향 없는 팩터는 후보 밖). `factor_id` 로 직접 지정도 가능(방어 방향 칸이 있는 팩터).",
     " · 지원 kind: ", paste(en$.RF_SL_KINDS, collapse = ", "), "(antidefense · random_beta_matched = 대조용) · select: ", paste(en$.RF_SL_SELECTS, collapse = ", "))
   a(""); a("## 7. cap_core — 벤치 인지 코어-위성(비중 단계 뒤)")
   a("- 형식: `{\"k\": <정수 ≥0>, \"satellite\": \"floor\"}` — 코어 = 그 시그널일 K200 t-1 시총 상위 k종(벤치 비중 근사) · 위성 = 이 전략 보유(합집합 ≤ 25 절단).",
@@ -294,7 +298,7 @@ rx_parse_json <- function(txt) {
 #'   base_signal = {kind: "engine", key} | {kind: "engine_blend", keys: [≥ 2]} — 풀 안 자격(eligible) key 만 · 경로(path · paths) 직접 지정 거부.
 #'   통과하면 delta 의 base_signal 은 셀 엔진 형식(path · paths = 풀의 엔진 경로 · pool_key(s) 꼬리표)으로 정규화된다.
 #'   factors[].direction = "ic_asof"(기본 · 필드 없음과 같다) | "registry" | "defensive"(등록부 direction_defensive 가 있는 팩터만)
-RX_FACTOR_DIRECTIONS <- c("ic_asof", "registry", "defensive")
+RX_FACTOR_DIRECTIONS <- c("ic_asof", "registry", "defensive", "defensive_only")   # defensive_only = 헌장 빈칸 15(방어 쪽이 아닌 달 기여 0 · 셀 엔진 .load_factor)
 rx_validate <- function(impl, root = NULL, pool = NULL) {
   root <- .rx_root(root); en <- .rx_engine(root)
   ok_axes <- c("factors", "weighting", "universe", "rebalance", "overlay", "defense_sleeve", "cap_core", "base_signal")
@@ -310,8 +314,8 @@ rx_validate <- function(impl, root = NULL, pool = NULL) {
     if (any(!ids %in% fv)) add("팩터 DB 에 없는 id: ", paste(ids[!ids %in% fv], collapse = ","))
     dirs <- vapply(impl$factors, function(z) { d <- z$direction; if (is.null(d)) "ic_asof" else if (is.character(d) && length(d) == 1L) d else "<형식 오류>" }, character(1))
     if (any(!dirs %in% RX_FACTOR_DIRECTIONS)) add("factors.direction 어휘 밖(", paste(RX_FACTOR_DIRECTIONS, collapse = " | "), "): ", paste(unique(dirs[!dirs %in% RX_FACTOR_DIRECTIONS]), collapse = ","))
-    nodef <- ids[dirs == "defensive" & !(ids %in% fvt[nzchar(direction_defensive)]$id)]
-    if (length(nodef)) add("direction = defensive 인데 등록부에 방어 방향(direction_defensive)이 없는 팩터: ", paste(nodef, collapse = ","))
+    nodef <- ids[dirs %in% c("defensive", "defensive_only") & !(ids %in% fvt[nzchar(direction_defensive)]$id)]
+    if (length(nodef)) add("direction = defensive · defensive_only 인데 등록부에 방어 방향(direction_defensive)이 없는 팩터: ", paste(nodef, collapse = ","))
   }
   if (!is.null(impl$base_signal)) {
     bs <- impl$base_signal; k <- as.character(.rx_or(bs$kind, ""))
@@ -339,6 +343,15 @@ rx_validate <- function(impl, root = NULL, pool = NULL) {
     if (!k %in% c("ew", "score_tilt", "rank_weight", "rank_weight_sqrt", "inv_vol", "catalog")) add("weighting.kind 미지원: ", k)
     if (identical(k, "catalog") && !(as.character(.rx_or(impl$weighting$catalog_id, "")) %in% .rx_weight_vocab(root)$catalog_id))
       add("비중 카탈로그 active 에 없는 id: ", .rx_or(impl$weighting$catalog_id, ""))
+    ## (2026-11-10 · E3 연결 P-1~P-3) 카탈로그 칸 선택지 — 셀 엔진 catalog 가지와 같은 어휘(엔진이 같은 조건에서 멈춘다)
+    sp <- impl$weighting$sigma_provider; ac <- impl$weighting$allow_cash; ln <- impl$weighting$lean_n_days
+    if (!is.null(sp) || !is.null(ac) || !is.null(ln)) {
+      if (!identical(k, "catalog")) add("sigma_provider · allow_cash · lean_n_days 는 weighting.kind = catalog 에서만")
+      if (!is.null(sp) && !(is.character(sp) && length(sp) == 1L && (identical(sp, "sample") || grepl("^factor:ts:(base|downside|dd_state)$", sp))))
+        add("weighting.sigma_provider 어휘 밖(sample | factor:ts:base | factor:ts:downside | factor:ts:dd_state): ", paste(format(sp), collapse = ","))
+      if (!is.null(ac) && !(is.logical(ac) && length(ac) == 1L && !is.na(ac))) add("weighting.allow_cash 는 true | false")
+      if (!is.null(ln) && !(is.character(ln) && length(ln) == 1L && ln %in% c("native", "cell"))) add("weighting.lean_n_days 어휘 밖(native | cell)")
+    }
   }
   if (!is.null(impl$universe)) {
     k <- as.character(.rx_or(impl$universe$kind, ""))
@@ -354,7 +367,15 @@ rx_validate <- function(impl, root = NULL, pool = NULL) {
     ##   엔진이 상한을 다시 걸기 전에는 받지 않는다(파서 통과 ≠ 축 준수).
     if (identical(as.character(.rx_or(impl$rebalance$kind, "")), "turnover_cap"))
       add("rebalance.kind = turnover_cap 은 보유 종목 수 상한(≤25)을 깬다 — 엔진 수리 전 사용 불가(interval · no_trade_band · rank_buffer 는 가능)") }
-  if (!is.null(impl$defense_sleeve)) { e <- tryCatch({ en$rf_sl_parse(impl$defense_sleeve); NULL }, error = function(z) conditionMessage(z)); if (!is.null(e)) add(e) }
+  if (!is.null(impl$defense_sleeve)) {
+    ## 파서 + 방향 기준 조합(2026-11-10 · 감사 B7 — select + ic_asof · 비 db + direction 은 엔진이 멈춘다) + 고정 id 의 방어 방향 실재
+    e <- tryCatch({ sl <- en$rf_sl_parse(impl$defense_sleeve); dd <- en$rf_sl_direction(sl)
+                    if (identical(dd, "defensive") && nzchar(sl$factor_id)) {
+                      fvt <- .rx_factor_vocab(root)
+                      if (!(sl$factor_id %in% fvt[nzchar(direction_defensive)]$id))
+                        stop("defense_sleeve.factor_id ", sl$factor_id, " 에는 등록부 방어 방향(direction_defensive)이 없다 — 방향 기준 defensive 불가") }
+                    NULL }, error = function(z) conditionMessage(z))
+    if (!is.null(e)) add(e) }
   if (!is.null(impl$cap_core)) { e <- tryCatch({ en$rf_cc_parse(impl$cap_core); NULL }, error = function(z) conditionMessage(z)); if (!is.null(e)) add(e) }
   if (!is.null(impl$overlay)) {
     ov <- .rx_overlay_vocab(root)

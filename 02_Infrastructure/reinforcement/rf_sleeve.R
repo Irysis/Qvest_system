@@ -47,7 +47,18 @@
 #   바닥 선정(슬리브 전 SEL_t = 같은 실행의 바닥 보유)에 **없던** 이름 수 n_new 의 비율. 하한은 여기서 정하지 않는다(사전등록이 근거와 함께 정한다).
 #   판정 입력은 엔진 진단 파일(rf_engine_diag.json)을 계약 contracts/sleeve_delivery.R 이 재도출한 산출물뿐이다(AX-008).
 #
-# 공개: rf_sl_parse / rf_sl_resolve / rf_sl_conditional_ic_asof / rf_sl_bench_months / rf_sl_select_config /
+# ★방향 기준 일치 (2026-11-10 · v10.2 감사 원장 B7 · factor_db_wiring_audit.md P1-5 · 헌장 빈칸 15 · DIRECTION_POLICY.md):
+#   구판은 선정 통계(factor_ic_monthly 의 IC = cor(저장 원값, 다음 달 수익))를 **원값 부호**로 순위 냈는데, 처치(엔진 .load_factor)는
+#   그 날까지의 IC 부호로 정렬한 z(ic_asof)로 상위 k 를 골랐다 — 두 기준의 부호가 다른 달에는 "약세장에서 원값이 높을수록 좋다"로 뽑은
+#   팩터를 처치가 원값 하위부터 담는다(방어 장치가 반대로 돈다). 신판: 팩터 DB 슬리브(factor_kind = db)의 방향 기준은 하나다.
+#     direction = "defensive"(기본) — 선정 IC 에 등록부 방어 부호(direction_defensive: higher_better = +1 · lower_better = −1)를 곱해
+#       순위 내고(같은 부호표 · 수동 반전 아님 — C13 · 부호는 등록부에서만), 처치는 정본 접근자 direction = "defensive" 로 적재한다.
+#       방어 방향이 등록부에 없는 후보는 뺀다(셈을 basis 에 남긴다). 등록부를 못 읽으면 멈춘다(fail-closed).
+#     direction = "ic_asof" — factor_id 고정(과거 칸 재현) 경로에서만 받는다. 선정 규칙(select)과 함께면 멈춘다(그 조합이 결함이다).
+#   팩터 DB 밖 원천(factor_kind = price 등)은 선정 IC 와 처치 값이 같은 원값이라 방향 개념이 없다(native) — direction 을 적으면 멈춘다.
+#   ⚠구 B7 칸(격자 B7_37~41)을 다시 돌리면 이 기준으로 잰다(구판 결과 = 원장 표식 treatment_misspecified 와 같은 취급 · 재현은 factor_id + ic_asof).
+#
+# 공개: rf_sl_parse / rf_sl_resolve / rf_sl_direction / rf_sl_conditional_ic_asof / rf_sl_bench_months / rf_sl_select_config /
 #       rf_sl_select / rf_sl_turnover_overlap / rf_sl_report / rf_sl_delivery
 #==============================================================================
 suppressMessages({ library(data.table); library(jsonlite) })
@@ -56,6 +67,7 @@ if (!exists("%||%")) `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L)
 .RF_SL_KINDS <- c("factor_topk", "antidefense", "random_beta_matched")
 .RF_SL_SELECTS <- c("ic_bad_rank_asof")
 .RF_SL_EXCLUDES <- c("", "base_factors")   # "" = 제외 없음(구판 거동) · base_factors = 그 칸 기저 팩터 id 제외(B7-EXCL-IMPL)
+.RF_SL_DIRECTIONS <- c("", "defensive", "ic_asof")   # "" = 적지 않음(db 면 defensive) · ic_asof = factor_id 고정 재현 경로만 (2026-11-10 B7 부호 기준 수리)
 # 퇴역 규칙 — 조용히 신판으로 바꿔 읽지 않고 멈춘다(바꿔 읽으면 구 칸과 새 칸이 같은 서명으로 섞인다).
 #   과거 칸 재현은 factor_id 고정 경로로 한다(로그 log_B7_*.txt 의 해석 id).
 .RF_SL_RETIRED_SELECTS <- c(
@@ -76,7 +88,7 @@ rf_sl_parse <- function(x) {
   # ★factor_kind: 방어 팩터의 **원천**. 기본 "db"(팩터 DB · C15 경유). 엔진이 이미 지원하는
   #   다른 원천(예: 오프라인 price 팩터)도 그대로 쓸 수 있어야 한다 — 그래야 엔진 경유 검사가 선다.
   # ★asof: 선정 통계 창의 끝(선택). 없으면 rf_sl_resolve 가 셀 fixed_axes.start_date 로 해석한다.
-  ok_args <- c("kind", "k", "select", "rank", "factor_id", "factor_kind", "beta_factor", "seed", "label", "basis", "asof", "exclude")
+  ok_args <- c("kind", "k", "select", "rank", "factor_id", "factor_kind", "beta_factor", "seed", "label", "basis", "asof", "exclude", "direction")
   extra <- setdiff(names(x), ok_args)
   if (length(extra)) stop(sprintf("[rf_sleeve] 알 수 없는 인자: %s", paste(extra, collapse = ", ")))
   # ★exclude — 후보 제외 규칙(enum). 값이 틀리면 멈춘다(조용히 무시하면 제외 안 된 칸이 제외된 칸으로 기록된다).
@@ -84,6 +96,11 @@ rf_sl_parse <- function(x) {
   if (length(exc) != 1L || is.na(exc) || !(exc %in% .RF_SL_EXCLUDES))
     stop(sprintf("[rf_sleeve] 미지원 exclude '%s' (지원: %s)", paste(format(x$exclude), collapse = ","),
                  paste(setdiff(.RF_SL_EXCLUDES, ""), collapse = ", ")))
+  # ★direction — 방향 기준(enum · 2026-11-10). 값이 틀리면 멈춘다. 조합 규칙(select 와 ic_asof 금지 · 비 db 원천 금지)은 rf_sl_direction.
+  dirv <- as.character(x$direction %||% "")
+  if (length(dirv) != 1L || is.na(dirv) || !(dirv %in% .RF_SL_DIRECTIONS))
+    stop(sprintf("[rf_sleeve] 미지원 direction '%s' (지원: %s)", paste(format(x$direction), collapse = ","),
+                 paste(setdiff(.RF_SL_DIRECTIONS, ""), collapse = ", ")))
   fid <- as.character(x$factor_id %||% "")
   sel <- as.character(x$select %||% "ic_bad_rank_asof")
   # 퇴역 select 는 파싱에서 멈춘다(엔진 계산 전) — 단 factor_id 고정이면 select 는 쓰이지 않으므로 통과(과거 칸 재현 경로)
@@ -100,7 +117,38 @@ rf_sl_parse <- function(x) {
        seed = suppressWarnings(as.integer(x$seed %||% NA_integer_)),
        label = as.character(x$label %||% kind),
        asof = as.character(x$asof %||% ""),
-       exclude = exc)
+       exclude = exc,
+       direction = dirv)
+}
+
+#' 슬리브의 실효 방향 기준(2026-11-10 B7 부호 기준 수리) — "defensive" | "ic_asof" | "native"(팩터 DB 밖 원천)
+#'   db + 적지 않음 = defensive · db + select 경로(factor_id 없음) + ic_asof = stop(선정 IC 와 처치 z 의 부호 기준이 갈린다) ·
+#'   비 db + direction 적음 = stop(선정 IC 와 처치가 같은 원값이라 방향 선택이 없다 — 적힌 값이 조용히 무시되지 않게).
+rf_sl_direction <- function(rule) {
+  if (is.null(rule)) return(NA_character_)
+  fk <- as.character(rule$factor_kind %||% "db"); d <- as.character(rule$direction %||% "")
+  if (length(d) != 1L || is.na(d) || !(d %in% .RF_SL_DIRECTIONS)) stop(sprintf("[rf_sleeve] 미지원 direction '%s'", paste(format(rule$direction), collapse = ",")))
+  if (!identical(fk, "db")) {
+    if (nzchar(d)) stop(sprintf("[rf_sleeve] direction '%s' 는 팩터 DB 슬리브(factor_kind = db)에서만 — %s 원천은 선정 IC 와 처치가 같은 원값이다", d, fk))
+    return("native")
+  }
+  if (!nzchar(d)) d <- "defensive"
+  if (identical(d, "ic_asof") && !nzchar(as.character(rule$factor_id %||% "")))
+    stop(paste0("[rf_sleeve] select 규칙 + direction = ic_asof 금지 — 선정 IC(원값 부호 · 방어 부호)와 처치 z(그 날까지의 IC 부호)의 ",
+                "방향 기준이 달마다 갈린다(감사 B7 · 2026-11-10). direction = defensive 를 쓰거나, 과거 칸 재현이면 factor_id 를 고정한다"))
+  d
+}
+
+#' 등록부 방어 부호(+1 = higher_better · −1 = lower_better · 없음 = NA) — 셀 엔진 .load_factor 와 같은 등록부 파일 · 같은 판독(최상위 또는 $factors)
+.rf_sl_def_signs <- function(root, ids, REG = NULL) {
+  if (is.null(REG)) {
+    p <- file.path(root, "02_Infrastructure/factor_db/factor_registry.json")
+    if (!file.exists(p)) stop("[rf_sleeve] 팩터 등록부 부재 — 방어 방향(direction_defensive)을 읽을 수 없다(fail-closed): ", p)
+    REG <- fromJSON(p, simplifyVector = FALSE)
+  }
+  R <- if (!is.null(REG$factors)) REG$factors else REG
+  vapply(ids, function(i) { d <- R[[i]]$direction_defensive
+    if (length(d) != 1L) NA_real_ else if (identical(d, "higher_better")) 1 else if (identical(d, "lower_better")) -1 else NA_real_ }, numeric(1))
 }
 
 #' B7 선정 설정 — reinforce_program.json 의 B7.selection_asof (★하드코딩 금지 — 분위·최소 표본·후보 계열·경로는 격자가 진다).
@@ -289,7 +337,9 @@ rf_sl_conditional_ic_asof <- function(d, IC, BM, q, min_n, price_col = "BM_Close
 #' @param IC,BM 주입(검사·시그널일별 호출용). NULL 이면 설정 경로에서 읽는다.
 #' @param exclude_ids rule$exclude == "base_factors" 일 때 후보에서 뺄 팩터 id(엔진 = 셀 스펙 factors 의 id). 규칙이 없으면 무시(구판 거동 비트 동일).
 #'   ★규칙이 있는데 NULL·빈 집합이면 stop · factor_id 고정이 제외 집합에 들면 stop(모순 스펙).
-rf_sl_resolve <- function(rule, root = Sys.getenv("QM_ROOT", "."), asof = NULL, IC = NULL, BM = NULL, exclude_ids = NULL) {
+#' @param REG 팩터 등록부 주입(검사용 · 방어 부호 판독). NULL 이면 root 의 02_Infrastructure/factor_db/factor_registry.json.
+#' @return 종전 필드 + direction(실효 방향 기준 — rf_sl_direction · 엔진이 처치 적재에 그대로 넘긴다)
+rf_sl_resolve <- function(rule, root = Sys.getenv("QM_ROOT", "."), asof = NULL, IC = NULL, BM = NULL, exclude_ids = NULL, REG = NULL) {
   .exc_on <- identical(as.character(rule$exclude %||% ""), "base_factors")
   excl <- character(0)
   if (.exc_on) {
@@ -301,13 +351,15 @@ rf_sl_resolve <- function(rule, root = Sys.getenv("QM_ROOT", "."), asof = NULL, 
   if (nzchar(rule$factor_id %||% "")) {
     if (.exc_on && rule$factor_id %in% excl)
       stop(sprintf("[rf_sleeve] factor_id '%s' 가 제외 집합(기저 팩터)에 든다 — 모순 스펙", rule$factor_id))
-    return(list(id = rule$factor_id, basis = "spec 고정", asof = NA_character_,
+    dfx <- rf_sl_direction(rule)
+    return(list(id = rule$factor_id, basis = sprintf("spec 고정 · 방향 기준 %s", dfx), asof = NA_character_, direction = dfx,
                 exclude_rule = if (.exc_on) "base_factors" else "", excluded_ids = excl, excluded_in_pool = character(0)))
   }
   sel <- as.character(rule$select %||% "")
   if (sel %in% names(.RF_SL_RETIRED_SELECTS))
     stop(sprintf("[rf_sleeve] 퇴역 select '%s' — %s", sel, .RF_SL_RETIRED_SELECTS[[sel]]))
   if (!(sel %in% .RF_SL_SELECTS)) stop(sprintf("[rf_sleeve] 미지원 select '%s'", sel))
+  dir_eff <- rf_sl_direction(rule)        # select + ic_asof · 비 db + direction 은 여기서 멈춘다(계산 전)
   cfg <- rf_sl_select_config(root)
   A <- .rf_sl_asof(asof, rule, cfg)
   ev_p <- file.path(root, "06_Registry/factor_evidence.json")
@@ -328,10 +380,19 @@ rf_sl_resolve <- function(rule, root = Sys.getenv("QM_ROOT", "."), asof = NULL, 
     cand <- cand[!(id %in% excl)]
   }
   if (!nrow(cand)) stop("[rf_sleeve] 자격 팩터 0종 — 등록부 계열 확인")
+  # ★방향 기준 일치(2026-11-10 · B7) — db 슬리브는 등록부 방어 부호가 있는 후보만 · 선정 IC 를 그 부호 기준으로 본다(처치 = direction defensive)
+  n_nodef <- 0L; sg <- NULL
+  if (identical(dir_eff, "defensive")) {
+    sg <- .rf_sl_def_signs(root, cand$id, REG)
+    n_nodef <- sum(!is.finite(sg)); cand <- cand[is.finite(sg)]; sg <- sg[is.finite(sg)]
+    if (!nrow(cand)) stop("[rf_sleeve] 등록부 방어 방향(direction_defensive)이 있는 자격 팩터 0종 — 방어 슬리브를 고를 수 없다")
+  }
   IC <- IC %||% .rf_sl_read_parquet(file.path(root, cfg$ic_path), c("Factor_Name", "Date", "Usable_Date", "IC"))
   BM <- BM %||% .rf_sl_read_parquet(file.path(root, cfg$bench_path))
   IC <- as.data.table(IC)[as.character(Factor_Name) %in% cand$id]
   if (!nrow(IC)) stop("[rf_sleeve] 자격 팩터의 IC 이력 0행")
+  # 저장 IC = cor(저장 원값, 다음 달 수익) → 방어 부호를 곱하면 cor(방어 정렬 값, 다음 달 수익) = 처치(direction defensive z)가 줄세우는 값의 IC
+  if (!is.null(sg)) IC[, IC := as.numeric(IC) * unname(sg[as.character(Factor_Name)])]
   C <- rf_sl_conditional_ic_asof(A$date, IC, BM, cfg$q, cfg$min_n, cfg$bench_price_col)
   meta <- attr(C, "meta")
   C <- C[is.finite(get(cfg$rank_key))]
@@ -348,7 +409,9 @@ rf_sl_resolve <- function(rule, root = Sys.getenv("QM_ROOT", "."), asof = NULL, 
   if (.exc_on)
     basis <- sprintf("%s · 기저 팩터 제외 %d종(풀 안 %d: %s)", basis, length(excl), length(ex_in),
                      if (length(ex_in)) paste(ex_in, collapse = ",") else "없음")
-  list(id = C$Factor_Name[r], basis = basis, asof = format(A$date), asof_source = A$source,
+  if (identical(dir_eff, "defensive"))
+    basis <- sprintf("%s · 방향 기준 = 등록부 방어 방향(선정 IC × 방어 부호 · 처치 direction defensive · 방어 방향 없는 후보 제외 %d)", basis, n_nodef)
+  list(id = C$Factor_Name[r], basis = basis, asof = format(A$date), asof_source = A$source, direction = dir_eff,
        asof_bound = format(A$bound), asof_bound_source = A$bound_source,
        table = C, meta = meta,
        exclude_rule = if (.exc_on) "base_factors" else "", excluded_ids = excl, excluded_in_pool = ex_in)
@@ -465,4 +528,4 @@ rf_sl_report <- function(before, after, rule, fid, basis) {
           round(mean(before[, .N, by = Date]$N)), round(mean(after[, .N, by = Date]$N)))
 }
 
-cat("[rf_sleeve.R] Loaded — rf_sl_parse / rf_sl_resolve(as-of · exclude) / rf_sl_conditional_ic_asof / rf_sl_bench_months / rf_sl_select_config / rf_sl_select / rf_sl_turnover_overlap / rf_sl_report / rf_sl_delivery\n")
+cat("[rf_sleeve.R] Loaded — rf_sl_parse / rf_sl_resolve(as-of · exclude · direction) / rf_sl_direction / rf_sl_conditional_ic_asof / rf_sl_bench_months / rf_sl_select_config / rf_sl_select / rf_sl_turnover_overlap / rf_sl_report / rf_sl_delivery\n")

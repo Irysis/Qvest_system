@@ -143,6 +143,23 @@ chk("F4 factors.direction — registry · ic_asof 통과 · defensive 는 방어
 chk("F5 도구 상자 — 방어 방향 열 · 정렬 안내(ic_asof 기본 · 등록부와 다를 수 있음) · 방어 틸트 = defensive · 8절 base_signal",
     grepl("| id | 이름 | 범주 | 방향 | 방어 방향 | 정의 |", tb, fixed = TRUE) && grepl("등록부 방향과 다를 수 있다", tb, fixed = TRUE) &&
       grepl("방어 틸트에는 direction = defensive", tb, fixed = TRUE) && grepl("## 8. base_signal", tb, fixed = TRUE))
+## (2026-11-10) 헌장 빈칸 15 방어 쪽 한정 · 감사 B7 슬리브 방향 기준
+chk("F6 factors.direction = defensive_only — 방어 방향 있는 팩터만 통과(엔진 .load_factor 어휘와 같다) · 도구 상자 안내",
+    isTRUE(fd(fdef, "defensive_only")) && !isTRUE(fd(fnod, "defensive_only")) && grepl("defensive_only = 방어 쪽 한정(헌장 빈칸 15)", tb, fixed = TRUE),
+    paste(fdef, fnod))
+ds <- function(x) rx_validate(list(defense_sleeve = x), ROOT)
+chk("F7 defense_sleeve 방향 기준 — select + ic_asof 거부 · 비 db 원천 + direction 거부 · 고정 id 는 방어 방향 있는 팩터만 · 기본(무기재) 통과",
+    !isTRUE(ds(list(kind = "factor_topk", k = 5L, select = "ic_bad_rank_asof", direction = "ic_asof"))$ok) &&
+      !isTRUE(ds(list(kind = "factor_topk", k = 5L, factor_id = "lowvol60", factor_kind = "price", direction = "defensive"))$ok) &&
+      !isTRUE(ds(list(kind = "factor_topk", k = 5L, factor_id = fnod))$ok) && isTRUE(ds(list(kind = "factor_topk", k = 5L, factor_id = fdef))$ok) &&
+      isTRUE(ds(list(kind = "factor_topk", k = 5L, factor_id = fnod, direction = "ic_asof"))$ok) &&
+      isTRUE(ds(list(kind = "factor_topk", k = 5L, select = "ic_bad_rank_asof", rank = 1L, direction = "defensive"))$ok) &&
+      grepl("\"direction\": \"defensive\"", tb, fixed = TRUE))
+wv <- function(...) rx_validate(list(weighting = c(list(kind = "catalog", catalog_id = wt$catalog_id[1]), list(...))), ROOT)$ok
+chk("F8 카탈로그 칸 선택지(E3 연결 P-1~P-3) — 어휘 안 통과 · 어휘 밖 · 형식 오류 · catalog 아닌 kind 에 붙이면 거부 · 도구 상자 안내",
+    isTRUE(wv(sigma_provider = "factor:ts:dd_state", allow_cash = TRUE, lean_n_days = "cell")) && isTRUE(wv(sigma_provider = "sample")) &&
+      !isTRUE(wv(sigma_provider = "factor:pca:base")) && !isTRUE(wv(allow_cash = "yes")) && !isTRUE(wv(lean_n_days = "60")) &&
+      !isTRUE(rx_validate(list(weighting = list(kind = "ew", allow_cash = TRUE)), ROOT)$ok) && grepl("\"allow_cash\": true", tb, fixed = TRUE))
 
 cat(sprintf("\n== rx_round: PASS %d · FAIL %d ==\n", PASS, FAIL))
 cat(sprintf('{"test":"rx_round","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))

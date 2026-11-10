@@ -125,6 +125,13 @@ write(toJSON(list(factors = list(
   DX = list(category = "defense", lifecycle_status = "deprecated", ic_bad = 0.99, ic_good = 0.0),
   VV = list(category = "value",   lifecycle_status = "active", ic_bad = 0.90, ic_good = 0.5))),
   auto_unbox = TRUE), file.path(.tmp, "06_Registry/factor_evidence.json"))
+# (2026-11-10 B7 방향 기준) db 슬리브는 등록부 방어 부호로 선정 IC 를 본다 — 이 픽스처는 전부 higher_better(원값 = 방어 정렬 · 순위 종전 그대로)
+.wreg <- function(root, signs = c(DA = "higher_better", DB = "higher_better", DX = "higher_better")) {
+  dir.create(file.path(root, "02_Infrastructure/factor_db"), recursive = TRUE, showWarnings = FALSE)
+  write(toJSON(lapply(as.list(signs), function(s) list(direction = "higher_better", direction_defensive = s)), auto_unbox = TRUE),
+        file.path(root, "02_Infrastructure/factor_db/factor_registry.json"))
+}
+.wreg(.tmp)
 .wprog <- function(root, cfg = list(bear_quantile = 0.3, min_bear_months = 4L, candidate_categories = c("defense", "risk"),
                                     rank_key = "ic_bad", ic_path = "ic.parquet", bench_path = "bm.parquet",
                                     bench_price_col = "BM_Close"), start = "2004-01-01")
@@ -155,6 +162,7 @@ chk(identical(r1$id, "DA") && identical(r2$id, "DB") && identical(r1$asof, "2004
 .tmp3 <- file.path(tempdir(), paste0("sl3_", paste(sample(letters, 6), collapse = "")))
 dir.create(file.path(.tmp3, "06_Registry"), recursive = TRUE, showWarnings = FALSE)
 file.copy(file.path(.tmp, "06_Registry/factor_evidence.json"), file.path(.tmp3, "06_Registry/factor_evidence.json"))
+.wreg(.tmp3)
 .wprog(.tmp3, start = "2007-01-01")
 rF <- tryCatch(rf_sl_resolve(RULE5, .tmp3, IC = .ic, BM = .bm), error = function(e) list(id = paste("ERR", conditionMessage(e))))
 chk(identical(rF$id, "DB"), "R1b 대조 — 결정 시점(격자 시작일)을 표본 끝(2007-01)으로 두면 1위가 DB 로 바뀐다(as-of 가 실제로 먹는다)",
@@ -223,6 +231,64 @@ xa <- tryCatch(rf_sl_resolve(rf_sl_parse(list(kind = "antidefense", k = 5, exclu
                              exclude_ids = "DA"), error = function(e) list(id = "ERR"))
 chk(identical(xr$id, "DB") && identical(xa$id, "DB"),
     "X8 대조(베타매칭 무작위·반방어)도 같은 제외가 걸린다 — 기준 팩터 = 처치와 같은 DB(귀속 성립)", "X8 대조에 제외 미적용", paste(xr$id, xa$id))
+
+# ── 방향 기준 일치 (2026-11-10 · v10.2 감사 원장 B7 · factor_db_wiring_audit.md P1-5 · 헌장 빈칸 15) ──
+#   결함: 선정 IC = cor(저장 원값, 다음 달 수익)의 원값 부호로 순위 · 처치 = 그 날까지 IC 부호 정렬 z 로 상위 k → 두 부호가 다른 달 장치가 반대로 돈다.
+#   불일치 주입 픽스처(.tmp4): DA = lower_better(낮은 원값이 방어) · 약세장 IC(원값) −0.20 = "원값이 높을수록 약세장에서 나쁘다" = 방어 쪽으로 보면 +0.20.
+#     DB = higher_better · 약세장 IC +0.10. 원값 기준(구판)이면 DB 1위 · 방어 기준(신판 = 처치와 같은 기준)이면 DA 1위.
+cat("-- 방향 기준 일치(B7) --\n")
+chk(grepl("미지원 direction", .err(rf_sl_parse(list(kind = "factor_topk", k = 5, direction = "flip"))) %||% "") &&
+      grepl("미지원 direction", .err(rf_sl_parse(list(kind = "factor_topk", k = 5, direction = c("defensive", "ic_asof")))) %||% "") &&
+      identical(RULE5$direction, ""),
+    "V0 direction 파싱 — 어휘 밖 · 복수 값 stop · 키 없으면 ''", "V0 direction 파싱")
+chk(identical(rf_sl_direction(RULE5), "defensive") &&
+      identical(rf_sl_direction(rf_sl_parse(list(kind = "factor_topk", k = 5, factor_id = "DA", direction = "ic_asof"))), "ic_asof") &&
+      identical(rf_sl_direction(rf_sl_parse(list(kind = "factor_topk", k = 5, factor_id = "lowvol60", factor_kind = "price"))), "native"),
+    "V1 실효 방향 — db 기본 defensive · factor_id 고정 + ic_asof(재현) 허용 · 비 db 원천 = native", "V1 실효 방향")
+chk(grepl("select 규칙 \\+ direction = ic_asof 금지", .err(rf_sl_direction(rf_sl_parse(list(kind = "factor_topk", k = 5, direction = "ic_asof")))) %||% "") &&
+      grepl("select 규칙", .err(rf_sl_resolve(rf_sl_parse(list(kind = "factor_topk", k = 5, direction = "ic_asof")), .tmp, IC = .ic, BM = .bm)) %||% "") &&
+      grepl("팩터 DB 슬리브", .err(rf_sl_direction(rf_sl_parse(list(kind = "factor_topk", k = 5, factor_kind = "price", direction = "defensive")))) %||% ""),
+    "V2 [결함 조합 거부] select + ic_asof(선정 · 처치 기준이 갈림) · 비 db + direction(조용히 무시될 값) → stop", "V2 결함 조합이 통과했다")
+.tmp4 <- file.path(tempdir(), paste0("sl4_", paste(sample(letters, 6), collapse = "")))
+dir.create(file.path(.tmp4, "06_Registry"), recursive = TRUE, showWarnings = FALSE)
+invisible(file.copy(file.path(.tmp, "06_Registry/factor_evidence.json"), file.path(.tmp4, "06_Registry/factor_evidence.json")))
+.wprog(.tmp4); .wreg(.tmp4, c(DA = "lower_better", DB = "higher_better", DX = "higher_better"))
+.icv <- rbindlist(lapply(c("DA", "DB", "DX", "VV"), function(f) data.table(Factor_Name = f, Date = .me, Usable_Date = .ue,
+  IC = switch(f, DA = ifelse(.bear, -0.20, 0), DB = ifelse(.bear, 0.10, 0), DX = 0.9, VV = 0.9))))
+v3 <- tryCatch(rf_sl_resolve(RULE5, .tmp4, IC = .icv, BM = .bm), error = function(e) list(id = paste("ERR", conditionMessage(e))))
+chk(identical(v3$id, "DA") && identical(v3$direction, "defensive") && isTRUE(all.equal(v3$table[Factor_Name == "DA"]$ic_bad, 0.20)) &&
+      isTRUE(all.equal(v3$table[Factor_Name == "DB"]$ic_bad, 0.10)) && grepl("방향 기준 = 등록부 방어 방향", v3$basis, fixed = TRUE),
+    "V3 [불일치 주입 · 양성] DA(lower_better · 원값 IC −0.20) → 방어 기준 IC +0.20 으로 1위 · direction = defensive(엔진이 같은 기준으로 처치 적재)",
+    "V3 선정이 원값 부호로 순위 냈다(처치 기준과 갈림)", paste(v3$id, v3$direction))
+# 처치 쪽 재도출 — 엔진은 direction = defensive 로 적재한다(z_def = 방어 부호 × 원값 z). DA 의 처치 상위 k = 원값 하위 k(= 약세장에서 나았던 쪽).
+PV <- copy(PANEL)[, raw := runif(.N)][, .zdef := -1 * (raw - mean(raw)) / sd(raw), by = Date]   # −1 = 픽스처 등록부의 DA 방어 부호(lower_better)
+SV <- rf_sl_select(PV, SEL0, RULE5, NMAX, defcol = ".zdef")
+DV <- SV[!SEL0[, .(Date, Ticker)], on = c("Date", "Ticker")]
+lo <- PV[!SEL0[order(Date, -Score)][, head(.SD, NMAX - 5L), by = Date][, .(Date, Ticker)], on = c("Date", "Ticker")][order(Date, raw)][, head(.SD, 5L), by = Date]
+chk(nrow(DV) > 0L && all(DV[, .(Date, Ticker)][, paste(Date, Ticker)] %in% lo[, paste(Date, Ticker)]),
+    "V4 [처치 재도출] 방어 정렬 z 로 고른 슬리브 이름 ⊂ 원값 하위(알파 밖) — 선정 IC 의 방향(방어 기준 +0.20)과 처치 방향이 같다", "V4 처치 방향이 선정과 갈렸다")
+# 돌연변이(소스 텍스트 치환 · 성사 단정) — 방어 부호 곱하기를 지우면(구판 = 원값 순위) V3 가 빨개진다
+.sltxt <- paste(readLines(file.path(ROOT, "02_Infrastructure/reinforcement/rf_sleeve.R"), warn = FALSE, encoding = "UTF-8"), collapse = "\n")
+.mfrom <- "  if (!is.null(sg)) IC[, IC := as.numeric(IC) * unname(sg[as.character(Factor_Name)])]"
+.mn <- lengths(regmatches(.sltxt, gregexpr(.mfrom, .sltxt, fixed = TRUE)))
+.mf <- tempfile(fileext = ".R"); writeLines(sub(.mfrom, "  invisible(NULL)", .sltxt, fixed = TRUE), .mf, useBytes = TRUE)
+.me_env <- new.env(parent = globalenv()); invisible(capture.output(suppressMessages(sys.source(.mf, envir = .me_env))))
+vm <- tryCatch(.me_env$rf_sl_resolve(RULE5, .tmp4, IC = .icv, BM = .bm)$id, error = function(e) "ERR")
+chk(.mn == 1L && identical(vm, "DB"), "V5 [돌연변이 red] 방어 부호 곱하기 삭제(구판 원값 순위) → 1위 DB 로 바뀐다(V3 가 잡는다 · 치환 1곳 성사)",
+    "V5 돌연변이가 살아남았거나 치환 불성사", paste(.mn, vm))
+.tmp5 <- file.path(tempdir(), paste0("sl5_", paste(sample(letters, 6), collapse = "")))
+dir.create(file.path(.tmp5, "06_Registry"), recursive = TRUE, showWarnings = FALSE)
+invisible(file.copy(file.path(.tmp, "06_Registry/factor_evidence.json"), file.path(.tmp5, "06_Registry/factor_evidence.json"))); .wprog(.tmp5)
+chk(grepl("팩터 등록부 부재", .err(rf_sl_resolve(RULE5, .tmp5, IC = .icv, BM = .bm)) %||% ""),
+    "V6 등록부가 없으면 멈춘다(방어 부호를 모르면 고르지 않는다 · fail-closed)", "V6 등록부 없이 골랐다")
+.wreg(.tmp5, c(DB = "higher_better"))
+v7 <- tryCatch(rf_sl_resolve(RULE5, .tmp5, IC = .icv, BM = .bm), error = function(e) list(id = "ERR", basis = conditionMessage(e)))
+chk(identical(v7$id, "DB") && grepl("방어 방향 없는 후보 제외 1)", v7$basis, fixed = TRUE),
+    "V7 방어 방향이 등록부에 없는 후보(DA)는 빠지고 셈이 basis 에 남는다", "V7", paste(v7$id, v7$basis))
+fx <- rf_sl_resolve(rf_sl_parse(list(kind = "factor_topk", k = 5, factor_id = "DB")), .tmp)
+fr <- rf_sl_resolve(rf_sl_parse(list(kind = "factor_topk", k = 5, factor_id = "DB", direction = "ic_asof")), .tmp)
+chk(identical(fx$direction, "defensive") && identical(fr$direction, "ic_asof") && grepl("spec 고정", fx$basis, fixed = TRUE),
+    "V8 factor_id 고정 — 기본 defensive(장치의 정체 유지) · 재현은 ic_asof 를 적어야 한다", "V8", paste(fx$direction, fr$direction))
 
 # ── 처치 전달량 rf_sl_delivery (결정 PR-L2-B7-EXCL-UNIT (c)) ──
 cat("-- 처치 전달량 --\n")

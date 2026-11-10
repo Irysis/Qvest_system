@@ -307,6 +307,11 @@ wj(list(factors = list(D_A = list(category = "defense", lifecycle_status = "acti
                        D_B = list(category = "defense", lifecycle_status = "active", ic_bad = 0.9),
                        R_C = list(category = "risk", lifecycle_status = "active", ic_bad = 0.5))),
    file.path(R7, "06_Registry/factor_evidence.json"))
+# (2026-11-10 · B7 방향 기준) db 슬리브는 선정 IC 를 등록부 방어 부호로 본다 — 픽스처는 전부 higher_better(순위 · 정렬 단정은 종전 그대로)
+wj(list(D_A = list(direction = "higher_better", direction_defensive = "higher_better"),
+        D_B = list(direction = "higher_better", direction_defensive = "higher_better"),
+        R_C = list(direction = "higher_better", direction_defensive = "higher_better")),
+   file.path(R7, "02_Infrastructure/factor_db/factor_registry.json"))
 cfg7 <- list(bear_quantile = 0.3, min_bear_months = 4L, candidate_categories = c("defense", "risk"), rank_key = "ic_bad",
              ic_path = "x.parquet", bench_path = "y.parquet", bench_price_col = "BM_Close")
 wj(list(fixed_axes = list(start_date = "2003-12-31"), blocks = list(list(id = "B7", selection_asof = cfg7))),
