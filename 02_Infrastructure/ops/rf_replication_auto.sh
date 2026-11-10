@@ -223,6 +223,11 @@ if d.get("status") == "in_progress" and not os.path.isdir(CLAIM):
         d["revived_verify"] = True
     io.open(REQ, "wb").write(json.dumps(d, ensure_ascii=False, indent=1).encode("utf-8"))
     print("revived from in_progress (no claim)")
+elif d.get("status") == "failed_needs_session" and d.get("failure") == "verify_crash_loop":
+    # ★되살림 상한 초과(아래 상태 전이 단계 · 2026-11-10 G5) = 세션 대기. 자동 재시도로 살리지 않는다 — 살리면 에이전트가 감사를 통과한
+    #   엔진을 다시 쓰고(LLM 과금) 끝내 소진 → 스킵리스트 'unreproducible' 로 환경 실패가 리서치 판정으로 굳는다.
+    #   세션 해제 = status pending + failure session_reverify(검증기만 · 아래 분기) 또는 엔진을 고친 뒤 pending.
+    print("held verify_crash_loop (session)")
 elif d.get("status") == "failed_needs_session":
     n = int(d.get("auto_retries") or 0)
     if n < 3:
@@ -454,15 +459,57 @@ jl start "paper=$P_KEY" "url=$P_URL" "wdir=$WDIR" "lane_mode=$LANE_MODE" "lane_m
 # ★측정 도중 중단 판정(2026-11-10 레인 D 감사) — 되살린 요청에 검증기 시작 표식이 있고 지금 engine.R 지문이 그 표식과 같으면
 #   failure=verify_interrupted(아래 검증기만 분기) · 다르면(엔진이 바뀜 · 없음) 표식만 지우고 종전 경로. 표식은 매 착수에 지운다
 #   (rp_verify 가 측정 직전에 새로 남긴다) — 끝난 측정의 낡은 표식이 다음 착수를 검증기만으로 보내지 않게. 검사 = 08_Tests/scenarios/test_scn_repl_lane.sh L7.
-"$PY" -c "
+# ★되살림 회차 상한(2026-11-10 G5) — 검증기가 상태를 못 남기고 죽는 실패(OOM 강제 종료 · 네이티브 크래시 · tryCatch 밖 오류)가 결정론이면
+#   in_progress → 되살림 → verify_interrupted → 같은 크래시가 틱마다 끝없이 돌았다(감사 LLM 재과금 · 슬롯 영구 점유 · 어떤 카운터도 안 늘었다).
+#   verify_interrupt_count 를 되살림마다 1 올리고 상한을 넘으면 failed_needs_session/verify_crash_loop(세션 대기 — 위 재시도 단계가 자동으로
+#   살리지 않는다 · 실패 판정 · 스킵리스트로 굳히지 않는다)로 보내고 원인 로그(마지막 슬롯 로그 꼬리)를 요청에 남긴다.
+#   상한 = 설정 cell_max_retry(06_Registry/reinforce_auto_config.json — '일시적 실패의 재개 상한' · 같은 재개 의미) · 판독 불가 = 1(재구현 1회 정책 · 도훈 09-04).
+#   카운터는 되살림이 아닌 착수(새 엔진 · 정상 재시도 · 세션 해제)마다 지운다.
+#   verify_interrupted_since = 중단된 측정의 시작 시각(지운 verify_started_at) — 검증기가 측정 전에 그 창의 Judge 트리거를 거둔다(가장 이른 창 유지).
+TR_OUT=$("$PY" -c "
 import io,json,time,hashlib,os
 d=json.loads(io.open(r'$REQ','rb').read().decode('utf-8'))
 eng=os.path.join(r'$WDIR','engine.R')
-vm=d.pop('verify_engine_md5',None); d.pop('verify_started_at',None)
+vm=d.pop('verify_engine_md5',None); vs=d.pop('verify_started_at',None)
+out='start'
 if d.pop('revived_verify',None) and vm and os.path.isfile(eng) and hashlib.md5(io.open(eng,'rb').read()).hexdigest()==vm:
-    d['failure']='verify_interrupted'; d['failure_detail']='측정(검증기) 도중 중단 뒤 되살림 — 엔진 지문 같음 · 에이전트 없이 검증기만'
-d['status']='in_progress'; d['started_at']=time.strftime('%Y-%m-%dT%H:%M:%S%z')
-io.open(r'$REQ','wb').write(json.dumps(d,ensure_ascii=False,indent=1).encode('utf-8'))"
+    try: cap=max(0,int(json.loads(io.open(r'$CFG','rb').read().decode('utf-8')).get('cell_max_retry')))
+    except Exception: cap=1
+    n=int(d.get('verify_interrupt_count') or 0)+1
+    if not d.get('verify_interrupted_since'): d['verify_interrupted_since']=vs or ''
+    if n>cap:
+        d['status']='failed_needs_session'; d['failure']='verify_crash_loop'
+        d['failure_detail']='검증기(측정)가 같은 엔진에서 %d회 연속 상태 없이 중단 — 되살림 상한 %d(cell_max_retry) 초과 · 세션 대기(자동 재시도 없음)' % (n, cap)
+        d['verify_crash_loop_at']=time.strftime('%Y-%m-%dT%H:%M:%S%z')
+        out='crash_loop %d %d' % (n, cap)
+    else:
+        d['verify_interrupt_count']=n
+        d['failure']='verify_interrupted'; d['failure_detail']='측정(검증기) 도중 중단 뒤 되살림 %d/%d — 엔진 지문 같음 · 에이전트 없이 검증기만' % (n, cap)
+        out='verify_interrupted %d %d' % (n, cap)
+else:
+    d.pop('verify_interrupt_count',None)
+if not out.startswith('crash_loop'):
+    d['status']='in_progress'; d['started_at']=time.strftime('%Y-%m-%dT%H:%M:%S%z')
+io.open(r'$REQ','wb').write(json.dumps(d,ensure_ascii=False,indent=1).encode('utf-8'))
+print(out)" | tr -d '\r')
+if [ "${TR_OUT%% *}" = "crash_loop" ]; then
+  # 원인 로그 — 이 자리(슬롯)의 가장 최근 레인 로그 꼬리(중단된 측정이 남긴 마지막 줄들 · 날짜가 바뀌었을 수 있어 최신 파일)
+  _clog="$(ls -t "$(dirname "$LOG")"/replication_auto_*"${RP_SLOT:+_$RP_SLOT}".log 2>/dev/null | head -n 1)"
+  "$PY" -c "
+import io,json,sys
+p,lg=sys.argv[1],sys.argv[2]
+d=json.loads(io.open(p,'rb').read().decode('utf-8'))
+try: tail=io.open(lg,'rb').read()[-4000:].decode('utf-8','replace').splitlines()[-30:]
+except Exception: tail=[]
+d['verify_crash_log']=lg; d['verify_crash_log_tail']=tail
+io.open(p,'wb').write(json.dumps(d,ensure_ascii=False,indent=1).encode('utf-8'))" "$REQ" "${_clog:-}" 2>>"$LOG"
+  jl verify_crash_loop "paper=$P_KEY" "count=$(printf '%s' "$TR_OUT" | cut -d' ' -f2)" "cap=$(printf '%s' "$TR_OUT" | cut -d' ' -f3)" "log=${_clog:-}" \
+    "note=검증기가 같은 엔진에서 반복 중단 — 세션 대기(failed_needs_session/verify_crash_loop · 자동 재시도 없음 · 엔진 보존) · 해제 = pending + failure session_reverify"
+  # 중단된 측정들이 낸 Judge 트리거를 거둔다(측정 없음 — 검증기의 트리거 거두기만 모드 · 실패해도 요청은 세션 대기 그대로)
+  QM_ROOT="$ROOT" RP_WDIR="$WDIR" RP_KEY="$P_KEY" QVEST_RP_REQUEST="$REQ" QVEST_RP_JLOG="$JLOG" RP_WITHDRAW_ONLY=1 \
+    Rscript "$ROOT/02_Infrastructure/ops/rf_replication_verify.R" >> "$LOG" 2>&1 || jl verify_crash_withdraw_failed "paper=$P_KEY" "rc=$?"
+  exit 0
+fi
 
 # ── 측정 + 검증 호출 — 한 곳 (정상 경로와 아래 감사 미실행 재시도가 같은 호출을 쓴다) ──
 rp_verify(){

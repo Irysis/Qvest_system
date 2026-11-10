@@ -216,6 +216,49 @@ fail <- function(why, detail = "") {
   jlog(if (isTRUE(ok)) "judge_request_held" else "judge_hold_failed", dir = dir, code = code)
   invisible(isTRUE(ok))
 }
+## 측정 도중 중단된 실행의 Judge 트리거 거두기(2026-11-10 G5) — 되살림(verify_interrupted)은 새 run 폴더에서 다시 잰다. 앞 실행의 러너 §11 이
+##   대표 측정 직후 낸 judge_request.eligible.json(pending)은 검증기가 받지 않은 측정(나머지 변형 · 보유 대조 · 축/PIT 구조 검사 전 중단)인데
+##   fail() 의 보류는 현재 실행(ar)만 본다 — 그 트리거가 Judge 스폰 조건 ③을 계속 충족했다. 레인이 요청에 남긴 verify_interrupted_since(중단된
+##   측정의 시작 시각 = rp_verify 표식) 이후에 같은 엔진(engine_path = 이 WDIR/engine.R)이 낸 트리거를 .v1001_hold_judge 형식(held:verify_interrupted)
+##   으로 옮긴다. 산출 루트 = 러너 기본 out_root(stage_artifacts/replication/<run>/ · 변형 = <run>/variants/<run>/) · 덮기 = QVEST_RP_ART_ROOT(검사 격리 전용).
+##   시각 판독 불가(창 · requested_at) = 거둔다(fail-closed — 보류는 발행만 막는다 · 등급 불변). 판독 불가 트리거 파일 = 건드리지 않고 기록.
+.v1001_withdraw_interrupted <- function(since, engine, art_root = Sys.getenv("QVEST_RP_ART_ROOT", file.path(ROOT, "stage_artifacts", "replication"))) {
+  .np <- function(p) tolower(gsub("/+", "/", gsub("\\", "/", as.character(p %||% "")[1], fixed = TRUE)))
+  .tm <- function(x) suppressWarnings(as.POSIXct(as.character(x %||% "")[1], format = "%Y-%m-%dT%H:%M:%S%z"))
+  t0 <- .tm(since); me <- .np(engine)
+  fs <- c(Sys.glob(file.path(art_root, "*", "judge_request.eligible.json")),
+          Sys.glob(file.path(art_root, "*", "variants", "*", "judge_request.eligible.json")))
+  held <- character(0); bad <- character(0)
+  for (f in fs) {
+    j <- tryCatch(fromJSON(f, simplifyVector = FALSE), error = function(e) NULL)
+    if (!is.list(j)) { jlog("judge_withdraw_unreadable", path = f); next }
+    if (!identical(.np(j$engine_path), me)) next
+    tr <- .tm(j$requested_at)
+    if (!is.na(t0) && !is.na(tr) && tr < t0) next
+    ok <- .v1001_hold_judge(dirname(f), code = "verify_interrupted", since = as.character(since %||% "")[1],
+                            note = "측정(검증기) 도중 중단된 실행의 트리거 — 검증기가 받지 않은 측정(되살림이 새로 잰다)")
+    if (isTRUE(ok)) held <- c(held, dirname(f)) else bad <- c(bad, dirname(f))
+  }
+  list(held = held, failed = bad)
+}
+## 호출 — 요청에 창 표식이 있을 때만(측정 · 감사 전 · 되살림 경로와 세션 대기(verify_crash_loop) 경로 공통). 다 거두면 표식을 지운다(요청의 다른 필드 불변) ·
+##   하나라도 못 거두면 표식을 남겨 다음 검증기가 다시 거둔다(측정은 막지 않는다 — Judge 스폰은 세션 소관 · 저널 judge_hold_failed).
+##   RP_WITHDRAW_ONLY=1(레인의 되살림 상한 초과 경로) = 거두기만 하고 끝낸다(측정 · 보고 · 요청 상태 변경 없음).
+.v1001_interrupted_withdraw_step <- function() {
+  d <- tryCatch(fromJSON(REQ, simplifyVector = FALSE), error = function(e) NULL)
+  if (!is.list(d) || is.null(d$verify_interrupted_since)) return(invisible(NULL))
+  w <- tryCatch(.v1001_withdraw_interrupted(d$verify_interrupted_since, file.path(WDIR, "engine.R")),
+                error = function(e) list(held = character(0), failed = paste("error:", conditionMessage(e))))
+  jlog("judge_withdraw_interrupted", since = as.character(d$verify_interrupted_since)[1], held = length(w$held), failed = length(w$failed))
+  if (!length(w$failed)) {
+    d$verify_interrupted_since <- NULL
+    write(toJSON(d, auto_unbox = TRUE, pretty = TRUE, null = "null"), REQ)
+  }
+  invisible(w)
+}
+.VI_W <- .v1001_interrupted_withdraw_step()
+if (identical(Sys.getenv("RP_WITHDRAW_ONLY", ""), "1"))
+  quit(status = if (is.null(.VI_W) || !length(.VI_W$failed)) 0L else 1L)
 ## 팩터 분석(파마-맥베스 · FF3/FF5/Carhart) = 같은 1통의 섹션(도훈 10-16 "파마맥베스 … 메세지 누락된거 다시 살려줘" · 발송 규칙 §0.1 1단위 1통).
 ##   러너가 점수형 엔진에서 이미 분석했으면 그 산출물을, 비중형이면 사후 분석(alpha_search/replication_factor_analysis.R — 별도 프로세스 ·
 ##   점수 = 신호일 보유 비중 · 비보유 0)을 돌린 뒤 rfa_section 으로 섹션 1개를 만든다. 실패해도 보고는 나간다(섹션에 사유 1줄 · jlog).

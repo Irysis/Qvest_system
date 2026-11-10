@@ -7,6 +7,8 @@
 #   L4 pid 재사용 — claim 의 소유자 pid 가 이 기기에서 살아 있지만 시작 시각이 다르다 → 회수(산 프로세스를 소유자로 오인하지 않는다)
 #   L5 OneDrive 읽기 전용(R) 속성 claim 폴더 — 회수가 폴더를 실제로 지운다(claim_reclaim_incomplete 없음)
 #   L6 생존 소유자 장시간 — 계산 시간 상한 없음(도훈 10-17): 회수하지 않고 claim_live_long 1회만(같은 틱 반복 시 중복 없음)
+#   L7 측정 도중 중단 뒤 되살림 — 검증기만 · 표식 생산(rp_verify) 단언 · L7c 되살림 회차 상한(cell_max_retry) 초과 = 세션 대기(자동 재시도 없음)
+#   L8 중단된 실행이 낸 Judge 트리거 거두기(검증기 RP_WITHDRAW_ONLY 실구동 · 격리 산출 루트) · L7m/L8m 돌연변이 양성 대조(소스 텍스트 치환)
 # 격리: QVEST_RP_*(설정 · 상태 · 슬롯 요청 · 저널 · 구판 요청/claim · 작업 디렉터리) · QVEST_GPU_LEASE · 갱신 잠금 · 후보 · 발행 대역.
 #   운영 요청 · claim · 레인 로그 · 재구현 대기열 무접촉(L1 이 로그 무접촉을 단정한다). 에이전트 · 측정 · 네트워크 없음.
 #==============================================================================
@@ -166,33 +168,145 @@ echo "$(date +%s) $d" >> "$STUB_AGENT_LOG"; cat > /dev/null
 S
   cat > "$T/rbin/Rscript" <<'S'
 #!/usr/bin/env bash
-echo "$* | REQ=${QVEST_RP_REQUEST:-} | SLOT=${RP_SLOT:-}" >> "$STUB_R_LOG"; exit 0
+echo "$* | REQ=${QVEST_RP_REQUEST:-} | SLOT=${RP_SLOT:-} | WITHDRAW=${RP_WITHDRAW_ONLY:-}" >> "$STUB_R_LOG"; exit 0
 S
   chmod +x "$T/bin/claude" "$T/rbin/Rscript"; : > "$T/agent.log"; : > "$T/r.log"
 }
-l7(){   # $1 이름 · $2 표식 md5 를 맞출지(1) 어긋낼지(0)
+L7OLD="2026-11-07T09:00:00+0900"
+l7(){   # $1 이름 · $2 표식 md5 를 맞출지(1) 어긋낼지(0) · $3 요청에 더할 필드(JSON 조각 · 끝 쉼표 포함 · 빈 값 = 없음)
   mkfx "$1" '[]'; mkstubs
   local W="$T/strat/RP_AUTO_V_cpu"; mkdir -p "$W"; printf 'FACTORS <- data.frame(Date = Sys.Date(), Ticker = "A", Score = 1)\n# padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding\n' > "$W/engine.R"
   local m; m=$("$PY" -c "import hashlib,sys;print(hashlib.md5(open(sys.argv[1],'rb').read()).hexdigest())" "$W/engine.R" | tr -d '\r')
   [ "$2" = "1" ] || m="0000000000000000deadbeef00000000"
+  L7MD5="$m"
   mkdir -p "$T/slots/cpu1"
-  printf '{"status":"in_progress","slot":"cpu1","lane_mode":"normal","audit_retries":1,"audit_feedback":"old finding","verify_engine_md5":"%s","verify_started_at":"2026-11-07T09:00:00+0900","paper":{"paper_key":"V.cpu","paper_title":"Value spread","url":"http://127.0.0.1:9/V.cpu"}}\n' "$m" \
+  printf '{"status":"in_progress","slot":"cpu1","lane_mode":"normal","audit_retries":1,"audit_feedback":"old finding",%s"verify_engine_md5":"%s","verify_started_at":"%s","paper":{"paper_key":"V.cpu","paper_title":"Value spread","url":"http://127.0.0.1:9/V.cpu"}}\n' "${3:-}" "$m" "$L7OLD" \
     > "$T/slots/cpu1/replication_request.json"
   L7PATH="$(upath "$T/rbin"):$(upath "$T/bin"):$PATH"
   L7SKIP=""; if [ "$(PATH="$L7PATH"; hash -r; command -v Rscript)" != "$(upath "$T/rbin")/Rscript" ]; then L7SKIP="SKIP_PATH"; return; fi
-  env $(envs) RP_SLOT=cpu1 RF_CLAUDE_BIN="$T/bin/claude" STUB_AGENT_LOG="$T/agent.log" STUB_R_LOG="$T/r.log" CUDA_VISIBLE_DEVICES="" PATH="$L7PATH" \
-    bash "$LANE" >> "$T/lane.out" 2>&1
+  l7run
 }
+l7run(){ env $(envs) RP_SLOT=cpu1 RF_CLAUDE_BIN="$T/bin/claude" STUB_AGENT_LOG="$T/agent.log" STUB_R_LOG="$T/r.log" CUDA_VISIBLE_DEVICES="" PATH="$L7PATH" \
+    bash "${L7_LANE:-$LANE}" >> "$T/lane.out" 2>&1; }
+rqf(){ "$PY" -c "
+import io,json,sys
+d=json.loads(io.open(sys.argv[1],'rb').read().decode('utf-8')); v=d.get(sys.argv[2])
+print('' if v is None else v)" "$T/slots/cpu1/replication_request.json" "$1" 2>/dev/null | tr -d '\r'; }
+# 되살림 상한 = 레인 설정 cell_max_retry(재개 상한 · 06_Registry/reinforce_auto_config.json — 픽스처가 운영 설정을 복사) · 판독 불가 = 1
+L7CAP=$("$PY" -c "
+import io,json,sys
+try: print(int(json.load(io.open(sys.argv[1],encoding='utf-8')).get('cell_max_retry')))
+except Exception: print(1)" "$ROOT/06_Registry/reinforce_auto_config.json" | tr -d '\r')
 l7 l7a 1; r="$L7SKIP"
 na=$(grep -c . "$T/agent.log" 2>/dev/null | tr -d '\r')
 [ "$r" != "SKIP_PATH" ] && [ "${na:-0}" = "0" ] && [ "$(ev verify_only_retry)" = "1" ] && grep -q "rf_replication_verify.R" "$T/r.log" \
   && ok "L7a 검증기 시작 표식 + 엔진 지문 같음 → verify_interrupted · 에이전트 0회 · 검증기만" \
   || ng "L7a 측정 중단 되살림" "skip=$r agent=$na vo=$(ev verify_only_retry) r=$(head -c 200 "$T/r.log") $(tail -3 "$T/lane.out" | tr '\n' ' ')"
+# 표식 생산 — 착수 단계가 표식을 지운 뒤 rp_verify 가 측정 직전에 새로 쓴다(지문 = 지금 engine.R · 시각 = 새 값)
+vsa=$(rqf verify_started_at)
+[ "$r" != "SKIP_PATH" ] && [ "$(rqf verify_engine_md5)" = "$L7MD5" ] && [ -n "$vsa" ] && [ "$vsa" != "$L7OLD" ] \
+  && ok "L7a' 표식 생산 — 검증기 직전 verify_engine_md5 = engine.R 지문 · verify_started_at 새 값" \
+  || ng "L7a' 표식 생산" "md5=$(rqf verify_engine_md5) want=$L7MD5 started=$vsa"
+[ "$r" != "SKIP_PATH" ] && [ "$(rqf verify_interrupt_count)" = "1" ] && [ "$(rqf verify_interrupted_since)" = "$L7OLD" ] \
+  && ok "L7a'' 되살림 회차 1 기록 · 중단된 실행의 시작 시각(verify_interrupted_since)을 검증기에 넘긴다(트리거 거두기 창)" \
+  || ng "L7a'' 회차 · 창" "count=$(rqf verify_interrupt_count) since=$(rqf verify_interrupted_since)"
 l7 l7b 0; r="$L7SKIP"
 na=$(grep -c . "$T/agent.log" 2>/dev/null | tr -d '\r')
 [ "$r" != "SKIP_PATH" ] && [ "${na:-0}" -ge 1 ] && [ "$(ev verify_only_retry)" = "0" ] \
   && ok "L7b 엔진 지문 다름 → 종전 경로(에이전트 착수) — 표식이 다른 엔진을 검증기만으로 보내지 않는다" \
   || ng "L7b 지문 불일치" "skip=$r agent=$na vo=$(ev verify_only_retry) $(tail -3 "$T/lane.out" | tr '\n' ' ')"
+
+echo "=== L7c 되살림 상한(cap=$L7CAP) — 같은 자리에서 계속 죽으면 세션 대기(실패로 굳히지 않음) ==="
+l7c_check(){   # $1 라벨 접두
+  local na2; na2=$(grep -c . "$T/agent.log" 2>/dev/null | tr -d '\r')
+  [ "$L7SKIP" != "SKIP_PATH" ] && [ "${na2:-0}" = "0" ] && [ "$(ev verify_only_retry)" = "0" ] && [ "$(ev verify_crash_loop)" = "1" ] \
+    && [ "$(rqf status)" = "failed_needs_session" ] && [ "$(rqf failure)" = "verify_crash_loop" ] \
+    && grep -q "rf_replication_verify.R.*WITHDRAW=1" "$T/r.log" && [ "$(rqf verify_interrupted_since)" = "$L7OLD" ]
+}
+l7 l7c 1 "\"verify_interrupt_count\":$L7CAP,"
+l7c_check && ok "L7c 회차 $((L7CAP+1)) > 상한 $L7CAP → failed_needs_session/verify_crash_loop · 에이전트 0 · 측정 0 · 트리거 거두기만(WITHDRAW=1) · 저널 1" \
+  || ng "L7c 상한" "agent=$(grep -c . "$T/agent.log") vo=$(ev verify_only_retry) cl=$(ev verify_crash_loop) st=$(rqf status) f=$(rqf failure) r=$(tr '\n' ' ' < "$T/r.log" | head -c 300)"
+l7run
+na=$(grep -c . "$T/agent.log" 2>/dev/null | tr -d '\r')
+[ "$L7SKIP" != "SKIP_PATH" ] && [ "${na:-0}" = "0" ] && [ "$(rqf status)" = "failed_needs_session" ] && [ -z "$(rqf auto_retries)" ] && [ "$(ev verify_crash_loop)" = "1" ] \
+  && ok "L7c' 다음 틱 — 자동 재시도(auto_retries)로 되살리지 않는다(세션 대기 · 스킵리스트 · 재구현으로 안 굳는다)" \
+  || ng "L7c' 다음 틱" "agent=$na st=$(rqf status) ar=$(rqf auto_retries) cl=$(ev verify_crash_loop)"
+
+echo "=== L7m 양성 대조 — 표식 생산 삭제 · 상한 삭제 돌연변이를 시험이 잡는다 ==="
+mklanemut(){   # $1 이름 · $2 원문 · $3 대체문 → 사본 경로 출력(치환 1회 단정)
+  local mp="$T0/lanemut_$1.sh"
+  "$PY" - "$LANE" "$mp" "$2" "$3" <<'PYM' || { echo ""; return; }
+import io, sys
+src, dst, old, new = sys.argv[1:5]
+s = io.open(src, encoding="utf-8", newline="").read()
+assert s.count(old) == 1, "치환 대상 %d개" % s.count(old)
+io.open(dst, "w", encoding="utf-8", newline="").write(s.replace(old, new))
+PYM
+  printf '%s' "$mp"
+}
+MP=$(mklanemut prod "    d['verify_engine_md5']=hashlib.md5(io.open(eng,'rb').read()).hexdigest(); d['verify_started_at']=time.strftime('%Y-%m-%dT%H:%M:%S%z')" "    pass")
+if [ -n "$MP" ]; then
+  L7_LANE="$MP" l7 l7mp 1
+  [ "$(rqf verify_engine_md5)" != "$L7MD5" ] && ok "L7m1 표식 생산 삭제 돌연변이 → L7a' 가 빨개진다(검출력 있음)" || ng "L7m1" "돌연변이에서도 표식이 생산됨"
+else ng "L7m1" "치환 실패(돌연변이 미성사)"; fi
+MC=$(mklanemut cap "    if n>cap:" "    if False:")
+if [ -n "$MC" ]; then
+  L7_LANE="$MC" l7 l7mc 1 "\"verify_interrupt_count\":$L7CAP,"
+  ! l7c_check && [ "$(ev verify_only_retry)" = "1" ] && ok "L7m2 상한 삭제 돌연변이 → 검증기만 재실행이 또 돈다 = L7c 가 빨개진다" || ng "L7m2" "vo=$(ev verify_only_retry)"
+else ng "L7m2" "치환 실패(돌연변이 미성사)"; fi
+
+echo "=== L8 중단된 실행의 Judge 트리거 거두기 (검증기 · 트리거 거두기만 모드) ==="
+l8(){   # $1 이름 · $2 검증기 경로 — 픽스처 산출 루트에 트리거 4개(거둘 것 2 · 남길 것 2)
+  T="$T0/$1"; mkdir -p "$T"; local A="$T/art" W="$T/wdir"; mkdir -p "$W"
+  "$PY" - "$A" "$W" "$L7OLD" <<'PYF'
+import io, json, os, sys
+A, W, since = sys.argv[1:4]
+eng_bs = W.replace("/", "\\") + "/engine.R"          # 기록 형식이 섞인 경로(운영 실측 · 역슬래시 + 슬래시)
+def put(rel, eng, at):
+    d = os.path.join(A, rel); os.makedirs(d, exist_ok=True)
+    io.open(os.path.join(d, "judge_request.eligible.json"), "w", encoding="utf-8").write(json.dumps(
+        {"schema": "judge_request_v2", "status": "pending", "grade": "A", "requested_at": at, "engine_path": eng, "artifacts": d}))
+put("20261107_090500_11", eng_bs, "2026-11-07T10:00:00+0900")                       # 중단된 실행(창 안 · 같은 엔진) → 거둔다
+put("20261107_090500_11/variants/20261107_100500_12", W + "/engine.R", "2026-11-07T10:30:00+0900")  # 그 실행의 변형 → 거둔다
+put("20261106_090000_13", W + "/engine.R", "2026-11-06T10:00:00+0900")             # 창 이전(앞서 끝난 측정) → 남긴다
+put("20261107_091000_14", "C:/elsewhere/RP_AUTO_X/engine.R", "2026-11-07T10:00:00+0900")  # 다른 엔진 → 남긴다
+io.open(os.path.join(os.path.dirname(A), "req.json"), "w", encoding="utf-8").write(json.dumps(
+    {"status": "failed_needs_session", "failure": "verify_crash_loop", "verify_interrupted_since": since, "paper": {"paper_key": "V.cpu"}}))
+PYF
+  : > "$T/empty.Renviron"; : > "$T/j.jsonl"
+  R_ENVIRON_USER="$T/empty.Renviron" QM_ROOT="$ROOT" RP_WITHDRAW_ONLY=1 RP_WDIR="$W" RP_KEY="V.cpu" QVEST_RP_REQUEST="$T/req.json" \
+    QVEST_RP_JLOG="$T/j.jsonl" QVEST_RP_ART_ROOT="$A" QVEST_TG_DRY_RUN=1 Rscript "$2" > "$T/r.out" 2>&1; L8RC=$?
+}
+held(){ [ -f "$T/art/$1/judge_request.held.json" ] && [ ! -f "$T/art/$1/judge_request.eligible.json" ] \
+  && grep -q '"held:verify_interrupted"' "$T/art/$1/judge_request.held.json"; }
+kept(){ [ -f "$T/art/$1/judge_request.eligible.json" ] && [ ! -f "$T/art/$1/judge_request.held.json" ]; }
+VR="02_Infrastructure/ops/rf_replication_verify.R"
+l8 l8a "$VR"
+held 20261107_090500_11 && held 20261107_090500_11/variants/20261107_100500_12 \
+  && ok "L8a 창 안 · 같은 엔진(경로 표기 섞임)의 트리거 + 그 변형 → held:verify_interrupted(Judge 트리거 아님)" \
+  || ng "L8a 거두기" "rc=$L8RC $(ls -R "$T/art" | tr '\n' ' ' | head -c 300) $(tail -3 "$T/r.out" | tr '\n' ' ')"
+kept 20261106_090000_13 && kept 20261107_091000_14 \
+  && ok "L8b 창 이전 · 다른 엔진 트리거는 그대로(과잉 거두기 없음)" || ng "L8b 과잉 거두기" "$(ls -R "$T/art" | tr '\n' ' ' | head -c 300)"
+REQ8="$T/req.json"
+[ "$L8RC" = "0" ] && "$PY" -c "
+import io,json,sys
+d=json.loads(io.open(sys.argv[1],'rb').read().decode('utf-8'))
+sys.exit(0 if 'verify_interrupted_since' not in d and d.get('status')=='failed_needs_session' and d.get('failure')=='verify_crash_loop' else 1)" "$REQ8" \
+  && ok "L8c 거두기 끝 → 요청의 창 표식만 지운다(상태 · 실패 사유 불변 · rc 0 · 측정 없음)" || ng "L8c 요청 정리" "rc=$L8RC $(head -c 300 "$REQ8") $(tail -3 "$T/r.out" | tr '\n' ' ')"
+grep -q '"judge_request_held"' "$T/j.jsonl" && ! grep -q '"verify_failed"' "$T/j.jsonl" \
+  && ok "L8d 저널 judge_request_held · 검증 실패 기록 없음" || ng "L8d 저널" "$(head -c 300 "$T/j.jsonl")"
+VM="$T0/verify_mut.R"
+"$PY" - "$VR" "$VM" <<'PYM'
+import io, sys
+s = io.open(sys.argv[1], encoding="utf-8", newline="").read()
+old = '    ok <- .v1001_hold_judge(dirname(f), code = "verify_interrupted"'
+assert s.count(old) == 1, "치환 대상 %d개" % s.count(old)
+io.open(sys.argv[2], "w", encoding="utf-8", newline="").write(s.replace(old, '    ok <- TRUE; if (FALSE) .v1001_hold_judge(dirname(f), code = "verify_interrupted"'))
+PYM
+if [ -s "$VM" ]; then
+  l8 l8m "$VM"
+  kept 20261107_090500_11 && ok "L8m 거두기 삭제 돌연변이 → 트리거가 pending 으로 남는다 = L8a 가 빨개진다" || ng "L8m" "돌연변이에서도 거둬짐"
+else ng "L8m" "치환 실패(돌연변이 미성사)"; fi
 
 printf '{"test":"scn_repl_lane","pass":%d,"fail":%d,"total":%d}\n' "$PASS" "$FAIL" "$((PASS+FAIL))"
 [ "$FAIL" -eq 0 ]
