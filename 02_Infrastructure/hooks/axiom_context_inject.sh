@@ -338,8 +338,8 @@ for _ln in rd(os.environ.get('ML', '')).splitlines():
     _m, _sep, _txt = _ln.partition(chr(9))
     ml_all.append((_m if _sep else 'unknown', _txt if _sep else _ln))
 ML_N = len(ml_all)
-ML_PTR = ('[mode-local 공리 %d건 — Rscript -e \\'source(\"02_Infrastructure/axiom/promote.R\"); '
-          'list_active_axioms()\\']' % ML_N)
+ML_PTR = ('[mode-local 공리 %d건 — 파일: qepm/memory/axioms/active/modes/<mode>/AX-*.json '
+          '(승격 기계는 v10.2 보관 — 99_Archive/axiom_engine_v10_2_20261110)]' % ML_N)
 
 def _ml_pick(n):
     '''상위 n줄 — 모드당 ML_MAX_PER_MODE 상한을 지키며 weighted_score 순서(캐시 순서) 유지.'''

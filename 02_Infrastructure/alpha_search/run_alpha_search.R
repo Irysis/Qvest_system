@@ -1790,7 +1790,7 @@ run_alpha_search <- function(strategy_name,
 #   가능하게 하고, spawn 사실 1줄을 콘솔에 찍는다(침묵 금지).
 .run_axiom_pipeline <- function() {
   hv <- file.path(.AS_INFRA, "axiom", "lcode_harvester.py")
-  cl <- file.path(.AS_INFRA, "axiom", "cluster_extractor.py")
+  # (v10.2 · 2026-11-10) cluster_extractor.py(후보 · DIST 생성)는 보관됐다(99_Archive/axiom_engine_v10_2_20261110/) — 수확기만 띄운다.
   # QVEST_PY 우선 → PATH python3.
   py <- Sys.getenv("QVEST_PY", unset = Sys.which("python3"))
   if (!nzchar(py)) {
@@ -1803,13 +1803,12 @@ run_alpha_search <- function(strategy_name,
   ok <- tryCatch({
     system2(py, c(shQuote(hv), "--project-dir", shQuote(PROJECT_ROOT)),
             stdout = log_path, stderr = log_path, wait = FALSE)
-    system2(py, c(shQuote(cl), "--project-dir", shQuote(PROJECT_ROOT)),
-            stdout = log_path, stderr = log_path, wait = FALSE)
+    cat("[AlphaSearch] cluster_extractor 퇴역(v10.2 · 보관 경로 99_Archive/axiom_engine_v10_2_20261110/) — 스폰 안 함\n")
     TRUE
   }, error = function(e) { cat("[AlphaSearch] WARN: Axiom 파이프라인 spawn 실패 —",
                                conditionMessage(e), "\n"); FALSE })
   if (isTRUE(ok))
-    cat(sprintf("[AlphaSearch] Axiom 파이프라인 비동기 spawn (harvester+cluster, wait=FALSE) — 종료코드 미검사, 로그: %s\n",
+    cat(sprintf("[AlphaSearch] Axiom 파이프라인 비동기 spawn (harvester, wait=FALSE) — 종료코드 미검사, 로그: %s\n",
                 .rel_project_path(log_path)))
   invisible(ok)
 }

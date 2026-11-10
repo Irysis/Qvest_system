@@ -101,8 +101,7 @@ sed 's/#.*$//' "$T/boundary_probe.R" | grep -qE "book_state|05_Production" && ok
 
 echo "=== 6. 공리 자동 활성화 (정적 · 동결 경로) ==="
 Rscript -e "invisible(parse('02_Infrastructure/ops/rf_axiom_activate.R'))" >/dev/null 2>&1 && ok "parse rf_axiom_activate.R" || ng "parse rf_axiom_activate.R"
-sed 's/#.*$//' 02_Infrastructure/ops/rf_axiom_activate.R | grep -q "x\$refine" && ok "초안 배제 조건 존재" || ng "초안 배제 조건 없음"
-grep -q "deactivate_axiom" 02_Infrastructure/ops/rf_axiom_activate.R && ok "되돌리기 경로 안내 포함" || ng "되돌리기 경로 없음"
+# (2026-11-10) rf_axiom_activate.R 는 퇴역 안내만 내는 대체 스크립트다(본문 = 99_Archive/axiom_engine_v10_2_20261110) — 본문 검사 2줄 제거.
 if "$PY" - <<'PYX'
 import io,json,glob,sys
 bad=[]

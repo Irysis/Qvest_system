@@ -449,10 +449,17 @@ held_axioms <- list()        # 다이제스트 §정제보류(사유)
 #   ★PROMOTE_SOURCED 는 source 직후 원상복구 — 남겨두면 뒤이어 스폰하는 자식
 #     `Rscript promote.R <cand>` 가 CLI 가드에 걸려 **아무 판정도 안 하고 조용히 종료**한다.
 .PROMOTE_ENV <- NULL
+.PROMOTE_GONE_SAID <- FALSE   # (v10.2) 보관된 promote.R 부재를 한 번만 말한다
 .promote_env <- function(root) {
   if (!is.null(.PROMOTE_ENV)) return(.PROMOTE_ENV)
   pr <- file.path(root, "02_Infrastructure", "axiom", "promote.R")
-  if (!file.exists(pr)) return(NULL)
+  if (!file.exists(pr)) {
+    if (!isTRUE(.PROMOTE_GONE_SAID)) {
+      cat("  | [axiom] promote.R 퇴역(v10.2 · 보관 경로 99_Archive/axiom_engine_v10_2_20261110/) — 승격 술어 미적재\n")
+      .PROMOTE_GONE_SAID <<- TRUE
+    }
+    return(NULL)
+  }
   e <- new.env(parent = globalenv())
   had <- Sys.getenv("PROMOTE_SOURCED", NA_character_)
   Sys.setenv(PROMOTE_SOURCED = "1")
@@ -470,6 +477,8 @@ held_axioms <- list()        # 다이제스트 §정제보류(사유)
 #   ★기본값을 여기 따로 적지 않는다 — 구판은 Sys.getenv(..., "1") 사본이라 promote.R 기본이 '0' 으로
 #     바뀌면 실제 OFF 인데 'ON' 으로 표시됐을 것이다(두 벌 술어). 적재 실패 = NA(미상)로 정직 표기.
 .axiom_unattended_on <- function(root) {
+  # (v10.2) 승격 기계 퇴역 = 무인 활성 경로 자체가 없다 → OFF 로 확정(보관된 promote.R 를 찾지 않는다)
+  if (isTRUE(tryCatch(.axiom_promotion_retired(root), error = function(e) FALSE))) return(FALSE)
   px <- tryCatch(.promote_env(root), error = function(e) NULL)
   if (!is.null(px) && exists(".unattended_enabled", envir = px, mode = "function", inherits = FALSE))
     return(isTRUE(px$.unattended_enabled()))
@@ -576,6 +585,11 @@ run_step("axiom_weekly_cycle", {
     cat("  | [axiom] harvester/cluster/promote 생략 (dry-run — axiom state 무변경)\n")
   } else {
     for (scr in c("lcode_harvester.py", "cluster_extractor.py")) {
+      # (v10.2 · 2026-11-10) cluster_extractor(후보 · DIST 카드 생성)는 승격 기계 · DIST 수명주기와 함께 보관됐다 — 수확기만 돈다.
+      if (identical(scr, "cluster_extractor.py") && .axiom_promotion_retired(root)) {
+        cat("  | [axiom] cluster_extractor.py 퇴역(v10.2 · 보관 경로 99_Archive/axiom_engine_v10_2_20261110/) — 후보 · DIST 생성 생략\n")
+        next
+      }
       sp <- file.path(ax_dir, scr)
       if (!file.exists(sp)) stop(sprintf("%s 부재", scr))
       out <- suppressWarnings(system2(py, shQuote(sp), stdout = TRUE, stderr = TRUE))
@@ -587,10 +601,11 @@ run_step("axiom_weekly_cycle", {
     cands <- list.files(file.path(root, "qepm", "memory", "axioms", "candidates"),
                         pattern = "^CAND_.*\\.json$", full.names = TRUE)
     promote_r <- file.path(ax_dir, "promote.R")
+    .ax_retired <- FALSE
     if (.axiom_promotion_retired(root)) {
-      cat(sprintf("  | [axiom] 승격 · DIST 수명주기 퇴역(06_Registry/axiom_engine_status.json) — 후보 %d건 순회 생략
-", length(cands)))
+      cat(sprintf("  | [axiom] 승격 · DIST 수명주기 퇴역(v10.2 · 06_Registry/axiom_engine_status.json · 보관 경로 99_Archive/axiom_engine_v10_2_20261110/) — 후보 %d건 순회 · 회로차단기 생략\n", length(cands)))
       cands <- character(0)
+      .ax_retired <- TRUE
     }
 
     # ── v9 사전 판정: 스폰할 가치가 없는 후보를 먼저 걸러낸다 (Rscript 미스폰) ──
@@ -598,8 +613,8 @@ run_step("axiom_weekly_cycle", {
     #   ② candidate_sha 가 직전 review_log 기록과 동일 (후보 파일도, 멤버 L-code 의 채점
     #      입력도 하나도 안 바뀜 = 새 정보 0). 이 둘이 구 스윕의 "24회 동일 점수 재채점"이다.
     rl_dir <- file.path(root, "qepm", "memory", "axioms", "review_log")
-    px <- .promote_env(root)
-    corpus_sha_src <- tryCatch(fromJSON(file.path(root, ".cache", "lcode_corpus.json"),
+    px <- if (.ax_retired) NULL else .promote_env(root)   # (v10.2) 퇴역이면 보관된 promote.R 를 찾지 않는다
+    corpus_sha_src <- if (.ax_retired) NULL else tryCatch(fromJSON(file.path(root, ".cache", "lcode_corpus.json"),
                                         simplifyVector = FALSE), error = function(e) NULL)
     # ★루프 변수를 `pre_cand` 로 둔다 — 아래 promote 순회는 `for (cand in cands)` 이고
     #   08_Tests/hooks/test_promote_crash_exit.R [7] 이 **그 표현식을 이름으로 찾아** 실행한다.
@@ -652,6 +667,8 @@ run_step("axiom_weekly_cycle", {
       if (wa) n_new_active_planned <- n_new_active_planned + 1L
     }
     # ── pass ②: 회로차단기 ────────────────────────────────────────────────────
+    # (v10.2 · 2026-11-10) 퇴역이면 회로차단기(주입 길이 렌더 · 활성 상한)를 재지 않는다 — 막을 쓰기가 없다(위 게이트 로그가 기록).
+    if (.ax_retired) { activation_hold <- NULL } else {
     # 구 입력(마지막 스폰 1건) — 이제 폴백·대조 표시용. 판정 입력은 헤더 변형 최악값(.inj_len_worst).
     .inj_last <- tryCatch({
       ij <- fromJSON(file.path(root, ".cache", "axiom_inject_last.json"), simplifyVector = FALSE)
@@ -704,6 +721,7 @@ run_step("axiom_weekly_cycle", {
                   length(dry_targets), length(cands), n_new_active_planned, WEEKLY_ACTIVATION_MAX,
                   as.character(.inj_len), .inj_basis))
     }
+    }   # (v10.2) 회로차단기 퇴역 분기 끝
 
     for (cand in cands) {
       .sk <- if (basename(cand) %in% names(promote_skip)) promote_skip[[basename(cand)]] else NULL

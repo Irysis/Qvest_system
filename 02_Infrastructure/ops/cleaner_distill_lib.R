@@ -481,28 +481,13 @@ cd_apply <- function(result_path) {
   # ── (2) DIST 초안 집행 (draft_proposed 경유 — 방화벽 backstop 이 그 안에 있다) ──
   drafts <- res$dist_drafts %||% list()
   dres <- list()
+  # (v10.2 · 2026-11-10 도훈 "기록 · 조회만 남긴다") DIST 수명주기(distilled.R::draft_proposed)는 보관됐다 —
+  #   초안은 집행하지 않고 건마다 퇴역 사유를 매니페스트에 남긴다(L-code 발행 · digest · 정크 정리는 그대로).
   if (length(drafts)) {
-    de <- new.env(parent = globalenv())
-    dsrc <- file.path(ROOT, "02_Infrastructure", "axiom", "distilled.R")
-    dok <- tryCatch({ suppressMessages(sys.source(dsrc, envir = de)); TRUE },
-                    error = function(e) { cat("[cleaner_distill][WARN] distilled.R 적재 실패: ",
-                                              conditionMessage(e), "\n", sep = ""); FALSE })
-    for (d in drafts) {
-      id <- as.character(d$dist_id %||% "")
-      if (!dok) { dres[[length(dres)+1L]] <- list(dist_id = id, ok = FALSE, reason = "distilled.R 적재 실패"); next }
-      r <- tryCatch({
-        de$draft_proposed(dist_id = id,
-                          statement_refined   = as.character(d$statement_refined %||% ""),
-                          retry_condition     = d$retry_condition,
-                          adversarial_verdict = d$adversarial_verdict,
-                          expiry              = d$expiry,
-                          frontier            = d$frontier,
-                          live_trigger        = d$live_trigger,
-                          drafted_by          = "auto_distill")
-        list(dist_id = id, ok = TRUE, reason = "proposed")
-      }, error = function(e) list(dist_id = id, ok = FALSE, reason = conditionMessage(e)))
-      dres[[length(dres)+1L]] <- r
-    }
+    cat(sprintf("[cleaner_distill] DIST 초안 %d건 — 퇴역(v10.2 · 보관 경로 99_Archive/axiom_engine_v10_2_20261110/) · 집행 안 함\n",
+                length(drafts)))
+    for (d in drafts) dres[[length(dres)+1L]] <- list(dist_id = as.character(d$dist_id %||% ""), ok = FALSE,
+                                                      reason = "퇴역(v10.2 · DIST 수명주기 보관)")
   }
   rep$dist_drafts <- dres
   rep$n_drafts_ok <- sum(vapply(dres, function(x) isTRUE(x$ok), logical(1)))
@@ -698,7 +683,7 @@ cd_notify <- function(manifest_path) {
     list(type = "bullet", heading = "산출", items = c(
       sprintf("digest: %s", as.character((m$digest %||% list())$path %||% "없음")),
       sprintf("매니페스트: %s", basename(manifest_path)),
-      sprintf("DIST 초안 %d/%d건 — 활성화는 여전히 도훈 승인(approve_proposed). 초안은 주입 스트림에 안 들어간다",
+      sprintf("DIST 초안 %d/%d건 — DIST 수명주기 퇴역(v10.2 · 보관) — 초안은 집행하지 않는다",
               n_dr, length(dr)),
       # ★0/n 을 평문으로 두면 6주 동안 아무도 못 봤다 — 요청이 있었는데 전부 실패면 표식을 단다(중복 제외).
       sprintf("L-code %d/%d건 발행%s", n_lc, length(lc),

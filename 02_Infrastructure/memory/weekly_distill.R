@@ -43,24 +43,8 @@ cat(sprintf("Ledger: Law %s · Distilled %s · L-code %s · archived %s (src=%s)
 # 4. Axiom candidate scan (promote.R dry-scan, auto_inject=FALSE)
 #    ★2026-09-23 (도훈 AX-D1): monthly_distill.R 과 같은 결함 — 주석은 dry-scan 인데 dry_run 미지정(기본 FALSE)이라
 #      쓰기 경로였다. 스케줄은 _unregistered(수동 전용)지만 같은 이유로 dry_run = TRUE 로 맞춘다.
-tryCatch({
-  source(file.path(PROJECT_ROOT, "02_Infrastructure/axiom/promote.R"))
-  cand_dir <- file.path(PROJECT_ROOT, "qepm/memory/axioms/candidates")
-  cands <- list.files(cand_dir, pattern = "^CAND_.*\\.json$", full.names = TRUE)
-  cat(sprintf("Axiom candidates: %d\n", length(cands)))
-  n_ready <- 0L
-  for (cp in cands) {
-    r <- tryCatch(promote_to_axiom(cp, threshold = 0.80, auto_inject = FALSE, dry_run = TRUE),
-                  error = function(e) NULL)
-    if (!is.null(r)) {
-      if (isTRUE(r$passed)) n_ready <- n_ready + 1L
-      cat(sprintf("  %s weighted=%.3f (thr 0.80) %s\n",
-          r$candidate_id, r$weighted_score,
-          if (isTRUE(r$passed)) "PROMOTE-READY" else "below"))
-    }
-  }
-  cat(sprintf("Axiom PROMOTE-READY: %d / %d\n", n_ready, length(cands)))
-}, error = function(e) cat("[axiom] Scan skipped:", conditionMessage(e), "\n"))
+#    ★2026-11-10 (v10.2 · 도훈 "Axiom 엔진: 기록 · 조회만 남긴다"): promote.R 는 보관됐다 — 후보 dry-scan 을 하지 않는다.
+cat("[axiom] 후보 dry-scan 퇴역(v10.2 · 보관 경로 99_Archive/axiom_engine_v10_2_20261110/)\n")
 
 # 5. 텔레그램 주간 브리핑 (ops 내부 자동알림 관례 = tg_send)
 tryCatch({

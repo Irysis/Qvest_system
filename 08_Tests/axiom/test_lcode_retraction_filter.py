@@ -64,7 +64,6 @@ def chk(n, cond, m=""):
 
 import lcode_validity as LV  # noqa: E402
 import lcode_harvester as LH  # noqa: E402
-import cluster_extractor as CE  # noqa: E402
 
 RETRACTED = ["L-RAMP-20260619_144257", "L-RAMP-20260619_150531", "L-RAMP-20260619_151835",
              "L-RAMP-20260619_152736", "L-RAMP-20260619_173504"]
@@ -149,52 +148,8 @@ try:
 finally:
     LH.lcode_invalidation = _orig
 
-# ── C. 클러스터·증류 ─────────────────────────────────────────────────────────
-print("\n[C] 샌드박스 클러스터·증류 — 표식 L-code 는 후보·증류 어디에도 없고, 강화 모드는 CAND/DIST 0")
-
-
-def run_cluster(corpus, tag):
-    cd = os.path.join(SB, tag, "candidates")
-    dd = os.path.join(SB, tag, "distilled")
-    os.makedirs(cd, exist_ok=True)
-    # 디스크에 남은 **기존** 강화 CAND (단계 1-3 이관 전 존치분) — build_distilled 가 DIST 로 올리면 안 된다
-    pre = {"candidate_id": "CAND_reinforcement_000000000000", "research_mode": "reinforcement",
-           "supporting_l_codes": ["L-RF-OLD1", "L-RF-OLD2"], "polarity": "mixed", "type": "empirical",
-           "statement_draft": "[초안] 기존 강화 후보", "cluster_key": "000000000000", "status": "pending_5axis"}
-    with io.open(os.path.join(cd, "CAND_reinforcement_000000000000.json"), "w", encoding="utf-8") as fh:
-        json.dump(pre, fh, ensure_ascii=False)
-    CE.build_candidates(copy.deepcopy(corpus), cd)
-    CE.build_distilled(cd, dd, os.path.join(SB, tag, "distilled_index.json"))
-    cands = [json.load(io.open(os.path.join(cd, f), encoding="utf-8"))
-             for f in os.listdir(cd) if f.startswith("CAND_") and f.endswith(".json")]
-    dists = [json.load(io.open(os.path.join(dd, f), encoding="utf-8"))
-             for f in os.listdir(dd) if f.startswith("DIST-") and f.endswith(".json")] if os.path.isdir(dd) else []
-    return cands, dists
-
-
-cands, dists = run_cluster(corp, "run")
-sup_all = {lc for c in cands for lc in (c.get("supporting_l_codes") or [])} | \
-          {lc for d in dists for lc in (d.get("supporting_l_codes") or [])}
-chk("C1 표식 L-code 는 CAND/DIST supporting 어디에도 없음", not (sup_all & MARKED), str(sorted(sup_all & MARKED)))
-new_rf = [c for c in cands if c.get("research_mode") == "reinforcement" and c["candidate_id"] != "CAND_reinforcement_000000000000"]
-chk("C2 강화 모드 신규 CAND 0 (build_candidates 제외)", not new_rf, str([c["candidate_id"] for c in new_rf]))
-rf_dist = [d for d in dists if d.get("research_mode") == "reinforcement"]
-chk("C3 기존 강화 CAND 가 DIST 로 안 올라감 (build_distilled 같은 제외)", not rf_dist, str([d.get("dist_id") for d in rf_dist]))
-chk("C4 양성 대조: ramp 무표식 L-code 의 CAND 는 생긴다",
-    any("L-RAMP-TEST_OK1" in (c.get("supporting_l_codes") or []) for c in cands))
-chk("C5 양성 대조: ramp CAND 의 DIST 는 생긴다", any(d.get("research_mode") == "ramp" for d in dists))
-
-print("\n[M-C] 돌연변이 — 제외 집합을 구판({reinforcement_cell})으로 되돌리면 강화 CAND/DIST 가 **생겨야** 한다")
-_orig_ex = CE._CAND_EXCLUDED_MODES
-try:
-    CE._CAND_EXCLUDED_MODES = frozenset({"reinforcement_cell"})
-    cands_m, dists_m = run_cluster(corp, "mut")
-    chk("M-C1 구판 → CAND_reinforcement_* 신규 생성(검출)",
-        any(c.get("research_mode") == "reinforcement" and c["candidate_id"] != "CAND_reinforcement_000000000000"
-            for c in cands_m))
-    chk("M-C2 구판 → 강화 DIST 생성(검출)", any(d.get("research_mode") == "reinforcement" for d in dists_m))
-finally:
-    CE._CAND_EXCLUDED_MODES = _orig_ex
+# ── C. 클러스터·증류 — (2026-11-10) 제거: cluster_extractor · distilled 가 99_Archive/axiom_engine_v10_2_20261110 로 보관됐다(결정
+#   AXIOM-ENGINE-DISPOSITION-20261110 — 승격 · DIST 수명주기 퇴역). 철회 표식의 수확기 · 색인 경로 검사([H] · [S])는 그대로다.
 
 # ── S. 운영 상태 (읽기 전용) ───────────────────────────────────────────────────
 print("\n[S] 운영 상태 — 철회 5건 원천 표식 · corpus/hypothesis_index/knowledge_index 부재 · 음성 대조")

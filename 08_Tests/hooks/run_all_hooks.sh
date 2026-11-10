@@ -823,12 +823,12 @@ SUITES=(
   #   ★이 검사는 **돌연변이 축(M1~M5)이 본체**다: 08-02 수동 드레인 이후 저장소의 추가 회수
   #   대상이 0건이라, 정상 경로만 돌리면 로직이 죽어 있어도 초록으로 보인다. 각 게이트
   #   (정체성·지식손실·status·저술지식)를 하나씩 끄고 판정이 실제로 뒤집히는지 매 실행 실측.
-  "08_Tests/axiom/test_distilled_supersede.py"
-  "08_Tests/axiom/test_promotion_ladder_dryrun.py"
+  # (2026-11-10 보관 — 99_Archive/axiom_engine_v10_2_20261110 · 시험 test_distilled_supersede.py · 결정 AXIOM-ENGINE-DISPOSITION-20261110)
+  # (2026-11-10 보관 — 99_Archive/axiom_engine_v10_2_20261110 · 시험 test_promotion_ladder_dryrun.py · 결정 AXIOM-ENGINE-DISPOSITION-20261110)
   # 2026-08-23 v9.1-S4: 공리 무인화의 활성화 게이트 검사기. 사람 승인이 사라진 자리를
   #   R0~R6 가 대신하므로, 이 suite 가 죽으면 무인 승격의 유일한 품질 관문이 침묵한다.
   #   ★"전부 HELD" 는 게이트 사망과 결과가 같아 [C] 돌연변이 통제로 분포를 잰다.
-  "08_Tests/axiom/test_refine_statement.R"
+  # (2026-11-10 보관 — 99_Archive/axiom_engine_v10_2_20261110 · 시험 test_refine_statement.R · 결정 AXIOM-ENGINE-DISPOSITION-20261110)
   # 2026-08-09 추가: 논문 라우트 디스패치 4종 일괄 편입.
   #   ★등재 사유가 세 suite 는 "지연된 배선"이다 — freshness_gate·screen_axes·
   #     method_adapter_contract 는 2026-08-08 에 만들어졌는데 **이 배열에 들어온 적이 없어**
@@ -1094,7 +1094,7 @@ SUITES=(
   #   [예방] refine_distilled 동기 갱신(0.82초) + [관측] WARN_11 mtime 역전 — 한 층만으론 부족하다
   #   (예방만이면 approve_proposed·수동편집 경로가 남고, 관측만이면 매번 사람이 고쳐야 한다).
   #   ★[D] 축은 주석이 아니라 **본문 호출**을 확인한다(주석만 남고 배선이 빠지는 회귀 방지).
-  "08_Tests/hooks/test_revival_flags_sync.R"
+  # (2026-11-10 보관 — 99_Archive/axiom_engine_v10_2_20261110 · 시험 test_revival_flags_sync.R · 결정 AXIOM-ENGINE-DISPOSITION-20261110)
   # ── 2026-08-20 추가: 대리 지표 검사기 4종 → 내용 기반 교체 (폐쇄루프 감사 Rank3/7/9 + knowledge_index) ──
   #   뿌리 = "정정 역전파 부재 — 그 정체를 재는 검사기가 전부 대리 지표를 본다".
   #   대리 지표는 append 만으로 초록이 되므로 갱신 없이 헤더만 쌓는 행위가 계기를 끄는 스위치가 된다.
@@ -1406,7 +1406,7 @@ SUITES=(
   # D3: 디렉터 실행기(act=false 무행동 · L2 요청 발행/슬롯 busy · 지시 결합 --directed 적격/부적격/dry) · B5 재료 (2b) 컨텍스트 절
   # D4: 방향 결정 주간 채점(결과 귀속·Δbind·규칙 재현 양성 대조·insufficient 보류·dry 쓰기 0·Cleaner 배선)
   # D5: 정책 상태기계(proposed→shadow→live 자동(도훈 ①)→강등→tombstone · 조건별 돌연변이 · 킬스위치 2종 · 되돌리기 동봉)
-  "08_Tests/axiom/test_policy_auto_live_rule.R"
+  # (2026-11-10 보관 — 99_Archive/axiom_engine_v10_2_20261110 · 시험 test_policy_auto_live_rule.R · 결정 AXIOM-ENGINE-DISPOSITION-20261110)
   # 2026-09-21 도훈 "규칙 채점 데일리로 · Qvest 실행 시점에": 부팅 7번째 줄(Rules: 캐시 읽기만 · stale)
   # 2026-09-24 도훈 DIR-PHASE0: director.enabled 실배선(동결 = 산출 5종 0 · 양성 대조 · 게이트 제거 돌연변이 · 운영 config 3스위치) ·
   #   W3 지도 넛지는 동결 중 침묵(양성 대조 · config 부재는 종전 · 돌연변이)
@@ -1510,7 +1510,7 @@ SUITES=(
   #   무인 활성 0(B0~B4 · 자식 프로세스 격리 단정)·mode-local 처분(R, 읽기 전용)·보충 스캔 가드(H)·주입 훅(I)
   #   ·D5 문언(D: enforcement_hook 의미론은 mode 값 고정 없이 · AX-008 최상위 v2.0 기준만)·전파 가드(P: 주입면 구 문언 0)
   #   — 돌연변이 M-B1~3·M-H·M-I·M-D1~4·M-P
-  "08_Tests/axiom/test_axiom_unattended_freeze.R"
+  # (2026-11-10 보관 — 99_Archive/axiom_engine_v10_2_20261110 · 시험 test_axiom_unattended_freeze.R · 결정 AXIOM-ENGINE-DISPOSITION-20261110)
   # 2026-11-10 추가(v10.2 Axiom 처분): 처분 스위치(06_Registry/axiom_engine_status.json) — 주간 스윕이 promotion_enabled 를 읽어 후보 순회를
   #   건너뛴다(수확은 유지) · 판독 6사례 · 배선 순서 · 운영 설정. 주입 훅 쪽 스위치는 test_axiom_inject_tau_d.sh §G.
   "08_Tests/axiom/test_axiom_engine_status_switch.R"

@@ -978,8 +978,8 @@ if (file.exists(flags_p) && file.exists(dist_p)) {
     add_warn("WARN_11_revival_flags_stale",
              sprintf(paste0("주입 사본이 정본보다 %s 뒤처짐 — DIST frontier 수정이 주입면에 ",
                             "미반영일 수 있음 (정본 %s > 사본 %s). ",
-                            "복구: Rscript -e 'source(\"02_Infrastructure/ops/failure_revival_monitor.R\"); ",
-                            "revival_monitor_run(write_flags=TRUE)'"),
+                            "복구 기계(failure_revival_monitor)는 v10.2 에서 보관됨 — 99_Archive/axiom_engine_v10_2_20261110 ",
+                            "(DIST 수명주기 퇴역 · 이 경고가 뜨면 distilled/ 를 손으로 고친 것이다)"),
                      lag_txt, format(d_mt, "%m-%d %H:%M"), format(f_mt, "%m-%d %H:%M")))
   } else {
     ok_txt <- if (-lag_h < 1) sprintf("%.0f분", -lag_h * 60) else sprintf("%.1fh", -lag_h)
