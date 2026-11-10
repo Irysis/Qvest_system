@@ -6,7 +6,9 @@
 # 순서:
 #   ① 전체 재빌드 끝 대기 — 요약 JSON 이 생기고 재빌드 프로세스(run_factor_db_full_rebuild · factor_db_builder · daily phase)가 없을 때.
 #      요약 result 가 '성공'이 아니면 멈춘다(부분 재빌드 위에 덧칠하지 않는다).
-#   ② 달 목록 = 월 파일 전부 − 이번 달(일일 체인 [6a] 가 고친 코드로 짓는다) → 번갈아 N몫(작업자마다 옛 달 · 새 달이 섞여 시간이 고르다).
+#   ② 달 목록 = 월 파일 전부 − 이번 달(일일 체인 [6a] 가 같은 파일을 쓰므로 뺀다) → 번갈아 N몫(작업자마다 옛 달 · 새 달이 섞여 시간이 고르다).
+#      ★이번 달은 저절로 고쳐지지 않는다 — [6a](update_factor_db_daily)는 스냅샷이 7일 넘게 묵거나 월말일 때만 그 달을 다시 짓는다
+#      (2026-11-10 총부채 수리에서 확인: 202611 이 옛 값 그대로였다). 끝나면 rebuild_factor_subset.R --months <이번 달> 로 따로 바꿔 끼운다.
 #   ③ 작업자 N개 병렬(rebuild_factor_subset.R --months … --log 작업자별 --no-hash).
 #   ④ 잃은 쓰기 검사(--verify: 쓴 직후 지문 대 지금 파일) → 다시 할 달을 한 작업자로 다시(최대 2회).
 #      작업자가 '다른 팩터 빌드가 돌고 있다'로 거부하면(일일 체인 [6a] 등) 10분 기다렸다 다시(최대 18회 = 3시간).
@@ -15,6 +17,8 @@
 #   ⑨ 요약 JSON + 텔레그램 1통(성공 = 무음 · 실패 = 알림).
 #
 # 사용: bash 02_Infrastructure/factor_db/run_factor_subset_repair.sh <전체 재빌드 요약 JSON 경로> [--workers 3]
+#       QVEST_RFS_SPEC=<수리 명세 JSON> bash 02_Infrastructure/factor_db/run_factor_subset_repair.sh --no-wait [--workers 3]
+#         전체 재빌드 없이 명세의 대상 팩터만(2026-11-10 · 명세 = {targets, modules, decision, title} · 예 04_Research/01_reports/factor_db_debt_fix_20261110/repair_spec.json)
 #       bash 02_Infrastructure/factor_db/run_factor_subset_repair.sh --resume <STAMP>
 #         재개 = ①~③ 건너뛰고 그 STAMP 의 작업자 기록으로 ④ 검사부터(⑤~⑧ 이 실패했을 때 · 같은 로그에 이어 쓰고 앞 요약은 .prev_* 로 남긴다)
 # 띄우기 — 세션과 떼어서(★Claude 도구 셸의 Start-Process 는 도구가 끝날 때 함께 죽는다 · SWITCH_RUNBOOK §5 와 같이 WMI):
@@ -29,11 +33,24 @@ export QM_ROOT="${QM_ROOT//\\//}"
 RS="C:/Program Files/R/R-4.6.2/bin/Rscript.exe"
 PY="$ROOT/.venv_qvest_ml/Scripts/python.exe"
 TOOL="$ROOT/02_Infrastructure/factor_db/rebuild_factor_subset.R"
-RESUME=""
+RESUME=""; NO_WAIT=""
 if [ "${1:-}" = "--resume" ]; then
   RESUME="${2:?--resume 뒤에 STAMP(예 20261109_175958)가 필요하다}"; WAIT_JSON=""; shift 2
+elif [ "${1:-}" = "--no-wait" ]; then
+  # 2026-11-10: 전체 재빌드 없이 고친 코드 · 입력으로 대상만 다시(예: 총부채 수리) — ① 을 건너뛴다. 다른 빌드가 돌면 작업자가
+  #   쓰기를 거부하고 10분마다 다시 시도한다(run_worker · 최대 3시간). 대상 · 모듈은 QVEST_RFS_SPEC 명세(rebuild_factor_subset.R).
+  NO_WAIT=1; WAIT_JSON=""; shift
 else
-  WAIT_JSON="${1:?전체 재빌드 요약 JSON 경로가 필요하다}"; shift
+  WAIT_JSON="${1:?전체 재빌드 요약 JSON 경로가 필요하다(또는 --no-wait · --resume STAMP)}"; shift
+fi
+# 수리 명세(있으면): 결정 ID · 알림 제목 꼬리 — 없으면 11-09 수리의 값 그대로
+RFS_DECISION="FACTOR-DIRECTION-STORAGE-REPAIR-20261109"; RFS_TITLE="재무 v2"
+if [ -n "${QVEST_RFS_SPEC:-}" ]; then
+  [ -f "$QVEST_RFS_SPEC" ] || { echo "수리 명세 파일이 없다: $QVEST_RFS_SPEC" >&2; exit 2; }
+  RFS_DECISION=$("$PY" -I -c "import json,sys; print(json.load(open(sys.argv[1], encoding='utf-8')).get('decision') or '')" "$(cygpath -w "$QVEST_RFS_SPEC")" 2>/dev/null | tr -d '\r')
+  RFS_TITLE=$("$PY" -I -c "import json,sys; print(json.load(open(sys.argv[1], encoding='utf-8')).get('title') or '')" "$(cygpath -w "$QVEST_RFS_SPEC")" 2>/dev/null | tr -d '\r')
+  [ -n "$RFS_DECISION" ] || { echo "수리 명세에 decision 이 없다: $QVEST_RFS_SPEC" >&2; exit 2; }
+  export QVEST_RFS_SPEC
 fi
 NW=3
 if [ "${1:-}" = "--workers" ] && [ -n "${2:-}" ]; then NW="$2"; fi
@@ -58,7 +75,7 @@ finish() {  # $1 = 결과(성공/실패) $2 = 한 줄
 {"schema": "factor_subset_repair/v1", "stamp": "$STAMP", "result": "$1", "note": "$2", "workers": $NW,
  "months_total": ${N_MONTHS:-0}, "redo_rounds": ${ROUNDS:-0}, "redo_left": "${REDO_LEFT:-}", "ic_rc": "${IC_RC:-skip}",
  "parity_rc": "${PAR_RC:-skip}", "combinable_rc": "${FC_RC:-skip}", "seconds": $secs, "log": "$(printf '%s' "$LOG" | tr '\\' '/')",
- "decision": "FACTOR-DIRECTION-STORAGE-REPAIR-20261109"}
+ "decision": "$RFS_DECISION", "spec": "$(printf '%s' "${QVEST_RFS_SPEC:-}" | tr '\\' '/')"}
 JS
   say "요약: $SUMMARY"
   local mute="TRUE"; [ "$1" = "성공" ] || mute="FALSE"
@@ -66,7 +83,7 @@ JS
   cat > "$rfile" <<RS
 suppressWarnings(suppressMessages(source(file.path("$QM_ROOT", "02_Infrastructure", "telegram", "telegram_notify.R"))))
 res <- tryCatch(tg_agent_brief(
-  agent = "Q-Lead", title = "[데이터] 팩터 DB 결함 수리 재계산 $1 — ${N_FAC:+영향 ${N_FAC}팩터 · }재무 v2${RESUME:+ (재개)}",
+  agent = "Q-Lead", title = "[데이터] 팩터 DB 결함 수리 재계산 $1 — ${N_FAC:+영향 ${N_FAC}팩터 · }${RFS_TITLE}${RESUME:+ (재개)}",
   relaxed = TRUE, force = TRUE, mute = $mute, lock_scope = "factor_subset_repair_$STAMP",
   sections = list(
     list(type = "summary", body = "$2"),
@@ -80,7 +97,9 @@ RS
 }
 
 # ---- ① 전체 재빌드 끝 대기 ------------------------------------------------------------------
-if [ -z "$RESUME" ]; then
+if [ -n "$NO_WAIT" ]; then
+  say "① 전체 재빌드 대기 없음(--no-wait · 명세 ${QVEST_RFS_SPEC:-없음} · 결정 $RFS_DECISION) — 다른 빌드가 돌면 작업자가 기다린다"
+elif [ -z "$RESUME" ]; then
   say "① 전체 재빌드 끝 대기: $WAIT_JSON"
   n=0
   until [ -f "$WAIT_JSON" ] && [ -z "$(others)" ]; do
@@ -162,5 +181,5 @@ say "⑧ 결합용 팩터 뷰 전체 빌드 시작"
 t8=$(date +%s)
 "$RS" --no-save "$(cygpath -m "$ROOT/02_Infrastructure/factor_db/factor_combinable.R")" --build --full >> "$LOG" 2>&1; FC_RC=$?
 say "⑧ 결합용 뷰 rc=$FC_RC · $(( ($(date +%s) - t8) / 60 ))분"
-finish "성공" "영향 ${N_FAC:-?}팩터를 고친 코드 · 재무 v2 로 전 기간 다시 계산했다(달 $N_MONTHS · 이번 달은 일일 체인이 짓는다) · IC · 대응표 갱신 · 결합용 뷰 rc ${FC_RC:-skip}"
+finish "성공" "영향 ${N_FAC:-?}팩터를 고친 코드 · ${RFS_TITLE} 로 전 기간 다시 계산했다(달 $N_MONTHS · 이번 달 $CUR 은 빠졌다 — rebuild_factor_subset.R --months $CUR 로 따로) · IC · 대응표 갱신 · 결합용 뷰 rc ${FC_RC:-skip}"
 exit 0

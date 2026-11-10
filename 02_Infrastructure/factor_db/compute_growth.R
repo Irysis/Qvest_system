@@ -337,8 +337,11 @@ compute_growth <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
       m <- merge(tp_di$curr, tp_di$prev, by = "Ticker", suffixes = c("", "_p"), all = FALSE)
       if (nrow(m) > 0L) {
         .zna <- function(x) { x[is.na(x)] <- 0; x }
-        debt_c <- .zna(.sc(m, "ShortTermBorr")) + .zna(.sc(m, "LongTermBorr"))
-        debt_p <- .zna(.sc(m, "ShortTermBorr_p")) + .zna(.sc(m, "LongTermBorr_p"))
+        # 2026-11-10: both debt lines absent = unknown (NA). The old zero-fill turned a period without debt lines into
+        #   'all debt repaid' (IN05 = +prior debt / TA) or 'all debt newly issued'.
+        .debt <- function(a, b) fifelse(is.na(a) & is.na(b), NA_real_, .zna(a) + .zna(b))
+        debt_c <- .debt(.sc(m, "ShortTermBorr"), .sc(m, "LongTermBorr"))
+        debt_p <- .debt(.sc(m, "ShortTermBorr_p"), .sc(m, "LongTermBorr_p"))
         ta     <- .sc(m, "TotalAssets")
         m[, IN05 := .sdiv(-(debt_c - debt_p), ta)]  # deleveraging = positive
         results[["IN05"]] <- m[!is.na(IN05), .(Ticker, Factor_Name = "IN05_Net_Debt_Issuance", Raw_Value = IN05)]

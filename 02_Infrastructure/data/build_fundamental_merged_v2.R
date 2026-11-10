@@ -97,7 +97,7 @@ MAP <- c(AccountsPay = "AccountsPay", AccountsRecv = "AccountsRecv", COGS = "COG
          PretaxIncome = "PretaxIncome", RandD = "RandD",
          RetainedEarnings = "RetainedEarnings",   # 기존 XLSX '이익잉여금' 시트는 자본잉여금(M115500)이었다 — 바로잡음
          Revenue = "Revenue", SBB = "BuybackShares", SGAExpense = "SGAExpense",
-         ShortTermBorr = "CurrentBorr",           # 기존 XLSX = 유동성사채(오표기) · DART = 단기차입금만 · v2 = 단기차입금 + 유동성장기차입금(+ IFRS 유동 리스부채)
+         ShortTermBorr = "CurrentBorr",           # 기존 XLSX = 유동성사채(오표기) · DART = 단기차입금만 · v2 = 단기차입금 + 유동성장기차입금(+ IFRS 유동 리스부채) + 유동 사채(11-10 · 위 DEBT_TO)
          TangibleAssets = "PPE", TaxExpense = "TaxExpense", TotalAssets = "TotalAssets", TotalEquity = "TotalEquity",
          TotalLiab = "TotalLiab", TotalNetInterestExp = "TotalNetInterestExp", NetIncome = "NetIncome")
 reg <- fromJSON(REG, simplifyVector = TRUE)$fundamentals_v2$items
@@ -106,6 +106,34 @@ FLOW_V2 <- c(names(kind)[kind == "flow"], "BuybackShares")   # 기중 취득 자
 
 q <- as.data.table(read_parquet(file.path(V2D, "fund_v2_quarterly.parquet"),
                                 col_select = c("Ticker", "Period", "Period_Date", "Item", "Value", "Factor_Date", "Check")))
+# ★2026-11-10 차입금 = Compustat 정의(도훈 '팩터 DB 의 총부채(TotalDebt) 수리해 0으로 나와'):
+#   ShortTermBorr ← 유동 차입금(CurrentBorr · M113300) + 유동 사채(CurrentBonds · M113400) = DLC
+#   LongTermBorr  ← 장기차입금(LongTermBorr · M113700) + 사채(Bonds · M113600)         = DLTT
+#   (등록부 qw_updatefile_registry.json 의 QMJ DLC · DLTT 표지와 같다). 구판은 CurrentBorr · LongTermBorr 만 써서 사채가 통째로
+#   빠졌다 — 2025 연말 한국전력 TotalDebt 22.0조 vs 4항목 129.8조(FnGuide 이자발생부채 132.9조) · 현대차 42.8조 vs 175.3조.
+#   두 원계정을 바로잡으면 TotalDebt 와 단기 · 장기차입금을 직접 더해 쓰는 팩터 모듈(EV · 레버리지 · 발생액 · NOA · 부채 증가율 · XF)이
+#   모두 같이 고쳐진다(항목 이름 · 개수 그대로 = 소비자 계약 그대로). 전환사채 · BW · EB 는 사채 안에 들어 있다(11-10 실측: 전환사채 ≤
+#   사채 1288/1295 · 셋을 더하면 4항목 합이 이자발생부채를 1,226행 넘는다 · 4항목만이면 6행) — 더하지 않는다.
+#   성분이 하나라도 있으면 있는 것의 합 · 날짜 = 성분 가운데 늦은 날(합은 둘 다 안 뒤에야 안다).
+DEBT_TO <- c(CurrentBorr = "CurrentBorr", CurrentBonds = "CurrentBorr", LongTermBorr = "LongTermBorr", Bonds = "LongTermBorr")
+# 차입에 기대는 기존 이름(원계정 2 + 파생 9 · fundamental_derive_items.R) — 정정 의심 연도(아래 C)엔 DART 기록 대신 퀀티(미룬 날짜):
+#   DART 쪽 차입 계정은 정의가 다르다(단기차입금 = '단기차입금' 이름 하나 · 유동성장기부채 · 유동 사채 없음 · v2 정정 검사도 단기차입금을
+#   '정의가 달라' 뺐다 — 일치율 0.07~0.40). 실측: LG화학 FY2019~2025 DART TotalDebt = 0 · 현대차 FY2023 26.6조 vs 퀀티 124.8조.
+DEBT_ITEMS <- c("ShortTermBorr", "LongTermBorr", "TotalDebt", "NetDebt", "ROIC", "LongTermDebtToEquity", "TotalDebtToAssets",
+                "NetDebtToEBITDA", "NetDebtToAssets", "ShortTermDebtRatio", "BorrowingDependency")
+dq <- q[Item %in% names(DEBT_TO)]
+debt_n_in <- dq[, .N, by = Item]
+dq[, To := DEBT_TO[Item]]
+debt_mixed <- dq[, .(k = uniqueN(Check), pd = uniqueN(Period_Date)), by = .(Ticker, Period, To)][k > 1L | pd > 1L, .N]
+dq <- dq[, .(Period_Date = Period_Date[1L], Value = sum(Value), Factor_Date = max(Factor_Date), Check = Check[1L],
+             with_bonds = any(Item %in% c("CurrentBonds", "Bonds"))), by = .(Ticker, Period, Item = To)]
+cat(sprintf("[merged-v2] 차입금 = 차입 + 사채(DLC · DLTT): 성분 %s → %s칸(사채 포함 %s · 성분끼리 기간 말일이나 정정 표지가 갈린 칸 %d)\n",
+            paste(debt_n_in[, sprintf("%s %s", Item, format(N, big.mark = ","))], collapse = " · "),
+            format(nrow(dq), big.mark = ","), format(dq[with_bonds == TRUE, .N], big.mark = ","), debt_mixed))
+debt_stats <- list(parts_in = setNames(as.list(debt_n_in$N), debt_n_in$Item), cells = nrow(dq),
+                   cells_with_bonds = dq[with_bonds == TRUE, .N], cells_mixed_check = debt_mixed)
+dq[, with_bonds := NULL]
+q <- rbind(q[!Item %in% names(DEBT_TO)], dq, use.names = TRUE)
 q <- q[Item %in% MAP]
 q[, Old := names(MAP)[match(Item, MAP)]]
 q[, P := as.integer(Period)]
@@ -166,7 +194,10 @@ cat(sprintf("[merged-v2] 정정 의심 %d 기업-연도 = DART 당시 기록 %d 
             RSk[is.na(DART_Factor_Date), .N]))
 dB <- derive_fundamental_items(an[, .(Ticker, Period, Period_Date, Factor_Date, Item = Old, Value)])
 dB[, FY := as.integer(Period) %/% 100L]
-dB <- dB[FY >= 2015L & !(Item %in% names(MAP))][!RS, on = .(Ticker, FY)]
+dB <- dB[FY >= 2015L & !(Item %in% names(MAP))]
+# 정정 의심 연도(RS = DART 당시 기록을 쓰는 해)도 차입 파생 항목만은 퀀티 파생을 쓴다 — 날짜 = 그해 퀀티 키 날짜(정정 의심이면 v2 가
+#   미룬 날 = 다음 회계연도 사업보고서 뒤 · PIT 안전) · DART 차입 계정은 정의가 달라 쓰지 않는다(위 DEBT_ITEMS · 아래 C).
+dB <- rbind(dB[!RS, on = .(Ticker, FY)], dB[RS, on = .(Ticker, FY), nomatch = 0L][Item %in% DEBT_ITEMS])
 # 파생은 직전 연도 값을 쓴다(성장률 · 평균 · 변화량) → 날짜 = 그해와 직전 연도 가운데 늦은 날
 pk <- key[, .(Ticker, FY = FY + 1L, prev_fd = Factor_Date)]
 dB <- pk[dB, on = .(Ticker, FY)]
@@ -183,6 +214,10 @@ for (col in num) if (!is.double(dd[[col]])) set(dd, j = col, value = as.double(d
 dl <- melt(dd, id.vars = c("Ticker", "bsns_year"), measure.vars = num, variable.name = "Item", value.name = "Value",
            variable.factor = FALSE)[!is.na(Value)]
 dl <- dl[RS, on = .(Ticker, bsns_year = FY), nomatch = 0L]
+# 차입 원계정 · 파생은 DART 기록에서 뺀다(정의가 다르다 · DEBT_ITEMS) → covered 에 없으니 원계정은 아래 RQ 가 퀀티 미룬 값으로 채우고,
+#   파생은 위 dB 가 퀀티 파생으로 채운다(2026-11-10).
+n_dart_debt_dropped <- dl[Item %in% DEBT_ITEMS, .N]
+dl <- dl[!Item %in% DEBT_ITEMS]
 dl <- merge(dl, dfd, by.x = c("Ticker", "bsns_year"), by.y = c("Ticker", "FY"))
 # sprintf, not paste0: paste0(integer(0), "-12-31") returns "-12-31" (length 1) and as.Date() then fails when no
 #   company-year is restated (11-09 대조군 TC)
@@ -251,6 +286,8 @@ rep <- list(schema = "fundamental_merged_v2_report/v2", built_at = format(Sys.ti
             by_source = setNames(as.list(src$N), paste(src$Freq, src$Source, src$Origin)),
             restated_company_years = nrow(RSk), restated_dart_record = nrow(RS), restated_qw_delayed = nrow(RSQ),
             restated_without_dart = miss_rs,
+            debt = c(debt_stats, list(definition = "ShortTermBorr = CurrentBorr + CurrentBonds (DLC) · LongTermBorr = LongTermBorr + Bonds (DLTT) · TotalDebt NA when both absent",
+                                      dart_debt_rows_dropped_restated = n_dart_debt_dropped)),
             annual_company_years = uniqueN(M[Freq == "A", .(Ticker, Period)]),
             annual_date_raised_to_latest_quarter = n_key_late,
             derived_date_raised_to_prior_year = list(qw = n_der_redate, dart = n_dr_redate),

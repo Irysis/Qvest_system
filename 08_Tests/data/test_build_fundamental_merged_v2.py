@@ -118,6 +118,15 @@ def setup(t: Path, b_check="restated"):
     for mm in ["03", "06", "09", "12"]:
         rows.append(qrow("E", f"2017{mm}", "Revenue", 20, "2019-03-22", "restated"))
     rows.append(qrow("E", "201712", "TotalAssets", 130, "2019-03-22", "restated"))
+    # E 의 차입 줄(11-10) — 구판 T7 '퀀티 파생 TotalDebt 있음'은 차입 줄이 없는데도 0 을 만들어 통과했다(이번에 고친 결함 그 자체)
+    rows.append(qrow("E", "201712", "LongTermBorr", 5, "2019-03-22", "restated"))
+    # (2026-11-10 차입금 = DLC · DLTT) F: 네 성분 · G: 사채만 · H: 차입 줄 없음(손익만) · B FY2016(정정 의심 · DART 먼저): 퀀티 차입 성분
+    for item, v in [("TotalAssets", 100), ("CurrentBorr", 3), ("CurrentBonds", 2), ("LongTermBorr", 4), ("Bonds", 10)]:
+        rows.append(qrow("F", "201412", item, v, "2015-03-20", "pre2015"))
+    rows += [qrow("G", "201412", "TotalAssets", 80, "2015-03-20", "pre2015"), qrow("G", "201412", "Bonds", 6, "2015-03-20", "pre2015"),
+             qrow("H", "201412", "Revenue", 10, "2015-03-20", "pre2015")]
+    bfd = "2018-03-22" if b_check == "restated" else "2017-03-24"
+    rows += [qrow("B", "201612", "CurrentBorr", 7, bfd, b_check), qrow("B", "201612", "Bonds", 3, bfd, b_check)]
     q = pd.DataFrame(rows)
     pq.write_table(pa.Table.from_pandas(q, preserve_index=False), t / ".cache/fundamental_v2/fund_v2_quarterly.parquet")
     ck = pd.DataFrame([dict(Ticker="B", FY=2016, Item="TotalAssets", QW_Value=120.0, DART_Value=999.0, Rel_Diff=0.88,
@@ -127,9 +136,12 @@ def setup(t: Path, b_check="restated"):
                        dict(Ticker="E", FY=2017, Item="TotalAssets", QW_Value=130.0, DART_Value=777.0, Rel_Diff=0.83,
                             DART_Date=D("2020-01-09"), DART_Factor_Date=D("2020-01-10"), Same=False)])
     pq.write_table(pa.Table.from_pandas(ck, preserve_index=False), t / ".cache/fundamental_v2/fund_v2_annual_check.parquet")
-    pd.DataFrame({"Ticker": list("ABCDE"), "FiscalMonth": ["12"] * 5, "fetched_at": ["x"] * 5}).to_parquet(t / ".cache/qw_fund_v2/fiscal_month.parquet")
+    pd.DataFrame({"Ticker": list("ABCDEFGH"), "FiscalMonth": ["12"] * 8, "fetched_at": ["x"] * 8}).to_parquet(t / ".cache/qw_fund_v2/fiscal_month.parquet")
+    # DART 당시 기록의 차입 = 이름 일치로만 잡은 불완전한 값(실측 LG화학 FY2019~2025 TotalDebt 0 형태) — 정정 의심 연도에서도 쓰면 안 된다
     pd.DataFrame({"Ticker": ["B", "E"], "bsns_year": [2016, 2017], "Factor_Date": [D("2017-03-31"), D("2018-03-31")],
-                  "TotalAssets": [999.0, 777.0], "Revenue": [101.0, 90.0], "ROA": [0.05, 0.1]}).to_parquet(t / ".cache/fundamental_dart.parquet")
+                  "TotalAssets": [999.0, 777.0], "Revenue": [101.0, 90.0], "ROA": [0.05, 0.1],
+                  "ShortTermBorr": [1.0, None], "LongTermBorr": [None, None], "TotalDebt": [0.0, 0.0],
+                  "BorrowingDependency": [0.0, 0.0]}).to_parquet(t / ".cache/fundamental_dart.parquet")
 
 
 def run(t: Path, sut: Path = SUT):
@@ -197,7 +209,8 @@ try:
         ng(f"T6 d15={d15 is not None} d16={fd(d16)} g15={fd(g15)} g16={fd(g16)} v={None if g16 is None else g16['Value']}")
     eta, etd = get(m, "E", "201712", "TotalAssets"), get(m, "E", "201712", "TotalDebt")
     ok7 = eta is not None and eta["Value"] == 130 and eta["Origin"] == "QW_V2_DELAYED" and fd(eta) == "2019-03-22" and \
-        not (m["Origin"].eq("DART_RESTATED") & m["Ticker"].eq("E")).any() and etd is not None and etd["Origin"] == "QW_V2_derived"
+        not (m["Origin"].eq("DART_RESTATED") & m["Ticker"].eq("E")).any() and etd is not None and etd["Origin"] == "QW_V2_derived" and \
+        etd["Value"] == 5
     ok("T7 정정 의심(DART 더 늦음): 퀀티 미룬 값 130 · DART 행 없음 · 퀀티 파생 있음") if ok7 else ng(f"T7 {eta} {etd}")
     ok8 = r_ta["Source"] == "XLSX" and r_td["Source"] == "xlsx_derived" and rv["Source"] == "DART" and \
         bta["Source"] == "DART" and sh["Source"] == "XLSX" and set(m["Source"]) <= {"XLSX", "xlsx_derived", "DART"}
@@ -207,6 +220,29 @@ try:
         set(x["Item"]) <= RAW41 and strictly_ordered(x) and xre is not None and xre["Value"] == 7 and \
         get(x, "D", "201512", "Revenue") is None and get(x, "D", "201603", "Revenue") is not None
     ok("T9 분기 표: 옛 꼴 · 원계정 41개 안 · 순서 계약 · 늦게 온 D 201512 버림") if ok9 else ng(f"T9 cols={list(x.columns)} {xre}")
+    # T10~T12 (2026-11-10 차입금 = DLC · DLTT · 없는 것을 0으로 만들지 않음 · 정정 의심 연도 차입 = 퀀티 미룬 값)
+    def debt_facts(mm, xx):
+        f = {k: get(mm, "F", "201412", k) for k in ("ShortTermBorr", "LongTermBorr", "TotalDebt")}
+        return dict(F=f, G=get(mm, "G", "201412", "TotalDebt"), H=get(mm, "H", "201412", "TotalDebt"),
+                    xF=(get(xx, "F", "201412", "ShortTermBorr"), get(xx, "F", "201412", "LongTermBorr")),
+                    B={k: get(mm, "B", "201612", k) for k in ("ShortTermBorr", "LongTermBorr", "TotalDebt", "BorrowingDependency")},
+                    B_dart_debt=bool((mm["Ticker"].eq("B") & mm["Origin"].eq("DART_RESTATED") &
+                                      mm["Item"].isin(["ShortTermBorr", "LongTermBorr", "TotalDebt", "BorrowingDependency"])).any()))
+    df_ = debt_facts(m, x)
+    t10 = all(df_["F"][k] is not None for k in df_["F"]) and df_["F"]["ShortTermBorr"]["Value"] == 5 and \
+        df_["F"]["LongTermBorr"]["Value"] == 14 and abs(df_["F"]["TotalDebt"]["Value"] - 19) < 1e-9 and \
+        all(v is not None for v in df_["xF"]) and df_["xF"][0]["Value"] == 5 and df_["xF"][1]["Value"] == 14
+    ok("T10 차입금 = DLC 3+2 · DLTT 4+10 · TotalDebt 19 · 분기 표도 같은 이름에 같은 값") if t10 else ng(f"T10 {df_['F']} {df_['xF']}")
+    ok("T10b 사채만 있는 회사 TotalDebt = 6(0 아님)") if df_["G"] is not None and df_["G"]["Value"] == 6 else ng(f"T10b {df_['G']}")
+    ok("T11 차입 줄 없는 기간 = TotalDebt 행 없음(0 을 만들지 않는다)") if df_["H"] is None else ng(f"T11 H TotalDebt = {df_['H']}")
+    bb = df_["B"]
+    t12 = not df_["B_dart_debt"] and all(bb[k] is not None for k in bb) and bb["ShortTermBorr"]["Value"] == 7 and \
+        bb["ShortTermBorr"]["Origin"] == "QW_V2_DELAYED" and bb["LongTermBorr"]["Value"] == 3 and \
+        abs(bb["TotalDebt"]["Value"] - 10) < 1e-9 and bb["TotalDebt"]["Origin"] == "QW_V2_derived" and \
+        fd(bb["ShortTermBorr"]) == "2018-03-22" and bb["TotalDebt"]["Factor_Date"] >= pd.Timestamp("2018-03-22") and \
+        abs(bb["BorrowingDependency"]["Value"] - 10 / 120) < 1e-9 and bb["BorrowingDependency"]["Origin"] == "QW_V2_derived"
+    ok("T12 정정 의심 연도: DART 차입 기록(0) 안 씀 · 퀀티 차입 7 · 3 미룬 날짜 · TotalDebt 10 퀀티 파생") if t12 else \
+        ng(f"T12 dart_debt={df_['B_dart_debt']} {bb}")
     c = T / "c"; setup(c, b_check="agree")
     rc, log, out, _ = run(c)
     mc = load(out) if rc == 0 else None
@@ -231,6 +267,38 @@ try:
             mm = load(out)
             ok("TM 돌연변이(순서 계약 제거) → T4 순서 검사가 위반을 잡는다") if not strictly_ordered(mm) else \
                 ng("TM 돌연변이 산출이 순서 검사를 통과했다(검사가 죽어 있다)")
+    # TM2~TM4 (2026-11-10): 차입 수리를 하나씩 되돌린 사본 → 해당 사례가 잡힌다(치환 1곳 단정 · 사본 = 병합기 + 파생식 한 쌍)
+    src0, dsrc = SUT.read_text(encoding="utf-8"), DERIVE.read_text(encoding="utf-8")
+    # 치환 = (파일, 옛 문자열, 새 문자열) 쌍 목록 — 구판 동작 그대로 되돌린다(한쪽만 되돌린 사본은 병합기의 중복 키 검사에 먼저 걸린다)
+    muts = [
+        ("TM2 사채 빼기(구판 DEBT_TO)", [("sut",
+          'DEBT_TO <- c(CurrentBorr = "CurrentBorr", CurrentBonds = "CurrentBorr", LongTermBorr = "LongTermBorr", Bonds = "LongTermBorr")',
+          'DEBT_TO <- c(CurrentBorr = "CurrentBorr", LongTermBorr = "LongTermBorr")')],
+         lambda f: f["F"]["TotalDebt"] is not None and abs(f["F"]["TotalDebt"]["Value"] - 7) < 1e-9),
+        ("TM3 없는 차입 = 0(구판 파생식)", [("derive", "fifelse(is.na(ShortTermBorr) & is.na(LongTermBorr), NA_real_,",
+                                         "fifelse(is.na(ShortTermBorr) & FALSE, NA_real_,")],
+         lambda f: f["H"] is not None and f["H"]["Value"] == 0),
+        ("TM4 정정 의심 연도 DART 차입 그대로(구판)", [("sut", "dl <- dl[!Item %in% DEBT_ITEMS]", "dl <- dl"),
+          ("sut", "dB <- rbind(dB[!RS, on = .(Ticker, FY)], dB[RS, on = .(Ticker, FY), nomatch = 0L][Item %in% DEBT_ITEMS])",
+           "dB <- dB[!RS, on = .(Ticker, FY)]")],
+         lambda f: f["B_dart_debt"]),
+    ]
+    for name, pairs, caught in muts:
+        srcs = {"sut": src0, "derive": dsrc}
+        bad = [a_[:40] for w_, a_, _ in pairs if srcs[w_].count(a_) != 1]
+        if bad:
+            ng(f"{name} 치환 대상이 1곳이 아니다: {bad}"); continue
+        for w_, a_, b_ in pairs:
+            srcs[w_] = srcs[w_].replace(a_, b_)
+        d_ = T / ("m_" + name[:3]); d_.mkdir()
+        (d_ / SUT.name).write_text(srcs["sut"], encoding="utf-8")
+        (d_ / DERIVE.name).write_text(srcs["derive"], encoding="utf-8")
+        w = T / ("w_" + name[:3]); setup(w)
+        rc, log, out_, outx_ = run(w, sut=d_ / SUT.name)
+        if rc != 0:
+            ng(f"{name} 사본 실행 실패 rc={rc}: {log[-600:]}"); continue
+        f_ = debt_facts(load(out_), load(outx_))
+        ok(f"{name} → 시험이 잡는다") if caught(f_) else ng(f"{name} → 잡지 못함 {f_}")
 except SystemExit:
     pass
 except Exception as e:  # noqa: BLE001

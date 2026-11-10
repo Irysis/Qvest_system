@@ -62,6 +62,15 @@ if (nzchar(XLSX_FUND_PATH)) {
           num / den, NA_real_)
 }
 
+# ─── Borrowings = ShortTermBorr + LongTermBorr (2026-11-10) ──────────────────
+# Both lines absent = unknown (NA), not debt-free. The old inline zero-fill gave XF_L01 / LL01 = 0, LL02 = −Cash and
+#   XF_A02 operating liabilities = TotalLiab to every ticker without a debt line. One line present = the other is 0
+#   (the vendor reports zero lines explicitly). Since the same day ShortTermBorr / LongTermBorr are DLC / DLTT incl. bonds
+#   (build_fundamental_merged_v2.R DEBT_TO) — the quarterly table carries the corrected lines under the same names.
+.xf_debt <- function(stb, ltb) {
+  fifelse(is.na(stb) & is.na(ltb), NA_real_, fifelse(is.na(stb), 0, stb) + fifelse(is.na(ltb), 0, ltb))
+}
+
 # ─── Safe column extractor ───────────────────────────────────────────────────
 .xf_col <- function(dt, col) {
   if (col %in% names(dt)) dt[[col]] else rep(NA_real_, nrow(dt))
@@ -216,8 +225,7 @@ compute_xlsx_fundamentals <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS 
   # XF_A02: NOA = (TotalAssets - CashAndEquiv - (TotalLiab - ShortTermBorr - LongTermBorr)) / TotalAssets
   # NOA = (Operating Assets - Operating Liabilities) / TotalAssets
   dt[, xf_oa := TotalAssets - fifelse(is.na(CashAndEquiv), 0, CashAndEquiv)]
-  dt[, xf_ol := TotalLiab - fifelse(is.na(ShortTermBorr), 0, ShortTermBorr) -
-                             fifelse(is.na(LongTermBorr), 0, LongTermBorr)]
+  dt[, xf_ol := TotalLiab - .xf_debt(ShortTermBorr, LongTermBorr)]
   dt[, xf_noa := .xf_sdiv(xf_oa - xf_ol, TotalAssets)]
   results[["XF_A02_NOA"]] <- dt[!is.na(xf_noa),
     .(Ticker, Factor_Name = "XF_A02_NOA", Raw_Value = xf_noa)]
@@ -316,10 +324,7 @@ compute_xlsx_fundamentals <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS 
   # =========================================================================
 
   # XF_L01: Debt to Equity = (ShortTermBorr + LongTermBorr) / TotalEquity
-  dt[, xf_de := .xf_sdiv(
-    fifelse(is.na(ShortTermBorr), 0, ShortTermBorr) +
-    fifelse(is.na(LongTermBorr), 0, LongTermBorr),
-    TotalEquity)]
+  dt[, xf_de := .xf_sdiv(.xf_debt(ShortTermBorr, LongTermBorr), TotalEquity)]
   results[["XF_L01_Debt_to_Equity"]] <- dt[!is.na(xf_de) & is.finite(xf_de),
     .(Ticker, Factor_Name = "XF_L01_Debt_to_Equity", Raw_Value = xf_de)]
 
@@ -352,8 +357,7 @@ compute_xlsx_fundamentals <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS 
   # =========================================================================
 
   # Precompute total borrowings (reused across factors)
-  dt[, xf_total_borr := fifelse(is.na(ShortTermBorr), 0, ShortTermBorr) +
-                         fifelse(is.na(LongTermBorr), 0, LongTermBorr)]
+  dt[, xf_total_borr := .xf_debt(ShortTermBorr, LongTermBorr)]
 
   # XF_LL01: Debt to Capital = TotalBorr / (TotalEquity + TotalBorr)
   dt[, xf_ll_dc := .xf_sdiv(xf_total_borr, TotalEquity + xf_total_borr)]
@@ -489,20 +493,14 @@ compute_xlsx_fundamentals <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS 
         # Derive ratios — current period
         pdt[, roa_c := .xf_sdiv(NetIncome, TotalAssets)]
         pdt[, ocf_c := OperatingCF]
-        pdt[, debt_ta_c := .xf_sdiv(
-          fifelse(is.na(ShortTermBorr), 0, ShortTermBorr) +
-          fifelse(is.na(LongTermBorr), 0, LongTermBorr),
-          TotalAssets)]
+        pdt[, debt_ta_c := .xf_sdiv(.xf_debt(ShortTermBorr, LongTermBorr), TotalAssets)]
         pdt[, cr_c := .xf_sdiv(CurrentAssets, CurrentLiab)]
         pdt[, gm_c := .xf_sdiv(GrossProfit, Revenue)]
         pdt[, at_c := .xf_sdiv(Revenue, TotalAssets)]
 
         # Derive ratios — previous period
         pdt[, roa_p := .xf_sdiv(NetIncome_p, TotalAssets_p)]
-        pdt[, debt_ta_p := .xf_sdiv(
-          fifelse(is.na(ShortTermBorr_p), 0, ShortTermBorr_p) +
-          fifelse(is.na(LongTermBorr_p), 0, LongTermBorr_p),
-          TotalAssets_p)]
+        pdt[, debt_ta_p := .xf_sdiv(.xf_debt(ShortTermBorr_p, LongTermBorr_p), TotalAssets_p)]
         pdt[, cr_p := .xf_sdiv(CurrentAssets_p, CurrentLiab_p)]
         pdt[, gm_p := .xf_sdiv(GrossProfit_p, Revenue_p)]
         pdt[, at_p := .xf_sdiv(Revenue_p, TotalAssets_p)]

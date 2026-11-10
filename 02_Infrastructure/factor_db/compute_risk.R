@@ -198,9 +198,12 @@ compute_risk <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
 
     if (!is.null(lev_wide) && nrow(lev_wide) > 0L) {
       .sc_lw <- function(col) if (col %in% names(lev_wide)) lev_wide[[col]] else rep(NA_real_, nrow(lev_wide))
-      std <- .sc_lw("ShortTermBorr"); std[is.na(std)] <- 0
-      ltd <- .sc_lw("LongTermBorr"); ltd[is.na(ltd)] <- 0
-      lev_wide[, TotalDebt := std + ltd]
+      # 2026-11-10: both debt lines absent = unknown (NA), not a debt-free firm — the old zero-fill gave R17/R18 = 0 to every
+      #   ticker without a debt line. One line present = the other is 0 (the vendor reports zero lines explicitly).
+      #   ShortTermBorr / LongTermBorr are DLC / DLTT incl. bonds since the same day (build_fundamental_merged_v2.R DEBT_TO).
+      std <- .sc_lw("ShortTermBorr"); ltd <- .sc_lw("LongTermBorr")
+      td  <- fifelse(is.na(std) & is.na(ltd), NA_real_, fifelse(is.na(std), 0, std) + fifelse(is.na(ltd), 0, ltd))
+      lev_wide[, TotalDebt := td]
 
       lev_m <- merge(lev_wide[, .(Ticker, TotalDebt)], snap[, .(Ticker, MarketCap)],
                      by = "Ticker", all = FALSE)
@@ -211,7 +214,7 @@ compute_risk <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
 
       # ---- R18: Book Leverage = TotalDebt / TotalAssets ----
       ta_vec <- .sc_lw("TotalAssets")
-      lev_wide[, R18 := fifelse(!is.na(ta_vec) & ta_vec > 0, -(std + ltd) / ta_vec, NA_real_)]
+      lev_wide[, R18 := fifelse(!is.na(ta_vec) & ta_vec > 0, -td / ta_vec, NA_real_)]
       results[["R18"]] <- lev_wide[!is.na(R18), .(Ticker, Factor_Name = "R18_Book_Leverage", Raw_Value = R18)]
     }
   }

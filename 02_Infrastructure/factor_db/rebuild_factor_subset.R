@@ -41,6 +41,21 @@ RFS_TARGET <- c("Q05_Accrual", "Q15_Debt_to_Equity", "GR03_Asset_Growth", "AC05_
 RFS_MODS <- c("value", "quality", "quality_xf_native", "accrual", "growth", "xlsx_fund", "risk")
 RFS_FILL_NEG <- c("Q05_Accrual", "Q15_Debt_to_Equity", "GR03_Asset_Growth", "AC05_NOA")   # 채움 행 = −옛 값
 RFS_FILL_RECIP <- "V08_PSR"                                                                # 채움 행 = 1/옛 값
+RFS_DECISION <- "FACTOR-DIRECTION-STORAGE-REPAIR-20261109"
+# 수리 명세(2026-11-10 · 총부채 수리): QVEST_RFS_SPEC = JSON 파일 {targets: [...], modules: [...], decision: "..."} — 다른 결함 수리에
+#   같은 도구를 쓴다. 없으면 위 11-09 기본값 그대로(그 수리의 재개 · 검사 재현). 명세가 있는데 대상이나 모듈이 비면 멈춘다 —
+#   빈 명세로 전 달을 '쓸 것 없음'으로 통과시키지 않는다.
+local({
+  sp <- Sys.getenv("QVEST_RFS_SPEC")
+  if (!nzchar(sp)) return(invisible(NULL))
+  if (!file.exists(sp)) stop("[subset] 수리 명세 파일이 없다: ", sp)
+  s <- jsonlite::fromJSON(sp, simplifyVector = TRUE)
+  if (!length(s$targets) || !length(s$modules)) stop("[subset] 수리 명세에 targets · modules 가 없다: ", sp)
+  # decision 도 필수 — 없으면 기록이 11-09 수리의 결정 ID 로 조용히 남는다(진행기 run_factor_subset_repair.sh 와 같은 규칙)
+  if (!length(s$decision) || !nzchar(as.character(s$decision)[1])) stop("[subset] 수리 명세에 decision 이 없다: ", sp)
+  RFS_TARGET <<- as.character(s$targets); RFS_MODS <<- as.character(s$modules)
+  RFS_DECISION <<- as.character(s$decision)[1]
+})
 
 .rfs_load <- function(root) {
   setwd(file.path(root, "02_Infrastructure"))
@@ -135,6 +150,7 @@ rebuild_factor_subset <- function(root = .rfs_root(), months = NULL, from = NULL
       identical(vapply(out, function(z) class(z)[1], ""), vapply(old, function(z) class(z)[1], ""))
     cmp <- setNames(lapply(RFS_TARGET, function(f) .rfs_compare(old, new, f)), RFS_TARGET)
     rec <- list(ts = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), ym = ym, sig_date = format(sig_d), code_rev = rev,
+                decision = RFS_DECISION,
                 dry_run = dry_run, ok = ok, rows_old = nrow(old), rows_new = nrow(out), per_factor = cmp,
                 secs = round(as.numeric(difftime(Sys.time(), t1, units = "secs")), 1))
     if (!ok) { cat(sprintf("  [ERR %s] 단정 실패(대상 밖 행 · 열 · 날짜) — 쓰지 않음\n", ym)); n_bad <- n_bad + 1L }
@@ -166,10 +182,11 @@ rebuild_factor_subset <- function(root = .rfs_root(), months = NULL, from = NULL
     }
     cat(toJSON(rec, auto_unbox = TRUE, digits = NA), "\n", file = log_path, append = TRUE, sep = "")
     if (verbose) {
-      q05 <- cmp[["Q05_Accrual"]]; v08 <- cmp[["V08_PSR"]]; ll5 <- cmp[["XF_LL05_WorkingCapital"]]
-      cat(sprintf("  %s ok=%s · Q05 그대로 %d · 부호반전 %d · 바뀜 %d | V08 역수 %d | LL05 |x|>1e3 %d→%d · %.0fs\n", ym, ok,
-                  q05$same, q05$negated, q05$changed, v08$reciprocal,
-                  ll5$big_abs_old, ll5$big_abs_new, rec$secs))
+      # 대상 팩터 합계(2026-11-10 — 구판은 11-09 대상 Q05 · V08 · LL05 이름을 직접 집어 다른 명세에선 빈 줄이 됐다)
+      tot <- function(k) sum(vapply(cmp, function(z) as.numeric(z[[k]] %||% 0), numeric(1)))
+      cat(sprintf("  %s ok=%s · 대상 %d팩터 · 그대로 %d · 바뀜 %d · 부호반전 %d · 역수 %d · 옛만 %d · 새만 %d · %.0fs\n", ym, ok,
+                  length(cmp), tot("same"), tot("changed"), tot("negated"), tot("reciprocal"), tot("only_old"), tot("only_new"),
+                  rec$secs))
     }
   }
   if (isTRUE(write_hash) && n_done > 0L && exists(".write_build_hash", mode = "function")) .write_build_hash()

@@ -210,13 +210,14 @@ compute_accrual <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
   if (!is.null(fw5)) {
     ta  <- .sc(fw5, "TotalAssets")
     cas <- .sc(fw5, "CashAndEquiv"); cas[is.na(cas)] <- 0
-    std <- .sc(fw5, "ShortTermBorr"); std[is.na(std)] <- 0
-    ltd <- .sc(fw5, "LongTermBorr"); ltd[is.na(ltd)] <- 0
+    # 2026-11-10: both debt lines absent = unknown → AC05 NA (the old zero-fill treated a missing debt line as debt-free).
+    std <- .sc(fw5, "ShortTermBorr"); ltd <- .sc(fw5, "LongTermBorr")
+    debt <- fifelse(is.na(std) & is.na(ltd), NA_real_, fifelse(is.na(std), 0, std) + fifelse(is.na(ltd), 0, ltd))
     mi  <- .sc(fw5, "MinorityInterest"); mi[is.na(mi)] <- 0
     ps  <- .sc(fw5, "PreferredStock"); ps[is.na(ps)] <- 0
     ce  <- .sc(fw5, "TotalEquity"); ce[is.na(ce)] <- 0
     oa  <- ta - cas
-    ol  <- ta - std - ltd - mi - ps - ce
+    ol  <- ta - debt - mi - ps - ce
     fw5[, AC05 := .sdiv(-(oa - ol), ta)]
     results[["AC05"]] <- fw5[!is.na(AC05), .(Ticker, Factor_Name = "AC05_NOA", Raw_Value = AC05)]
   }
@@ -251,10 +252,12 @@ compute_accrual <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
     m7 <- merge(tp7$curr, tp7$prev, by = "Ticker", suffixes = c("", "_p"), all = FALSE)
     if (nrow(m7) > 0L) {
       .zna <- function(x) { x[is.na(x)] <- 0; x }
+      # 2026-11-10: both debt lines absent = unknown (NA) — operating liabilities are not TotalLiab when the debt lines are missing
+      .debt <- function(a, b) fifelse(is.na(a) & is.na(b), NA_real_, .zna(a) + .zna(b))
       ncoa_c <- .sc(m7, "TotalAssets") - .zna(.sc(m7, "CashAndEquiv")) - .zna(.sc(m7, "Investments"))
       ncoa_p <- .sc(m7, "TotalAssets_p") - .zna(.sc(m7, "CashAndEquiv_p")) - .zna(.sc(m7, "Investments_p"))
-      ol_c   <- .sc(m7, "TotalLiabilities") - .zna(.sc(m7, "ShortTermBorr")) - .zna(.sc(m7, "LongTermBorr"))
-      ol_p   <- .sc(m7, "TotalLiabilities_p") - .zna(.sc(m7, "ShortTermBorr_p")) - .zna(.sc(m7, "LongTermBorr_p"))
+      ol_c   <- .sc(m7, "TotalLiabilities") - .debt(.sc(m7, "ShortTermBorr"), .sc(m7, "LongTermBorr"))
+      ol_p   <- .sc(m7, "TotalLiabilities_p") - .debt(.sc(m7, "ShortTermBorr_p"), .sc(m7, "LongTermBorr_p"))
       opacc  <- (ncoa_c - ncoa_p) - (ol_c - ol_p)
       avg_ta <- (.sc(m7, "TotalAssets") + .sc(m7, "TotalAssets_p")) / 2
       m7[, AC07 := .sdiv(-opacc, avg_ta)]
@@ -286,10 +289,11 @@ compute_accrual <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
     m9 <- merge(tp9$curr, tp9$prev, by = "Ticker", suffixes = c("", "_p"), all = FALSE)
     if (nrow(m9) > 0L) {
       .zna <- function(x) { x[is.na(x)] <- 0; x }
+      .debt <- function(a, b) fifelse(is.na(a) & is.na(b), NA_real_, .zna(a) + .zna(b))   # 2026-11-10 (AC07 과 같은 규칙)
       nca_c <- .sc(m9, "TotalAssets") - .zna(.sc(m9, "CashAndEquiv"))
       nca_p <- .sc(m9, "TotalAssets_p") - .zna(.sc(m9, "CashAndEquiv_p"))
-      nl_c  <- .sc(m9, "TotalLiabilities") - .zna(.sc(m9, "ShortTermBorr")) - .zna(.sc(m9, "LongTermBorr"))
-      nl_p  <- .sc(m9, "TotalLiabilities_p") - .zna(.sc(m9, "ShortTermBorr_p")) - .zna(.sc(m9, "LongTermBorr_p"))
+      nl_c  <- .sc(m9, "TotalLiabilities") - .debt(.sc(m9, "ShortTermBorr"), .sc(m9, "LongTermBorr"))
+      nl_p  <- .sc(m9, "TotalLiabilities_p") - .debt(.sc(m9, "ShortTermBorr_p"), .sc(m9, "LongTermBorr_p"))
       nni   <- (nca_c - nca_p) - (nl_c - nl_p)
       avg_ta <- (.sc(m9, "TotalAssets") + .sc(m9, "TotalAssets_p")) / 2
       m9[, AC09 := .sdiv(-nni, avg_ta)]

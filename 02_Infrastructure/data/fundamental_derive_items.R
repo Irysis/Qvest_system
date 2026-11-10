@@ -69,8 +69,13 @@ derive_fundamental_items <- function(xlsx_long) {
 
   wide[, WorkingCapital := CurrentAssets - CurrentLiab]
 
-  wide[, TotalDebt := fifelse(!is.na(ShortTermBorr), ShortTermBorr, 0) +
-                        fifelse(!is.na(LongTermBorr), LongTermBorr, 0)]
+  # 2026-11-10: both parts absent = unknown (NA), not zero debt. The old form turned every period without a balance-sheet
+  #   debt line into TotalDebt = 0 — v2 merged table: 78.6% of the <=2014 zero rows had no TotalAssets at all, and the
+  #   factor DB read those zeros as debt-free firms. One part present = the other is taken as 0 (the vendor reports zero
+  #   lines explicitly — 68~78% of FnGuide balance sheets carry an explicit 0 in at least one debt line).
+  wide[, TotalDebt := fifelse(is.na(ShortTermBorr) & is.na(LongTermBorr), NA_real_,
+                        fifelse(!is.na(ShortTermBorr), ShortTermBorr, 0) +
+                        fifelse(!is.na(LongTermBorr), LongTermBorr, 0))]
 
   wide[, NetDebt := TotalDebt - fifelse(!is.na(CashAndEquiv), CashAndEquiv, 0)]
 
