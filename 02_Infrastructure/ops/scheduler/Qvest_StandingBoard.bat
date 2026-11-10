@@ -1,0 +1,7 @@
+@echo off
+REM Qvest_StandingBoard - standing board tick + reinforcement chain unattended tick (hourly at :37, unattended)
+REM 2026-11-10 new (dohoon decision CHAIN-AUTOMATION-STANDING-BOARD-AND-TICK-20261110: build and enable immediately)
+REM standing_board_run.sh: scan -> standing-measure (only if entry-passed candidates wait and the refresh barrier is open) -> standing-report --send
+REM chain_tick.sh (runs when present): per open chain - base measure / step measure / step decide / next step design. Register and close stay supervised.
+REM Self-locking (.cache/standing_board_run.lock): an hourly tick that finds a live holder exits 0. No boards registered = silent exit 0.
+"C:\Program Files\Git\bin\bash.exe" -c "export PATH='/c/Users/99922/AppData/Local/Programs/Python/Python315:/c/Program Files/R/R-4.6.2/bin:'$PATH; export CLAUDE_PROJECT_DIR=C:/Users/99922/OneDrive/Quant_Module_Moltbot; export QM_ROOT=C:/Users/99922/OneDrive/Quant_Module_Moltbot; export QVEST_UNATTENDED=1; export PYTHONUTF8=1; cd /c/Users/99922/OneDrive/Quant_Module_Moltbot && { echo \"== $(date '+%%F %%T') standing_board_run --send\"; bash 02_Infrastructure/ops/standing_board_run.sh --send; echo \"   standing rc=$?\"; if [ -f 02_Infrastructure/ops/chain_tick.sh ]; then bash 02_Infrastructure/ops/chain_tick.sh; echo \"   chain rc=$?\"; fi; } >> /c/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/scheduler_logs/standing_board_task.log 2>&1"
