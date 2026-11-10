@@ -215,6 +215,13 @@ WC_LEAN_BUILTIN <- list(
   "run_alpha_search 가 regime_dt/ic_history 를 전달하지 않아 국면-중립으로 조용히 퇴화",
   "(backtest_harness.R:1112,1148 mrs_val=0). 배선 복구 전에는 이름과 실제가 다르다.")
 
+#' ctx$n_days 검증(P-3b) — 양의 정수 한 값만. 그 밖은 멈춘다(조용히 기본 창으로 돌아가지 않는다).
+.wc_n_days <- function(x) {
+  v <- suppressWarnings(as.integer(x))
+  if (length(v) != 1L || is.na(v) || v < 2L) stop(sprintf("[wcat] ctx$n_days 는 2 이상 정수 한 값: %s", paste(x, collapse = ",")))
+  v
+}
+
 # lean 빌트인 → ctx 축 호출 (carrier 리졸버). needs_score 면 ctx$mu 를 scores 로 쓴다.
 .wc_lean_carrier_fn <- function(spec) {
   force(spec)
@@ -237,12 +244,16 @@ WC_LEAN_BUILTIN <- list(
     res <- if (identical(spec$name, "score_pure")) {
       if (!exists("calc_score_tilt_weights", mode = "function"))
         stop(sprintf("[wcat] 빌트인 함수 부재: calc_score_tilt_weights (%s?)", .WC_INSTRUMENT_MARK))
-      calc_score_tilt_weights(a, sc, rd, alpha = 1.0, max_w = 1.0)
+      if (!is.null(ctx$n_days)) calc_score_tilt_weights(a, sc, rd, alpha = 1.0, max_w = 1.0, n_days = .wc_n_days(ctx$n_days))
+      else calc_score_tilt_weights(a, sc, rd, alpha = 1.0, max_w = 1.0)
     } else {
       if (!exists(fname, mode = "function"))
         stop(sprintf("[wcat] 빌트인 함수 부재: %s (%s?)", fname, .WC_INSTRUMENT_MARK))
       fn <- get(fname, mode = "function")
       mx <- if ("max_w" %in% names(formals(fn))) list(max_w = ub) else list()
+      ## P-3b(2026-11-10) — 칸이 lean_n_days = "cell" 일 때만 셀 엔진이 ctx$n_days(= 창 행 수)를 싣는다. 그때만 빌트인 창을 그 값으로.
+      ##   ctx$n_days 가 없으면(기본) 종전처럼 함수 기본 창(60 · 120일) — 기존 arm 결과 비트 동일.
+      if (!is.null(ctx$n_days) && "n_days" %in% names(formals(fn))) mx <- c(mx, list(n_days = .wc_n_days(ctx$n_days)))
       if (is.null(sc)) do.call(fn, c(list(a, rd), mx)) else do.call(fn, c(list(a, sc, rd), mx))
     }
     # ★위치 기반 이름 부여 — 하네스 계약과 **자구 동일**하게 맞춘다.
@@ -348,10 +359,7 @@ WC_LEAN_BUILTIN <- list(
     key <- paste0("af::", rel_path)
     fn <- .WC_ENV[[key]]
     if (is.null(fn)) {
-      ap <- if (file.exists(rel_path)) rel_path else file.path(root, rel_path)
-      if (!file.exists(ap)) stop(sprintf("어댑터 파일 부재: %s", rel_path))
-      e <- new.env(parent = globalenv())
-      sys.source(ap, envir = e)
+      e <- .wc_adapter_env(rel_path, root)
       if (!exists(entrypoint, envir = e, inherits = FALSE))
         stop(sprintf("진입점 `%s` 부재: %s", entrypoint, rel_path))
       fn <- get(entrypoint, envir = e)
@@ -359,6 +367,35 @@ WC_LEAN_BUILTIN <- list(
     }
     fn(ctx)
   }
+}
+
+#' 어댑터 파일 환경(파일당 1회 source · 캐시). 진입점 함수와 판 표식(METHOD_BUDGET)이 같은 환경에서 나온다.
+.wc_adapter_env <- function(rel_path, root = .wc_root()) {
+  ek <- paste0("ae::", rel_path)
+  e <- .WC_ENV[[ek]]
+  if (!is.null(e)) return(e)
+  ap <- if (file.exists(rel_path)) rel_path else file.path(root, rel_path)
+  if (!file.exists(ap)) stop(sprintf("어댑터 파일 부재: %s", rel_path))
+  e <- new.env(parent = globalenv())
+  sys.source(ap, envir = e)
+  assign(ek, e, envir = .WC_ENV)
+  e
+}
+
+#' arm 의 예산 판 표식(P-2b · 2026-11-10) — "eq"(기본 · 합 = 1) | "le"(합 ≤ 1 · 칸 allow_cash 와 함께일 때만 현금 통과).
+#'   우선순위: 엔트리/리졸버 메타 `budget`(등록부 선언) > 어댑터 파일의 `METHOD_BUDGET` > "eq".
+#'   lean · qepm 리졸버는 표식이 없다 → 항상 "eq"(그 arm 들은 현금을 만들 수 없다).
+#'   ★어댑터 source 실패는 여기서 "eq" 로 둔다 — 실패 진단은 종전처럼 호출 때 wrap_adapter 가 호명한다(동작 순서 불변).
+.wc_entry_budget <- function(entry, root = .wc_root()) {
+  r <- .wc_get(entry, "resolver", list())
+  b <- .wc_get(entry, "budget", .wc_get(r, "budget"))
+  if (is.null(b) && identical(as.character(.wc_get(r, "kind", "")), "adapter_file")) {
+    e <- tryCatch(.wc_adapter_env(as.character(.wc_get(r, "adapter", "")), root), error = function(z) NULL)
+    if (!is.null(e) && exists("METHOD_BUDGET", envir = e, inherits = FALSE)) b <- get("METHOD_BUDGET", envir = e)
+  }
+  b <- as.character(b %|.|% "eq")[1]
+  if (!b %in% c("eq", "le")) stop(sprintf("[wcat] %s budget 어휘 밖: %s (eq | le)", as.character(.wc_get(entry, "catalog_id", "?")), b))
+  b
 }
 
 .wc_paper_specs <- function(root = .wc_root()) {
@@ -667,7 +704,10 @@ as_ctx_adapter <- function(entry, root = .wc_root(), ub = WC_UB) {
     stop(sprintf("[wcat] 미지 resolver kind: %s", r$kind)))
   # lean 빌트인은 harness/advanced_weights 의 calc_* 를 전역에서 찾는다 — 없으면 이름을 부른다.
   we <- .wc_wrap_env(root)
-  get("wrap_adapter", envir = we)(raw, as.character(entry$catalog_id), ub = ub)
+  bud <- .wc_entry_budget(entry, root)
+  # 표식 없는 arm 은 종전 호출 그대로(budget 인자도 넘기지 않는다 — 기본값 eq 와 같다)
+  if (identical(bud, "eq")) get("wrap_adapter", envir = we)(raw, as.character(entry$catalog_id), ub = ub)
+  else get("wrap_adapter", envir = we)(raw, as.character(entry$catalog_id), ub = ub, budget = "le")
 }
 
 .wc_load_catalog <- function(root = .wc_root(), sync_if_missing = TRUE) {

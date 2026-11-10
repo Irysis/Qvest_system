@@ -110,13 +110,15 @@ chk("D1 마무리 기본 = 종전 식 w / sum(w)(비트 동일) · allow_cash = 
     identical(FZ$.rf_wt_finalize(w0, FALSE), w0 / sum(w0)) && identical(FZ$.rf_wt_finalize(w0, TRUE), w0) &&
       grepl("레버리지 금지", tryCatch({ FZ$.rf_wt_finalize(c(0.7, 0.6), TRUE); "" }, error = function(e) conditionMessage(e))))
 c1 <- run_cell(base_spec(weighting = c(WC, list(allow_cash = TRUE))))
-chk("D2 [처치 미전달] allow_cash 인데 arm 이 Σw = 1(카탈로그 정규형) → 멈춘다(현금 0 을 '현금 칸'으로 기록하지 않는다)",
+chk("D2 [처치 미전달 · 지키던 성질] 판 표식(budget = le) 없는 arm(lean:ivol)은 allow_cash 여도 Σw = 1 → 멈춘다(현금 0 을 '현금 칸'으로 기록하지 않는다)",
     !is.null(c1$err) && grepl("현금(Σw < 1)을 만든 신호일 0", c1$err, fixed = TRUE), c1$err %||% "멈추지 않았다")
+chk("D2b [배선 · P-2b] 엔진은 allow_cash 칸에서만 ctx$allow_cash 를 싣는다(합 ≤ 1 정규형은 판 표식 arm + 이 표식 둘 다일 때만 — test_rf_cash_budget_link.R)",
+    grepl("if (.CASH) ctx$allow_cash <- TRUE", etxt, fixed = TRUE) && lengths(regmatches(etxt, gregexpr("ctx$allow_cash <-", etxt, fixed = TRUE))) == 1L)
 c2 <- run_cell(base_spec(weighting = c(WC, list(allow_cash = "yes"))))
 chk("D3 allow_cash 형식 오류 → 멈춘다", !is.null(c2$err) && grepl("true | false", c2$err, fixed = TRUE), c2$err %||% "")
 l1 <- run_cell(base_spec(weighting = c(WC, list(lean_n_days = "cell"))))
-chk("D4 [처치 미전달] lean_n_days = cell 인데 lean 캐리어가 ctx$n_days 를 안 읽는다 → 멈춘다(패치 P-3 전)",
-    !is.null(l1$err) && grepl("ctx$n_days", l1$err, fixed = TRUE), l1$err %||% "멈추지 않았다")
+chk("D4 [P-3b 양성] lean_n_days = cell — 캐리어가 ctx$n_days(창 행 수)를 받아 완주 · lean:ivol 비중이 기본 창(60일) 판과 다르다",
+    is.null(l1$err) && !same_port(l1, r_new), l1$err %||% "기본 창 판과 같다(전달 안 됨)")
 
 cat("== (e) 돌연변이 ==\n")
 from <- "  if (!isTRUE(allow_cash)) return(w / sum(w))"
@@ -133,13 +135,13 @@ mut_engine <- function(from, to) {
   f <- tempfile("rf_cell_engine_mut_", fileext = ".R"); writeLines(sub(from, to, etxt, fixed = TRUE), f, useBytes = TRUE); f
 }
 mP1 <- mut_engine("        if (.nProbe > 0L && .nSame == .nProbe) stop(", "        if (FALSE) stop(")
-mP3 <- mut_engine("        if (!grepl(\"ctx$n_days\", .car, fixed = TRUE))", "        if (FALSE)")
+mP3 <- mut_engine("        if (!grepl(\"ctx$n_days\", .car, fixed = TRUE))", "        if (!grepl(\"ctx$n_days_absent_token\", .car, fixed = TRUE))")
 if (REAL_DATES) {
   rm1 <- if (is.null(mP1)) list(err = "치환 불성사") else run_cell(base_spec(weighting = list(kind = "catalog", catalog_id = "lean:ivol", sigma_provider = "factor:ts:base")), engine = mP1)
   chk("E2 [돌연변이 red] Σ 전달 탐침 가드 삭제 → B2 칸이 조용히 완주한다(가드가 유일한 방어선)", !is.null(mP1) && is.null(rm1$err), rm1$err %||% "")
 } else skp("E2 운영 요인 수익 parquet 없음")
 rm3 <- if (is.null(mP3)) list(err = "치환 불성사") else run_cell(base_spec(weighting = c(WC, list(lean_n_days = "cell"))), engine = mP3)
-chk("E3 [돌연변이 red] lean 캐리어 n_days 확인 삭제 → D4 칸이 조용히 완주한다(n_days 는 무시된 채)", !is.null(mP3) && is.null(rm3$err) && same_port(rm3, r_new), rm3$err %||% "")
+chk("E3 [가드 양성 대조] 엔진의 캐리어 판독 문장을 없는 토큰으로 바꾸면 D4 칸이 멈춘다(캐리어가 n_days 를 안 읽는 판을 잡는 가드가 살아 있다)", !is.null(mP3) && !is.null(rm3$err) && grepl("ctx$n_days", rm3$err, fixed = TRUE), rm3$err %||% "멈추지 않았다")
 
 cat(sprintf("\n%s\n", toJSON(list(test = "test_scn_rx_construct_link", pass = PASS, fail = FAIL, total = PASS + FAIL, skipped = SKIP), auto_unbox = TRUE)))
 quit(status = if (FAIL > 0L) 1L else 0L)

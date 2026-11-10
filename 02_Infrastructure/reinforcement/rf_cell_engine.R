@@ -596,6 +596,7 @@ if (identical(.wt$kind, "ew")) {
                     Sigma = .Sg, ub = 1, lookback_days = nrow(R),
                     decision_date = d, eval_date = d)
         if (identical(.LND, "cell")) ctx$n_days <- nrow(R)   # P-3(선택 시만 · 기본 ctx 모양 그대로)
+        if (.CASH) ctx$allow_cash <- TRUE                     # P-2b(선택 시만) — 판 표식(budget = "le") arm 의 합 ≤ 1 정규형이 이 표식을 본다(method_registry.R wrap_adapter)
         w <- tryCatch(as.numeric(.afn(ctx)), error = function(e) NULL)
         if (is.null(w) || length(w) != length(keep) || !all(is.finite(w)) || sum(w) <= 0) return(NULL)
         if (!is.null(.FCV) && .nProbe < 3L) {     # P-1 전달 확인 — 같은 신호일 표본 Σ 판과 비중이 같으면 Σ 를 안 쓰는 arm(처치 미전달)
@@ -616,7 +617,7 @@ if (identical(.wt$kind, "ew")) {
         cat(sprintf("[rf_cell_engine] sigma_provider %s | 요인 Σ 신호일 %d · pca 폴백 %d · 탐침 동일 %d/%d\n", .SP, .nSig, .nFB, .nSame, .nProbe))
       }
       if (.CASH) {
-        if (.nCash == 0L) stop(sprintf("[rf_cell_engine] allow_cash — arm %s 가 현금(Σw < 1)을 만든 신호일 0(카탈로그 정규형 Σw = 1 · 처치 미전달 — 패치 P-2b)", .cid))
+        if (.nCash == 0L) stop(sprintf("[rf_cell_engine] allow_cash — arm %s 가 현금(Σw < 1)을 만든 신호일 0(판 표식 budget = le 없는 arm 은 정규형 Σw = 1 · 표식 arm 이면 예산이 묶이지 않음 · 처치 미전달)", .cid))
         cat(sprintf("[rf_cell_engine] allow_cash | 현금을 든 신호일 %d\n", .nCash))
       }
       # ★조작확인 — 폴백이 조용하니 우리가 시끄럽게 만든다. 미전달은 '효과 없음' 이 아니라 '미측정' 이다.

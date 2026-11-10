@@ -52,9 +52,17 @@ METHOD_REGISTRY_PATH <- file.path("06_Registry", "method_registry.json")
 #' 반환: assets 순서의 numeric. NA/Inf 허용(하네스가 0 으로 처리).
 
 #' 어댑터를 제약-강제 래퍼로 감싼다. ★어댑터는 제약을 지킬 의무가 없다 — 여기서 강제한다.
-wrap_adapter <- function(fn, method_id, ub = 1.0) {  # v10 2026-08-29: 기본 무상한 (mandate [0,0.20] 폐지)
+#' @param budget "eq"(기본 · 합 = 1 정규형 — 종전 그대로) | "le"(합 ≤ 1 정규형 · 판 표식 arm 전용 · 2026-11-10 P-2b).
+#'   ★현금은 **둘 다** 있어야 통과한다: arm 이 budget = "le" 로 감싸졌고(arm 메타 · weight_catalog.R) 칸이 ctx$allow_cash = TRUE
+#'   (셀 엔진 weighting.allow_cash)일 때만. 한쪽만이면 종전 합 = 1 경로 그대로다(비트 동일). 근거 = 측정 축 MC5 Σw ≤ 1 잔여 현금
+#'   (CLAUDE.md 축 표 · rf_axes.R) — 축 완화가 아니다. 합 ≤ 1 경로는 고치지 않고 거부한다: 비유한 · 음수(< −1e-9) · 합 > 1 + 1e-6 ·
+#'   상한 초과 = stop(호출자가 그 신호일을 못 쓴 것으로 센다 — 조용히 재분배하지 않는다).
+wrap_adapter <- function(fn, method_id, ub = 1.0, budget = "eq") {  # v10 2026-08-29: 기본 무상한 (mandate [0,0.20] 폐지)
   force(fn); force(method_id); force(ub)
+  if (!(identical(budget, "eq") || identical(budget, "le"))) stop("[wrap_adapter] budget 어휘 밖: ", paste(budget, collapse = ","), " (eq | le)")
+  force(budget)
   function(ctx) {
+    if (identical(budget, "le") && isTRUE(ctx$allow_cash)) return(.wrap_le_finalize(fn, method_id, ub, ctx))
     v <- tryCatch(fn(ctx), error = function(e) {
       # ★실패를 조용히 EW 로 내려앉히지 않는다 — 이름을 부르고 EW 폴백임을 남긴다.
       cat(sprintf("[method:%s] 어댑터 실패 → EW 폴백: %s\n", method_id, conditionMessage(e)))
@@ -82,6 +90,24 @@ wrap_adapter <- function(fn, method_id, ub = 1.0) {  # v10 2026-08-29: 기본 �
               abs(sum(out) - 1) < 1e-6)
     out
   }
+}
+
+#' 합 ≤ 1 정규형(P-2b) — wrap_adapter(budget = "le") + ctx$allow_cash 일 때만 온다. 재분배 · 재정규화 없음(값 그대로 · 위반은 거부).
+.wrap_le_finalize <- function(fn, method_id, ub, ctx) {
+  a <- ctx$assets
+  v <- tryCatch(fn(ctx), error = function(e) {
+    cat(sprintf("[method:%s] 어댑터 실패(합 ≤ 1 판) → EW 폴백: %s\n", method_id, conditionMessage(e)))
+    NULL
+  })
+  if (is.null(v)) return(setNames(rep(1 / length(a), length(a)), a))
+  w <- suppressWarnings(as.numeric(v[a]))
+  if (length(w) != length(a) || !all(is.finite(w))) stop(sprintf("[method:%s] 합 ≤ 1 판 — 비유한/결손 비중 거부", method_id))
+  if (any(w < -1e-9)) stop(sprintf("[method:%s] 합 ≤ 1 판 — 음수 비중 거부(최소 %.3g · 롱온리)", method_id, min(w)))
+  if (sum(w) > 1 + 1e-6) stop(sprintf("[method:%s] 합 ≤ 1 판 — 합 %.6f > 1 거부(레버리지 금지)", method_id, sum(w)))
+  if (any(w > ub + 1e-9)) stop(sprintf("[method:%s] 합 ≤ 1 판 — 상한 %.4f 초과 거부", method_id, ub))
+  out <- setNames(pmax(w, 0), a)
+  stopifnot(all(is.finite(out)), all(out >= 0), sum(out) <= 1 + 1e-6)
+  out
 }
 
 #' 레지스트리 로드 → verdict=="implemented" 인 어댑터만 sourcing 해 named list 반환.

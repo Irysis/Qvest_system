@@ -18,16 +18,20 @@
 })
 source(file.path(.cuz_root, "02_Infrastructure", "reinforcement", "rf_cdar_construct.R"), local = TRUE)
 .CUZ_CFG <- rcd_config(file.path(.cuz_root, "02_Infrastructure", "reinforcement", "rf_cdar_construct.json"))
+# 판 표식(P-2b · 2026-11-10): 이 arm 은 합 ≤ 1 정규형을 쓸 수 있다. 현금은 칸이 weighting.allow_cash = true 일 때(셀 엔진이
+#   ctx$allow_cash 를 싣는다)만 통과하고 그때 LP 예산도 Σw ≤ 1. opt-in 이 없으면 Σw = 1(종전과 같은 해). 근거 = 측정 축 MC5(축 완화 아님).
+METHOD_BUDGET <- "le"
 
 method_weights <- function(ctx) {
   a <- ctx$assets
   if (length(a) < 3L) stop("자산 3종 미만 — 하네스가 먼저 EW 로 처리한다")
   R <- as.matrix(ctx$R)[, a, drop = FALSE]
   mu <- if (is.null(ctx$mu)) NULL else { v <- suppressWarnings(as.numeric(ctx$mu[a])); v[!is.finite(v)] <- 0; stats::setNames(v, a) }
-  o <- rcd_construct(R, .CUZ_CFG, mu = mu, budget = "eq")
+  # μ 없음 = 최소 CDaR 끝점 — Σw ≤ 1 이면 w = 0 으로 퇴화하므로 그 경우는 항상 eq
+  o <- rcd_construct(R, .CUZ_CFG, mu = mu, budget = if (isTRUE(ctx$allow_cash) && !is.null(mu)) "le" else "eq")
   dd <- if (is.null(ctx$decision_date)) "NA" else format(ctx$decision_date)
-  cat(sprintf("[cdar_cuz] d=%s n=%d T=%d mode=%s nu=%.6f cdar=%.6f active=%d maxw=%.4f effn=%.2f sec=%.3f fb=%s\n",
-              dd, length(a), nrow(R), o$mode, o$nu %||% NA_real_, o$cdar, o$n_active, max(o$w), o$effn, o$sec,
+  cat(sprintf("[cdar_cuz] d=%s n=%d T=%d mode=%s budget=%s cash=%.4f nu=%.6f cdar=%.6f active=%d maxw=%.4f effn=%.2f sec=%.3f fb=%s\n",
+              dd, length(a), nrow(R), o$mode, o$budget, o$cash, o$nu %||% NA_real_, o$cdar, o$n_active, max(o$w), o$effn, o$sec,
               ifelse(is.na(o$fallback), "none", o$fallback)))
   o$w
 }

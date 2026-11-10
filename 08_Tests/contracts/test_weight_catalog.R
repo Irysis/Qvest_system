@@ -38,7 +38,7 @@ if (!file.exists(WC)) { cat("  SKIP  계약 부재:", WC, "\n"); .emit(); quit(s
 
 .WC_QUIET_LOAD <- TRUE
 suppressWarnings(suppressMessages(source(WC)))
-CAT <- tryCatch(sync_catalog(root = ROOT, quiet = TRUE), error = function(e) NULL)
+CAT <- tryCatch(sync_catalog(root = ROOT, write = FALSE, quiet = TRUE), error = function(e) NULL)   # ★운영 파생 파일을 다시 쓰지 않는다(2026-11-10 — 시험이 06_Registry/weight_catalog.json 을 덮어썼다)
 if (is.null(CAT)) { ng("sync_catalog 실행"); .emit(); quit(save = "no", status = 1) }
 
 cat("== ⓪ 색인 — 세 갈래가 다 잡히는가 ==\n")
