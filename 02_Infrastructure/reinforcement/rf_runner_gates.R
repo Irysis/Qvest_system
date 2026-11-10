@@ -626,6 +626,20 @@ rf_a_ctx <- function(rctx, entries, base_id, axes = NULL, gate = NULL, dossier_r
   x
 }
 
+#' 팩터 DB 판 표식 판독(v10.2) — 계약 contracts/factor_db_vintage.R::fdv_stale 를 관문 문맥 루트에서 싣고 산출 폴더를 판정한다.
+#'   계약 · 원장이 그 루트에 없으면 판정 불가(NA)다(시험용 임시 루트 등).
+.rfg_fdb_vintage <- function(attempt, ctx) {
+  root <- gsub("\\\\", "/", .rfg_s1(ctx$root %||% .RFG_ROOT()))
+  p <- file.path(root, "02_Infrastructure", "contracts", "factor_db_vintage.R")
+  if (!file.exists(p) || !file.exists(file.path(root, "06_Registry", "factor_db_vintage.json")))
+    return(list(stale = NA, reason = "판 표식 계약 · 원장 없음"))
+  art <- gsub("\\\\", "/", .rfg_s1(attempt$artifacts))
+  if (!nzchar(art)) return(list(stale = NA, reason = "산출 폴더 없음"))
+  if (!dir.exists(art) && dir.exists(file.path(root, art))) art <- file.path(root, art)
+  e <- new.env(parent = globalenv()); sys.source(p, envir = e, keep.source = FALSE)
+  e$fdv_stale(art, root)
+}
+
 #' A 자격 관문 (P0-12 · 순수 · rf_grade_a_hold 흡수)
 #' @param entry   원장 entry(carry$overlay — 자기 층 판별). NULL 허용.
 #' @param attempt list(n, cell_code, grade, essence, artifacts [, adversary, vintage_flags, measurement_regime]) — 수집 시점의 새 칸이면
@@ -648,6 +662,13 @@ rf_a_eligibility <- function(entry, attempt, spec, ctx) {
   #   RF_A_HOLD_CODES·a_eligibility_gate.json 집합에 넣지 않는다(코드 집합 일치 규칙을 건드리지 않고 끌 수도 없게).
   if (isTRUE(tryCatch(rf_is_control(attempt, ctx, spec = sp), error = function(e) FALSE)))
     add("control_cell", "통제 칸(P1-06 carry 재현·null 희석) — 선정 후보 아님 · 등급 불변 · 발행 없음")
+  # ⓪-b factor_db_stale (v10.2 · 2026-11-10 · 전수점검 배선 감사) — 팩터 DB 수리(06_Registry/factor_db_vintage.json) 이전에 잰 측정은
+  #   재측정 전 A 자격이 없다("인용 전 재측정"을 사람 글에서 기계 판정으로). control_cell 과 같은 상시 보류다(설정으로 끌 수 없고
+  #   RF_A_HOLD_CODES 집합 밖). 측정 시각을 모르면(실행 id 없는 시험 폴더 등) 보류하지 않고 사실만 남긴다 — 실측 산출 폴더는 실행 id 를 갖는다.
+  fv <- tryCatch(.rfg_fdb_vintage(attempt, ctx), error = function(e) list(stale = NA, reason = paste0("판 표식 판독 실패: ", conditionMessage(e))))
+  fx$factor_db_vintage <- if (is.na(fv$stale)) "unknown" else if (isTRUE(fv$stale)) "stale" else "current"
+  fx$factor_db_vintage_reason <- .rfg_s1(fv$reason)
+  if (isTRUE(fv$stale)) add("factor_db_stale", .rfg_s1(fv$reason))
   # ① legacy_regime — 칸 규약 ≠ 현행 규약(P0-04 결정 EXEC-PRICE · rebase 전 측정은 현행 규약의 A 가 아니다)
   r <- rf_cell_regime(attempt, ctx)
   fx$regime <- r$regime; fx$regime_basis <- r$basis; fx$regime_current <- ctx$regime %||% NA_character_
@@ -761,7 +782,7 @@ rf_a_eligibility <- function(entry, attempt, spec, ctx) {
   if (!isTRUE(ctx$rule_ready)) add("rule_pending", "판정 규칙 미확정 — D-B: 보고만")
   act <- if (isTRUE(G$ok)) G$active else stats::setNames(rep(TRUE, length(RF_A_HOLD_CODES)), RF_A_HOLD_CODES)
   u <- unique(fired)
-  on <- u[vapply(u, function(k) k %in% c("gate_config", "control_cell") || isTRUE(act[k]), logical(1))]
+  on <- u[vapply(u, function(k) k %in% c("gate_config", "control_cell", "factor_db_stale") || isTRUE(act[k]), logical(1))]
   list(eligible = !length(on), codes = on, inactive = setdiff(u, on), fired = u, detail = detail, facts = fx,
        gate_source = G$source, gate_active = names(act)[act], regime_current = cur, self_unverified = isTRUE(su$hold),
        evaluated_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"))

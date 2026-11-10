@@ -306,6 +306,31 @@ chk(length(m11) == 3L && identical(m12$why, "ok") && isTRUE(abs(m12$value - 4.2)
     "F4 [돌연변이 M11·M12] floor/carry_base 검사를 규약만으로 줄이면 처치·창 이탈 칸이 바닥(3칸 생존)·기준선(4.2)으로 샌다 — F1·F3 가 잡는다",
     sprintf("m11=%s m12=%s", paste(m11, collapse = ","), m12$why))
 
+## ── G. factor_db_stale (v10.2 · 2026-11-10) — 팩터 DB 수리 이전 측정은 재측정 전 A 자격이 없다(상시 보류 · 설정으로 끌 수 없다) ──
+##   판 표식 계약 · 원장이 루트에 없으면(위의 모든 사례) 판정 불가라 보류하지 않는다. 여기서는 샌드박스 루트에 계약 사본과 원장을 두고
+##   실행 id 가 든 산출 폴더로 양방향을 본다.
+cat("=== G. factor_db_stale ===\n")
+invisible(file.copy(file.path(ROOT, "02_Infrastructure/contracts/factor_db_vintage.R"), file.path(S, "02_Infrastructure/contracts"), overwrite = TRUE))
+writeLines(toJSON(list(schema = "factor_db_vintage_v1",
+                       entries = list(list(id = "REPAIR-T", completed_at = "2026-11-10T01:00:00+09:00", scope = "all"))), auto_unbox = TRUE),
+           file.path(S, "06_Registry/factor_db_vintage.json"))
+el_old <- elig_of(mk_att(31, "B2_6", mk_art("20261105_090000_1"), sp_ok))
+el_new <- elig_of(mk_att(32, "B2_6", mk_art("20261110_090000_2"), sp_ok))
+el_unk <- elig_of(mk_att(33, "B2_6", art_ok, sp_ok))
+chk("factor_db_stale" %in% el_old$codes && !isTRUE(el_old$eligible) && identical(el_old$facts$factor_db_vintage, "stale"),
+    "G1 수리 완료보다 앞선 실행 id 의 산출 → factor_db_stale 보류(발행 막음)", codes_of(el_old))
+chk(!("factor_db_stale" %in% el_new$fired) && identical(el_new$facts$factor_db_vintage, "current") && identical(codes_of(el_new), codes_of(e0)),
+    "G2 수리 뒤 실행 id 의 산출 → 보류 없음(다른 판정은 기준 사례와 같다)", codes_of(el_new))
+chk(!("factor_db_stale" %in% el_unk$fired) && identical(el_unk$facts$factor_db_vintage, "unknown"),
+    "G3 실행 id 없는 산출(측정 시각 모름) → 보류하지 않고 사실만 기록", codes_of(el_unk))
+gcfg <- fromJSON(file.path(S, "06_Registry/a_eligibility_gate.json"), simplifyVector = FALSE)
+chk(!("factor_db_stale" %in% RF_A_HOLD_CODES) && !("factor_db_stale" %in% names(gcfg$holds)),
+    "G4 상시 보류 — 설정 on/off 집합(RF_A_HOLD_CODES · a_eligibility_gate.json)에 없어 끌 수 없다")
+unlink(file.path(S, "06_Registry/factor_db_vintage.json"))
+el_off <- elig_of(mk_att(34, "B2_6", mk_art("20261105_090000_3"), sp_ok))
+chk(!("factor_db_stale" %in% el_off$fired) && identical(el_off$facts$factor_db_vintage, "unknown"),
+    "G5 [대조] 원장이 없는 루트에서는 같은 산출이 보류되지 않는다 — G1 의 보류는 원장 판정에서 왔다", codes_of(el_off))
+
 unlink(c(S, S2, S3, LCOPY), recursive = TRUE, force = TRUE)
 cat(sprintf("\n합계: 통과 %d · 실패 %d · 생략 %d\n", PASS, FAIL, SKIP))
 cat(sprintf('{"test":"rf_a_eligibility","pass":%d,"fail":%d,"total":%d,"skipped":%d}\n', PASS, FAIL, PASS + FAIL, SKIP))

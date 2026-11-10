@@ -39,17 +39,29 @@ c15_scan_file <- function(path) {
   ## ★② 변수 경유 패턴: 경로를 변수에 담고 read_parquet(변수) 로 읽는 형태.
   ##   초판은 ①만 봐서 `forward_weights_R05_*.R`(fdb_path <- ...factor_db...; read_parquet(fdb_path))
   ##   을 통째로 놓쳤다 — 내 검사기의 사각지대였다(2026-08-08 자체 적발).
-  has_fdb_path <- any(grepl("factor_db[^\"']*\\.parquet|factor_db/", code))
+  ## (11-10) 경로 패턴은 R 소스 파일 경로 문자열("…/factor_db/xxx.R")을 떼고 본다 — 모듈을 source 하는 줄이 '팩터 DB 경로'로 잡혀
+  ##   다른 parquet 을 읽는 파일이 변수 경유 위반으로 오탐됐다(같은 줄의 parquet 경로는 그대로 남는다).
+  code_p <- gsub("[\"'][^\"']*\\.[Rr][\"']", "", code)
+  has_fdb_path <- any(grepl("factor_db[^\"']*\\.parquet|factor_db/", code_p))
   has_read     <- any(grepl("read_parquet\\s*\\(", code))
   via_var      <- has_fdb_path && has_read && !length(same_line)
   direct_n <- length(same_line) + as.integer(via_var)
+  ## ★③ 결합용 뷰 저장본(v10.2 · 2026-11-10 배선 감사) — .cache/factor_combinable/fc_YYYYMM.parquet 도 팩터 DB 의 한 판이다.
+  ##   정본 접근자는 fc_load_month · fc_load_months · fc_daily(factor_db/factor_combinable.R — 신호일 가드 · 방향 선택)뿐이고,
+  ##   저장본 직접 읽기는 그 가드를 건너뛴다. 방향 정렬 호출이 있어도 봐주지 않는다(저장값은 이미 순위 변환본 — 정렬로 PIT 가 생기지 않는다).
+  ##   접근자 파일 이름(factor_combinable.R)을 source 하는 줄은 경로 패턴으로 치지 않는다.
+  fc_pat  <- "factor_combinable(?!\\.R)|fc_[0-9]{6}\\.parquet|fc_%s\\.parquet|fc_signs\\.parquet|fc_coverage\\.parquet"
+  same_fc <- grep(paste0("read_parquet\\s*\\(.*(", fc_pat, ")"), code, value = TRUE, perl = TRUE)
+  via_fc  <- any(grepl(fc_pat, code_p, perl = TRUE)) && has_read && !length(same_fc)
+  fc_n    <- length(same_fc) + as.integer(via_fc)
   lmf    <- grep("load_month_factors\\s*\\(", code, value = TRUE)
   align  <- grep("align_factor_direction\\s*\\(", code, value = TRUE)
-  verdict <- if (!direct_n) "PASS"
+  verdict <- if (fc_n) "FAIL"
+             else if (!direct_n) "PASS"
              else if (length(align)) "PASS_WITH_NOTES"
              else "FAIL"
-  data.table(file = path, direct_read = direct_n,
-             evidence = if (length(same_line)) "same_line" else if (via_var) "via_var" else "",
+  data.table(file = path, direct_read = direct_n + fc_n,
+             evidence = if (fc_n) "combinable_view" else if (length(same_line)) "same_line" else if (via_var) "via_var" else "",
              lmf = length(lmf), align = length(align), verdict = verdict)
 }
 

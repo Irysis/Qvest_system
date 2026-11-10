@@ -47,9 +47,20 @@ main <- function() {
   ## ⑥ 변수 경유 + align 없음 → FAIL 이어야
   w("via_var_noalign.R", c('fdb <- file.path(ROOT, ".cache/factor_db/factor_db_202608.parquet")',
                            'f <- read_parquet(fdb)', 'z <- f$Z_Score'))
+  ## ★⑦ 결합용 뷰 저장본 직접 읽기(v10.2 · 2026-11-10) — 정렬 호출이 있어도 FAIL · 변수 경유도 FAIL · 접근자만 쓰면 PASS
+  w("fc_direct.R", c('f <- read_parquet(file.path(ROOT, ".cache/factor_combinable/fc_201006.parquet"))',
+                     'a <- align_factor_direction(f, reg, sig_date=AS_OF)'))
+  w("fc_via_var.R", c('p <- file.path(ROOT, ".cache", "factor_combinable", sprintf("fc_%s.parquet", ym))',
+                      'f <- arrow::read_parquet(p)'))
+  w("fc_accessor.R", c('source(file.path(ROOT, "02_Infrastructure/factor_db/factor_combinable.R"))',
+                       'x <- fc_load_month(sig_date, direction = "registry")',
+                       'b <- read_parquet(file.path(ROOT, ".cache/benchmark.parquet"))'))
   res <- c15_scan(roots = TMP, quiet = TRUE)
   g <- function(n) res[file == n | basename(file) == n, verdict][1]
   cat("=== 판정 ===\n")
+  chk("★결합용 뷰 저장본 직접 읽기(정렬 호출 있어도)", g("fc_direct.R"), "FAIL")
+  chk("★결합용 뷰 저장본 변수 경유", g("fc_via_var.R"), "FAIL")
+  chk("결합용 뷰 접근자만(+ 다른 parquet 읽기) — 오탐 방지", g("fc_accessor.R"), "PASS")
   chk("정상(커넥터만)", g("ok_connector.R"), "PASS")
   chk("관용(직접read+align)", g("tolerated.R"), "PASS_WITH_NOTES")
   chk("★위반 주입(직접read, align 없음)", g("violate.R"), "FAIL")

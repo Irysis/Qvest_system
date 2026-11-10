@@ -1,0 +1,60 @@
+{
+  "schema": "factor_db_vintage_v1",
+  "_doc": "팩터 DB 수리 원장 — 측정이 어느 판 위에서 났는지 가리는 정본. 계약 02_Infrastructure/contracts/factor_db_vintage.R 이 읽는다(A 자격 관문의 상시 보류 factor_db_stale · P4 기저 풀). 항목 = 수리 1건: 완료 시각(KST) · 범위(all = 전 팩터 | factors 목록) · 근거 결정. 완료 시각보다 앞선 측정은 그 수리 범위에 닿으면 '낡음'(재측정 전 인용 · 소비 금지). 새 수리를 하면 여기에 한 줄 더한다(completed_at 을 비우면 진행 중 = 범위에 닿는 측정 전부 낡음). 삭제 금지(추가 전용).",
+  "entries": [
+    {
+      "id": "FUND-V2-FULL-REBUILD-20261109",
+      "completed_at": "2026-11-09T23:31:00+09:00",
+      "scope": "all",
+      "decision": "FUND-V2-PRIOR-GRADES-REMEASURE-ON-CITE-20261109 · 도훈 11-09 '보충 끝나면 전체 재빌드해줘'",
+      "note": "재무 원천 v1 → v2(퀀티 메인 · DART 정정 검사 · 실제 공시일) 전환 뒤 팩터 DB 전체 재빌드 '성공' 시각. 재무 v1 위 측정은 정정 뒤 값 누출 · 2015~ 총부채 결함 위에 있다.",
+      "evidence": "06_Registry/fundamental_source.json · 메모리 project-factor-direction-storage-repair-20261109(재빌드 '성공' 23:31)"
+    },
+    {
+      "id": "FACTOR-DIRECTION-STORAGE-REPAIR-20261109",
+      "completed_at": "2026-11-10T01:38:00+09:00",
+      "scope": "all",
+      "decision": "FACTOR-DIRECTION-STORAGE-REPAIR-20261109 · FACTOR-DIRECTION-TWO-VIEWS-20261109",
+      "note": "등록부 방향 = 저장값 기준(71개 방향 변경) · 일간 접근자 as-of 부호 · XF 채움 변환 · XF 계열 정의 + 영향 13팩터 전 기간 재계산 · IC · 대응표 · 결합용 뷰 갱신 '성공' 시각. 방향은 정렬 대체 경로로 거의 모든 팩터 사용에 닿으므로 범위 = 전체.",
+      "evidence": ".cache/scheduler_logs/factor_subset_repair_20261109_175958.json(result 성공) · 02_Infrastructure/factor_db/DIRECTION_POLICY.md"
+    },
+    {
+      "id": "FACTOR-DB-TOTALDEBT-ZERO-REPAIR-20261110",
+      "completed_at": "2026-11-10T11:26:00+09:00",
+      "scope": {
+        "factors": [
+          "AC02_Total_Accruals_BS",
+          "AC03_WC_Accruals",
+          "AC04_NCO_Accruals",
+          "AC05_NOA",
+          "AC07_Operating_Accruals",
+          "AC08_Financial_Accruals",
+          "AC09_NNI",
+          "AC16_BS_vs_CF_Diff",
+          "AC24_NOA_Growth",
+          "D28_Unlevered_Beta",
+          "D60_Leverage",
+          "IN05_Net_Debt_Issuance",
+          "Q04_Piotroski_F",
+          "Q15_Debt_to_Equity",
+          "Q16_Debt_to_Assets",
+          "Q17_ROIC",
+          "R17_Market_Leverage",
+          "R18_Book_Leverage",
+          "R19_Composite_Risk",
+          "V07_EV_EBITDA",
+          "V13_EV_Sales",
+          "V14_EBIT_EV",
+          "V15_NetDebt_Adj_EP",
+          "V19_Debt_to_Market",
+          "V22_FCFF_EV",
+          "XF_LL01_DebtToCapital",
+          "XF_LL02_NetDebt"
+        ]
+      },
+      "decision": "FACTOR-DB-TOTALDEBT-ZERO-REPAIR-20261110(도훈 11-10 '팩터 DB의 총부채(TotalDebt) 수리해 0으로 나와')",
+      "note": "총부채 0 수리(결측 = 0 · 사채 누락 · 정정 의심 연도 차입) — 영향 27팩터 · 442달 재계산 11:15:32 '성공' · 이번 달(202611) 파일 재작성 11:26. 범위 = 그 27팩터(팩터 목록을 선언한 칸만 비켜 간다 · 임의 코드 엔진은 닿은 것으로 본다).",
+      "evidence": "04_Research/01_reports/factor_db_debt_fix_20261110/{README.md,repair_spec.json,chain_state.json} · .cache/scheduler_logs/factor_subset_repair_20261110_090109.json(result 성공)"
+    }
+  ]
+}
