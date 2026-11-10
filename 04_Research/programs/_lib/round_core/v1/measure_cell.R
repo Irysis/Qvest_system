@@ -23,6 +23,7 @@ role <- cell[[1]]$role %||% "variant"
 ##   A 띠 후보 사후 실행만 RC_FACTOR_ANALYSIS=1 로 켠다. 모듈 풀 등재는 지금처럼 변형 칸만(기준 · 진단 = QVEST_RP_REGISTER=0).
 if (!identical(Sys.getenv("RC_FACTOR_ANALYSIS", "0"), "1")) Sys.setenv(QVEST_RP_NO_FACTOR_ANALYSIS = "1")
 if (!identical(role, "variant")) Sys.setenv(QVEST_RP_REGISTER = "0")
+Sys.setenv(QVEST_RP_NO_LCODE = "1")   # 칸 L-code 끔(11-10 · 감사 K P5 — 라운드 교훈 정본 = 닫기 결과 원장)
 t0 <- Sys.time()
 rc <- system2("Rscript", c(file.path(ROOT, "02_Infrastructure/ops/rf_cell_worker.R"), shQuote(cs), "1", code, shQuote(out)),
               stdout = file.path(P$results, paste0(code, ".log")), stderr = file.path(P$results, paste0(code, ".err.log")))

@@ -60,18 +60,24 @@ A 가 안 나온 이유는 검증 부족이 아니라 ① 한 계보에 갇힌 �
    새 엔진 없이 한 엔진 위에 방어 장치 라운드를 더 붙이지 않는다(P2R03 14/14 · P2R04 8/8 반증 — 시행만 태운다).
 3. **시행은 예산이다** — 스윕형 라운드(여러 칸 중 고르는 라운드)는 등록 전에 변형 수 상한의 근거를 계산해 사전등록에 싣는다:
    ```bash
-   Rscript 02_Infrastructure/programs/trial_budget.R 300        # 관측 개월 수 → 시행 수별 필요한 최소 활성 SR · 근사 t (등급 계약의 DSR 식 그대로)
+   Rscript 02_Infrastructure/programs/trial_budget.R rc <rho> [<기대 t>]   # ★등급 v3.4 관문(선택 현실 점검) 기준 — 닮은 변형의 상관 rho(입력) × 변형 수별 요구 t · 최대 변형 수
+   #   과거 시행 집합이 있으면 tb_rc_from_trials(dirs, 후보) = 계약 그대로 환산 독립 시행 수 · 요구 t
+   Rscript 02_Infrastructure/programs/trial_budget.R 300        # (진단) 관측 개월 수 → 시행 수별 DSR 최소 활성 SR · 근사 t — v3.4 에서 DSR 은 관문이 아니다
    ```
    **강화 사슬(P4 · round_core `p4_chain`)** — 사슬 판을 한 번 등록하고(기저 · 보는 창 채택 규칙 · 예산 · 생성기 판) 걸음을 흘린다. 한 걸음 = 가설 하나 → 칸 하나 → 블록 유형 하나:
    ```bash
    R=04_Research/programs/_lib/round_core/round.sh
    bash $R - p4-pool                          # 기저 풀(자격 · 제외 사유) — 자격 0 이면 상설 판 측정이 먼저다
-   bash $R <사슬 폴더> p4-check · p4-register   # 사슬 판 검사(시험 창 지표 규칙 · 출처 없는 숫자 · 낡은 생성기 md5 거부) → 등록
-   bash $R <사슬 폴더> p4-design --out design_input.md   # 생성기 입력: 격차(어느 하한이 A 를 막는가) · 열린 탐침 · 걸음 이력
-   bash $R <사슬 폴더> p4-step-open --k 1 --hypothesis "…" --mechanism "…" --block <유형> --cell <칸 사양> --parent 0 --generator g1
-   #   칸 측정 = 정본 셀 워커(종전 스윕 회계 그대로)
-   bash $R <사슬 폴더> p4-step-decide --k 1 --artifacts <산출 폴더>   # 보는 창 지표 → 등록된 규칙 → 채택 | 기각
-   bash $R <사슬 폴더> p4-close --note "…" --probe "…" --probe "…"   # 결과 원장 + 최종 후보 선택 현실 점검 재채점(등급 v3.4)
+   bash $R <사슬 폴더> p4-check · p4-register --p1 <철학 P1 id> --t1 <판단 T1 id>   # 사슬 판 검사(시험 창 지표 · 출처 없는 숫자 · 낡은 생성기 · 채택 규칙 판 v2 필수 지표 N1 · N2) → 등록(영수증 없으면 거부)
+   bash $R <사슬 폴더> p4-base-measure          # 기준 칸(k = 0) — 걸음 전 필수 · 배리어 · 데이터 신선도(낡음 = 종료 6) · 판 표식 · 점유(다른 측정 중 = 종료 7)
+   bash $R <사슬 폴더> p4-workdir --out <사슬 밖 빈 폴더>   # 생성기 작업 디렉터리(네 파일만) — 처방 에이전트는 사슬 폴더가 아니라 여기서 일한다
+   bash $R <사슬 폴더> p4-step-open --k 1 --hypothesis "…" --mechanism "…" --block <유형> --cell <칸 사양> --parent 0 --generator g1 [--probe-ref <round_id>#<n>]
+   bash $R <사슬 폴더> p4-step-measure --k 1    # 정본 셀 워커(스윕 회계 · 등재 · L-code 끔) — 종료 0 측정 · 4 배리어 · 6 데이터 낡음 · 7 점유 · 1 실패
+   bash $R <사슬 폴더> p4-step-decide --k 1     # 측정 기록의 산출 → 보는 창 지표 → 등록된 규칙 → 채택 | 기각(--artifacts 는 측정 기록과 같은지 대조할 때만)
+   bash $R <사슬 폴더> p4-step-abandon --k 1 --reason "…"   # 측정 실패 2회 이상인 걸음만 — 기각(산출 없음)으로 닫아 사슬이 멈추지 않게
+   bash $R <사슬 폴더> p4-close --note "…" --probe "…" --probe "…" --regrade-write --p2 <철학 P2 id> --t2 <판단 T2 id>   # 닫기는 한 번뿐 — --regrade-write(운영) | --regrade-dry-run(시험) 필수
+   #   결과 원장 + 최종 후보 선택 현실 점검 재채점(등급 v3.4) → A 면 후보 관문 · 아니면 앞선 요청 거두기 · 결론에 엔진 대비 · 시장 대비(빈칸 16)
+   #   원장 손상 = 멈춘다 → 사람이 확인 뒤 격리: bash $R <사슬 폴더> p4-quarantine --line <n> --reason "…" · bash $R - outcomes-quarantine --line <n> --reason "…"
    bash $R - p4-generator-review              # 블록 유형별 채택률 · 개선 폭 · 기각 사유 → 생성기 새 판의 재료(rxg_revise)
    ```
    사슬도 '사슬이라 면제'에 기대지 않는다 — 끝나면 기저와 모든 걸음 칸을 시행 집합으로 최종 후보를 다시 채점한다. 스윕형 라운드의 최종 후보도 같다(`programs/selection_regrade.R`).

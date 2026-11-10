@@ -199,13 +199,14 @@ chk("C10 등록부는 읽기만(스캔 두 번 뒤에도 등록 직후 md5 그�
 
 cat("D 항목 R2 거부\n")
 FP <- function() "fp-stable"
+FRESH <- function(root) list(ok = TRUE, state = "fresh", reason = "시험 주입")   # 신선도 판정(v1/freshness.R) 주입
 STUB <- file.path(SB, "stub_worker.R")
 writeLines(c("a <- commandArgs(trailingOnly = TRUE); code <- a[3]; out <- a[4]",
              sprintf("art <- if (grepl('9901_00002', code)) '%s' else '%s'", ART_E1, ART_E2),
              "writeLines(as.character(jsonlite::toJSON(list(n = 1, code = code, ok = TRUE, artifacts = art), auto_unbox = TRUE)), out)"), STUB)
 orig_gen <- rc_p1_cell_spec
 assign("rc_p1_cell_spec", function(...) { s <- orig_gen(...); s }, envir = globalenv())
-chk("D1 생성 함수가 바뀌면(md5 ≠ 등록 핀) 측정 · 판정 거부(R2 · 새 판 필요)", grepl("생성 함수 핀", err_of(rc_standing_measure_item(RD, CN, registry_path = REG, worker = STUB, fingerprint = FP))))
+chk("D1 생성 함수가 바뀌면(md5 ≠ 등록 핀) 측정 · 판정 거부(R2 · 새 판 필요)", grepl("생성 함수 핀", err_of(rc_standing_measure_item(RD, CN, registry_path = REG, worker = STUB, freshness = FRESH, fingerprint = FP))))
 assign("rc_p1_cell_spec", orig_gen, envir = globalenv())
 pb <- readBin(P$prereg, "raw", file.info(P$prereg)$size); cat("x", file = P$prereg, append = TRUE)
 chk("D2 사전등록 변조 = 거부(md5 ≠ 등록부)", grepl("R2", err_of(rc_standing_judge(RD, registry_path = REG))))
@@ -215,11 +216,11 @@ chk("D3 등록 뒤 사양 변경 = 거부", grepl("사양이 등록 뒤 바뀌�
 writeBin(sb, file.path(RD, "round_spec.json"))
 tsp <- rc_abs(I[[CT]]$cell_spec); tb <- readBin(tsp, "raw", file.info(tsp)$size); cat(" ", file = tsp, append = TRUE)
 chk("D4 칸 사양 변조 = 그 항목 측정 거부 · 원장 r2 기록 · 대기 목록에서 빠짐",
-    grepl("cell_spec_md5_changed", err_of(rc_standing_measure_item(RD, CT, registry_path = REG, worker = STUB, fingerprint = FP))) &&
+    grepl("cell_spec_md5_changed", err_of(rc_standing_measure_item(RD, CT, registry_path = REG, worker = STUB, freshness = FRESH, fingerprint = FP))) &&
       !(CT %in% rc_standing_pending(RD, registry_path = REG)))
 writeBin(tb, tsp)
 cep <- file.path(LANE, "RP_AUTO_T_COMMENT", "engine.R"); cb <- readBin(cep, "raw", file.info(cep)$size); cat("# 수정\n", file = cep, append = TRUE)
-chk("D5 엔진 변경 = 그 항목 측정 거부(engine_md5_changed)", grepl("engine_md5_changed", err_of(rc_standing_measure_item(RD, CC, registry_path = REG, worker = STUB, fingerprint = FP))))
+chk("D5 엔진 변경 = 그 항목 측정 거부(engine_md5_changed)", grepl("engine_md5_changed", err_of(rc_standing_measure_item(RD, CC, registry_path = REG, worker = STUB, freshness = FRESH, fingerprint = FP))))
 writeBin(cb, cep)
 ## D6 — 생성 함수를 거치지 않은 칸 사양(손으로 만든 사양 · md5 는 원장과 일치)을 원장에 직접 넣으면 재생성 대조가 잡는다(양성 대조)
 hd <- mk_dir("RP_AUTO_T_HAND", E_NATIVE, "9901.00099"); ctxD <- rc_standing_context(RD, registry_path = REG)
@@ -230,17 +231,22 @@ rc_standing_append(ctxD, list(event = "enqueue", code = hcode, engine = "hand", 
                               engine_md5 = rc_md5(file.path(hd, "engine.R")), cell_spec = rc_rel(hsp), cell_spec_md5 = rc_md5(hsp), paper = hp,
                               family_root = "9901.00099", n_family = 2L, n_trials_basis = "손 사양 시험"))
 chk("D6 손으로 만든 칸 사양(md5 일치여도) = 재생성 불일치로 측정 거부(cell_spec_not_regenerable)",
-    grepl("cell_spec_not_regenerable", err_of(rc_standing_measure_item(RD, hcode, registry_path = REG, worker = STUB, fingerprint = FP))) &&
+    grepl("cell_spec_not_regenerable", err_of(rc_standing_measure_item(RD, hcode, registry_path = REG, worker = STUB, freshness = FRESH, fingerprint = FP))) &&
       !(hcode %in% rc_standing_pending(RD, registry_path = REG)))
 
 cat("E 측정 → 판정\n")
-m1 <- rc_standing_measure_item(RD, CN, registry_path = REG, worker = STUB, fingerprint = FP)
+n_e0 <- rc_standing_ledger_verify(LEDGER)$n
+m0 <- rc_standing_measure_item(RD, CN, registry_path = REG, worker = STUB, freshness = function(root) list(ok = FALSE, state = "stale", reason = "rawdata STALE(주입)"), fingerprint = FP)
+m0b <- rc_standing_measure_item(RD, CN, registry_path = REG, worker = STUB, freshness = function(root) stop("판정기 죽음"), fingerprint = FP)
+chk("E0 데이터 낡음 · 판정기 오류 = 측정 건너뜀(data_stale · 원장 무기록 · 대기 유지 — v1/freshness.R)", identical(m0$status, "data_stale") && identical(m0b$status, "data_stale") &&
+      rc_standing_ledger_verify(LEDGER)$n == n_e0 && CN %in% rc_standing_pending(RD, registry_path = REG))
+m1 <-rc_standing_measure_item(RD, CN, registry_path = REG, worker = STUB, freshness = FRESH, fingerprint = FP)
 chk("E1 측정(정본 워커 자리 · 대체 워커) — ok · 지문 동일 · 결과 md5", isTRUE(m1$ok) && isTRUE(m1$fp_same) && !is.na(m1$result_md5))
 flip <- local({ i <- 0L; function() { i <<- i + 1L; paste0("fp-", i) } })
-m2 <- rc_standing_measure_item(RD, CT, registry_path = REG, worker = STUB, fingerprint = flip)
+m2 <- rc_standing_measure_item(RD, CT, registry_path = REG, worker = STUB, freshness = FRESH, fingerprint = flip)
 chk("E2 측정 중 데이터 지문이 바뀌면 그 측정은 쓰지 않는다(대기 유지 · 재측정)", isTRUE(m2$ok) && isFALSE(m2$fp_same) && CT %in% rc_standing_pending(RD, registry_path = REG))
-invisible(rc_standing_measure_item(RD, CT, registry_path = REG, worker = STUB, fingerprint = FP))
-invisible(rc_standing_measure_item(RD, CC, registry_path = REG, worker = STUB, fingerprint = FP))
+invisible(rc_standing_measure_item(RD, CT, registry_path = REG, worker = STUB, freshness = FRESH, fingerprint = FP))
+invisible(rc_standing_measure_item(RD, CC, registry_path = REG, worker = STUB, freshness = FRESH, fingerprint = FP))
 chk("E3 측정 대기 0(R2 차단 해소 뒤 재측정 포함)", !length(rc_standing_pending(RD, registry_path = REG)))
 eval_stub <- function(root, round_dir, cell, env, tau) {
   src <- if (grepl("9901_00002", cell$code)) "P0R01_E1_C0" else "P0R01_E2_C0"
@@ -275,7 +281,7 @@ vf <- rc_json_read(file.path(RD, "results", "standing_visible.json"))
 chk("E8 보는 창 판정 표(standing_visible.json) — 5건 · 시험 창 열 없음", length(vf$items) == 5L && !any(grepl("_test$", unlist(lapply(vf$items, names)))))
 J2 <- rc_standing_judge(RD, registry_path = REG, eval_fun = eval_stub)
 chk("E9 다시 판정해도 새 판정 0(판정 유지) · 판정한 항목은 다시 재지 않는다", !length(J2$judged) &&
-      grepl("이미 판정한 항목", err_of(rc_standing_measure_item(RD, CN, registry_path = REG, worker = STUB, fingerprint = FP))))
+      grepl("이미 판정한 항목", err_of(rc_standing_measure_item(RD, CN, registry_path = REG, worker = STUB, freshness = FRESH, fingerprint = FP))))
 
 cat("F 보고 · Superfan · 상태\n")
 calls <- list(); snd <- function(...) { calls[[length(calls) + 1L]] <<- list(...); invisible(TRUE) }

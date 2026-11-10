@@ -32,13 +32,19 @@ bash 04_Research/programs/_lib/round_core/round.sh <round_dir> check      # 규�
 bash 04_Research/programs/_lib/round_core/round.sh <round_dir> draft      # prereg_draft.json + .md(점검자 · 감독용)
 bash 04_Research/programs/_lib/round_core/round.sh <round_dir> reviewed 1 <점검 파일> ok
 bash 04_Research/programs/_lib/round_core/round.sh <round_dir> register   # 등록 조건 ①~⑧ → 커밋
-bash 04_Research/programs/_lib/round_core/round.sh <round_dir> measure    # 배리어 · 사전 점검 · 지문 · 재측정 → 평가 자동 연쇄
+bash 04_Research/programs/_lib/round_core/round.sh <round_dir> measure    # 배리어 · 데이터 신선도(fresh-check · 종료 6) · 사전 점검 · 지문 · 재측정 → 평가 자동 연쇄
 bash 04_Research/programs/_lib/round_core/round.sh <round_dir> report --next "..."   # 기본 dry-run · --send
 bash 04_Research/programs/_lib/round_core/round.sh <round_dir> close --note "<해석>" --probe "<다음 탐침 1>" --probe "<다음 탐침 2>" [--lesson "<교훈>"] [--r7 noise|signal] --p2 <id> --t2 <id>
 #   close 는 등록부와 결과 원장(06_Registry/round_outcomes.jsonl · v1/outcomes.R)에 함께 쓴다 — 다음 탐침 2개 이상(없으면 --no-probes "<사유>") ·
 #   글에 정보 경계 뒤 날짜가 있으면 멈춘다. 다음 라운드 설계는 rc_outcomes_md(rc_outcomes_path(), "<프로그램>") 출력에서 출발하고,
+#   마감 훅(p2 · p3 최종 후보 · rc_close_finalize → rcg_finalize = 재채점 → A 면 관문 · 아니면 앞선 요청 거두기)의 칸별 상태(전기간 등급 포함)는 results/finalize.json 에만 —
+#   등록부 finalize 칸에는 거친 상태(done | error) + 그 파일 경로 · md5 만 싣는다(11-10 · 등록부는 다음 설계가 읽는 자리).
 #   이어받는 탐침은 rc_probe_consume("<round_id>#<번호>", "<새 round_id>", rc_outcomes_path()) 로 표시한다(2026-11-10 · v10.2).
 ```
+
+## 데이터 신선도 차단 (11-10 · v1/freshness.R)
+
+측정 경로 넷(`round.sh measure` · `standing-measure` + `rc_standing_measure_item` · `p4-base-measure` · `p4-step-measure`)이 같은 판정 하나 `rc_data_freshness(root)`를 부른다 — 가격(RAWDATA) · 벤치(KOSPI200)가 직전 거래일 세션까지 와 있지 않으면 재지 않고 사유를 돌려준다(원장 무기록 · 실패 횟수 무증가 · 다음 실행에서 다시). 규칙은 아침 신선도 감사기(`02_Infrastructure/ops/morning_steps/freshness_audit.R` · 데이터 레인 소유) 것이다: ① 운영 = 그 파일의 판정 전용 진입점 `--check --items rawdata,benchmark`(자식 R · 종료 0 신선 · 3 낡음 · 그 밖 판독 불가 · 발송 없음) ② 진입점이 없는 판 · 날짜를 주입한 호출 = 그 파일에서 정의(as_of · 휴장일 · 세션 지연 · check_freshness · audits$rawdata/benchmark 호출)를 구문 트리로 꺼내 평가(세션 축 미측정 = 판독 불가). 판독 불가 = 거부(fail-closed). CLI `round.sh - fresh-check`(driver · 종료 0/6). 실행기: measure 는 종료 6(센티널 data_stale) · standing-measure 는 대기 측정을 건너뛰고 판정은 진행(센티널 judged_data_stale) · p4 측정은 종료 6. 시험은 `freshness` 인자에 판정 함수를 넣는다(우회 인자 없음).
 
 ## 상설 판 (P1 상설 자격 · WP5 · 사양 `standing: true` · 첫 판 = `P1_RETURN/P1S01_standing_qualification`)
 
@@ -88,10 +94,12 @@ round.sh <사슬 디렉터리> p4-base-measure                              # �
 round.sh <사슬 디렉터리> p4-step-open --k 1 --hypothesis "…" --mechanism "…" --block <유형> --cell <칸 사양> --parent 0 --generator g1
 round.sh <사슬 디렉터리> p4-step-measure --k 1                             # 배리어 대기 → 칸 사양 md5 대조 → 정본 셀 워커 → 원장 step_measured(종료 0 · 4 배리어 · 1 실패)
 round.sh <사슬 디렉터리> p4-step-decide --k 1 [--artifacts <산출 폴더>]     # 산출 = step_measured 기록(넘기면 같아야 함) · 보는 창 지표(부모 0 = base_measured) → 채택 규칙 → accept | reject · r7
-round.sh <사슬 디렉터리> p4-status · p4-close --note "…" --probe "…" --probe "…" [--lesson "…"] [--regrade-write] --p2 <R-id> --t2 <R-id>
+round.sh <사슬 디렉터리> p4-step-abandon --k 3 --reason "…"             # 측정 실패 2회 이상 · 측정 기록 없는 걸음 = 기각(산출 없음 · r7 NA) — 사슬이 멈추지 않게
+round.sh <사슬 디렉터리> p4-workdir --out <사슬 밖 빈 폴더>                  # 생성기 작업 디렉터리(네 파일만 — design_input · 헌장(τ_D 뒤 날짜 가림) · toolbox · 부모 칸 사양)
+round.sh <사슬 디렉터리> p4-status · p4-close --note "…" --probe "…" --probe "…" [--lesson "…"] --regrade-write|--regrade-dry-run --p2 <R-id> --t2 <R-id>   # 둘 중 하나 필수(닫기는 한 번뿐)
 round.sh - p4-generator-review [--out f]                                   # 블록 유형별 채택률 · 보는 창 dS_vis · 주된 기각 사유(다음 판 재료)
 ```
-- 명령 순서: `p4-register` → **`p4-base-measure`** → (`p4-design` → `p4-step-open` → `p4-step-measure` → `p4-step-decide`)× → `p4-close`. 기준 칸 측정 전에는 걸음 열기 · 측정 · 판정 · 설계 입력이 거부된다(건너뛰기 경로 없음).
+- 명령 순서: `p4-register` → **`p4-base-measure`** → (`p4-workdir`(또는 `p4-design`) → 생성기 → `p4-step-open` → `p4-step-measure` → `p4-step-decide` | `p4-step-abandon`)× → `p4-close --regrade-write`. 기준 칸 측정 전에는 걸음 열기 · 측정 · 판정 · 설계 입력이 거부된다(건너뛰기 경로 없음).
 - 원장(`chain_steps.jsonl`) 이벤트: `chain_registered`(규칙 해석본 · 영수증 · 풀 산출 지표 `base_metrics` = **참고 기록 · 판정에 안 씀**) · `base_measured` | `base_measure_failed` · `step_open` · `step_measured` | `step_measure_failed` · `step_result`(`artifacts_source` · `parent_basis`) · `chain_closed`.
 - 기준 칸 측정(`rc_p4_base_measure(chain_dir, root, runner, barrier, fingerprint, vintage, metrics_fun)`): 기저 칸 사양 md5 = 사슬 판 확인 → 측정 사본 `measure/k0.spec.json`(sweep · family_root = 사슬 id · 시행 1) · role base → `base_measured`{artifacts · measured_spec_md5 · metrics(보는 창 — `rc_p4_visible_metrics`) · vintage · same_construction(기록) · measured_at}. 첫 걸음을 포함한 모든 비교의 기저 지표 = `base_measured$metrics` · 닫기 재채점 시행 집합의 기저 = `base_measured$artifacts`.
 - 팩터 DB 판 표식: 측정마다 `contracts/factor_db_vintage.R::fdv_stamp` 의 직렬화 md5(`vintage.id` · 수리 수)를 `base_measured` · `step_measured` 에 적는다(완료 시각은 τ_D 뒤 날짜라 싣지 않는다). 걸음 측정 직전 표식 ≠ 기준 칸 표식이면 재지 않고 사유(원장 무기록) — "이 사슬을 닫고 새 사슬에서 기준 칸부터 다시". 판정도 표식이 다른 측정은 거부 · 닫기는 허용 · 표식 판독 불가 = 측정 거부(fail-closed).
@@ -100,7 +108,13 @@ round.sh - p4-generator-review [--out f]                                   # 블
 - 걸음 열기 기계 검사: 앞 걸음 판정됨 · k 연번 · 칸 사양 1개(처음 보는 md5) · 부모 = 사슬 머리 · 부모와 **한 블록 유형만** 다름(고정 축 · 어휘 밖 축 거부 · 기저 변경은 풀 안 자격 엔진만) · 가설 · 기전 문장 · τ_D 뒤 날짜 없음 · 예산 안 · 생성기 md5 = 사슬 판.
 - 닫기: 최종 후보 = 마지막 채택 걸음(채택 0 · 걸음 ≥ 1 이면 기저 자신 k = 0 · 기준 칸 산출 · 걸음 0 = `no_candidate`) · 결과 원장(`rc_outcome_record` · extra = 생성기 판 · 걸음 수 · 블록 유형별 채택/기각 · P2 · T2 id) · 마감 훅 `programs/selection_regrade.R::sr_regrade`(기준 칸 산출 + 모든 걸음 칸 = 시행 집합 · 결과는 `finalize.json`(사람 쪽)에만 · 원장엔 상태 · md5) → 새 등급 A 면 후보 관문 `programs/round_candidate_gate.R::rcg_route(후보, <사슬>_k<k>, 측정 사본 사양, root, write)`(파일이 있을 때 · 요약 action · eligible · codes · path 는 `finalize.json` 에만). 원장 · 결과 원장의 `candidate_gate` = `pending`(관문 파일 없음) | `evaluated`(A 아님도 같은 값 — 등급이 상태로 새지 않게) | `error` | `not_run`. Judge 요청 파일은 쓰지 않는다. 모듈 풀 등재 = 최종 후보 1개만 · `regrade_write` ∧ 재채점 뒤 등급 A | B 일 때 정본 등재기 `contracts/register_measured_module.R::rmm_register_measured(후보 산출, origin_mode = "replication", meta = 사슬)`를 측정 밖에서 사후 호출(sim 없이 계약 CSV 로 재조립 — `rf_replication_verify.R` 감사 뒤 등재와 같은 경로 · 자격은 등재기의 계약 술어가 다시 낸다) · `module_pool` = registered | not_registered | not_attempted | pending_manual(등재기 없음) | error → `finalize.json` · 결과 원장 줄.
 - 처방 도구 상자(`02_Infrastructure/programs/rx_round.R`): `rx_validate(impl, root, pool)` 이 `base_signal`(풀 key · `engine_blend` keys ≥ 2 · 경로 지정 거부)과 `factors[].direction`(ic_asof | registry | defensive — defensive 는 등록부 방어 방향이 있는 팩터만)을 받는다 · 도구 상자 표에 방어 방향 열 · 헌장 격차 절 `rx_charter_gap_md(gap)`.
-- 시험: `08_Tests/programs/test_round_core_v1_p4_chain.R`(격리 — 임시 등록부 · 원장 · 생성기 등록부 · 판단 원장 · 합성 산출물 · 가짜 러너 · 가짜 재채점 · 관문 파일 · 실제 측정 없음).
+- 동시 진행 · 재진입(11-10): 원장 추가는 잠금 안에서 방금 읽은 원장으로 사건 단일성을 다시 본다(`.rcp4_unique_guard` — 같은 k 의 step_open · step_measured · step_result · 두 번째 base_measured · chain_closed · 닫힌 뒤 추가 = 거부). 측정은 칸마다 점유 `measure/<tag>.claim`(pid · 살아 있는 보유자 = `busy` 종료 7 · 죽은 pid = 인계 · 점유 뒤 원장 재확인). 측정 중 크래시 = 다음 실행이 점유를 인계해 다시 잰다. 닫기 중간 크래시(결과 원장 뒤 · chain_closed 전) = 다시 닫으면 결과 원장 중복 없이 chain_closed 1줄(재채점 · 관문 · 등재는 한 번 더 — 덮어쓰기).
+- **채택 규칙 판 v2(`rules_version = p4_rules_v2` · 11-10 · 헌장 §5 빈칸 집행)**: 새 사슬 판은 v2 만 등록된다(표식 없는 옛 판 = v1 판독 — 옛 원장 판정 불변). 필수 지표 = `dS_vis` · `uc_vis` · `d_dd_capture_median_vis` + **N1 `uc_seg_ok_share_vis`**(강세 구간 중 상승 포착 ≥ 기준 칸 − 0.2·|기준 칸| 비율 · 빈칸 4 · 7 · 24 · 짝 ≥ 2) · **N2 `deep_crisis_nonworse_share_vis`**(깊은 위기 = 시장 낙폭 ≥ 중앙값 중 부모 이하 비율 · 빈칸 2 · 23 · 깊은 짝 ≥ 2). 선택 지표 = N3 `d_cdar_vis`(부모 대비 CDaR · 빈칸 5 · 18) · `rec_delay_share_vis`(기록) · N4 `worst_name_contrib_deep_vis`(깊은 위기 한 종목 기여 · 빈칸 1 · 규칙이 쓰면 판정이 `concentration = TRUE` 로 diagnosis_packet 을 부른다) · N5 `beta_asym_ok_vis`(노출 블록 regime_exposure · tail_overlay · defense_sleeve 만 하락 β < 상승 β · 그 밖 = 1). 재료 = `rc_p4_visible_metrics` 의 `bull_vis` · `crises_vis` · `cdar_vis` · `beta_*_vis`(행동 카드가 τ_D 에서 자른 표) · 없으면 NA = 기각. r7(v2) = `dS ≥ +여유`일 때만 signal · 그 밖 noise(`r7_detail` = improve | within | worse — 악화도 연속 '개선 없음'으로 센다). 닫기 결론 `extra.conclusion` = 엔진 대비 · 시장 대비(하락 포착 ≤ 1) · '시장보다 덜' 문장 허용 여부(빈칸 16). 기저 풀 `cash_machine`(상설 판정 기록 보는 창 uc < uc_floor = 제외 · 기록 없음 = unknown). MC8 선택 방어 라벨(빈칸 14) · 재시드 띠(빈칸 21)는 미구현(감사 E1 보고 — 걸음마다 MC8 짝 · 재시드 칸 측정이 필요).
+- 지식 고리(11-10 · 감사 K): 결과 원장 쓰기 = 설계 입력 읽기와 같은 검사(`util.R::rc_input_issues` — τ_D 날짜 · 등급 표기) · 검사 강화 전 나쁜 줄은 처방 입력 읽기(`tau_clean`)에서 그 줄만 빠진다(경고) · τ_D 날짜 표기 변형(한국어 연월 · 슬래시 · 점 · ’yy년 · 분기 — `RC_TAU_ALT_RX`) · 설계 입력 §4b 다른 사슬 기각 걸음(사유 코드만) · `p4-step-open --probe-ref` = 탐침 이어받기 기록 · 칸 측정 L-code 끔 · 손상 줄 격리(사람 호출만: `p4-quarantine --line --reason` · `- outcomes-quarantine --line --reason` — 원장 줄은 지우지 않고 격리 기록 · 사본만).
+- 신선도: 기준 칸 · 걸음 측정은 배리어 다음에 `rc_data_freshness`(위 절) — 낡음 · 판독 불가 = `data_stale`(원장 무기록 · 종료 6).
+- 기저 풀 제외 사유(11-10 추가): `rule_change_beneficiary`(권위 기록 `selection_regrade$benefits_from_rule_change` 또는 `rule_change_benefit$benefit` — measurement-graduation §3b · 판정 = `rf_runner_gates.R::.rfg_rule_benefit` 정의를 구문 트리에서 꺼내 씀) · `rule_change_unknown`(판독 불가 · fail-closed). 상설 경로(새 측정)는 해당 없음.
+- 닫기 후보 관문(11-10 추가): 새 등급 A 아님 = 관문 미호출 + 앞선 Judge 트리거 거두기(`rcg_withdraw` · 쓰기 모드) · finalize.json 에 `withdrawn` · 포기 걸음 수 `n_abandoned`.
+- 시험: `08_Tests/scenarios/test_scn_l1_chain_e2e.R`(끝에서 끝 — 신선도 · 상설 원장 → 풀 · 사슬 전 상태 전이 · 실패 주입 · 두 프로세스 동시 측정 · 닫기 재진입 · 다음 사슬 설계 입력) · `08_Tests/programs/test_round_core_v1_p4_chain.R`(격리 — 임시 등록부 · 원장 · 생성기 등록부 · 판단 원장 · 합성 산출물 · 가짜 러너 · 가짜 재채점 · 관문 파일 · 실제 측정 없음).
 
 ## 모듈 (v1)
 
@@ -118,6 +132,7 @@ round.sh - p4-generator-review [--out f]                                   # 블
 | `v1/driver.R` | 단계 실행(check · precheck · plan · draft · reviewed · register · evaluate · report · close) |
 | `v1/measure_cell.R` · `v1/fingerprint.sh` | 칸 측정(정본 셀 워커) · 데이터 지문 |
 | `v1/standing.R` | 상설 판 — 사양 검사 · 생성 함수 핀 · 레인 스캔(입구 규칙 · 사유 코드) · 항목 넣기 · 항목 R2 · 측정 · 판정 · 원장(추가 전용 사슬) · 보고 · Superfan 표식 · 상태 |
+| `v1/freshness.R` | 측정 경로 데이터 신선도 판정(감사기 --check 진입점 · 정의 꺼내기) |
 | `v1/p4.R` | P4 강화 사슬 — 기저 풀 · 격차(보는 창 A 하한 여유 · 병목) · 사슬 판 검사 · 걸음 원장(추가 전용 사슬) · 걸음 열기 · 판정 · 설계 입력 · 닫기(결과 원장 · 마감 훅) · 생성기 판(rxg_*) · 생성기 검토 |
 | `v1/pair.R` | 짝 평가 골격(단계 목록 · 라운드 훅 · 미시험 사유) · P2 · P3 공용 도우미(위기 과반 · 깊은 위기 · 사이클 · 집중 · 회복 · 보유 대조 · 공통 창 · β 짝 사본) · 보는 창 / 사람 쪽 칸 평가 · 라운드 판정(판정 칸 수 · 판정어별 칸 수) · 선택 · 샤딩 · 메모(원자료 · ta_load_market · MC8) |
 | `v1/p2.R` | P2(장치 × 엔진) 템플릿 — P2R04 판정 ①~⑭ 단계 · 기록 · 진단 읽기 · R7 · A 거리 · 보는 창 파일(τ_D 가림 · 전수 검사) · P2R05 범용분(시드 띠 · 판정 여유 · Dimson β · 위기 유형 · 유동성 3분위 귀속) · 사양 라운드 판정 |
@@ -144,4 +159,4 @@ round.sh - p4-generator-review [--out f]                                   # 블
 ## 다음
 - 측정 서버 `ms_submit` 연결(WP2) — 상설 측정(`standing-measure`)도 서버가 생기면 그쪽을 먼저 쓴다.
 - P1 상설 자격(WP5) — 코어 · 시험 · P1S01 사양 완료 · **등록은 원 세션**(P2R05 종료 또는 WP3 쓰기 잠금 · v1 출시 · WP2 재핀 뒤).
-- v1 출시(RELEASES.json).
+- v1 출시(RELEASES.json — 아직 파일 없음 · 출시 전 매니페스트 확정 필요).

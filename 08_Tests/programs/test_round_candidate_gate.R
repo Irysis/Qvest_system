@@ -20,7 +20,7 @@ suppressPackageStartupMessages({ library(jsonlite); library(data.table) })
 args <- commandArgs(trailingOnly = FALSE)
 me <- sub("^--file=", "", args[grep("^--file=", args)][1])
 ROOT <- NA_character_
-for (p in c(if (!is.na(me)) dirname(dirname(dirname(me))), Sys.getenv("QM_ROOT", ""), Sys.getenv("CLAUDE_PROJECT_DIR", ""), getwd())) {
+for (p in c(if (!is.na(me)) dirname(dirname(dirname(me))), Sys.getenv("CLAUDE_PROJECT_DIR", ""), Sys.getenv("QM_ROOT", ""), getwd())) {   # 시험 러너 = self-first · 그다음 금칙 ④ 순서
   if (is.null(p) || is.na(p) || !nzchar(p)) next
   p <- gsub("\\\\", "/", p)
   if (!grepl("^([A-Za-z]:|/)", p)) p <- sub("/[.]$", "", file.path(gsub("\\\\", "/", getwd()), p))   # 상대 경로는 작업 디렉터리 접두로만(경로 정규화 함수 금지)

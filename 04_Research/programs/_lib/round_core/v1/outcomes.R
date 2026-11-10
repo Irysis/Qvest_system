@@ -25,13 +25,43 @@ rc_outcomes_path <- function(root = rc_root(), registry_path = NULL) {
 }
 
 ## 읽기 — 못 읽는 줄이 있으면 멈춘다(추가 전용 파일의 손상은 조용히 건너뛰지 않는다)
-rc_outcomes_read <- function(path, program = NULL, kind = "round") {
+## 격리(11-10 · 감사 K P6) — 원장은 추가 전용이라 손상 줄을 지우지 않는다. 사람(세션)이 rc_outcomes_quarantine 을 명시적으로 부르면
+##   그 줄의 md5 를 담은 kind = "quarantine" 줄이 원장 끝에 붙고, 원본 줄은 옆 파일 <원장>.quarantine.jsonl 에 사본으로 남는다.
+##   읽기는 격리된 md5 의 줄을 건너뛴다(경고). 격리되지 않은 손상 줄은 지금처럼 멈춘다(조용히 건너뛰지 않는다).
+.rc_outcome_md5 <- function(s) .rcs_md5s(s)
+rc_outcomes_quarantined <- function(L) {
+  q <- character(0)
+  for (s in L) if (grepl("\"kind\":\"quarantine\"", s, fixed = TRUE)) { x <- tryCatch(jsonlite::fromJSON(s, simplifyVector = FALSE), error = function(e) NULL)
+    if (identical(x$schema, RC_OUTCOME_SCHEMA) && identical(x$kind, "quarantine")) q <- c(q, as.character(unlist(x$line_md5))) }
+  q
+}
+rc_outcomes_quarantine <- function(path, line, reason) {
+  if (!(is.character(reason) && length(reason) == 1L && nzchar(trimws(reason)))) stop("[round_core outcomes] 격리 사유 없음")
+  L <- readLines(path, warn = FALSE, encoding = "UTF-8"); ix <- which(nzchar(trimws(L)))
+  line <- as.integer(line); if (length(line) != 1L || is.na(line) || line < 1L || line > length(ix)) stop("[round_core outcomes] 그런 줄이 없다(빈 줄 제외 번호): ", line)
+  s <- L[ix[line]]; m <- .rc_outcome_md5(s)
+  if (m %in% rc_outcomes_quarantined(L)) stop("[round_core outcomes] 이미 격리된 줄이다: ", line)
+  side <- paste0(path, ".quarantine.jsonl"); con <- file(side, open = "ab"); writeBin(charToRaw(paste0(s, "\n")), con); close(con)
+  .rc_outcome_write(list(schema = RC_OUTCOME_SCHEMA, kind = "quarantine", at = rc_now(), line_no = line, line_md5 = m, reason = reason,
+                         copy = basename(side)), path)
+  invisible(m)
+}
+rc_outcomes_read <- function(path, program = NULL, kind = "round", tau_clean = NULL) {
   if (!file.exists(path)) return(list())
   L <- readLines(path, warn = FALSE, encoding = "UTF-8"); L <- L[nzchar(trimws(L))]
+  qd <- rc_outcomes_quarantined(L)
+  if (length(qd)) { keep <- !(vapply(L, .rc_outcome_md5, "") %in% qd); if (any(!keep)) warning(sprintf("[round_core outcomes] 격리된 줄 %d개를 건너뛴다: %s", sum(!keep), path)); L <- L[keep] }
   out <- lapply(L, function(s) tryCatch(jsonlite::fromJSON(s, simplifyVector = FALSE), error = function(e) NULL))
   bad <- sum(vapply(out, is.null, logical(1)))
-  if (bad) stop(sprintf("[round_core outcomes] 원장 %d줄 판독 불가 — 손상(추가 전용 파일): %s", bad, path))
+  if (bad) stop(sprintf("[round_core outcomes] 원장 %d줄 판독 불가 — 손상(추가 전용 파일 · 격리 = rc_outcomes_quarantine / round.sh - outcomes-quarantine): %s", bad, path))
   out <- Filter(function(x) identical(x$schema, RC_OUTCOME_SCHEMA), out)
+  ## 처방 입력 경로(tau_clean 지정) — 검사를 통과하지 못한 옛 줄(쓰기 검사 강화 전에 들어간 등급 표기 · 날짜 변형)은 그 줄만 건너뛴다(경고 · 원장 그대로)
+  if (!is.null(tau_clean)) {
+    dirty <- vapply(out, function(x) identical(x$kind %||% "round", "round") &&
+                      !isTRUE(rc_input_issues(list(x$note, x$probes, x$lessons, x$verdict_label, x$no_probes_reason %||% ""), tau_clean)$ok), logical(1))
+    if (any(dirty)) { warning(sprintf("[round_core outcomes] 처방 입력 검사 미통과 줄 %d개를 설계 입력에서 뺀다(%s) — 격리하려면 rc_outcomes_quarantine",
+                                      sum(dirty), paste(vapply(out[dirty], function(x) as.character(x$round_id %||% "?"), ""), collapse = ","))); out <- out[!dirty] }
+  }
   if (!is.null(kind)) out <- Filter(function(x) identical(x$kind %||% "round", kind), out)
   if (!is.null(program)) out <- Filter(function(x) identical(x$program, program), out)
   out
@@ -50,6 +80,9 @@ rc_outcome_record <- function(spec, V, note, probes = character(0), lessons = ch
   label <- as.character((V$summary %||% list())$label %||% NA_character_)
   leaks <- rc_after_tau_leaks(list(note, as.list(probes), as.list(lessons), label, no_probes_reason %||% ""), tau)
   if (length(leaks)) stop("[round_core close] 결과 원장 글에 정보 경계 뒤 날짜가 있다 — 쓰지 않는다: ", paste(leaks, collapse = ", "))
+  ## 읽기(설계 입력 · 생성기 검토)와 같은 검사(11-10 · 감사 K P1) — 받아들인 줄은 반드시 읽힌다
+  ci <- rc_input_issues(list(note, as.list(probes), as.list(lessons), label, no_probes_reason %||% ""), tau)
+  if (!isTRUE(ci$ok)) stop("[round_core close] 결과 원장 글에 처방 입력 금지 정보(", ci$why, ") — 쓰지 않는다(다음 설계 입력이 읽는 자리)")
   cells <- spec[["cells"]] %||% list()
   list(schema = RC_OUTCOME_SCHEMA, kind = "round", at = rc_now(), program = spec[["program"]], round_id = spec[["round_id"]],
        template = spec[["template"]], core = RC_VERSION,
@@ -82,10 +115,10 @@ rc_probe_consume <- function(ref, by_round, path) {
 }
 
 ## 아직 아무도 이어받지 않은 탐침(프로그램별) — 다음 라운드 설계의 출발점
-rc_open_probes <- function(path, program = NULL) {
+rc_open_probes <- function(path, program = NULL, tau_clean = NULL) {
   used <- vapply(rc_outcomes_read(path, kind = "probe_consumed"), function(x) as.character(x$ref), character(1))
   out <- list()
-  for (r in rc_outcomes_read(path, program = program, kind = "round")) for (i in seq_along(r$probes)) {
+  for (r in rc_outcomes_read(path, program = program, kind = "round", tau_clean = tau_clean)) for (i in seq_along(r$probes)) {
     ref <- sprintf("%s#%d", r$round_id, i)
     if (!(ref %in% used)) out[[length(out) + 1L]] <- list(ref = ref, program = r$program, text = as.character(r$probes[[i]]))
   }
@@ -101,11 +134,11 @@ rc_r7_streak <- function(path, program) {
 }
 
 ## 다음 설계의 입력(markdown) — DESIGN 의 '앞선 라운드에서 배운 것' 절에 그대로 붙인다(글은 이미 τ_D 검사를 통과한 것만 원장에 있다)
-rc_outcomes_md <- function(path, program = NULL, last = 5L) {
-  rs <- rc_outcomes_read(path, program = program, kind = "round")
+rc_outcomes_md <- function(path, program = NULL, last = 5L, tau_clean = NULL) {
+  rs <- rc_outcomes_read(path, program = program, kind = "round", tau_clean = tau_clean)
   if (!length(rs)) return("(결과 원장에 닫힌 라운드가 없다)")
   rs <- utils::tail(rs, last)
-  open <- vapply(rc_open_probes(path, program), function(x) x$ref, character(1))
+  open <- vapply(rc_open_probes(path, program, tau_clean = tau_clean), function(x) x$ref, character(1))
   L <- character(0)
   for (r in rs) {
     L <- c(L, sprintf("- **%s** (%s · 칸 %d · 변형 %d%s) — %s", r$round_id, r$program, r$n_cells %||% 0L, r$n_variants %||% 0L,

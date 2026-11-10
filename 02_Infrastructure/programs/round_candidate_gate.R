@@ -39,7 +39,8 @@ RCG_HOLD_NOT_A     <- "grade_not_a"                # 이 모듈의 보류 코드
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
 .rcg_or <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
 .rcg_root <- function(root = NULL) {
-  for (p in c(root, Sys.getenv("QM_ROOT", ""), Sys.getenv("CLAUDE_PROJECT_DIR", ""), getwd())) {
+  # 순서 = 명시 > CLAUDE_PROJECT_DIR > QM_ROOT(금칙 ④ — ~/.Renviron 의 QM_ROOT 는 셸로 덮이지 않는다 · selection_regrade.R .sr_root 와 같은 계열)
+  for (p in c(root, Sys.getenv("CLAUDE_PROJECT_DIR", ""), Sys.getenv("QM_ROOT", ""), getwd())) {
     if (is.null(p) || is.na(p) || !nzchar(p)) next
     p <- sub("/+$", "", gsub("\\\\", "/", p))
     if (dir.exists(file.path(p, "02_Infrastructure"))) return(p)

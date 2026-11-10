@@ -11,6 +11,7 @@
 ##     report [--send] [--next "<다음 단계>"]  보고(기본 dry-run)
 ##     close --note "<해석>" --probe "<다음 탐침>" --probe "<…>" [--lesson "<교훈>"]… [--r7 noise|signal] [--p2 <id>] [--t2 <id>]
 ##           종료 기록(등록부 + 결과 원장 06_Registry/round_outcomes.jsonl) · 탐침 2개 미만이면 --no-probes "<사유>" · 글에 τ_D 뒤 날짜가 있으면 멈춤
+##     fresh-check      측정 경로 데이터 신선도(v1/freshness.R · 종료 0 신선 · 6 낡음 · 판독 불가)
 ##     P4 강화 사슬(v1/p4.R · <round_dir> = 사슬 디렉터리): p4-pool [--out f] · p4-base-spec --key <풀 key> --out f · p4-check ·
 ##       p4-register --p1 <철학 P1 id> --t1 <판단 T1 id> · p4-design [--out f] ·
 ##       p4-base-measure(기준 칸 k = 0 · 걸음 전 필수 · 종료 0 · 4 배리어 · 1 실패 · 판 표식 변경/불명 = 1) ·
@@ -157,18 +158,31 @@ if (sys.nframe() == 0L) {
     "p4-register" = { rc_p4_chain_register(rd, rc_p4_base_pool(ROOT), ROOT, p1 = opt("--p1"), t1 = opt("--t1")); cat("[p4-register] 사슬 판 등록(원장 첫 줄)\n") },
     "p4-base-measure" = { r <- rc_p4_base_measure(rd, ROOT)
                           cat(sprintf("[p4-base-measure] 기준 칸 — %s%s\n", r$status, if (!is.null(r$reason)) paste0(" · ", r$reason) else ""))
-                          quit(status = switch(r$status, measured = 0L, already = 0L, barrier_held = 4L, 1L)) },
+                          quit(status = switch(r$status, measured = 0L, already = 0L, barrier_held = 4L, data_stale = 6L, busy = 7L, 1L)) },
     "p4-step-measure" = { r <- rc_p4_step_measure(rd, opt("--k") %||% stop("--k 필요"), ROOT)
                           cat(sprintf("[p4-step-measure] 걸음 %s — %s%s\n", r$k, r$status, if (!is.null(r$reason)) paste0(" · ", r$reason) else ""))
-                          quit(status = switch(r$status, measured = 0L, already = 0L, barrier_held = 4L, 1L)) },
+                          quit(status = switch(r$status, measured = 0L, already = 0L, barrier_held = 4L, data_stale = 6L, busy = 7L, 1L)) },
     "p4-design" = { txt <- rc_p4_design_input(ROOT, rd, pool = rc_p4_base_pool(ROOT), out = opt("--out") %||% file.path(rd, "design_input.md"))
                     cat(sprintf("[p4-design] 설계 입력 %d줄 → %s\n", length(strsplit(txt, "\n")[[1]]), rc_rel(opt("--out") %||% file.path(rd, "design_input.md"), ROOT))) },
     "p4-step-open" = { rc_p4_step_open(rd, opt("--k"), opt("--hypothesis"), opt("--mechanism"), opt("--block"), opt("--cell"), opt("--parent"),
-                                       opt("--generator"), ROOT, pool = rc_p4_base_pool(ROOT)); cat("[p4-step-open] 걸음 원장 기록\n") },
+                                       opt("--generator"), ROOT, pool = rc_p4_base_pool(ROOT), probe_ref = opt("--probe-ref")); cat("[p4-step-open] 걸음 원장 기록\n") },
+    "p4-quarantine" = { q <- rc_p4_steps_quarantine(rd, opt("--line") %||% stop("--line 필요"), opt("--reason") %||% stop("--reason 필요"))
+                        cat(sprintf("[p4-quarantine] 걸음 원장 줄 %s 격리(md5 %s) — 사본 chain_steps.quarantine.jsonl\n", q$line, substr(q$line_md5, 1, 8))) },
+    "outcomes-quarantine" = { m <- rc_outcomes_quarantine(opt("--path") %||% rc_outcomes_path(ROOT), opt("--line") %||% stop("--line 필요"), opt("--reason") %||% stop("--reason 필요"))
+                              cat(sprintf("[outcomes-quarantine] 결과 원장 줄 격리(md5 %s)\n", substr(m, 1, 8))) },
     "p4-step-decide" = { r <- rc_p4_step_decide(rd, opt("--k"), opt("--artifacts"), ROOT)
                          cat(sprintf("[p4-step-decide] 걸음 %s — %s(산출 출처 %s)\n", r$k, r$decision, r$artifacts_source)) },
+    "p4-step-abandon" = { rc_p4_step_abandon(rd, opt("--k") %||% stop("--k 필요"), opt("--reason") %||% stop("--reason 필요"), ROOT); cat("[p4-step-abandon] 걸음 포기 기록(기각 · 산출 없음)\n") },
+    "p4-workdir" = { if (!exists("rx_toolbox_md", mode = "function")) invisible(capture.output(suppressMessages(source(file.path(ROOT, "02_Infrastructure/programs/rx_round.R")))))
+                     fs <- rc_p4_generator_workdir(rd, opt("--out") %||% stop("--out 필요(사슬 디렉터리 밖 빈 폴더)"), ROOT, pool = rc_p4_base_pool(ROOT))
+                     cat(sprintf("[p4-workdir] 생성기 작업 디렉터리 %d파일 → %s\n", length(fs), dirname(fs[1]))) },
+    "fresh-check" = { f <- rc_data_freshness(ROOT)
+                      cat(sprintf("[신선도] %s · 기준일 %s · %s\n", f$state, f$as_of, f$reason))
+                      quit(status = if (isTRUE(f$ok)) 0L else 6L) },
     "p4-status" = writeLines(rc_p4_status(rd, ROOT)),
     "p4-close" = { multi <- function(k) { i <- which(rest == k); i <- i[i < length(rest)]; if (length(i)) rest[i + 1L] else character(0) }
+                   ## 닫기는 한 번뿐이다 — 재채점 쓰기 여부를 명시해야 닫는다(11-10 · 드라이런으로 닫으면 권위 등급 재채점 · 관문 · 등재를 다시 할 길이 없다)
+                   if (flag("--regrade-write") == flag("--regrade-dry-run")) stop("p4-close: --regrade-write(운영) 또는 --regrade-dry-run(시험) 중 하나를 명시한다")
                    r <- rc_p4_close(rd, note = opt("--note") %||% stop("--note 필요"), probes = multi("--probe"), lessons = multi("--lesson"),
                                     r7 = opt("--r7") %||% NA_character_, no_probes_reason = opt("--no-probes"), root = ROOT, regrade_write = flag("--regrade-write"),
                                     philosophy_p2 = opt("--p2") %||% NA_character_, superfan_t2 = opt("--t2") %||% NA_character_)

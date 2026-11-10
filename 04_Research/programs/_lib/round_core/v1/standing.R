@@ -274,12 +274,14 @@ rc_standing_qualified <- function(program = "P1_RETURN", root = rc_root(), sa_ro
       rows[[length(rows) + 1L]] <- data.table(round_id = .rcs_str(it[["round_id"]]), edition = suppressWarnings(as.integer(.rcs_str(it[["edition"]]))),
                                               code = .rcs_str(it[["code"]]), engine = .rcs_str(it[["engine"]]), engine_path = if (is.na(ep)) NA_character_ else .rcs_repo_rel(ep, root),
                                               engine_md5 = em, engine_same = !is.na(now) && identical(now, em), artifacts = .rcs_str(art),
-                                              paper_key = .rcs_str(it[["paper"]][["paper_key"]]), verdict_at = .rcs_str(v[["at"]]), ledger = gsub("\\\\", "/", f))
+                                              paper_key = .rcs_str(it[["paper"]][["paper_key"]]), verdict_at = .rcs_str(v[["at"]]), ledger = gsub("\\\\", "/", f),
+                                              uc_vis = suppressWarnings(as.numeric(.rcs_str(v[["visible"]][["uc_vis"]]))))   # 보는 창 상승 포착(판정 기록 · P4 기저 풀 현금 기계 판독)
     }
   }
   if (length(rows)) rbindlist(rows, fill = TRUE) else
     data.table(round_id = character(0), edition = integer(0), code = character(0), engine = character(0), engine_path = character(0),
-               engine_md5 = character(0), engine_same = logical(0), artifacts = character(0), paper_key = character(0), verdict_at = character(0), ledger = character(0))
+               engine_md5 = character(0), engine_same = logical(0), artifacts = character(0), paper_key = character(0), verdict_at = character(0), ledger = character(0),
+               uc_vis = numeric(0))
 }
 
 ## ── 시행 회계(계보 = family_root) — P2R04 · P3R03 nf_prior 규칙 + 상설 원장 + 레인 측정 수 ─────────
@@ -631,7 +633,8 @@ rc_standing_pending <- function(round_dir, root = rc_root(), registry_path = NUL
 rc_standing_fingerprint <- function() paste(suppressWarnings(system2(qv_bash(), c(shQuote(file.path(RC_DIR, "fingerprint.sh")), "equality"),
                                                                     stdout = TRUE, stderr = FALSE)), collapse = "\n")
 rc_standing_measure_item <- function(round_dir, code, root = rc_root(), registry_path = NULL,
-                                     worker = file.path(root, "02_Infrastructure/ops/rf_cell_worker.R"), fingerprint = rc_standing_fingerprint) {
+                                     worker = file.path(root, "02_Infrastructure/ops/rf_cell_worker.R"), fingerprint = rc_standing_fingerprint,
+                                     freshness = rc_data_freshness) {
   ctx <- rc_standing_context(round_dir, root, registry_path)
   it <- rc_standing_items(rc_standing_ledger_read(ctx$ledger))[[code]]
   if (is.null(it)) .rcs_err("상설 원장에 그런 항목이 없다: ", code)
@@ -641,11 +644,16 @@ rc_standing_measure_item <- function(round_dir, code, root = rc_root(), registry
   bad <- rc_standing_item_check(it, ctx)
   if (length(bad)) { rc_standing_append(ctx, list(event = "measure", code = code, ok = FALSE, r2 = as.list(bad)))
                      .rcs_err("R2 대조 실패 — 측정하지 않는다(", code, "): ", paste(bad, collapse = ",")) }
+  ## 데이터 신선도(11-10 · v1/freshness.R — 측정 경로 공통 판정) — 낡음 · 판독 불가 = 재지 않는다 · 원장 무기록(실패 횟수 무증가 · 다음 틱 재개)
+  fr <- rc_fresh_gate(freshness, root)
+  if (!isTRUE(fr$ok)) { cat(sprintf("[상설] 측정 %s 건너뜀 — 데이터 신선도 %s · %s\n", code, fr$state, fr$reason %||% ""))
+                        return(invisible(list(code = code, status = "data_stale", reason = fr$reason))) }
   dir.create(ctx$P$results, recursive = TRUE, showWarnings = FALSE)
   res <- file.path(ctx$P$results, paste0(code, ".json")); unlink(res)   # 원장에 ok 측정이 없으면 디스크 결과는 잔재다
-  role <- it[["role"]] %||% "variant"; ev <- c("QVEST_RP_REGISTER", "QVEST_RP_NO_FACTOR_ANALYSIS"); old <- Sys.getenv(ev, unset = NA)
+  role <- it[["role"]] %||% "variant"; ev <- c("QVEST_RP_REGISTER", "QVEST_RP_NO_FACTOR_ANALYSIS", "QVEST_RP_NO_LCODE"); old <- Sys.getenv(ev, unset = NA)
   on.exit({ for (k in ev) if (is.na(old[[k]])) Sys.unsetenv(k) else do.call(Sys.setenv, stats::setNames(list(old[[k]]), k)) }, add = TRUE)
   if (!identical(role, "variant")) Sys.setenv(QVEST_RP_REGISTER = "0", QVEST_RP_NO_FACTOR_ANALYSIS = "1")
+  Sys.setenv(QVEST_RP_NO_LCODE = "1")   # 칸 L-code 끔(11-10 · 감사 K P5)
   fp0 <- tryCatch(fingerprint(), error = function(e) ""); t0 <- Sys.time()
   rc <- system2("Rscript", c(shQuote(worker), shQuote(rc_abs(it[["cell_spec"]], root)), "1", code, shQuote(res)),
                 stdout = file.path(ctx$P$results, paste0(code, ".log")), stderr = file.path(ctx$P$results, paste0(code, ".err.log")))

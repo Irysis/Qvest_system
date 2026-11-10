@@ -31,7 +31,26 @@ RC_P4_META_KEYS <- c("code", "label", "idea", "block", "selection_accounting", "
                      "unmapped_families", "preflight", "notes", "p4")
 ## 채택 규칙이 쓸 수 있는 판정 표 열(전부 보는 창 · d* = 걸음 − 부모)
 RC_P4_METRICS <- c("S_vis", "dS_vis", "calmar_vis", "port_t_vis", "cagr_vis", "sharpe_vis", "mdd_vis",
-                   "uc_vis", "d_uc_vis", "dd_capture_median_vis", "d_dd_capture_median_vis")
+                   "uc_vis", "d_uc_vis", "dd_capture_median_vis", "d_dd_capture_median_vis",
+                   ## 헌장 §5 빈칸 집행(11-10 · 감사 E1/E2 · 행동 카드가 τ_D 에서 자른 위기 · 강세 표에서 판정 때 계산)
+                   "uc_seg_ok_share_vis",              # N1 강세 구간별 참여(현금 기계 · 빈칸 4 · 7 · 24) — 강세 구간 중 상승 포착 ≥ 기준 칸 − (1 − 0.80)·|기준 칸| 인 비율
+                   "deep_crisis_nonworse_share_vis",   # N2 깊은 위기 과반(한 번의 행운 · 빈칸 2 · 23) — 깊은 위기(시장 낙폭 ≥ 중앙) 중 하락 포착 ≤ 부모인 비율
+                   "cdar_vis", "d_cdar_vis",           # N3 낙폭 경로(지표 게이밍 · 빈칸 5 · 18) — 보는 창 CDaR(behavior_card cdar_alpha) · 부모 대비 차
+                   "rec_delay_share_vis",              # N3 기록 — 위기별 회복 거래일이 기준 칸보다 긴 위기의 비율(빈칸 5 '회복 지연' 꼬리표 · 판정 아님)
+                   "worst_name_contrib_deep_vis",      # N4 집중(빈칸 1) — 깊은 위기 한 종목 기여 최솟값(diagnosis_packet top_losers · 규칙이 쓸 때만 계산)
+                   "beta_asym_ok_vis")                 # N5 β 비대칭(빈칸 3 · 8) — 노출 블록 걸음 = 하락 β < 상승 β 면 1 · 아니면 0 · 그 밖 블록 = 1(해당 없음)
+## 채택 규칙 판(rules_version) — 새 사슬 판부터 v2(11-10): 필수 지표에 N1 · N2 · r7 = dS ≥ +여유일 때만 signal(악화는 r7_detail = worse · 예산은 잡음과 같이)
+##   판 표식이 없는 사슬 판(옛 판) = v1 판독(필수 3 · r7 = |dS| ≥ 여유) — 옛 원장을 다시 읽어도 판정이 바뀌지 않는다 · 새 등록은 v2 만 받는다
+RC_P4_RULES_VERSION <- "p4_rules_v2"
+RC_P4_REQUIRED <- list(p4_rules_v1 = c("dS_vis", "uc_vis", "d_dd_capture_median_vis"),
+                       p4_rules_v2 = c("dS_vis", "uc_vis", "d_dd_capture_median_vis", "uc_seg_ok_share_vis", "deep_crisis_nonworse_share_vis"))
+## N1 의 엔진 기준 대비 비율 — 헌장 §5 빈칸 4 (B) '강세 상승 포착 ≥ 같은 엔진 기준의 80%' · 빈칸 7 '판정은 구간별'(도훈 10-16 · 10-17 확정)
+RC_P4_UC_SEG_KEEP <- 0.80
+RC_P4_UC_SEG_KEEP_SOURCE <- "00_Lawbook/specs/investment_philosophy_charter.md §5 빈칸 4 (B) · 빈칸 7"
+## N2 · N1 짝 하한 — 헌장 §5 빈칸 2 '깊은 위기에서도 과반(짝 2개 이상)' · 강세 구간도 같은 하한(짝 1개 과반은 판정이 아니다)
+RC_P4_MIN_PAIRS <- 2L
+## N5 노출 블록(현금 · β 를 움직이는 층) — 빈칸 3 은 β 로 산 방어에만 걸린다
+RC_P4_EXPOSURE_BLOCKS <- c("regime_exposure", "tail_overlay", "defense_sleeve")
 RC_P4_FORBIDDEN_METRIC_RX <- "(test|_tw$|oos|full|overall|lifetime|_all$)"
 RC_P4_REASONS <- c(
   not_qualified = "자격 없음 — P1 상설 자격 통과도 아니고 권위 등급(authoritative_remeasure.json::essence_grade)이 A/B 도 아니다(미측정 = 자격 없음)",
@@ -40,7 +59,10 @@ RC_P4_REASONS <- c(
   no_engine = "엔진 파일 없음",
   needs_long_leg = "롱숏(또는 롱온리 확인 불가) 엔진인데 롱 다리 변환이 없다 — 상설 자격(표준 구성 롱온리 측정 통과)으로만 들어온다",
   standing_engine_changed = "상설 자격 판정 뒤 엔진 파일이 바뀌었다(넣을 때 md5 ≠ 지금)",
-  factor_db_stale = "팩터 DB 판 낡음(contracts/factor_db_vintage.R::fdv_stale = TRUE) — 재측정 전 기저로 쓰지 않는다")
+  factor_db_stale = "팩터 DB 판 낡음(contracts/factor_db_vintage.R::fdv_stale = TRUE) — 재측정 전 기저로 쓰지 않는다",
+  rule_change_beneficiary = "규칙 변경 수혜 기록(selection_regrade$benefits_from_rule_change · rule_change_benefit$benefit — measurement-graduation §3b) — 재채점 등급으로는 기저 자격 없음(발효 뒤 재측정 또는 상설 자격으로)",
+  rule_change_unknown = "규칙 변경 수혜 여부 판독 불가(관문 정의 · 권위 기록) — 등급 경로 자격 없음(fail-closed)",
+  cash_machine = "현금 기계(헌장 §5 빈칸 24) — 기저 측정 기록의 보는 창 강세 상승 포착 중앙값 < uc_floor(behavior_card.json) · 기록에 값이 없으면 unknown(제외 안 함 · 열 cash_machine)")
 
 .rcp4_err <- function(...) stop(paste0("[round_core p4] ", ...), call. = FALSE)
 .rcp4_num <- function(x) { v <- suppressWarnings(as.numeric(unlist(x))); if (length(v) == 1L) v else NA_real_ }
@@ -60,11 +82,9 @@ RC_P4_REASONS <- c(
 
 ## 처방 입력 문서 검사(fail-closed) — τ_D 뒤 날짜(일 · 연월) · 등급 표기(rx_round.R .rx_assert_clean 과 같은 규칙)
 .rcp4_assert_clean <- function(txt, tau, what) {
-  txt <- iconv(paste(unlist(txt), collapse = "\n"), from = "UTF-8", to = "UTF-8", sub = "")
-  if (is.na(txt)) .rcp4_err(what, " 인코딩 판독 불가(fail-closed)")
-  lk <- rc_after_tau_leaks(txt, tau)
-  gr <- regmatches(txt, gregexpr("(등급|Grade|grade)\\s*[ABCF](?![A-Za-z])", txt, perl = TRUE))[[1]]
-  if (length(lk) || length(gr)) .rcp4_err(what, " 에 처방 입력 금지 정보: τ_D 뒤 날짜 ", paste(head(lk, 5), collapse = ","), " · 등급 표기 ", paste(head(gr, 5), collapse = ","))
+  ci <- rc_input_issues(txt, tau)                                  # 결과 원장 쓰기와 같은 검사(util.R)
+  if (identical(ci$why, "인코딩 판독 불가")) .rcp4_err(what, " 인코딩 판독 불가(fail-closed)")
+  if (!ci$ok) .rcp4_err(what, " 에 처방 입력 금지 정보: τ_D 뒤 날짜 ", paste(head(ci$leaks, 5), collapse = ","), " · 등급 표기 ", paste(head(ci$grades, 5), collapse = ","))
   invisible(TRUE)
 }
 
@@ -88,6 +108,23 @@ RC_P4_REASONS <- c(
   f <- file.path(art_abs, "authoritative_remeasure.json"); if (!file.exists(f)) return(NA_character_)
   g <- tryCatch(rc_json_read(f)[["essence_grade"]], error = function(e) NULL)
   if (is.character(g) && length(g) == 1L && g %in% c("A", "B", "C", "F")) g else NA_character_
+}
+## 규칙 변경 수혜 기록(11-10 · measurement-graduation.md §3b) — 판정 = A 자격 관문과 같은 정의(rf_runner_gates.R::.rfg_rule_benefit · .rfg_s1)를
+##   구문 트리에서 꺼내 쓴다(복제 없음 · 관문 파일 전체 source 없음). 반환 list(benefit = TRUE | FALSE | NA, reason). 정의 꺼내기 실패 · 기록 판독 불가 = NA.
+.rcp4_rule_benefit <- function(art_abs, root) {
+  if (is.na(art_abs)) return(list(benefit = NA, reason = "no_artifacts"))
+  if (!identical(.RCP4$rb_root, root)) {
+    f <- file.path(root, "02_Infrastructure/reinforcement/rf_runner_gates.R"); e <- new.env(parent = globalenv()); e$`%||%` <- `%||%`
+    ok <- tryCatch({ for (x in parse(f, keep.source = FALSE, encoding = "UTF-8"))
+                       if (is.call(x) && identical(x[[1]], as.name("<-")) && is.name(x[[2]]) && as.character(x[[2]]) %in% c(".rfg_rule_benefit", ".rfg_s1")) eval(x, envir = e)
+                     all(c(".rfg_rule_benefit", ".rfg_s1") %in% ls(e, all.names = TRUE)) }, error = function(z) FALSE)
+    .RCP4$rb <- if (isTRUE(ok)) e$.rfg_rule_benefit else NULL; .RCP4$rb_root <- root
+  }
+  if (!is.function(.RCP4$rb)) return(list(benefit = NA, reason = "rf_runner_gates.R::.rfg_rule_benefit 정의를 꺼내지 못했다"))
+  f <- file.path(art_abs, "authoritative_remeasure.json"); if (!file.exists(f)) return(list(benefit = NA, reason = "no_record"))
+  au <- tryCatch(rc_json_read(f), error = function(e) NULL); if (is.null(au)) return(list(benefit = NA, reason = "record_unreadable"))
+  r <- tryCatch(.RCP4$rb(au), error = function(z) list(benefit = NA, reason = conditionMessage(z)))
+  list(benefit = if (is.logical(r$benefit) && length(r$benefit) == 1L) r$benefit else NA, reason = as.character(r$reason %||% "")[1])
 }
 ## 등록부 kind = engine 항목(모든 프로그램 큐 · 소비 목록 · 미분류 보류)
 .rcp4_registry_engines <- function(reg) {
@@ -139,7 +176,16 @@ rc_p4_base_pool <- function(root = rc_root(), registry_path = NULL, standing = N
     if (stq && !isTRUE(q$engine_same)) { rs <- c(rs, "standing_engine_changed"); stq <- FALSE }
     art <- if (stq && !is.na(q$artifacts)) .rcp4_rel(q$artifacts, root) else x$lane_artifacts
     grade <- .rcp4_grade(.rcp4_abs(x$lane_artifacts, root))
+    ## 등급 경로의 규칙 변경 수혜 기록(§3b) — 그 등급으로는 기저 자격을 얻지 못한다(판독 불가 = 등급 경로 자격 없음 · fail-closed) · 상설 경로는 새 측정이라 무관
+    rb <- if (!stq && grade %in% c("A", "B")) .rcp4_rule_benefit(.rcp4_abs(x$lane_artifacts, root), root) else list(benefit = FALSE, reason = "")
+    if (!stq && grade %in% c("A", "B") && !isFALSE(rb$benefit)) {
+      rs <- c(rs, if (isTRUE(rb$benefit)) "rule_change_beneficiary" else "rule_change_unknown"); det <- c(det, paste0("rule_change: ", rb$reason)) }
     if (!stq && !(grade %in% c("A", "B"))) rs <- c(rs, "not_qualified")
+    ## 현금 기계(빈칸 24) — 기저 측정 기록에 있는 보는 창 값만 읽는다(상설 판정 visible.uc_vis). 권위 기록의 grade_v3.cr.uc_median 은 전기간이라 쓰지 않는다 → unknown
+    ucv <- if (stq) .rcp4_num(q[["uc_vis"]]) else NA_real_
+    uf <- tryCatch(.rcp4_num(rc_ref_value("06_Registry/behavior_card.json::uc_floor", root)), error = function(e) NA_real_)
+    cmach <- if (is.finite(ucv) && is.finite(uf)) (if (ucv < uf) "yes" else "no") else "unknown"
+    if (identical(cmach, "yes")) { rs <- c(rs, "cash_machine"); det <- c(det, sprintf("cash_machine: 보는 창 상승 포착 %.3f < uc_floor %.2f", ucv, uf)) }
     if (isTRUE(x$from_registry)) {
       if (!identical(x$implementation_suspect, FALSE) || isTRUE(x$holdings_claim_mismatch)) rs <- c(rs, "implementation_suspect")
       if (!(x$audit_verdict %in% c("faithful", "adapted"))) rs <- c(rs, "audit_not_passed")
@@ -151,6 +197,7 @@ rc_p4_base_pool <- function(root = rc_root(), registry_path = NULL, standing = N
     setDT(list(key = x$key, engine_path = x$engine_path, engine_md5 = if (has_eng) rc_md5(ea) else NA_character_, grade = grade, has_short = x$has_short,
                program = x$program, where = x$where, standing_qualified = stq, standing_code = if (is.null(q)) NA_character_ else q$code,
                artifacts = art, lane_artifacts = x$lane_artifacts, paper_key = x$paper_key, title = x$title %||% NA_character_, fdv_stale = fv$stale,
+               cash_machine = cmach,
                eligible = !length(rs), reason = paste(unique(rs), collapse = ";"), reason_detail = paste(det, collapse = " | ")))
   }), fill = TRUE)
   out[order(-eligible, key)]
@@ -265,7 +312,8 @@ rc_p4_gap <- function(dir, root = rc_root(), tau = NULL) {
 #' 보는 창 지표(걸음 판정 입력) — 격차(등급 계약) + 행동 카드 보는 창(상승 포착 · 위기 하락 포착 중앙값 · 위기 수)
 #'   행동 카드는 τ_D 에서 자른 수익 · 벤치 이력으로 부른다(시험 창 정보가 위기 경계에도 들어가지 않는다 — 보수 판).
 #' @param bm_hist "auto" = 정본 긴 벤치 이력(.cache/benchmark.parquet · gv3_bench_history) · NULL = 산출물 벤치 수익
-rc_p4_visible_metrics <- function(artifacts, root = rc_root(), tau = NULL, bm_hist = "auto") {
+#' @param concentration TRUE = 깊은 위기 한 종목 기여(N4 · diagnosis_packet dp_build — 보는 창 · 무거움)도 계산 · 채택 규칙이 그 지표를 쓸 때만 판정이 켠다
+rc_p4_visible_metrics <- function(artifacts, root = rc_root(), tau = NULL, bm_hist = "auto", concentration = FALSE) {
   E <- rc_deps(root); tau <- as.Date(tau %||% .rcp4_tau(root)); dir <- .rcp4_abs(.rcp4_rel(artifacts, root), root)
   g <- rc_p4_gap(dir, root, tau)
   X <- .rcp4_read_art(dir, E); P <- X$pr[date <= tau]; B <- X$br[date <= tau]
@@ -274,9 +322,60 @@ rc_p4_visible_metrics <- function(artifacts, root = rc_root(), tau = NULL, bm_hi
   card <- tryCatch(E$bc_card(P[, .(date, ret_net)], B[, .(date, benchmark_ret)], cfg = E$bc_cfg(root), bm_hist = bh, root = root),
                    error = function(e) structure(list(err = conditionMessage(e)), class = "rcp4_err"))
   cv <- if (inherits(card, "rcp4_err")) list() else card$visible
+  ## 헌장 빈칸 집행 재료(11-10) — 카드가 τ_D 에서 자른 수익으로 낸 위기 · 강세 표(보는 창 행만) · CDaR · 상승/하락 β. 걸음 판정이 기준 칸 · 부모와 짝지어 N1~N5 를 낸다.
+  vt <- function(x) { x <- if (is.null(x)) data.table() else as.data.table(x); if (nrow(x) && "window" %in% names(x)) x[window == "visible"] else x }
+  bu <- if (inherits(card, "rcp4_err")) data.table() else vt(card$bull_phases)
+  bu <- if (nrow(bu) && all(c("start_ym", "end_ym", "up_capture") %in% names(bu))) bu[, .(start_ym, end_ym, up_capture)] else data.table()
+  cr <- if (inherits(card, "rcp4_err")) data.table() else vt(card$crises)
+  cr <- if (nrow(cr) && all(c("peak_date", "trough_date", "bm_dd", "dd_capture") %in% names(cr)))
+    cr[, .(peak_date = format(as.Date(peak_date)), trough_date = format(as.Date(trough_date)), bm_dd, dd_capture,
+           st_recovery_obs = if ("st_recovery_obs" %in% names(cr)) st_recovery_obs else NA_real_,
+           st_recovery_censored = if ("st_recovery_censored" %in% names(cr)) st_recovery_censored else NA)] else data.table()
+  ss <- if (inherits(card, "rcp4_err")) list() else card$stats
+  wn <- NA_real_
+  if (isTRUE(concentration)) wn <- tryCatch(.rcp4_conc(E$dp_build(dir, root = root, tau_d = format(tau))$exposure$top_losers, cr), error = function(e) NA_real_)
   c(g$metrics, list(uc_vis = .rcp4_num(cv$bull_up_capture_median), dd_capture_median_vis = .rcp4_num(cv$crisis_dd_capture_median),
                     n_crisis_vis = .rcp4_num(cv$n_crisis), card_error = if (inherits(card, "rcp4_err")) card$err else NA_character_,
-                    window = g$window, bottleneck = g$bottleneck))
+                    window = g$window, bottleneck = g$bottleneck,
+                    bull_vis = bu, crises_vis = cr, cdar_vis = .rcp4_num(ss$cdar), beta_up_vis = .rcp4_num(ss$beta_up), beta_down_vis = .rcp4_num(ss$beta_down),
+                    worst_name_contrib_deep_vis = wn))
+}
+## ── 헌장 빈칸 집행 지표(순수 함수 · 표 = 행동 카드 보는 창 위기 · 강세 표 · 짝 = 같은 구간 키) ─────────────────────
+.rcp4_tab <- function(x) if (is.null(x) || (is.list(x) && !length(x))) data.table() else .rc_rows_dt(x)
+## N1 — 강세 구간(start_ym · end_ym 짝) 가운데 걸음 상승 포착 ≥ 기준 − (1 − keep)·|기준| 인 비율 · 짝 < RC_P4_MIN_PAIRS = NA(미측정)
+rc_p4_uc_seg <- function(step_bull, base_bull, keep = RC_P4_UC_SEG_KEEP, min_pairs = RC_P4_MIN_PAIRS) {
+  a <- .rcp4_tab(step_bull); b <- .rcp4_tab(base_bull)
+  if (!nrow(a) || !nrow(b) || !all(c("start_ym", "end_ym", "up_capture") %in% intersect(names(a), names(b)))) return(list(share = NA_real_, n = 0L))
+  J <- merge(a[, .(s = as.character(start_ym), e = as.character(end_ym), m = as.numeric(up_capture))],
+             b[, .(s = as.character(start_ym), e = as.character(end_ym), r = as.numeric(up_capture))], by = c("s", "e"))[is.finite(m) & is.finite(r)]
+  if (nrow(J) < min_pairs) return(list(share = NA_real_, n = nrow(J)))
+  ok <- J$m >= J$r - (1 - keep) * abs(J$r)
+  list(share = mean(ok), n = nrow(J), n_ok = sum(ok))
+}
+## N2 — 깊은 위기(두 표에 다 있는 위기 중 시장 낙폭 ≥ 중앙값 · pair.R::rc_deep_crisis_keys) 가운데 걸음 하락 포착 ≤ 부모인 비율 · 깊은 짝 < 2 = NA
+rc_p4_deep_nonworse <- function(step_cr, parent_cr, min_pairs = RC_P4_MIN_PAIRS) {
+  a <- .rcp4_tab(step_cr); b <- .rcp4_tab(parent_cr)
+  if (!nrow(a) || !nrow(b) || !all(c("peak_date", "trough_date", "dd_capture", "bm_dd") %in% intersect(names(a), names(b)))) return(list(share = NA_real_, n = 0L))
+  dk <- rc_deep_crisis_keys(a, b)
+  a[, k := .rc_key(a)]; b[, k := .rc_key(b)]
+  J <- merge(a[k %in% dk, .(k, m = as.numeric(dd_capture))], b[k %in% dk, .(k, r = as.numeric(dd_capture))], by = "k")[is.finite(m) & is.finite(r)]
+  if (nrow(J) < min_pairs) return(list(share = NA_real_, n = nrow(J)))
+  list(share = mean(J$m <= J$r), n = nrow(J), n_ok = sum(J$m <= J$r))
+}
+## N3 기록 — 회복 거래일(관측 · 끝나지 않은 회복은 관측 길이) 이 기준 칸보다 긴 위기의 비율 · 짝 < 2 = NA
+rc_p4_rec_delay <- function(step_cr, base_cr, min_pairs = RC_P4_MIN_PAIRS) {
+  a <- .rcp4_tab(step_cr); b <- .rcp4_tab(base_cr)
+  if (!nrow(a) || !nrow(b) || !("st_recovery_obs" %in% intersect(names(a), names(b)))) return(NA_real_)
+  a[, k := .rc_key(a)]; b[, k := .rc_key(b)]
+  J <- merge(a[, .(k, m = as.numeric(st_recovery_obs))], b[, .(k, r = as.numeric(st_recovery_obs))], by = "k")[is.finite(m) & is.finite(r)]
+  if (nrow(J) < min_pairs) NA_real_ else mean(J$m > J$r)
+}
+## N4 — 깊은 위기(이 칸 위기 표의 시장 낙폭 ≥ 중앙값) 의 한 종목 기여 최솟값(pair.R::rc_top_loss) · 깊은 위기가 표에 빠지면 NA(미측정)
+.rcp4_conc <- function(top_losers, crises) {
+  cr <- .rcp4_tab(crises); if (!nrow(cr)) return(NA_real_)
+  dk <- cr[abs(as.numeric(bm_dd)) >= stats::median(abs(as.numeric(bm_dd))), as.character(peak_date)]
+  tl <- rc_top_loss(top_losers, dk, -Inf)
+  if (!identical(tl$status, "ok")) NA_real_ else .rcp4_num(tl$deep_top1_min)
 }
 
 ## ── ⑦ 생성기 판(06_Registry/rx_generator.json · 추가 전용) ───────────────────────
@@ -369,7 +468,10 @@ rc_p4_chain_check <- function(spec, root = rc_root(), gen_path = NULL, check_fil
     if (!.rcp4_txt(r[["source"]])) .rcp4_err("채택 규칙 ", r[["id"]] %||% "?", " 에 출처 문구(source) 없음 — 숫자는 정본 참조 + 출처")
   }
   ms <- vapply(rules, function(r) r[["metric"]], "")
-  for (need in c("dS_vis", "uc_vis", "d_dd_capture_median_vis")) if (!(need %in% ms)) .rcp4_err("채택 규칙에 필수 지표가 없다: ", need, "(S 개선 · 상승 포착 하한 · 위기 하락 포착 비악화)")
+  rv <- .rcp4_rules_version(spec); if (is.na(rv)) .rcp4_err("rules_version 어휘 밖: ", spec[["rules_version"]] %||% "")
+  for (need in RC_P4_REQUIRED[[rv]]) if (!(need %in% ms))
+    .rcp4_err("채택 규칙에 필수 지표가 없다: ", need, "(", rv, " — S 개선 · 상승 포착 하한 · 위기 하락 포착 비악화",
+              if (identical(rv, "p4_rules_v2")) " · 강세 구간별 참여 N1 · 깊은 위기 과반 N2(헌장 §5 빈칸 2 · 4 · 7 · 24)" else "", ")")
   rr <- rc_rules_resolve(rules, root)
   bu <- spec[["budget"]]; if (!is.list(bu)) .rcp4_err("budget 없음")
   for (k in c("max_steps", "noise_k")) {
@@ -406,7 +508,7 @@ rc_p4_chain_new <- function(chain_dir, chain_id, base_key, pool, base_cell_spec 
   rc_json_write(list(schema = RC_P4_POOL_SCHEMA, at = rc_now(), pool_md5 = rc_p4_pool_md5(P),
                      table = P[, intersect(c("key", "engine_path", "engine_md5", "standing_qualified", "eligible", "reason", "program", "where"), names(P)), with = FALSE]),
                 file.path(chain_dir, "pool_snapshot.json"))
-  spec <- list(schema = RC_P4_CHAIN_SCHEMA, program = RC_P4_PROGRAM, chain_id = chain_id, core_version = RC_VERSION, purpose = purpose,
+  spec <- list(schema = RC_P4_CHAIN_SCHEMA, program = RC_P4_PROGRAM, chain_id = chain_id, core_version = RC_VERSION, rules_version = RC_P4_RULES_VERSION, purpose = purpose,
                tau_d = .rcp4_tau(root), tau_d_source = "06_Registry/behavior_card.json::tau_d(정보 경계 τ_D · 채택 규칙 · 설계 입력은 그 이전만)",
                base = list(key = base_key, pool_md5 = rc_p4_pool_md5(P), engine_path = row$engine_path[1], cell_spec = csr, cell_spec_md5 = rc_md5(csa),
                            artifacts = .rcp4_rel(art, root)),
@@ -419,16 +521,41 @@ rc_p4_chain_new <- function(chain_dir, chain_id, base_key, pool, base_cell_spec 
 }
 
 ## ── ④ 걸음 원장(추가 전용 · 앞 줄 md5 사슬) ─────────────────────────────────────
+## 걸음 원장 격리(11-10 · 감사 K P6) — 옆 파일 chain_steps.quarantine.json 에 (줄 md5 · 다음 줄이 가리키던 prev · 사유)를 적으면 그 줄은 사슬 검사 ·
+##   상태에서 빠진다. 원장 줄은 지우지 않고(추가 전용) 사슬 해시를 다시 잇지도 않는다 — 다음 줄의 prev 는 격리 기록에 적힌 값까지 받아들인다.
+##   격리는 사람(세션)이 rc_p4_steps_quarantine / round.sh <사슬> p4-quarantine 을 명시적으로 부를 때만(자동 격리 없음).
+.rcp4_qpath <- function(path) file.path(dirname(path), "chain_steps.quarantine.json")
+.rcp4_qread <- function(path) { q <- .rcp4_qpath(path); if (!file.exists(q)) return(list()); tryCatch(rc_json_read(q)$entries %||% list(), error = function(e) stop("[round_core p4] 격리 기록 판독 불가: ", q)) }
 .rcp4_scan <- function(path) {
-  if (!file.exists(path)) return(list(ok = TRUE, n = 0L, bad = integer(0), lines = character(0), recs = list()))
-  L <- readLines(path, encoding = "UTF-8", warn = FALSE); L <- L[nzchar(L)]; bad <- integer(0); prev <- "genesis"; recs <- vector("list", length(L))
+  if (!file.exists(path)) return(list(ok = TRUE, n = 0L, bad = integer(0), lines = character(0), recs = list(), quarantined = integer(0)))
+  L <- readLines(path, encoding = "UTF-8", warn = FALSE); L <- L[nzchar(L)]; bad <- integer(0); prev <- "genesis"; alt <- character(0); recs <- vector("list", length(L))
+  Q <- .rcp4_qread(path); qm <- vapply(Q, function(e) as.character(e$line_md5), ""); qn <- vapply(Q, function(e) as.character(e$next_prev %||% NA_character_), ""); qi <- integer(0)
   for (i in seq_along(L)) {
+    m <- .rcs_md5s(L[i]); j <- match(m, qm)
+    if (!is.na(j)) { qi <- c(qi, i); alt <- c(prev, qn[j]); prev <- m; next }        # 격리 줄 — 건너뛴다 · 다음 줄 prev 는 이 줄 md5 또는 격리 기록 값
     r <- tryCatch(fromJSON(L[i], simplifyVector = FALSE), error = function(e) NULL)
-    if (is.null(r) || !identical(r[["schema"]], RC_P4_STEPS_SCHEMA) || !identical(r[["prev"]], prev)) bad <- c(bad, i)
+    okp <- !is.null(r) && (identical(r[["prev"]], prev) || (length(alt) && r[["prev"]] %in% alt))
+    if (is.null(r) || !identical(r[["schema"]], RC_P4_STEPS_SCHEMA) || !okp) bad <- c(bad, i)
     if (!is.null(r)) recs[[i]] <- r
-    prev <- .rcs_md5s(L[i])
+    prev <- m; alt <- character(0)
   }
-  list(ok = !length(bad), n = length(L), bad = bad, lines = L, recs = recs)
+  if (length(qi)) recs <- recs[-qi]
+  list(ok = !length(bad), n = length(L), bad = bad, lines = L, recs = recs, quarantined = qi)
+}
+#' 걸음 원장 손상 줄 격리(사람이 명시적으로 부를 때만) — line = 원장 줄 번호(빈 줄 제외) · reason 필수 · 사본 = chain_steps.quarantine.jsonl
+rc_p4_steps_quarantine <- function(chain_dir, line, reason) {
+  path <- rc_p4_steps_path(chain_dir); if (!file.exists(path)) .rcp4_err("걸음 원장 없음: ", path)
+  if (!.rcp4_txt(reason)) .rcp4_err("격리 사유(--reason) 없음")
+  lk <- .rcs_lock(path); on.exit(unlink(lk, recursive = TRUE), add = TRUE)
+  L <- readLines(path, encoding = "UTF-8", warn = FALSE); L <- L[nzchar(L)]; line <- suppressWarnings(as.integer(line))
+  if (length(line) != 1L || is.na(line) || line < 1L || line > length(L)) .rcp4_err("그런 줄이 없다: ", line)
+  Q <- .rcp4_qread(path); m <- .rcs_md5s(L[line])
+  if (m %in% vapply(Q, function(e) as.character(e$line_md5), "")) .rcp4_err("이미 격리된 줄: ", line)
+  nx <- if (line < length(L)) tryCatch(fromJSON(L[line + 1L], simplifyVector = FALSE)$prev, error = function(e) NULL) else NULL
+  Q[[length(Q) + 1L]] <- list(line = line, line_md5 = m, next_prev = nx %||% NA_character_, reason = reason, at = rc_now())
+  con <- file(file.path(chain_dir, "chain_steps.quarantine.jsonl"), open = "ab"); writeBin(charToRaw(paste0(L[line], "\n")), con); close(con)
+  rc_json_write(list(schema = "rc_p4_steps_quarantine_v1", entries = Q), .rcp4_qpath(path))
+  invisible(Q[[length(Q)]])
 }
 rc_p4_steps_verify <- function(chain_dir) .rcp4_scan(rc_p4_steps_path(chain_dir))[c("ok", "n", "bad")]
 rc_p4_steps_read <- function(chain_dir) {
@@ -436,9 +563,28 @@ rc_p4_steps_read <- function(chain_dir) {
   if (!s$ok) .rcp4_err("걸음 원장 사슬이 끊겼다(추가 전용 위반 — 줄 ", paste(s$bad, collapse = ","), "): ", rc_p4_steps_path(chain_dir))
   s$recs
 }
-.rcp4_append <- function(chain_dir, rec) {
+## guard = 잠금 안에서 방금 읽은 원장 기록(recs)으로 다시 보는 불변식(11-10 감사 E1 — 두 프로세스가 같은 사슬을 진행하면 잠금 밖 상태 검사를
+##   둘 다 통과해 같은 걸음 · 같은 기준 칸 · 닫기가 두 줄 남았다). 반환 = 거부 사유(빈 문자 = 통과). 기본 = 사건별 단일성(.rcp4_unique_guard).
+.rcp4_ev <- function(recs, ev, k = NULL) Filter(function(r) identical(r$event, ev) && (is.null(k) || identical(as.integer(r$k %||% NA), as.integer(k))), recs)
+.rcp4_unique_guard <- function(rec) function(recs) {
+  ev <- rec$event; k <- rec$k
+  if (any(vapply(recs, function(r) identical(r$event, "chain_closed"), TRUE)) && !identical(ev, "chain_closed")) return("닫힌 사슬이다")
+  switch(ev,
+    chain_registered = if (length(recs)) "이미 등록된 사슬 판(원장이 비어 있지 않다)" else "",
+    base_measured = if (length(.rcp4_ev(recs, "base_measured"))) "기준 칸이 이미 측정됐다(다른 프로세스)" else "",
+    step_open = if (length(.rcp4_ev(recs, "step_open", k))) sprintf("걸음 %s 가 이미 열렸다(다른 프로세스)", k) else
+      if (length(setdiff(vapply(.rcp4_ev(recs, "step_open"), function(r) as.integer(r$k), 1L), vapply(.rcp4_ev(recs, "step_result"), function(r) as.integer(r$k), 1L))))
+        "앞 걸음이 판정되지 않았다(다른 프로세스가 걸음을 열었다)" else "",
+    step_measured = if (length(.rcp4_ev(recs, "step_measured", k)) || length(.rcp4_ev(recs, "step_result", k))) sprintf("걸음 %s 가 이미 측정 · 판정됐다(다른 프로세스)", k) else "",
+    step_result = if (length(.rcp4_ev(recs, "step_result", k))) sprintf("걸음 %s 가 이미 판정됐다(다른 프로세스)", k) else "",
+    chain_closed = if (any(vapply(recs, function(r) identical(r$event, "chain_closed"), TRUE))) "이미 닫힌 사슬이다(다른 프로세스)" else "",
+    "")
+}
+.rcp4_append <- function(chain_dir, rec, guard = .rcp4_unique_guard(rec)) {
   path <- rc_p4_steps_path(chain_dir); lk <- .rcs_lock(path); on.exit(unlink(lk, recursive = TRUE), add = TRUE)
   s <- .rcp4_scan(path); if (!s$ok) .rcp4_err("걸음 원장 사슬이 끊겼다 — 추가하지 않는다: ", path)
+  gw <- if (is.function(guard)) guard(Filter(Negate(is.null), s$recs)) else ""
+  if (length(gw) && nzchar(gw[1])) .rcp4_err("원장 추가 거부(잠금 안 재확인) — ", gw[1])
   full <- c(list(schema = RC_P4_STEPS_SCHEMA, at = rc_now(), prev = if (s$n) .rcs_md5s(s$lines[s$n]) else "genesis"), rec)
   js <- as.character(toJSON(full, auto_unbox = TRUE, null = "null", na = "null", digits = NA))
   if (grepl("\n", js, fixed = TRUE)) .rcp4_err("원장 줄에 줄바꿈이 있다")
@@ -480,6 +626,8 @@ rc_p4_chain_register <- function(chain_dir, pool, root = rc_root(), gen_path = N
                                  ledger = file.path(root, RC_LEDGER_DEFAULT), review_root = root, ...) {
   spec <- rc_json_read(rc_p4_spec_path(chain_dir))
   rr <- rc_p4_chain_check(spec, root, gen_path)
+  if (!identical(spec[["rules_version"]], RC_P4_RULES_VERSION))
+    .rcp4_err("새 등록은 채택 규칙 판 ", RC_P4_RULES_VERSION, " 만 받는다(사슬 판 rules_version = ", spec[["rules_version"]] %||% "없음(옛 판)", ") — rc_p4_chain_new 로 다시 만든다")
   if (length(rc_p4_steps_read(chain_dir))) .rcp4_err("이미 등록된 사슬 판(원장이 비어 있지 않다): ", chain_dir)
   rp1 <- .rcp4_receipt_need(p1, "philosophy", "P1", spec$chain_id, root = root, ledger = ledger, review_root = review_root, stage = "사슬 판 등록")
   rt1 <- .rcp4_receipt_need(t1, "judgment", "T1", spec$chain_id, root = root, ledger = ledger, review_root = review_root, stage = "사슬 판 등록")
@@ -488,7 +636,7 @@ rc_p4_chain_register <- function(chain_dir, pool, root = rc_root(), gen_path = N
   row <- P[key == spec$base$key]
   if (!nrow(row) || !isTRUE(row$eligible[1])) .rcp4_err("기저가 풀 밖이거나 자격 미달: ", spec$base$key)
   bm <- metrics_fun(.rcp4_abs(spec$base$artifacts, root), root = root, tau = spec$tau_d, ...)
-  bm <- bm[intersect(names(bm), c(sub("^d_?", "", RC_P4_METRICS), RC_P4_METRICS, "n_crisis_vis", "window", "bottleneck", "card_error"))]
+  bm <- bm[intersect(names(bm), .rcp4_metric_keys())]
   lk <- rc_after_tau_leaks(bm, as.Date(spec$tau_d)); if (length(lk)) .rcp4_err("기저 지표에 τ_D 뒤 날짜: ", paste(lk, collapse = ","))
   .rcp4_append(chain_dir, list(event = "chain_registered", chain_id = spec$chain_id, spec_md5 = rc_md5(rc_p4_spec_path(chain_dir)),
                                rules_resolved = rr, generator = spec$generator, base_key = spec$base$key, base_metrics = bm, git_head = rc_git_head(root),
@@ -529,9 +677,15 @@ rc_p4_spec_diff <- function(parent, child, block_type, root = rc_root(), pool = 
 #' 걸음 열기 — 기계 검사(전부 통과해야 원장에 쓴다)
 #'   앞 걸음 판정됨 · k = 앞 걸음 + 1 · 칸 사양 정확히 1개(처음 보는 md5) · 부모 = 사슬 머리 · 블록 유형 어휘 · 부모와 한 블록 유형만 다름 ·
 #'   가설 · 기전 문장 있음 · 글에 τ_D 뒤 날짜 없음 · 예산(최대 걸음 · 연속 잡음 K) 안 · 생성기 판 = 사양(지금 디스크 md5 포함) · 사슬 닫힘 아님
+#'   probe_ref(11-10 · 감사 K P3) = 이 걸음이 잇는 결과 원장의 열린 탐침("<round_id>#<번호>") — 주면 열기 전에 열린 탐침인지 보고,
+#'   원장에 쓴 뒤 rc_probe_consume(ref, "<사슬 id>#k<k>") 로 이어받음을 남긴다(열린 탐침이 줄어든다).
 rc_p4_step_open <- function(chain_dir, k, hypothesis, mechanism, block_type, cell_spec_path, parent, generator_version,
-                            root = rc_root(), pool = NULL, gen_path = NULL) {
+                            root = rc_root(), pool = NULL, gen_path = NULL, probe_ref = NULL, outcomes_path = NULL) {
   st <- .rcp4_state(chain_dir, root); spec <- st$spec; why <- character(0)
+  op <- outcomes_path %||% rc_outcomes_path(root)
+  if (!is.null(probe_ref) && length(probe_ref) && !is.na(probe_ref[1]) && nzchar(probe_ref[1])) {
+    if (!(probe_ref[1] %in% vapply(rc_open_probes(op), function(p) p$ref, ""))) why <- c(why, paste0("이어받을 탐침이 결과 원장의 열린 탐침이 아니다: ", probe_ref[1]))
+  } else probe_ref <- NULL
   if (st$closed) .rcp4_err("닫힌 사슬이다 — 새 걸음은 새 사슬 판에서")
   .rcp4_need_base(st, "걸음 열기")
   k <- suppressWarnings(as.integer(k)); parent <- suppressWarnings(as.integer(parent))
@@ -562,9 +716,11 @@ rc_p4_step_open <- function(chain_dir, k, hypothesis, mechanism, block_type, cel
     }
   }
   if (length(why)) .rcp4_err("걸음 열기 거부(k = ", k, "):\n- ", paste(unique(why), collapse = "\n- "))
-  .rcp4_append(chain_dir, list(event = "step_open", k = k, hypothesis = hypothesis, mechanism = mechanism, block_type = block_type,
-                               cell_spec_path = csr, cell_spec_md5 = cmd5, parent = parent, generator_version = generator_version,
-                               changed_axes = as.list(dif$changed)))
+  rec <- .rcp4_append(chain_dir, list(event = "step_open", k = k, hypothesis = hypothesis, mechanism = mechanism, block_type = block_type,
+                                      cell_spec_path = csr, cell_spec_md5 = cmd5, parent = parent, generator_version = generator_version,
+                                      changed_axes = as.list(dif$changed), probe_ref = probe_ref[1] %||% NA_character_))
+  if (!is.null(probe_ref)) rc_probe_consume(probe_ref[1], sprintf("%s#k%d", spec$chain_id, k), op)
+  invisible(rec)
 }
 ## ── 기준 칸 · 걸음 측정(정본 셀 워커) ────────────────────────────────────────────
 #' 정본 측정 러너(기본) — 프로그램 라운드 칸 측정과 같은 호출(v1/measure_cell.R:22-28 · v1/standing.R:646-651 —
@@ -572,10 +728,11 @@ rc_p4_step_open <- function(chain_dir, k, hypothesis, mechanism, block_type, cel
 #'   ★2계층 모듈 풀 등재는 기준 칸 · 걸음 칸 모두 끈다(QVEST_RP_REGISTER = 0 · 11-10) — 걸음마다 거의 같은 칸이 선택 보정 전 등급으로 풀에 쌓이지 않게.
 #'   등재는 닫기에서 최종 후보 1개만(재채점 뒤 · rc_p4_close). 반환 = 워커 종료 코드. 시험은 runner 인자로 가짜 러너를 넣는다.
 rc_p4_runner_default <- function(spec_path, code, out_json, log_dir, root = rc_root(), role = "variant") {
-  ev <- c("QVEST_RP_REGISTER", "QVEST_RP_NO_FACTOR_ANALYSIS"); old <- Sys.getenv(ev, unset = NA)
+  ev <- c("QVEST_RP_REGISTER", "QVEST_RP_NO_FACTOR_ANALYSIS", "QVEST_RP_NO_LCODE"); old <- Sys.getenv(ev, unset = NA)
   on.exit({ for (k in ev) if (is.na(old[[k]])) Sys.unsetenv(k) else do.call(Sys.setenv, stats::setNames(list(old[[k]]), k)) }, add = TRUE)
   if (!identical(Sys.getenv("RC_FACTOR_ANALYSIS", "0"), "1")) Sys.setenv(QVEST_RP_NO_FACTOR_ANALYSIS = "1")
   Sys.setenv(QVEST_RP_REGISTER = "0")
+  Sys.setenv(QVEST_RP_NO_LCODE = "1")   # 칸 L-code 끔(11-10 · 감사 K P5) — 칸 교훈 정본 = 걸음 원장 · 닫기 결과 원장(셀 워커도 켜 두지만 호출부에서 한 번 더 · 선택 보정 전 전기간 등급 교훈 방지)
   system2("Rscript", c(shQuote(file.path(root, "02_Infrastructure/ops/rf_cell_worker.R")), shQuote(spec_path), "1", code, shQuote(out_json)),
           stdout = file.path(log_dir, paste0(code, ".log")), stderr = file.path(log_dir, paste0(code, ".err.log")))
 }
@@ -597,14 +754,42 @@ rc_p4_vintage_default <- function(root = rc_root()) {
   m <- Filter(function(r) identical(r$event, "step_measured") && identical(as.integer(r$k), as.integer(k)), st$recs)
   if (length(m)) m[[length(m)]] else NULL
 }
+## 측정 점유(11-10 감사 E1) — 같은 칸을 두 프로세스가 동시에 재면(수 시간) 같은 measure/<tag>.json 을 서로 덮고 원장에 두 줄이 남는다.
+##   점유 = measure/<tag>.claim 디렉터리(원자적 생성 · pid · 시각). 살아 있는 보유자 = busy(재지 않는다 · 원장 무기록). 죽은 pid = 인계.
+##   pid 판독 불가 · 생존 확인 불가(ps 패키지 없음)는 busy 로 본다(보수 — 이중 측정보다 사람 확인). OneDrive 폴더 읽기 전용 속성 = chmod 뒤 지운다.
+.rcp4_pid_alive <- function(pid) {
+  pid <- suppressWarnings(as.integer(pid)); if (length(pid) != 1L || is.na(pid)) return(NA)
+  if (identical(pid, Sys.getpid())) return(TRUE)
+  if (!requireNamespace("ps", quietly = TRUE)) return(NA)
+  v <- tryCatch(pid %in% ps::ps_pids(), error = function(e) NA); if (is.logical(v) && length(v) == 1L) v else NA   # ps 1.9 = ps_pids() (pid_exists 없음)
+}
+.rcp4_rmdir <- function(d) { suppressWarnings(Sys.chmod(c(d, list.files(d, full.names = TRUE)), "777")); unlink(d, recursive = TRUE, force = TRUE); !dir.exists(d) }
+.rcp4_claim <- function(chain_dir, tag) {
+  md <- file.path(chain_dir, "measure"); dir.create(md, recursive = TRUE, showWarnings = FALSE); lk <- file.path(md, paste0(tag, ".claim"))
+  for (i in 1:2) {
+    if (dir.create(lk, showWarnings = FALSE)) { writeLines(c(as.character(Sys.getpid()), rc_now()), file.path(lk, "pid")); return(list(ok = TRUE, path = lk)) }
+    pid <- tryCatch(readLines(file.path(lk, "pid"), warn = FALSE)[1], error = function(e) NA_character_)
+    age <- as.numeric(difftime(Sys.time(), file.info(lk)$mtime, units = "secs")); al <- .rcp4_pid_alive(pid)
+    if (isFALSE(al) || (is.na(suppressWarnings(as.integer(pid))) && is.finite(age) && age > 60)) { if (.rcp4_rmdir(lk)) next }
+    return(list(ok = FALSE, path = lk, why = sprintf("다른 프로세스가 이 칸을 재고 있다(점유 %s · pid %s · 생존 %s) — 재지 않는다", rc_rel(lk), pid %||% "?",
+                                                    if (is.na(al)) "확인 불가" else al)))
+  }
+  list(ok = FALSE, path = lk, why = sprintf("측정 점유 인계 실패(%s) — 재지 않는다", rc_rel(lk)))
+}
 ## 측정 공통 — 배리어(잠김 = 원장 무기록 · 사유 반환) → 판 표식 → 측정 사본(selection_accounting 만 다시 씀) → 러너 → 지문 대조
 ##   반환 list(status = barrier_held | vintage_unknown | failed | ok, ...) · failed 는 호출자가 *_measure_failed 로 남긴다
-.rcp4_run_cell <- function(chain_dir, st, csa, tag, code, n_trials, basis, role, root, runner, barrier, fingerprint, vintage) {
+.rcp4_run_cell <- function(chain_dir, st, csa, tag, code, n_trials, basis, role, root, runner, barrier, fingerprint, vintage, freshness = rc_data_freshness) {
   b <- tryCatch(barrier(root), error = function(e) list(state = "error", reason = conditionMessage(e), blocking = TRUE))
   if (!identical(b$blocking, FALSE)) {
     why <- sprintf("리프레시 배리어 %s(%s%s) — 측정하지 않는다(다음 실행에서 다시)", b$state %||% "?", b$reason %||% "", if (nzchar(b$lock %||% "")) paste0(" · ", b$lock) else "")
     cat("[P4 측정] ", why, "\n", sep = "")
     return(list(status = "barrier_held", reason = why, barrier = b[intersect(names(b), c("state", "reason", "lock", "path"))]))
+  }
+  ## 데이터 신선도(11-10 · v1/freshness.R — 측정 경로 공통 판정 · 원장 무기록 · 다음 실행에서 다시) — 낡음 · 판독 불가 = 재지 않는다(fail-closed)
+  fr <- rc_fresh_gate(freshness, root)
+  if (!isTRUE(fr$ok)) {
+    why <- sprintf("데이터 신선도 %s — %s — 측정하지 않는다(다음 실행에서 다시)", fr$state, fr$reason %||% ""); cat("[P4 측정] ", why, "\n", sep = "")
+    return(list(status = "data_stale", reason = why, freshness = fr[intersect(names(fr), c("state", "as_of", "reason"))]))
   }
   v0 <- .rcp4_vint(vintage, root)
   if (is.null(v0)) { why <- "팩터 DB 판 표식 판독 불가(contracts/factor_db_vintage.R::fdv_stamp) — 측정하지 않는다(fail-closed)"; cat("[P4 측정] ", why, "\n", sep = "")
@@ -633,21 +818,29 @@ rc_p4_vintage_default <- function(root = rc_root()) {
   if (!(ok && fp_same)) return(list(status = "failed", rec = rec, why = why))
   list(status = "ok", rec = c(rec, list(artifacts = .rcp4_rel(art, root), result_md5 = rc_md5(out))), sec = sec)
 }
-.rcp4_metric_keys <- function() c(sub("^d_?", "", RC_P4_METRICS), RC_P4_METRICS, "n_crisis_vis", "window", "bottleneck", "card_error")
+.rcp4_metric_keys <- function() c(sub("^d_?", "", RC_P4_METRICS), RC_P4_METRICS, "n_crisis_vis", "window", "bottleneck", "card_error",
+                                  "bull_vis", "crises_vis", "beta_up_vis", "beta_down_vis")
+## 사슬 판의 채택 규칙 판 — 표식 없음 = 옛 판(v1)
+.rcp4_rules_version <- function(spec) { v <- spec[["rules_version"]]; if (is.character(v) && length(v) == 1L && v %in% names(RC_P4_REQUIRED)) v else if (is.null(v)) "p4_rules_v1" else NA_character_ }
 #' 기준 칸 측정(k = 0 · 11-10) — 등록된 사슬의 기저 칸 사양(md5 = 사양 · 등록 때와 같음)을 걸음과 같은 러너 · 배리어 · 지문 · 판 표식으로 잰다.
 #'   측정 사본 measure/k0.spec.json(sweep · family_root = 사슬 id · 시행 1) · role = "base"(등재 끔). 성공 = 원장 base_measured{artifacts ·
 #'   measured_spec_md5 · metrics(보는 창 — rc_p4_visible_metrics) · vintage · same_construction(기록) · measured_at} · 실패 = base_measure_failed(다시 잴 수 있다).
 #'   건너뛰기 경로는 없다 — 모든 비교 · 재채점의 기저 = 이 측정. 등록 기록의 base_metrics(풀 산출)는 참고 기록으로만 남는다.
 rc_p4_base_measure <- function(chain_dir, root = rc_root(), runner = rc_p4_runner_default, barrier = rc_p4_barrier_default,
-                               fingerprint = rc_standing_fingerprint, vintage = rc_p4_vintage_default, metrics_fun = rc_p4_visible_metrics, ...) {
+                               fingerprint = rc_standing_fingerprint, vintage = rc_p4_vintage_default, metrics_fun = rc_p4_visible_metrics,
+                               freshness = rc_data_freshness, ...) {
   st <- .rcp4_state(chain_dir, root)
   if (st$closed) .rcp4_err("닫힌 사슬이다 — 측정하지 않는다")
   if (!is.null(st$base_meas)) return(invisible(list(k = 0L, status = "already", artifacts = st$base_meas$artifacts)))
   csa <- .rcp4_abs(.rcp4_rel(st$spec$base$cell_spec, root), root)
   if (!file.exists(csa) || !identical(rc_md5(csa), st$spec$base$cell_spec_md5)) .rcp4_err("기저 칸 사양 md5 ≠ 사슬 판(R2) — 측정하지 않는다: ", st$spec$base$cell_spec)
+  cl <- .rcp4_claim(chain_dir, "k0"); if (!isTRUE(cl$ok)) { cat("[P4 측정] ", cl$why, "\n", sep = ""); return(invisible(list(k = 0L, status = "busy", reason = cl$why))) }
+  on.exit(.rcp4_rmdir(cl$path), add = TRUE)
+  st <- .rcp4_state(chain_dir, root)                                    # 점유 뒤 다시 읽는다(앞 보유자가 막 끝냈을 수 있다)
+  if (!is.null(st$base_meas)) return(invisible(list(k = 0L, status = "already", artifacts = st$base_meas$artifacts)))
   x <- .rcp4_run_cell(chain_dir, st, csa, "k0", sprintf("%s_k0", st$spec$chain_id), 1L,
                       sprintf("P4 강화 사슬 %s 기준 칸(기저 · 걸음 0): 계보 누적 시행 = 기저 1(시행 회계는 스윕 그대로)", st$spec$chain_id),
-                      "base", root, runner, barrier, fingerprint, vintage)
+                      "base", root, runner, barrier, fingerprint, vintage, freshness)
   if (!(x$status %in% c("ok", "failed"))) return(invisible(c(list(k = 0L), x)))
   if (identical(x$status, "ok")) {
     m <- tryCatch(metrics_fun(.rcp4_abs(x$rec$artifacts, root), root = root, tau = st$spec$tau_d, ...), error = function(e) structure(list(), err = conditionMessage(e)))
@@ -675,7 +868,7 @@ rc_p4_base_measure <- function(chain_dir, root = rc_root(), runner = rc_p4_runne
 #'   ④ 러너(role variant · 등재 끔) → 결과 json(ok · artifacts) · 데이터 지문 앞뒤 대조 — ok ∧ 산출 폴더 실재 ∧ 지문 같음일 때만 step_measured,
 #'      아니면 step_measure_failed(다시 잴 수 있다). 측정 성과 수치는 원장에 싣지 않는다(경로 · md5 · 시각 · 판 표식만).
 rc_p4_step_measure <- function(chain_dir, k, root = rc_root(), runner = rc_p4_runner_default, barrier = rc_p4_barrier_default,
-                               fingerprint = rc_standing_fingerprint, vintage = rc_p4_vintage_default) {
+                               fingerprint = rc_standing_fingerprint, vintage = rc_p4_vintage_default, freshness = rc_data_freshness) {
   st <- .rcp4_state(chain_dir, root); k <- suppressWarnings(as.integer(k))
   if (st$closed) .rcp4_err("닫힌 사슬이다 — 측정하지 않는다")
   .rcp4_need_base(st, "걸음 측정")
@@ -686,10 +879,15 @@ rc_p4_step_measure <- function(chain_dir, k, root = rc_root(), runner = rc_p4_ru
   if (!file.exists(csa) || !identical(rc_md5(csa), o$cell_spec_md5)) .rcp4_err("칸 사양이 열린 뒤 바뀌었다(R2) — 측정하지 않는다: ", o$cell_spec_path)
   pm <- .rcp4_measured_of(st, k)
   if (!is.null(pm)) return(invisible(list(k = k, status = "already", artifacts = pm$artifacts)))
+  cl <- .rcp4_claim(chain_dir, sprintf("k%d", k)); if (!isTRUE(cl$ok)) { cat("[P4 측정] ", cl$why, "\n", sep = ""); return(invisible(list(k = k, status = "busy", reason = cl$why))) }
+  on.exit(.rcp4_rmdir(cl$path), add = TRUE)
+  st <- .rcp4_state(chain_dir, root); pm <- .rcp4_measured_of(st, k)   # 점유 뒤 다시 읽는다
+  if (!is.null(pm)) return(invisible(list(k = k, status = "already", artifacts = pm$artifacts)))
+  if (k %in% st$decided_ks) .rcp4_err("이미 판정한 걸음 — 다시 재지 않는다: ", k)
   n_open <- length(st$opens)
   x <- .rcp4_run_cell(chain_dir, st, csa, sprintf("k%d", k), sprintf("%s_k%d", st$spec$chain_id, k), 1L + n_open,
                       sprintf("P4 강화 사슬 %s: 계보 누적 시행 = 기저 1 + 지금까지 연 걸음 %d = %d(걸음마다 채택 판정이 고르는 일이라 시행 회계는 스윕 그대로)",
-                              st$spec$chain_id, n_open, 1L + n_open), "variant", root, runner, barrier, fingerprint, vintage)
+                              st$spec$chain_id, n_open, 1L + n_open), "variant", root, runner, barrier, fingerprint, vintage, freshness)
   if (!(x$status %in% c("ok", "failed"))) return(invisible(c(list(k = k), x)))
   if (identical(x$status, "failed")) {
     .rcp4_append(chain_dir, c(list(event = "step_measure_failed", k = k, cell_spec_md5 = o$cell_spec_md5), x$rec, list(why = as.list(x$why))))
@@ -726,24 +924,58 @@ rc_p4_step_decide <- function(chain_dir, k, artifacts = NULL, root = rc_root(), 
   artifacts <- ms$artifacts; asrc <- "step_measured"
   pm <- if (identical(as.integer(o$parent), 0L)) st$base_meas$metrics else
     (Filter(function(r) identical(as.integer(r$k), as.integer(o$parent)), st$results)[[1]])$metrics
-  m <- metrics_fun(.rcp4_abs(.rcp4_rel(artifacts, root), root), root = root, tau = st$spec$tau_d, ...)
+  rules <- st$reg$rules_resolved
+  need_conc <- "worst_name_contrib_deep_vis" %in% unlist(lapply(rules, .rcp4_rule_walk_metrics))
+  m <- if (need_conc) metrics_fun(.rcp4_abs(.rcp4_rel(artifacts, root), root), root = root, tau = st$spec$tau_d, concentration = TRUE, ...) else
+    metrics_fun(.rcp4_abs(.rcp4_rel(artifacts, root), root), root = root, tau = st$spec$tau_d, ...)
   g <- function(x, nm) .rcp4_num(x[[nm]])
   T <- data.table(S_vis = g(m, "S_vis"), calmar_vis = g(m, "calmar_vis"), port_t_vis = g(m, "port_t_vis"), cagr_vis = g(m, "cagr_vis"),
                   sharpe_vis = g(m, "sharpe_vis"), mdd_vis = g(m, "mdd_vis"), uc_vis = g(m, "uc_vis"), dd_capture_median_vis = g(m, "dd_capture_median_vis"))
   T[, `:=`(dS_vis = S_vis - g(pm, "S_vis"), d_uc_vis = uc_vis - g(pm, "uc_vis"), d_dd_capture_median_vis = dd_capture_median_vis - g(pm, "dd_capture_median_vis"))]
-  rules <- st$reg$rules_resolved
+  ## 헌장 빈칸 집행(11-10) — N1 = 엔진 기준 칸(base_measured) 대비 구간별 · N2 · N3 = 부모(사슬 머리) 대비 · N5 = 이 걸음 블록이 노출 층일 때만 · 재료 없음 = NA(미측정 = 기각)
+  bm0 <- st$base_meas$metrics
+  n1 <- rc_p4_uc_seg(m$bull_vis, bm0$bull_vis); n2 <- rc_p4_deep_nonworse(m$crises_vis, pm$crises_vis)
+  bu <- g(m, "beta_up_vis"); bd <- g(m, "beta_down_vis")
+  T[, `:=`(uc_seg_ok_share_vis = n1$share, deep_crisis_nonworse_share_vis = n2$share, cdar_vis = g(m, "cdar_vis"),
+           d_cdar_vis = g(m, "cdar_vis") - g(pm, "cdar_vis"), rec_delay_share_vis = rc_p4_rec_delay(m$crises_vis, bm0$crises_vis),
+           worst_name_contrib_deep_vis = g(m, "worst_name_contrib_deep_vis"),
+           beta_asym_ok_vis = if (!(o$block_type %in% RC_P4_EXPOSURE_BLOCKS)) 1 else if (is.finite(bu) && is.finite(bd)) as.numeric(bd < bu) else NA_real_)]
   A <- rc_rules_apply(rules, T)
   ids <- vapply(rules, function(r) r$id, ""); v <- vapply(ids, function(i) A[[i]][1], NA)
   accept <- all(v %in% TRUE)
   reasons <- c(sprintf("%s: 미달", ids[v %in% FALSE]), sprintf("%s: 미측정", ids[is.na(v)]))
   mg <- NA_real_; for (r in rules) if (identical(r$metric, "dS_vis")) mg <- .rcp4_num(r$value)
-  ds <- T$dS_vis[1]; r7 <- if (is.finite(ds) && is.finite(mg)) (if (abs(ds) >= abs(mg)) "signal" else "noise") else NA_character_
-  mk <- m[intersect(names(m), c(names(T), "n_crisis_vis", "window", "bottleneck", "card_error"))]
+  ds <- T$dS_vis[1]; rv <- .rcp4_rules_version(st$spec)
+  ## r7 판독(목표 축 R7 — '개선이 잡음 이내 K회 연속이면 종료'): v2 = dS ≥ +여유일 때만 signal · 그 밖(잡음 이내 · 악화) = noise(악화는 r7_detail = worse)
+  ##   v1(옛 판) = |dS| ≥ 여유 = signal(크게 나빠진 걸음도 연속을 끊었다 — 옛 원장 판독 보존)
+  r7 <- if (!(is.finite(ds) && is.finite(mg))) NA_character_ else if (identical(rv, "p4_rules_v1")) (if (abs(ds) >= abs(mg)) "signal" else "noise") else
+    (if (ds >= abs(mg)) "signal" else "noise")
+  r7d <- if (is.na(r7)) NA_character_ else if (ds >= abs(mg)) "improve" else if (ds <= -abs(mg)) "worse" else "within"
+  mk <- m[intersect(names(m), c(names(T), .rcp4_metric_keys()))]
   rec <- list(event = "step_result", k = k, artifacts = .rcp4_rel(artifacts, root), artifacts_source = asrc, parent_basis = if (identical(as.integer(o$parent), 0L)) "base_measured" else "step",
               metrics = mk, table = as.list(T[1]), rules = as.list(stats::setNames(v, ids)), decision = if (accept) "accept" else "reject",
-              reasons = as.list(reasons), r7 = r7)
+              reasons = as.list(reasons), r7 = r7, r7_detail = r7d, rules_version = rv,
+              charter = list(n1_pairs = n1$n, n2_deep_pairs = n2$n))
   lk <- rc_after_tau_leaks(rec, st$tau); if (length(lk)) .rcp4_err("걸음 판정 기록에 τ_D 뒤 날짜: ", paste(head(lk, 3), collapse = ","))
   .rcp4_append(chain_dir, rec)
+}
+#' 걸음 포기(11-10 감사 E1) — 측정이 거듭 실패하는 걸음은 판정할 수 없어 사슬이 영영 멈췄다(다음 걸음 열기 · 닫기 둘 다 '판정 안 된 걸음'으로 거부).
+#'   조건: 열린 미판정 걸음 · 측정 기록(step_measured) 없음 · step_measure_failed ≥ RC_STANDING_MAX_FAILS(상설 판 '2번째 실패면 사람이 본다'와 같은 뜻) ·
+#'   사유 문장(τ_D 뒤 날짜 없음). 기록 = step_result{decision reject · abandoned TRUE · 산출 없음 · r7 NA(연속 잡음을 잇지도 끊지도 않는다)}.
+#'   시행 회계: 연 걸음이라 뒤 걸음의 계보 누적 시행 수에는 이미 들어가 있다(보수) · 산출이 없어 닫기 선택 현실 점검의 수익 집합에는 못 들어간다(finalize.json 에 수를 남긴다).
+rc_p4_step_abandon <- function(chain_dir, k, reason, root = rc_root()) {
+  st <- .rcp4_state(chain_dir, root); k <- suppressWarnings(as.integer(k))
+  if (st$closed) .rcp4_err("닫힌 사슬이다")
+  o <- Filter(function(r) identical(as.integer(r$k), k), st$opens); if (is.na(k) || !length(o)) .rcp4_err("열지 않은 걸음: ", k)
+  if (k %in% st$decided_ks) .rcp4_err("이미 판정한 걸음: ", k)
+  if (!is.null(.rcp4_measured_of(st, k))) .rcp4_err("측정된 걸음은 포기하지 않는다 — 판정한다(p4-step-decide): ", k)
+  nf <- length(.rcp4_ev(st$recs, "step_measure_failed", k))
+  if (nf < RC_STANDING_MAX_FAILS) .rcp4_err(sprintf("측정 실패 %d회 < %d — 다시 잰다(p4-step-measure) · 포기는 그 뒤", nf, RC_STANDING_MAX_FAILS))
+  if (!.rcp4_txt(reason)) .rcp4_err("포기 사유(--reason) 없음")
+  lk <- rc_after_tau_leaks(list(reason), st$tau); if (length(lk)) .rcp4_err("포기 사유에 τ_D 뒤 날짜: ", paste(lk, collapse = ","))
+  .rcp4_append(chain_dir, list(event = "step_result", k = k, artifacts = NA_character_, artifacts_source = "none", abandoned = TRUE,
+                               parent_basis = if (identical(as.integer(o[[1]]$parent), 0L)) "base_measured" else "step", decision = "reject",
+                               reasons = list(paste0("measure_failed: 측정 실패 ", nf, "회 — ", reason)), r7 = NA_character_))
 }
 #' 상태 줄
 rc_p4_status <- function(chain_dir, root = rc_root()) {
@@ -761,7 +993,25 @@ rc_p4_status <- function(chain_dir, root = rc_root()) {
 ## ── ⑤ 설계 입력(생성기에게 · 보는 창 정보만) ──────────────────────────────────────
 .rcp4_f3 <- function(x) { x <- .rcp4_num(x); if (is.finite(x)) formatC(x, format = "f", digits = 3) else "—" }
 #' 설계 입력 md — 기저 풀 표(성과 · 등급 열 없음 · 사유는 코드만) · 현재 최선(사슬 머리) 보는 창 지표 · A 하한별 여유 · 병목 · 열린 탐침 · 결과 원장 요약 · 걸음 이력 · 도구 상자 안내
-rc_p4_design_input <- function(root = rc_root(), chain_dir, pool = NULL, outcomes_path = NULL, gap = NULL, out = NULL) {
+## 사슬 사이 기억(11-10 · 감사 K P2) — 다른 사슬(같은 프로그램)의 기각 걸음: 사슬 id · 걸음 · 블록 유형 · 사유 규칙 id 만(수치 · 가설 글 없음 · 보는 창 규율)
+##   블록 유형마다 최근 n_max 줄(n_max = 이 사슬 판 budget.max_steps 재사용 — 새 숫자 없음) · 원장이 깨진 사슬은 건너뛴다
+.rcp4_other_chain_rejects <- function(st, root, dirs = NULL, n_max = NA_integer_) {
+  dirs <- dirs %||% dirname(Sys.glob(file.path(root, "04_Research/programs", RC_P4_PROGRAM, "*", "chain_spec.json")))
+  rows <- list()
+  for (d in dirs) {
+    o <- tryCatch(.rcp4_state(d, root, need_registered = FALSE), error = function(e) NULL)
+    if (is.null(o) || identical(o$spec$chain_id, st$spec$chain_id)) next
+    for (r in o$results) if (identical(r$decision, "reject")) {
+      op <- Filter(function(x) identical(as.integer(x$k), as.integer(r$k)), o$opens)
+      rows[[length(rows) + 1L]] <- data.table(chain = o$spec$chain_id, k = as.integer(r$k), block = if (length(op)) op[[1]]$block_type else "?",
+                                              codes = paste(unique(sub(":.*$", "", unlist(r$reasons))), collapse = ","))
+    }
+  }
+  if (!length(rows)) return(data.table(chain = character(0), k = integer(0), block = character(0), codes = character(0)))
+  D <- rbindlist(rows); if (!is.finite(n_max) || n_max < 1L) n_max <- nrow(D)    # 예산 판독 불가 = 자르지 않는다(새 숫자 없음)
+  D[order(block, chain, -k)][, head(.SD, n_max), by = block]
+}
+rc_p4_design_input <- function(root = rc_root(), chain_dir, pool = NULL, outcomes_path = NULL, gap = NULL, out = NULL, other_chain_dirs = NULL) {
   st <- .rcp4_state(chain_dir, root); tau <- st$tau
   op <- outcomes_path %||% rc_outcomes_path(root)
   .rcp4_need_base(st, "설계 입력")
@@ -793,9 +1043,13 @@ rc_p4_design_input <- function(root = rc_root(), chain_dir, pool = NULL, outcome
               if (length(r)) r[[1]]$decision else "판정 대기", if (length(r)) paste(c(sprintf("dS_vis %s", .rcp4_f3(r[[1]]$table$dS_vis)), unlist(r[[1]]$reasons)), collapse = " · ") else ""))
     a("  - 가설: ", o$hypothesis); a("  - 기전: ", o$mechanism)
   }
+  a(""); a("## 4b. 다른 사슬의 기각 걸음(블록 유형별 · 판정과 사유 코드만 — 수치 없음)"); a("")
+  oc <- .rcp4_other_chain_rejects(st, root, other_chain_dirs, n_max = as.integer(.rcp4_num(st$spec$budget$max_steps)))
+  if (!nrow(oc)) a("- (없음)") else for (b in unique(oc$block)) {
+    X <- oc[block == b]; a(sprintf("- `%s` 기각 %d — %s", b, nrow(X), paste(sprintf("%s 걸음 %s(%s)", X$chain, X$k, X$codes), collapse = " · "))) }
   a(""); a("## 5. 열린 탐침(결과 원장 — 아직 아무도 이어받지 않은 다음 탐침)"); a("")
-  pr <- rc_open_probes(op); if (!length(pr)) a("- (없음)") else for (p in pr) a("- ", p$ref, " (", p$program, "): ", p$text)
-  a(""); a("## 6. 결과 원장 요약(최근 닫힌 라운드)"); a(""); a(rc_outcomes_md(op, program = NULL, last = 5L))
+  pr <- rc_open_probes(op, tau_clean = tau); if (!length(pr)) a("- (없음)") else for (p in pr) a("- ", p$ref, " (", p$program, "): ", p$text)
+  a(""); a("## 6. 결과 원장 요약(최근 닫힌 라운드)"); a(""); a(rc_outcomes_md(op, program = NULL, last = 5L, tau_clean = tau))
   a(""); a("## 7. 도구 상자 안내")
   a("- 한 걸음 = 블록 유형 하나: ", paste(sprintf("`%s`", RC_P4_BLOCK_TYPES), collapse = " · "), ".")
   a("- 블록 ↔ 셀 사양 축: base = base_signal(engine · 풀 key) · blend = base_signal(engine_blend · 풀 key ≥ 2) · factors · base_weight · regime_exposure · tail_overlay = overlay(+ overlay_shift) · weighting · construction = cap_core · defense_sleeve · universe · rebalance.")
@@ -806,6 +1060,31 @@ rc_p4_design_input <- function(root = rc_root(), chain_dir, pool = NULL, outcome
   txt
 }
 
+#' 생성기 작업 디렉터리(11-10 감사 E1) — 생성기 프롬프트(g1/step.md '작업 디렉터리에 있는 것만 본다')가 부르는 네 파일만 격리 폴더에 만든다:
+#'   design_input.md(rc_p4_design_input) · investment_philosophy_charter.md(헌장 사본) · toolbox.md(rx_toolbox_md 산출 또는 인자) · parent_cell_spec.json(사슬 머리의 열린 칸 사양).
+#'   왜: 사슬 디렉터리에는 사람 쪽 파일이 섞여 있다 — measure/k<k>.json(워커 결과 = 전기간 등급 · Sharpe · CAGR · MDD) · 워커 로그 · finalize.json.
+#'   처방 에이전트를 사슬 디렉터리에 두면 정보 경계(τ_D)가 읽기 규율에만 기댄다. 네 파일 모두 τ_D 뒤 날짜 · 등급 표기 검사(fail-closed) 뒤 쓴다.
+#'   out_dir 은 비어 있거나 없어야 한다(다른 파일이 섞이지 않게). 반환 = 쓴 파일 경로.
+rc_p4_generator_workdir <- function(chain_dir, out_dir, root = rc_root(), pool = NULL, outcomes_path = NULL, toolbox_md = NULL,
+                                    charter = file.path(root, "00_Lawbook/specs/investment_philosophy_charter.md")) {
+  st <- .rcp4_state(chain_dir, root); .rcp4_need_base(st, "생성기 작업 디렉터리")
+  if (dir.exists(out_dir) && length(list.files(out_dir, all.files = TRUE, no.. = TRUE))) .rcp4_err("작업 디렉터리가 비어 있지 않다 — 새 폴더를 준다: ", out_dir)
+  if (startsWith(tolower(gsub("\\\\", "/", out_dir)), tolower(paste0(gsub("\\\\", "/", chain_dir), "/")))) .rcp4_err("작업 디렉터리는 사슬 디렉터리 밖이어야 한다: ", out_dir)
+  tb <- toolbox_md %||% (if (exists("rx_toolbox_md", mode = "function")) paste(unlist(rx_toolbox_md(root)), collapse = "\n") else NULL)
+  if (is.null(tb) || !nzchar(paste(tb, collapse = ""))) .rcp4_err("도구 상자(toolbox.md) 없음 — rx_round.R 을 싣거나 toolbox_md 인자를 준다")
+  if (!file.exists(charter)) .rcp4_err("헌장 없음: ", charter)
+  di <- rc_p4_design_input(root, chain_dir, pool = pool, outcomes_path = outcomes_path)
+  pc <- rc_json_read(.rcp4_abs(.rcp4_rel(.rcp4_cell_of(st, st$head_k), root), root))
+  ## 헌장은 규범 문서다(성과 수치 없음) — 결정 날짜(τ_D 뒤)는 보는 창 파일 규칙대로 가린다(rc_redact_after_tau) · 가린 뒤 전수 검사
+  ch <- rc_redact_after_tau(paste(readLines(charter, warn = FALSE, encoding = "UTF-8"), collapse = "\n"), st$tau)
+  .rcp4_assert_clean(tb, st$tau, "도구 상자"); .rcp4_assert_clean(.rcp4_js(pc), st$tau, "부모 칸 사양")
+  if (length(rc_after_tau_leaks(ch, st$tau))) .rcp4_err("헌장 사본 가림 뒤에도 τ_D 뒤 날짜가 남았다")
+  dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+  f <- file.path(out_dir, c("design_input.md", "investment_philosophy_charter.md", "toolbox.md", "parent_cell_spec.json"))
+  writeLines(enc2utf8(di), f[1], useBytes = TRUE); writeLines(enc2utf8(ch), f[2], useBytes = TRUE); writeLines(enc2utf8(paste(tb, collapse = "\n")), f[3], useBytes = TRUE)
+  rc_json_write(pc, f[4])
+  invisible(f)
+}
 ## 최종 후보의 칸 사양 — 기저(k = 0) = 기준 칸 측정 사본 · 걸음 = 그 걸음 측정 사본(있으면) · 없으면 열린 사양
 .rcp4_cand_spec <- function(st, k) {
   if (identical(as.integer(k), 0L)) return(st$base_meas$measured_spec %||% st$spec$base$cell_spec)
@@ -859,7 +1138,17 @@ rc_p4_close <- function(chain_dir, note, probes = character(0), lessons = charac
     if (is.null(by[[bt]])) by[[bt]] <- list(accept = 0L, reject = 0L)
     by[[bt]][[r$decision]] <- by[[bt]][[r$decision]] + 1L }
   if (is.na(r7)) r7 <- if (na) "signal" else if (ns) "noise" else NA_character_
-  label <- sprintf("사슬 %s — 걸음 %d(채택 %d · 기각 %d) · 최종 후보 %s", st$spec$chain_id, ns, na, ns - na, if (is.null(fin)) "개선 없음" else if (identical(as.integer(fin$k), 0L)) "기저(채택 0)" else paste("걸음", fin$k))
+  ## 결론의 기준점(헌장 §5 빈칸 16) — 장치 판정 = 엔진(기준 칸) 대비 · 결론 문장 '시장보다 덜 깨진다' = 시장 대비(보는 창 하락 포착 중앙값 ≤ 1 = 시장 낙폭 이하)도 충족할 때만
+  fm <- if (is.null(fin)) NULL else if (identical(as.integer(fin$k), 0L)) st$base_meas$metrics else
+    (Filter(function(r) identical(as.integer(r$k), as.integer(fin$k)), st$results)[[1]])$metrics
+  ddf <- .rcp4_num(fm$dd_capture_median_vis); ddb <- .rcp4_num(st$base_meas$metrics$dd_capture_median_vis)
+  concl <- list(engine_relative = if (is.finite(ddf) && is.finite(ddb)) ddf <= ddb else NA, market_relative = if (is.finite(ddf)) ddf <= 1 else NA,
+                basis = "헌장 §5 빈칸 16 — 장치 = 엔진 대비 · '시장보다 덜' = 시장 대비(하락 포착 1 = 시장과 같은 낙폭 — 정의)도 충족할 때만")
+  concl$market_sentence_allowed <- isTRUE(concl$engine_relative) && isTRUE(concl$market_relative)
+  label <- sprintf("사슬 %s — 걸음 %d(채택 %d · 기각 %d) · 최종 후보 %s%s", st$spec$chain_id, ns, na, ns - na,
+                   if (is.null(fin)) "개선 없음" else if (identical(as.integer(fin$k), 0L)) "기저(채택 0)" else paste("걸음", fin$k),
+                   if (is.null(fin)) "" else sprintf(" · 위기 하락 포착 — 엔진 대비 %s · 시장 대비 %s", if (isTRUE(concl$engine_relative)) "비악화" else if (isFALSE(concl$engine_relative)) "악화" else "미측정",
+                                                     if (isTRUE(concl$market_relative)) "시장 이하" else if (isFALSE(concl$market_relative)) "시장 초과('시장보다 덜' 쓰지 않는다)" else "미측정"))
   spec_like <- list(program = RC_P4_PROGRAM, round_id = st$spec$chain_id, template = "p4_chain", tau_d = st$spec$tau_d,
                     cells = lapply(st$opens, function(o) list(code = paste0("k", o$k), role = "variant")))
   P <- list(prereg = rc_p4_spec_path(chain_dir), results = chain_dir)
@@ -870,7 +1159,9 @@ rc_p4_close <- function(chain_dir, note, probes = character(0), lessons = charac
   fz <- list(status = "pending", why = "selection_regrade.R 없음", candidate_gate = cg_state)
   if (is.null(fin)) fz <- list(status = "no_candidate", why = "걸음 없음(고른 일이 없다)", candidate_gate = cg_state)
   else if (isTRUE(regrade) && file.exists(srf)) {
-    trials <- unique(na.omit(c(.rcp4_abs(st$base_meas$artifacts, root), vapply(st$results, function(r) .rcp4_abs(as.character(r$artifacts), root), ""))))
+    ## 시행 집합 = 기준 칸 + 판정한 모든 걸음 칸(채택 · 기각 모두) · 포기한 걸음(산출 없음)은 수익 집합에 못 들어간다(수만 finalize.json 에)
+    trials <- unique(na.omit(c(.rcp4_abs(.rcs_str(st$base_meas$artifacts), root), vapply(st$results, function(r) .rcp4_abs(.rcs_str(r$artifacts), root), ""))))
+    n_abandoned <- sum(vapply(st$results, function(r) isTRUE(r$abandoned), TRUE))
     e <- new.env(parent = globalenv())
     res <- tryCatch({ invisible(utils::capture.output(suppressMessages(sys.source(srf, envir = e, keep.source = FALSE))))
                       e$sr_regrade(.rcp4_abs(fin$artifacts, root), trials, root = root, write = isTRUE(regrade_write)) },
@@ -878,8 +1169,15 @@ rc_p4_close <- function(chain_dir, note, probes = character(0), lessons = charac
     ## 후보 관문 — 새 등급 A 일 때만 부른다(관문 파일이 있을 때) · 칸 사양 = 그 걸음의 측정 사본(있으면) · 없으면 열린 사양
     cg <- list(status = cg_state)
     if (!inherits(res, "rcp4_err") && file.exists(gate_file)) {
-      if (!identical(as.character(res$grade_after %||% NA)[1], "A")) cg <- list(status = "evaluated", action = "not_called", why = "새 등급 A 아님")
-      else {
+      if (!identical(as.character(res$grade_after %||% NA)[1], "A")) {
+        ## 요청 거두기(11-10) — 후보 폴더에 앞서 나간 Judge 트리거가 남아 있으면 보류 파일로 바꾼다(rcg_finalize 와 같은 규율 · 관문 파일에 함수가 있을 때)
+        ge <- new.env(parent = globalenv())
+        wd <- tryCatch({ invisible(utils::capture.output(suppressMessages(sys.source(gate_file, envir = ge, keep.source = FALSE))))
+                         if (is.function(ge$rcg_withdraw)) ge$rcg_withdraw(.rcp4_abs(fin$artifacts, root), as.character(res$grade_after %||% NA)[1], write = isTRUE(regrade_write)) else NULL },
+                       error = function(z) list(error = conditionMessage(z)))
+        cg <- list(status = "evaluated", action = "not_called", why = "새 등급 A 아님", withdrawn = isTRUE(wd$withdrawn), withdraw_pending = isTRUE(wd$pending),
+                   withdraw_error = wd$error %||% NA_character_)
+      } else {
         spec_path <- .rcp4_abs(.rcp4_cand_spec(st, fin$k), root)
         sid <- sprintf("%s_k%s", st$spec$chain_id, fin$k); ge <- new.env(parent = globalenv())
         g <- tryCatch({ invisible(utils::capture.output(suppressMessages(sys.source(gate_file, envir = ge, keep.source = FALSE))))
@@ -897,7 +1195,8 @@ rc_p4_close <- function(chain_dir, note, probes = character(0), lessons = charac
     mp <- .rcp4_module_pool(res, fin, st, regrade_write, register_file, root)
     ff <- file.path(chain_dir, "finalize.json")
     rc_json_write(list(schema = "rc_p4_finalize_v1", audience = "사람 쪽(전기간 · 시험 창 포함 가능) — 처방 · 리뷰 레인 열람 금지",
-                       at = rc_now(), candidate = fin$artifacts, trials = as.list(vapply(trials, .rcp4_rel, "", root = root)), write = isTRUE(regrade_write),
+                       at = rc_now(), candidate = fin$artifacts, trials = as.list(vapply(trials, .rcp4_rel, "", root = root)), n_abandoned = n_abandoned,
+                       write = isTRUE(regrade_write),
                        result = if (inherits(res, "rcp4_err")) list(error = res$error) else res, candidate_gate = cg, module_pool = mp), ff)
     fz <- list(status = if (inherits(res, "rcp4_err")) "error" else "done", regrade_status = if (inherits(res, "rcp4_err")) NA_character_ else as.character(res$status %||% NA)[1],
                candidate_gate = cg$status,
@@ -910,7 +1209,7 @@ rc_p4_close <- function(chain_dir, note, probes = character(0), lessons = charac
   rec$extra <- list(generator_version = st$spec$generator$id, n_steps = ns, n_accepted = na, by_block = by,
                     final_candidate = if (is.null(fin)) NULL else list(k = fin$k, artifacts = fin$artifacts), chain_spec_md5 = st$reg$spec_md5,
                     finalize = fz[c("status", intersect(names(fz), c("regrade_status", "candidate_gate", "module_pool", "why", "md5")))],   # 등급 전후 값 · 관문 판정은 finalize.json 에만(전기간)
-                    philosophy_p2 = rp2$id, superfan_t2 = rt2$id)
+                    philosophy_p2 = rp2$id, superfan_t2 = rt2$id, conclusion = concl, rules_version = .rcp4_rules_version(st$spec))
   ap <- if (is.null(outcomes_path)) rc_outcomes_path(root, registry_path) else outcomes_path
   rc_outcome_append_round(rec, ap)
   .rcp4_append(chain_dir, list(event = "chain_closed", label = label, final_k = if (is.null(fin)) NULL else fin$k, finalize = fz, outcomes = rc_rel(ap, root),
@@ -943,8 +1242,18 @@ rc_p4_generator_review <- function(root = rc_root(), chain_dirs = NULL, outcomes
       paste(vapply(X$dS, .rcp4_f3, ""), collapse = ", "), " | ", if (length(rs)) paste(sprintf("%s %d", names(sort(rs, decreasing = TRUE)), as.integer(sort(rs, decreasing = TRUE))), collapse = " · ") else "—", " |") }
   a(""); a("## 생성기 판별"); a("")
   for (g in sort(unique(D$generator))) { X <- D[generator == g]; a(sprintf("- %s: 걸음 %d · 채택 %d · 기각 %d", g, nrow(X), sum(X$decision == "accept"), sum(X$decision == "reject"))) }
-  a(""); a("## 결과 원장(P4)"); a(""); a(rc_outcomes_md(outcomes_path %||% rc_outcomes_path(root), program = RC_P4_PROGRAM, last = 10L))
+  a(""); a("## 결과 원장(P4)"); a(""); a(rc_outcomes_md(outcomes_path %||% rc_outcomes_path(root), program = RC_P4_PROGRAM, last = 10L, tau_clean = tau))
+  ## 판별 성적표(11-10 · 감사 E2 소유 02_Infrastructure/programs/rx_generator_scorecard.R — 읽기 전용 호출 · 순수 함수) — 원장은 여기서 사슬 검증 뒤 넘긴다
+  sc <- NULL; scf <- file.path(root, "02_Infrastructure/programs/rx_generator_scorecard.R")
+  if (file.exists(scf)) {
+    chs <- list(); for (d in chain_dirs) { r <- tryCatch(rc_p4_steps_read(d), error = function(e) NULL); if (length(r)) chs[[basename(d)]] <- r }
+    se <- new.env(parent = globalenv())
+    sc <- tryCatch({ invisible(utils::capture.output(suppressMessages(sys.source(scf, envir = se, keep.source = FALSE))))
+                     s <- se$rxg_scorecard(chs); list(sc = s, md = se$rxg_scorecard_md(s)) }, error = function(e) list(error = conditionMessage(e)))
+    a(""); a("## 생성기 판별 성적표(rx_generator_scorecard.R)"); a("")
+    if (!is.null(sc$error)) a("- (성적표 오류: ", sc$error, ")") else a(paste(unlist(sc$md), collapse = "\n"))
+  }
   txt <- paste(L, collapse = "\n"); .rcp4_assert_clean(txt, tau, "생성기 검토")
   if (!is.null(out)) writeLines(enc2utf8(txt), out, useBytes = TRUE)
-  invisible(list(md = txt, table = D))
+  invisible(list(md = txt, table = D, scorecard = sc$sc))
 }

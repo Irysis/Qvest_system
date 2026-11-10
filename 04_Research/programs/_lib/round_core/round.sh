@@ -5,6 +5,7 @@
 #   measure [--now] [--p=N]  배리어 → 핀 사전 점검 → 엔진별 기준 칸(reference) 먼저 단독 → 나머지 병렬 → 칸마다 시작 · 끝 데이터 지문 →
 #                            인프라 실패 1회 재측정 → 엔진 묶음 지문 불일치면 배리어 뒤 묶음 1회 재측정 → evaluate 자동 연쇄
 #                            ('--now' = 갱신 완료 줄 대기 생략 · 배리어 · 사전 점검 · 지문은 그대로)
+#   fresh-check              데이터 신선도(v1/freshness.R · 가격 · 벤치가 직전 거래일 세션까지 · 0 신선 · 6 낡음/판독 불가) — measure · standing-measure · p4 측정이 같은 판정
 #   evaluate [K]             칸 평가 샤딩(K = 여유 RAM ÷ 4GB · 최대 6) → 종합 판정 1회 · 센티널 .cache/round_core/state/<라운드>.evaluated
 #   상설 판(standing: true · WP5 — v1/standing.R):
 #     scan [--dry-run] [--max N] [--out f]   레인 산출 → 자격 큐(입구 규칙 · 사유 코드) — 등록 뒤 시드 + 새 엔진을 원장에 넣는다
@@ -70,6 +71,7 @@ case "$ST" in
       done
     fi
     barrier; [ "$?" = "10" ] && { echo "== [$TAG] 배리어 2시간 뒤에도 잡힘 — 측정하지 않는다 =="; sentinel measured barrier_held 10; exit 4; }
+    Rscript "$DRV" "$RD" fresh-check || { echo "== [$TAG] 데이터 신선도 미달 — 측정하지 않는다(v1/freshness.R) =="; sentinel measured data_stale 6; exit 6; }
     Rscript "$DRV" "$RD" precheck || { sentinel measured precheck_fail 3; exit 3; }
     PLAN=$(Rscript "$DRV" "$RD" plan) || exit 3
     export ROOT RD CORE
@@ -114,14 +116,15 @@ case "$ST" in
   standing-measure)
     barrier; [ "$?" = "10" ] && { sentinel standing barrier_held 10; echo "== [$TAG] 배리어 2시간 뒤에도 잡힘 — 측정하지 않는다 =="; exit 4; }
     PEND=$(Rscript "$CORE/standing.R" "$RD" pending) || exit 3
+    FRESH=ok; [ -n "$PEND" ] && { Rscript "$DRV" - fresh-check || { FRESH=stale; echo "== [$TAG] 데이터 신선도 미달 — 대기 항목 측정 건너뜀(판정은 진행 · 다음 틱 재개) =="; PEND=""; }; }
     for code in $PEND; do Rscript "$CORE/standing.R" "$RD" measure-item "$code" 2>&1 | grep -E "^\[상설\]|Error|에러" | sed "s/^/[$code] /"; done
     Rscript "$CORE/standing.R" "$RD" judge; jrc=$?
-    sentinel standing "$([ "$jrc" = "0" ] && echo judged || echo judge_failed)" "$jrc" "pending=$(echo $PEND | wc -w)"
+    sentinel standing "$([ "$jrc" = "0" ] && { [ "$FRESH" = "ok" ] && echo judged || echo judged_data_stale; } || echo judge_failed)" "$jrc" "pending=$(echo $PEND | wc -w)"
     exit $jrc ;;
   p4-base-measure|p4-step-measure)
     barrier; [ "$?" = "10" ] && { sentinel p4measure barrier_held 10; echo "== [$TAG] 배리어 2시간 뒤에도 잡힘 — 측정하지 않는다 =="; exit 4; }
     Rscript "$DRV" "$RD" "$ST" "$@"; mrc=$?
-    sentinel p4measure "$(case $mrc in 0) echo measured ;; 4) echo barrier_held ;; *) echo measure_failed ;; esac)" "$mrc"
+    sentinel p4measure "$(case $mrc in 0) echo measured ;; 4) echo barrier_held ;; 6) echo data_stale ;; 7) echo busy ;; *) echo measure_failed ;; esac)" "$mrc"
     exit $mrc ;;
   *) exec Rscript "$DRV" "$RD" "$ST" "$@" ;;
 esac

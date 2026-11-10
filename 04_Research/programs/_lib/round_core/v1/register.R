@@ -161,6 +161,14 @@ rc_close <- function(round_dir, note, philosophy_p2 = NA_character_, superfan_t2
                                        error = function(e) list(status = paste0("error: ", conditionMessage(e)), coarse = "error"))
         else list(status = "skip: finalize = FALSE", coarse = "skip")
   rec$finalize <- fz$coarse
+  ## (11-10 감사 E1) 칸별 마감 상태(재채점 전후 등급 · 관문 판정 = 전기간)는 사람 쪽 파일 results/finalize.json 에만 — 등록부는 다음 설계가 읽는
+  ##   자리라 거친 상태 + 파일 경로만 싣는다(P4 사슬 닫기와 같은 규율). 후보를 처리하기 전 상태(skip · pending · 훅 오류)는 등급이 없어 그대로 싣는다.
+  if (isTRUE(fz$detail)) {
+    ff <- file.path(P$results, "finalize.json")
+    rc_json_write(list(schema = "rc_close_finalize_v1", audience = "사람 쪽(전기간 · 등급 포함) — 처방 · 리뷰 레인 열람 금지", at = rc_now(),
+                       round_id = spec[["round_id"]], status = fz$status, coarse = fz$coarse), ff)
+    fz$status <- sprintf("%s — 상세(사람 쪽) = %s · md5 %s", fz$coarse, rc_rel(ff, root), rc_md5(ff))
+  }
   pr_record_round(spec[["program"]], c(list(round_id = spec[["round_id"]], prereg = P$prereg_rel, prereg_md5 = rc_md5(P$prereg), status = "complete",
                                            verdict = c(V$summary, list(note = note)), philosophy_p2 = philosophy_p2, superfan_t2 = superfan_t2,
                                            report = rc_rel(file.path(P$results, "verdict.json"), root), finalize = fz$status), extra),
@@ -208,5 +216,5 @@ rc_close_finalize <- function(spec, V, P, root = rc_root(), write = TRUE, fn = N
     sprintf("%s: %s", c$code, as.character(r$status %||% "?")[1])
   }, character(1))
   list(status = sprintf("최종 후보 %s · 시행 %d칸 · %s", K$unit, length(K$trials), paste(st, collapse = " | ")),
-       coarse = if (any(grepl(": error", st, fixed = TRUE))) "error" else "done")
+       coarse = if (any(grepl(": error", st, fixed = TRUE))) "error" else "done", detail = TRUE)
 }

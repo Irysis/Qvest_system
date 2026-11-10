@@ -163,7 +163,8 @@ chk("C7g 다음 설계 입력(markdown) — 탐침 2줄(하나는 '이어받음'
 local({
   src <- readLines(file.path(RC_DIR, "outcomes.R"), warn = FALSE, encoding = "UTF-8")
   hit <- grep('if (length(leaks)) stop("[round_core close] 결과 원장 글에 정보 경계 뒤 날짜가 있다', src, fixed = TRUE)
-  mut <- src; if (length(hit) == 1L) mut[hit] <- ""
+  hit2 <- grep("if (!isTRUE(ci$ok)) stop(", src, fixed = TRUE)   # 11-10: 같은 날짜 규칙을 쓰는 처방 입력 검사(rc_input_issues)도 함께 뺀다
+  mut <- src; if (length(hit) == 1L && length(hit2) == 1L) mut[c(hit, hit2)] <- ""
   e <- new.env(parent = globalenv()); eval(parse(text = mut, keep.source = FALSE), envir = e)
   s <- rc_spec_load(file.path(RD, "round_spec.json"), check_files = FALSE)
   r <- tryCatch(e$rc_outcome_record(s, rc_json_read(file.path(P$results, "verdict.json")), "2024-03-15 급락", probes = c("a", "b"), P = P), error = function(x) x)

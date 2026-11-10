@@ -55,7 +55,36 @@ rc_safe <- function(f, ..., what = "") {
                                                               ifelse(!is.na(d) & d > tau, RC_REDACT, v) })
   m2 <- gregexpr("(?<![0-9-])(19|20)[0-9]{2}-(0[1-9]|1[0-2])(?![0-9-])", x, perl = TRUE)
   regmatches(x, m2) <- lapply(regmatches(x, m2), function(v) if (!length(v)) v else ifelse(v > tau_ym, RC_REDACT, v))
+  for (i in seq_along(x)) for (h in .rc_tau_alt_hits(x[i], tau_ym)) x[i] <- gsub(h, RC_REDACT, x[i], fixed = TRUE)   # 표기 변형도 가린다(검사와 같은 규칙)
   s[ok] <- x; s
+}
+## 날짜 표기 변형(11-10 · 감사 K P4) — 한국어 연(월) · 슬래시 · 점 · 두 자리 연도(’23년) · 분기(2023Q1 · 1Q23 · 2023년 1분기).
+##   반환 = 표기마다 (문자열 · 그 표기가 가리키는 가장 이른 연월 'YYYY-MM') — 연만 있는 표기 = 그 해 1월(τ_D 연도와 같으면 τ_D 뒤 아님 · 다음 해부터 누출).
+##   ISO(YYYY-MM[-DD])는 아래 본 규칙이 맡는다(이 함수는 변형만).
+RC_TAU_ALT_RX <- c(
+  ko_ym  = "(?<![0-9])((?:19|20)[0-9]{2})\\s*년\\s*(?:(0?[1-9]|1[0-2])\\s*월)?",
+  slash  = "(?<![0-9])((?:19|20)[0-9]{2})[/.](0?[1-9]|1[0-2])(?![0-9])",
+  yy_ko  = "[’'`]([0-9]{2})\\s*년",
+  q_a    = "(?<![0-9])((?:19|20)[0-9]{2})\\s*[Qq]([1-4])(?![0-9])",
+  q_b    = "(?<![0-9A-Za-z])([1-4])[Qq]\\s*'?([0-9]{2})(?![0-9])",
+  q_ko   = "(?<![0-9])((?:19|20)[0-9]{2})\\s*년\\s*([1-4])\\s*분기")
+.rc_tau_alt_hits <- function(v, tau_ym) {
+  out <- character(0)
+  for (nm in names(RC_TAU_ALT_RX)) {
+    mm <- regmatches(v, gregexpr(RC_TAU_ALT_RX[[nm]], v, perl = TRUE))
+    for (s in unlist(mm)) {
+      g <- regmatches(s, regexec(RC_TAU_ALT_RX[[nm]], s, perl = TRUE))[[1]]
+      ym <- switch(nm,
+        ko_ym = sprintf("%s-%02d", g[2], if (nzchar(g[3])) as.integer(g[3]) else 1L),
+        slash = sprintf("%s-%02d", g[2], as.integer(g[3])),
+        yy_ko = sprintf("20%s-01", g[2]),
+        q_a = sprintf("%s-%02d", g[2], 3L * as.integer(g[3]) - 2L),
+        q_b = sprintf("20%s-%02d", g[3], 3L * as.integer(g[2]) - 2L),
+        q_ko = sprintf("%s-%02d", g[2], 3L * as.integer(g[3]) - 2L))
+      if (!is.na(ym) && ym > tau_ym) out <- c(out, s)
+    }
+  }
+  unique(out)
 }
 rc_redact_after_tau <- function(x, tau) {
   tau <- as.Date(tau)
@@ -74,10 +103,22 @@ rc_after_tau_leaks <- function(x, tau) {
       dd <- suppressWarnings(as.Date(d)); out <<- c(out, d[!is.na(dd) & dd > tau])
       ym <- unlist(regmatches(v, gregexpr("(?<![0-9-])(19|20)[0-9]{2}-(0[1-9]|1[0-2])(?![0-9-])", v, perl = TRUE)))
       out <<- c(out, ym[ym > tau_ym])
+      out <<- c(out, .rc_tau_alt_hits(v[!is.na(v)], tau_ym))      # 표기 변형(한국어 연월 · 슬래시 · 점 · ’yy년 · 분기)
     } else if (is.list(v)) for (e in v) walk(e)
     else if (inherits(v, "Date")) out <<- c(out, format(v[!is.na(v) & v > tau]))
   }
   walk(x); unique(out)
+}
+
+## 처방 입력 글 검사(11-10 · 감사 K P1) — 쓰기(결과 원장 rc_outcome_record)와 읽기(설계 입력 · 생성기 검토 .rcp4_assert_clean)가 같은 함수를 쓴다:
+##   받아들인 줄은 반드시 읽힌다(전에는 쓰기가 등급 표기를 안 봐 '등급 C' 교훈 한 줄이 설계 입력을 영구 정지시켰다).
+RC_GRADE_MARK_RX <- "(등급|Grade|grade)\\s*[ABCF](?![A-Za-z])"
+rc_input_issues <- function(x, tau) {
+  txt <- iconv(paste(as.character(unlist(x)), collapse = "\n"), from = "UTF-8", to = "UTF-8", sub = "")
+  if (is.na(txt)) return(list(ok = FALSE, leaks = character(0), grades = character(0), why = "인코딩 판독 불가"))
+  lk <- rc_after_tau_leaks(txt, tau); gr <- regmatches(txt, gregexpr(RC_GRADE_MARK_RX, txt, perl = TRUE))[[1]]
+  list(ok = !length(lk) && !length(gr), leaks = lk, grades = gr,
+       why = paste(c(if (length(lk)) paste("τ_D 뒤 날짜", paste(head(lk, 5), collapse = ",")), if (length(gr)) paste("등급 표기", paste(head(gr, 5), collapse = ","))), collapse = " · "))
 }
 
 ## 실행 시간 기록(속도 계획 5-1) — .cache/round_core/perf/<round>.jsonl 한 줄씩(동기화 밖 로컬 정션)

@@ -107,6 +107,9 @@ for b in "${BOARDS[@]}"; do
     else
       log "-- [$b] standing-measure(대기 $NP · 배리어 ${bs:-?})"
       run "$b" standing-measure || { log "[$b] standing-measure 실패(rc $?)"; RC=1; }
+      # 데이터 신선도 차단(11-10 · round_core v1/freshness.R) — 실행기가 대기 측정을 건너뛰면 센티널이 judged_data_stale · 요약 줄에 남긴다(rc 는 판정 결과 그대로)
+      sent="${SENT_DIR:-$ROOT/.cache/round_core/state}/$(basename "$b").standing"
+      if [ -f "$sent" ] && grep -q "status=judged_data_stale" "$sent"; then log "[$b] 데이터 신선도 미달 — 측정 대기 $NP 건너뜀(판정은 진행 · 다음 틱 재개)"; fi
     fi
   fi
   log "-- [$b] standing-report$([ "$SEND" = "1" ] && echo " --send")"

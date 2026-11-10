@@ -37,6 +37,7 @@ cat > "$T/04_Research/programs/_lib/round_core/round.sh" <<'EOF'
 echo "$*" >> "$RC_ROOT_POSIX/calls.log"
 st="$2"; v="STUB_RC_${st//-/_}"
 [ "$st" = "pending" ] && printf '%s' "${STUB_PENDING:-}"
+[ "$st" = "standing-measure" ] && [ -n "${STUB_SENT:-}" ] && { mkdir -p "$RC_ROOT_POSIX/.cache/round_core/state"; echo "status=$STUB_SENT rc=0" > "$RC_ROOT_POSIX/.cache/round_core/state/$(basename "$1").standing"; }
 exit "${!v:-0}"
 EOF
 cp "$ROOT/02_Infrastructure/ops/refresh_barrier.sh" "$T/02_Infrastructure/ops/refresh_barrier.sh"
@@ -97,6 +98,16 @@ m=$(mut lock 'if [ -n "$h" ]; then echo' 'if false; then echo') && { mkdir -p "$
   STUB_PENDING="" "$BASH" "$m" >/dev/null 2>&1; [ -f "$CALLS" ] && ok "9b 뮤턴트(잠금 보유자 검사 제거) 검출 — 잠긴 채 실행" || ng "9b 뮤턴트 미검출" ""; rm -rf "$T/.cache/standing_board_run.lock"; }
 m=$(mut barrier 'if [ "$brc" != "0" ]; then log' 'if false; then log') && { rm -f "$CALLS"
   QM_REFRESH_LOCKDIR="$T/held_lock" STUB_PENDING=$'P1S99_x\n' "$BASH" "$m" >/dev/null 2>&1; grep -q standing-measure "$CALLS" 2>/dev/null && ok "9c 뮤턴트(배리어 검사 제거) 검출 — 잠김에도 측정" || ng "9c 뮤턴트 미검출" ""; }
+
+# ── 10. 데이터 신선도 차단(11-10) — 실행기가 대기 측정을 건너뛰면(센티널 judged_data_stale) 로그 · 출력에 한 줄 · rc 0 · 돌연변이 = 침묵 ─────
+rm -f "$CALLS"; o=$(STUB_SENT=judged_data_stale STUB_PENDING=$'P1S99_x
+' go); rc=$?
+{ [ "$rc" = "0" ] && printf '%s' "$o" | grep -q "데이터 신선도 미달 — 측정 대기 1 건너뜀"; } && ok "10 신선도 미달 = 건너뜀 표시 · rc 0(판정은 진행)" || ng "10 신선도 표시" "rc=$rc out=$o"
+rm -f "$T/.cache/round_core/state/P1S99_t.standing"
+m=$(mut fresh 'grep -q "status=judged_data_stale" "$sent"' 'false') && { o=$(STUB_SENT=judged_data_stale STUB_PENDING=$'P1S99_x
+' "$BASH" "$m" 2>&1)
+  ! printf '%s' "$o" | grep -q "데이터 신선도 미달" && ok "10b 뮤턴트(센티널 판독 제거) 검출 — 표시 사라짐" || ng "10b 뮤턴트 미검출" ""; }
+rm -f "$T/.cache/round_core/state/P1S99_t.standing"
 
 echo
 echo "합계: 통과 $P · 실패 $F"

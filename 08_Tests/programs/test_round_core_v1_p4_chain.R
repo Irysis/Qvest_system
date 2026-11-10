@@ -159,7 +159,11 @@ RULES <- list(
   list(id = "uc_floor", type = "threshold", label = "상승 포착 하한", metric = "uc_vis", op = ">=", value_ref = "06_Registry/behavior_card.json::uc_floor",
        source = "투자철학 헌장 강세 참여 ≥ 55%(behavior_card.json::uc_floor_source)"),
   list(id = "crisis_no_worse", type = "threshold", label = "위기 하락 포착 비악화", metric = "d_dd_capture_median_vis", op = "<=", value = 0,
-       basis = "정의 — 비악화 = 부모 이하(새 숫자 없음)", source = "정의"))
+       basis = "정의 — 비악화 = 부모 이하(새 숫자 없음)", source = "정의"),
+  list(id = "bull_segments", type = "threshold", label = "강세 구간별 참여(N1)", metric = "uc_seg_ok_share_vis", op = ">", value_ref = "06_Registry/behavior_card.json::majority_share",
+       source = "헌장 §5 빈칸 4 · 7 · 24(시험)"),
+  list(id = "deep_crisis", type = "threshold", label = "깊은 위기 과반 비악화(N2)", metric = "deep_crisis_nonworse_share_vis", op = ">", value_ref = "06_Registry/behavior_card.json::majority_share",
+       source = "헌장 §5 빈칸 2 · 23(시험)"))
 BUD <- list(max_steps = 5L, max_steps_source = "시험 사양 작성자 지정(시험)", noise_k = 2L, noise_k_source = "시험 사양 작성자 지정(시험)")
 CD <- file.path(SB, "chain", "P4C99_selftest")
 chk("C0 풀 밖 기저 = 거부 · 자격 미달 기저 = 거부", grepl("풀 밖", err_of(rc_p4_chain_new(file.path(SB, "x1"), "P4C98_x", "engine:NOPE", POOL, BASE_CELL, RULES, BUD))) &&
@@ -183,7 +187,12 @@ chk("C11 사양 글에 τ_D 뒤 날짜 = 거부", grepl("τ_D", inj(function(s) 
 
 cat("D 등록 · 걸음 열기\n")
 stub <- list()
-mfun <- function(artifacts, root, tau, ...) { k <- basename(artifacts); if (!is.null(stub[[k]])) stub[[k]] else rc_p4_visible_metrics(artifacts, root, tau, bm_hist = NULL) }
+## 헌장 빈칸 지표(N1 · N2)의 재료 = 고정 합성 표(강세 3 · 위기 4 · 전부 보는 창) — 실지표 칸은 상승 포착 1 · 하락 포착 1 로 둔다(판정 결과는 S · 중앙값 규칙이 가른다)
+FIX_BULL <- function(up = 1) data.table(start_ym = c("2003-04", "2009-03", "2016-02"), end_ym = c("2004-03", "2010-12", "2017-10"), up_capture = up)
+FIX_CR <- function(dd = 1) data.table(peak_date = c("2002-04-18", "2008-05-16", "2011-05-02", "2020-01-22"), trough_date = c("2002-09-30", "2008-10-24", "2011-09-26", "2020-03-19"),
+                                      bm_dd = c(0.30, 0.50, 0.25, 0.35), dd_capture = dd, st_recovery_obs = 100, st_recovery_censored = FALSE)
+mfun <- function(artifacts, root, tau, ...) { k <- basename(artifacts); if (!is.null(stub[[k]])) stub[[k]] else
+  { m <- rc_p4_visible_metrics(artifacts, root, tau, bm_hist = NULL); m[c("bull_vis", "crises_vis")] <- list(FIX_BULL(), FIX_CR()); m } }   # 얕은 교체(modifyList 는 표 열을 재귀로 섞는다)
 RUN <- new.env(); RUN$n <- 0L; RUN$spec <- NULL; RUN$roles <- character(0)
 runner_to <- function(art) function(spec_path, code, out_json, log_dir, root, role) {
   RUN$n <- RUN$n + 1L; RUN$spec <- rc_json_read(spec_path); RUN$code <- code; RUN$role <- role; RUN$roles <- c(RUN$roles, role)
@@ -191,9 +200,10 @@ runner_to <- function(art) function(spec_path, code, out_json, log_dir, root, ro
 held <- function(root) list(state = "held", reason = "alive", lock = "refresh", blocking = TRUE)
 free <- function(root) list(state = "free", reason = "", lock = "", blocking = FALSE)
 FP <- function() "fp-same"
+FRESH <- function(root) list(ok = TRUE, state = "fresh", reason = "시험 주입")   # 신선도 판정(v1/freshness.R) 주입 — 실데이터 날짜와 무관하게
 VINT <- function(root) list(id = "vint-1", n_repairs = 1L); VINT2 <- function(root) list(id = "vint-2", n_repairs = 2L)
-bmeas <- function(cd, art, mf = mfun) rc_p4_base_measure(cd, ROOT, runner = runner_to(art), barrier = free, fingerprint = FP, vintage = VINT, metrics_fun = mf)
-smeas <- function(cd, k, art) rc_p4_step_measure(cd, k, ROOT, runner = runner_to(art), barrier = free, fingerprint = FP, vintage = VINT)
+bmeas <- function(cd, art, mf = mfun) rc_p4_base_measure(cd, ROOT, runner = runner_to(art), barrier = free, fingerprint = FP, vintage = VINT, freshness = FRESH, metrics_fun = mf)
+smeas <- function(cd, k, art) rc_p4_step_measure(cd, k, ROOT, runner = runner_to(art), barrier = free, fingerprint = FP, vintage = VINT, freshness = FRESH)
 md <- function(cd, k, art) { invisible(smeas(cd, k, art)); rc_p4_step_decide(cd, k, root = ROOT, metrics_fun = mfun) }
 reg4 <- function(cd, cid, pool = POOL, mf = mfun, p1 = RCPT(cid)$p1, t1 = RCPT(cid)$t1)
   rc_p4_chain_register(cd, pool, ROOT, metrics_fun = mf, p1 = p1, t1 = t1, ledger = LEDG, review_root = RVR)
@@ -202,7 +212,7 @@ chk("D0b 감독 영수증 없는 등록 = 거부(철학 P1 · 판단 T1 각각) 
       grepl("영수증", err_of(reg4(CD, "P4C99_selftest", t1 = NULL))) && rc_p4_steps_verify(CD)$n == 0L)
 chk("D1 등록(원장 첫 줄 — 기저 보는 창 지표 실측 · 규칙 해석본)", identical(err_of(reg4(CD, "P4C99_selftest")), ""))
 ST <- .rcp4_state(CD, ROOT)
-chk("D2 등록 기록 — 기저 S_vis 유한 · 해석 규칙 3 · 영수증 id · 두 번 등록 거부", is.finite(.rcp4_num(ST$reg$base_metrics$S_vis)) && length(ST$reg$rules_resolved) == 3L &&
+chk("D2 등록 기록 — 기저 S_vis 유한 · 해석 규칙 3 · 영수증 id · 두 번 등록 거부", is.finite(.rcp4_num(ST$reg$base_metrics$S_vis)) && length(ST$reg$rules_resolved) == 5L &&
       identical(ST$reg$superfan$philosophy_p1$id, "R-P1-P4C99") && identical(ST$reg$superfan$superfan_t1$id, "R-T1-P4C99") &&
       grepl("이미 등록", err_of(reg4(CD, "P4C99_selftest"))))
 s1 <- base_spec; s1$overlay <- list(kind = "dd_brake", arm_id = "dd_brake_q"); C1 <- wspec("s1", s1)
@@ -247,7 +257,8 @@ writeBin(sp_b, rc_p4_spec_path(CD))
 
 cat("E 걸음 판정 · 예산 · 원장\n")
 bmv <- ST$reg$base_metrics; mkm <- function(dS, uc, ddd) list(S_vis = .rcp4_num(bmv$S_vis) + dS, uc_vis = uc, dd_capture_median_vis = .rcp4_num(bmv$dd_capture_median_vis) + ddd,
-                                                              calmar_vis = 1, port_t_vis = 1, cagr_vis = 0.1, sharpe_vis = 1, mdd_vis = 0.2, window = c("2000-01-31", TAU))
+                                                              calmar_vis = 1, port_t_vis = 1, cagr_vis = 0.1, sharpe_vis = 1, mdd_vis = 0.2, window = c("2000-01-31", TAU),
+                                                              bull_vis = FIX_BULL(), crises_vis = FIX_CR(1 + ddd))
 stub$s1 <- mkm(0.05, 0.60, -0.01)
 r1 <- tryCatch(md(CD, 1, A_S1), error = function(e) e)
 chk("E1 채택(개선 ≥ 여유 · 상승 포착 ≥ 하한 · 위기 비악화) · r7 signal", !inherits(r1, "error") && identical(r1$decision, "accept") && identical(r1$r7, "signal"),
@@ -292,7 +303,8 @@ chk("F2 보는 창만 — τ_D 뒤 날짜 · 등급 표기 · 등급 열 없음"
 bad_out <- file.path(SB, "outcomes_leak.jsonl")
 writeLines(as.character(jsonlite::toJSON(list(schema = RC_OUTCOME_SCHEMA, kind = "round", program = "P2_DEFENSE", round_id = "P2R99_x", verdict_label = "x", note = "n",
                                               probes = list("2024-08-05 급락을 다시 본다", "b"), lessons = list()), auto_unbox = TRUE)), bad_out)
-chk("F3 결과 원장에 τ_D 뒤 날짜가 섞이면 설계 입력 생성 거부(fail-closed)", grepl("τ_D", err_of(rc_p4_design_input(ROOT, CD, pool = POOL, outcomes_path = bad_out))))
+DI3 <- tryCatch(suppressWarnings(rc_p4_design_input(ROOT, CD, pool = POOL, outcomes_path = bad_out)), error = function(e) conditionMessage(e))
+chk("F3 결과 원장에 τ_D 뒤 날짜가 섞인 줄 = 설계 입력에서 그 줄만 빠진다(11-10 감사 K P1 — 멈추지 않고 · 누출 없음)", is.character(DI3) && !grepl("2024-08-05", DI3, fixed = TRUE) && grepl("P4 강화 사슬 설계 입력", DI3, fixed = TRUE))
 
 cat("G 닫기\n")
 chk("G1 다음 탐침 2개 미만 = 닫기 거부", grepl("탐침", err_of(close4(CD, "P4C99_selftest", "해석", probes = "하나"))))
@@ -409,8 +421,8 @@ chk("J5 등록 영수증 위반 주입 — P1 없음 · 남의 사슬 P1 · T1 �
 chk("J5b 등록(양성 대조 — 영수증 일치)", identical(r3x(), ""))
 A_BSTD <- mk_art("base_std", alpha = 0.005, seed = 7L); stub$base_std <- mkm(0.10, 0.60, -0.02)
 n_b <- rc_p4_steps_verify(CD3)$n
-jv0 <- rc_p4_base_measure(CD3, ROOT, runner = runner_to(A_BSTD), barrier = held, fingerprint = FP, vintage = VINT, metrics_fun = mfun)
-jv1 <- rc_p4_base_measure(CD3, ROOT, runner = runner_to(A_BSTD), barrier = free, fingerprint = FP, vintage = function(root) NULL, metrics_fun = mfun)
+jv0 <- rc_p4_base_measure(CD3, ROOT, runner = runner_to(A_BSTD), barrier = held, fingerprint = FP, vintage = VINT, freshness = FRESH, metrics_fun = mfun)
+jv1 <- rc_p4_base_measure(CD3, ROOT, runner = runner_to(A_BSTD), barrier = free, fingerprint = FP, vintage = function(root) NULL, freshness = FRESH, metrics_fun = mfun)
 chk("J5c 기준 칸 측정 거부 — 배리어 잠김 · 판 표식 판독 불가(fail-closed) = 재지 않고 사유 · 원장 무기록", identical(jv0$status, "barrier_held") &&
       identical(jv1$status, "vintage_unknown") && rc_p4_steps_verify(CD3)$n == n_b)
 mb0 <- readBin(file.path(CD3, "base_cell_spec.json"), "raw", file.info(file.path(CD3, "base_cell_spec.json"))$size); cat(" ", file = file.path(CD3, "base_cell_spec.json"), append = TRUE)
@@ -426,31 +438,31 @@ fake_ok <- function(spec_path, code, out_json, log_dir, root, role) {
   d <- mk_art("m1", alpha = 0.006, seed = 5L); rc_json_write(list(n = 1L, code = code, ok = TRUE, grade = "C", artifacts = d), out_json); 0L }
 fake_fail <- function(spec_path, code, out_json, log_dir, root, role) { RUN$n <- RUN$n + 1L; rc_json_write(list(ok = FALSE, deferred = "refresh_lock"), out_json); 0L }
 n_led <- function() rc_p4_steps_verify(CD3)$n
-n0 <- n_led(); jb8 <- rc_p4_step_measure(CD3, 1, ROOT, runner = fake_ok, barrier = held, fingerprint = FP, vintage = VINT)
+n0 <- n_led(); jb8 <- rc_p4_step_measure(CD3, 1, ROOT, runner = fake_ok, barrier = held, fingerprint = FP, vintage = VINT, freshness = FRESH)
 chk("J8 배리어 잠김 = 측정하지 않고 사유 반환 · 러너 미호출 · 원장 무기록", identical(jb8$status, "barrier_held") && grepl("held", jb8$reason) && RUN$n == 0L && n_led() == n0)
 LKD <- gsub("\\\\", "/", file.path(SB, "rb_lock")); invisible(dir.create(LKD)); invisible(file.create(file.path(LKD, "pid")))
 Sys.setenv(QM_REFRESH_LOCKDIR = LKD, QM_RAWDATA_WRITER_LOCKDIR = gsub("\\\\", "/", file.path(SB, "rb_writer_none")))
-rbh <- rc_p4_barrier_default(ROOT); jb9 <- rc_p4_step_measure(CD3, 1, ROOT, runner = fake_ok, fingerprint = FP, vintage = VINT)
+rbh <- rc_p4_barrier_default(ROOT); jb9 <- rc_p4_step_measure(CD3, 1, ROOT, runner = fake_ok, fingerprint = FP, vintage = VINT, freshness = FRESH)
 Sys.setenv(QM_REFRESH_LOCKDIR = gsub("\\\\", "/", file.path(SB, "rb_lock_none"))); rbf <- rc_p4_barrier_default(ROOT)
 Sys.unsetenv(c("QM_REFRESH_LOCKDIR", "QM_RAWDATA_WRITER_LOCKDIR"))
 chk("J9 정본 배리어(refresh_barrier.R → .sh) — 갓 만든 잠금(빈 pid) = held → 측정 거부 · 잠금 없음 = free(양성 대조)",
     identical(rbh$state, "held") && isTRUE(rbh$blocking) && identical(jb9$status, "barrier_held") && RUN$n == 0L && identical(rbf$state, "free") && isFALSE(rbf$blocking),
     sprintf("held=%s/%s free=%s", rbh$state, rbh$reason, rbf$state))
 mb <- readBin(CM1, "raw", file.info(CM1)$size); cat(" ", file = CM1, append = TRUE)
-chk("J10 열린 뒤 칸 사양이 바뀐 걸음 = 측정 거부(R2) · 러너 미호출", grepl("R2", err_of(rc_p4_step_measure(CD3, 1, ROOT, runner = fake_ok, barrier = free, fingerprint = FP, vintage = VINT))) && RUN$n == 0L)
+chk("J10 열린 뒤 칸 사양이 바뀐 걸음 = 측정 거부(R2) · 러너 미호출", grepl("R2", err_of(rc_p4_step_measure(CD3, 1, ROOT, runner = fake_ok, barrier = free, fingerprint = FP, vintage = VINT, freshness = FRESH))) && RUN$n == 0L)
 writeBin(mb, CM1)
-jf <- rc_p4_step_measure(CD3, 1, ROOT, runner = fake_fail, barrier = free, fingerprint = FP, vintage = VINT)
+jf <- rc_p4_step_measure(CD3, 1, ROOT, runner = fake_fail, barrier = free, fingerprint = FP, vintage = VINT, freshness = FRESH)
 fpn <- local({ i <- 0L; function() { i <<- i + 1L; paste0("fp", i) } })
-jf2 <- rc_p4_step_measure(CD3, 1, ROOT, runner = fake_ok, barrier = free, fingerprint = fpn, vintage = VINT)
+jf2 <- rc_p4_step_measure(CD3, 1, ROOT, runner = fake_ok, barrier = free, fingerprint = fpn, vintage = VINT, freshness = FRESH)
 recs3 <- rc_p4_steps_read(CD3)
 chk("J11 워커 ok ≠ true · 측정 중 지문 변화 = step_measure_failed(측정 기록 없음 · 판정 거부 유지)", identical(jf$status, "failed") && identical(jf2$status, "failed") &&
       any(grepl("지문", jf2$why)) && sum(vapply(recs3, function(r) identical(r$event, "step_measure_failed"), TRUE)) == 2L &&
       !any(vapply(recs3, function(r) identical(r$event, "step_measured"), TRUE)) && grepl("측정 안 된", err_of(rc_p4_step_decide(CD3, 1, root = ROOT, metrics_fun = mfun))))
-n_v <- n_led(); jvc <- rc_p4_step_measure(CD3, 1, ROOT, runner = fake_ok, barrier = free, fingerprint = FP, vintage = VINT2)
+n_v <- n_led(); jvc <- rc_p4_step_measure(CD3, 1, ROOT, runner = fake_ok, barrier = free, fingerprint = FP, vintage = VINT2, freshness = FRESH)
 chk("J11b 팩터 DB 판 표식 ≠ 기준 칸 = 걸음 측정 거부(사유 · 러너 미호출 · 원장 무기록)", identical(jvc$status, "vintage_changed") && grepl("새 사슬에서 기준 칸부터", jvc$reason) &&
       n_led() == n_v)
 RUN$n <- 0L; md5_open <- rc_md5(CM1)
-jm <- rc_p4_step_measure(CD3, 1, ROOT, runner = fake_ok, barrier = free, fingerprint = FP, vintage = VINT)
+jm <- rc_p4_step_measure(CD3, 1, ROOT, runner = fake_ok, barrier = free, fingerprint = FP, vintage = VINT, freshness = FRESH)
 sa <- RUN$spec$selection_accounting; MS <- Filter(function(r) identical(r$event, "step_measured"), rc_p4_steps_read(CD3))
 chk("J12 측정(가짜 러너) — step_measured{k · artifacts · measured_at} · 러너 1회 · 열린 사양 불변",
     identical(jm$status, "measured") && RUN$n == 1L && length(MS) == 1L && identical(as.integer(MS[[1]]$k), 1L) && !is.null(MS[[1]]$measured_at) &&
@@ -459,7 +471,7 @@ chk("J13 시행 회계 = 스윕 그대로(sweep · family_root = 사슬 id · �
     identical(sa$selection_type, "sweep") && identical(sa$family_root, "P4C96_measure") && identical(as.integer(sa$n_family_at_registration), 2L) &&
       grepl("기저 1", sa$n_trials_basis) && !grepl("chain", .rcp4_js(sa$selection_type)) && identical(RUN$code, "P4C96_measure_k1") && identical(RUN$role, "variant") &&
       identical(.rcp4_js(RUN$spec[setdiff(names(RUN$spec), "selection_accounting")]), .rcp4_js(m1[setdiff(names(m1), "selection_accounting")])))
-RUN$n <- 0L; ja <- rc_p4_step_measure(CD3, 1, ROOT, runner = fake_ok, barrier = free, fingerprint = FP, vintage = VINT)
+RUN$n <- 0L; ja <- rc_p4_step_measure(CD3, 1, ROOT, runner = fake_ok, barrier = free, fingerprint = FP, vintage = VINT, freshness = FRESH)
 chk("J14 이미 측정한 걸음 = already(다시 재지 않는다)", identical(ja$status, "already") && RUN$n == 0L)
 chk("J15 측정 기록과 다른 산출을 넘긴 판정 = 거부", grepl("다른 산출", err_of(rc_p4_step_decide(CD3, 1, A_S2, ROOT, metrics_fun = mfun))))
 stub$m1 <- mkm(0.05, 0.60, -0.01)          # 풀 산출(A_BASE) 기준이면 +0.05 채택 · 기준 칸(base_std = +0.10) 기준이면 −0.05 기각
@@ -467,8 +479,8 @@ jd <- tryCatch(rc_p4_step_decide(CD3, 1, root = ROOT, metrics_fun = mfun), error
 chk("J16 첫 걸음 비교 기준 = base_measured$metrics(풀 산출 지표 아님) — dS_vis = −0.05 · 기각 · 산출 = 측정 기록", !inherits(jd, "error") &&
       identical(jd$artifacts_source, "step_measured") && identical(jd$parent_basis, "base_measured") && isTRUE(all.equal(.rcp4_num(jd$table$dS_vis), -0.05)) &&
       identical(jd$decision, "reject") && identical(jd$artifacts, MS[[1]]$artifacts), if (inherits(jd, "error")) conditionMessage(jd) else "")
-chk("J17 판정한 걸음 · 열지 않은 걸음 측정 = 거부", grepl("이미 판정", err_of(rc_p4_step_measure(CD3, 1, ROOT, runner = fake_ok, barrier = free, fingerprint = FP, vintage = VINT))) &&
-      grepl("열지 않은", err_of(rc_p4_step_measure(CD3, 5, ROOT, runner = fake_ok, barrier = free, fingerprint = FP, vintage = VINT))))
+chk("J17 판정한 걸음 · 열지 않은 걸음 측정 = 거부", grepl("이미 판정", err_of(rc_p4_step_measure(CD3, 1, ROOT, runner = fake_ok, barrier = free, fingerprint = FP, vintage = VINT, freshness = FRESH))) &&
+      grepl("열지 않은", err_of(rc_p4_step_measure(CD3, 5, ROOT, runner = fake_ok, barrier = free, fingerprint = FP, vintage = VINT, freshness = FRESH))))
 ## 기본 러너 배선(정본 호출 모양) — 가짜 루트의 rf_cell_worker.R 가 받은 인자 · 환경을 결과 json 에 적는다(실제 워커 · 측정 없음)
 FR <- file.path(SB, "fakeroot"); dir.create(file.path(FR, "02_Infrastructure/ops"), recursive = TRUE)
 writeLines(c("a <- commandArgs(trailingOnly = TRUE)",
