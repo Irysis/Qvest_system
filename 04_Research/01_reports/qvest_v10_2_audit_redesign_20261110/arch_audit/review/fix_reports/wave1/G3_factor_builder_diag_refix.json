@@ -1,0 +1,29 @@
+{
+  "group": "G3_factor_builder_diag",
+  "fixed": [
+    {
+      "title": "excl_late_no_record 에 'agree'/dart_rcept 잔여분 · 퀀티 지각 공시(qw_report) · RS 없는 정정 의심 군이 섞여 결정 대상 건수가 부풀던 문제",
+      "how": "검증자 지적 확인(.krf_avail_cause 가 is.na(dr) & 값 & 날짜면 모두 late_no_record · AF 에 Check/Avail_Basis 없음). 값 고르는 규칙(.krf_pick)은 그대로 두었다. krf_load_inputs 가 v2 표의 Check · Avail_Basis 를 읽고(열이 없으면 중단), krf_annual_fund 는 판 날짜 근거 BE_k · TA_k · OPN_k 를 싣는다(.krf_basis_code: restated / dart_rcept → dart_version / qw_report·rule → filing / 그 밖 unknown · 합성 항목은 합성 날짜(pmax)를 정한 구성 항목의 근거 — .krf_bind_k). 기록이 없는데 판 날짜가 구성일 뒤인 원인을 excl_late_dart_version(결정 대상) · excl_late_filing · excl_late_restated_no_record · excl_late_unknown_basis 로 가른다. 원인 배정 차례는 결정 (ii) 로도 남는 원인을 먼저 세고 excl_late_dart_version 을 결측 원인 가운데 마지막에 두어, 결정 대상 칸에는 보유 DART 판 날짜만이 막은 행만 든다. meta restated_record.late_version_pending = decision_target 'excl_late_dart_version' · bm_by_fy(연도별 결정 대상 건수 · 비율 · 결정 대상 밖 원인 건수) · bm_total_late_dart_version · bm_total_not_decision_target(late_filing · late_restated_no_record · late_unknown_basis · late_restated) · doc 갱신. 옛 키 excl_late_no_record · bm_total_late_no_record 는 없앴다(소비자 = 빌더 자신뿐 · 02_Infrastructure 검색). krf_main 출력 줄도 결정 대상과 대상 밖을 따로 찍는다.",
+      "files": "02_Infrastructure/data/build_kr_factor_returns.R",
+      "test": "08_Tests/data/test_kr_factor_returns.R (g): 합성 2011 B/M 정렬에 T25 = agree/dart_rcept(결정 대상) · T03 = qw_report 지각 공시 · T14 = restated 인데 RS 없음을 넣어 원인 = 퀀티 21 · DART 기록 1 · 퀀티 공시 뒤 1 · 정정 의심 기록 없음 1 · 정정 의심 기록 날짜 뒤 1 · 자료 없음 1 · 보유 DART 판 뒤 1 · BE≤0 1 · 신규 상장 1 · 칸 이름 = KRF_SORT_CAUSES. 근거 열이 없으면 근거 미상 3 · 결정 대상 0 · 정렬 동일. 합성 항목 근거(BE ← 늦은 비지배지분 dart_rcept · OPN ← 늦은 이자비용 qw_report). 메타 결정 대상 누계 1 · 대상 밖 누계 따로 · 옛 키 없음. 돌연변이 M8(지각 공시를 결정 대상으로 섞음 → 2 ≠ 1) · M10(근거 열 버림 → 결정 대상 0 · 미상 3) 발화."
+    }
+  ],
+  "not_fixed": [
+    {
+      "title": "잔여분 처분((i)/(ii)) · 실자료 연도별 건수 확인",
+      "why": "처분은 도훈 결정 대기 — 규칙 불변. 실자료 스크래치 --out 빌드(약 5분)는 기계 부하로 돌리지 않았다(운영 캐시 재빌드 없음). 실자료 열 존재(Check · Avail_Basis · 값 agree/no_dart/non_dec_fy/pre2015/restated · qw_report/rule/dart_rcept/restated_next_fy)는 읽기 전용으로 확인했다. 검증자 실측(TA 기준 agree/dart_rcept 1,693 · qw_report 지각 401 · restated 4,877 중 RS 없는 분)은 다음 빌드의 meta bm_by_fy 에서 결정 대상/대상 밖으로 갈려 나온다."
+    }
+  ],
+  "changed_files": [
+    "02_Infrastructure/data/build_kr_factor_returns.R",
+    "08_Tests/data/test_kr_factor_returns.R"
+  ],
+  "new_tests": [
+    "08_Tests/data/test_kr_factor_returns.R::(g) 원인 11칸(결정 대상 분리) · 근거 열 없음 · 합성 항목 근거 · 메타 결정 대상",
+    "08_Tests/data/test_kr_factor_returns.R::M8(지각 공시 섞음) · M10(근거 열 버림)"
+  ],
+  "tests_run": [
+    {"path": "08_Tests/data/test_kr_factor_returns.R", "result": "41 pass / 0 fail"}
+  ],
+  "notes": "R 자식 = R_ENVIRON_USER 빈 파일 · 쓰기는 tempdir 뿐 · 커밋 · 스테이징 없음. 진단 원인 이름이 바뀌어(excl_late_no_record → 네 칸) meta annual_sort_causes 의 열 구성이 달라진다 — 월간 내용 md5 는 영향 없음."
+}

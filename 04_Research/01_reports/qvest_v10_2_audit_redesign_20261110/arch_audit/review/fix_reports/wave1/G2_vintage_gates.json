@@ -1,0 +1,77 @@
+{
+  "group": "G2_vintage_gates",
+  "fixed": [
+    {
+      "title": "A 자격 관문의 factor_db_stale 가 원장 판독 실패 · 원장/계약 부재에서 fail-open",
+      "how": "rf_runner_gates.R::.rfg_fdb_vintage 가 state(current|stale|unknown|unreadable|no_vintage_root)를 돌려준다. 원장 판독(JSON 문법 · 스키마 · scope · 완료 시각 형식) · 계약 적재 · fdv_stale 오류와 운영 루트에서의 계약/원장 부재 = unreadable → 새 상시 보류 factor_db_vintage_unreadable(설정으로 끌 수 없는 목록에 추가 · facts = 'unreadable'). 'unknown 통과'는 원장이 정상이고 측정 시각만 모를 때로 한정. 운영 루트 판별 = 계약 · 원장 중 하나라도 있거나 루트에 .git 이 있으면 '원장이 있어야 하는 루트'(근거: 두 파일 모두 git 추적 파일이라 운영 작업 트리에는 함께 있다 · 시험 합성 루트는 tempdir 이라 .git 이 없다). 셋 다 없을 때만 no_vintage_root(보류 없음 · 종전 시험 A~F 그대로).",
+      "files": "02_Infrastructure/reinforcement/rf_runner_gates.R",
+      "test": "08_Tests/reinforcement/test_rf_a_eligibility.R G5~G11 (수리 전 게이트 사본에서 G5~G11 7건 FAIL 확인 → 수리 후 66/66 · G10 돌연변이 = 보류 줄 제거 사본은 깨진 원장 위 수리 전 측정을 발행)"
+    },
+    {
+      "title": "운영 원장의 진행 중 항목(completed_at null) 때문에 test_factor_db_vintage T12 · T15 실패 · 판 표식 valid_from 모순",
+      "how": "계약 .fdv_summary 가 진행 중 id · last_completed · valid_from(진행 중이 있으면 NA)을 낸다. fdv_stale 이 in_progress · last_completed 를 함께 싣고, fdv_stamp 는 진행 중이 있을 때만 in_progress 키와 valid_from = NA 를 싣는다(완료 수리뿐이면 종전 모양 그대로 — P4 판 표식 지문 불변). 시험 T12 = 완료 항목만 순서 단정 + 진행 중은 null 만 · T15 = 진행 중이면 valid_from NA + in_progress = 그 id. 원장(06_Registry)은 손대지 않았다.",
+      "files": "02_Infrastructure/contracts/factor_db_vintage.R · 08_Tests/contracts/test_factor_db_vintage.R",
+      "test": "test_factor_db_vintage T12 · T15 · T16 · T17 (운영 원장 대상 통과) · test_scn_repl_measure_record S3(valid_from NA)"
+    },
+    {
+      "title": "선언 팩터 비켜 가기가 운영 산출물에서 한 번도 발화하지 않는다",
+      "how": "계약에 fdv_spec_declared_factors(spec) 신설 — 셀 엔진이 팩터 DB 를 읽는 길이 factors[].kind = db 뿐인 모양(기저 생략|mom_12_1 · 팩터 종류 db|price|null_perm|none · 오버레이 none · Σ sample · 방어 슬리브/엔진 결합 없음)일 때만 db id 목록(빈 목록 = 팩터 DB 팩터 안 읽음), 그 밖은 NULL(알 수 없음 → 종전처럼 낡음). 러너 .rp_fdv_stamp 가 셀 엔진 실행(엔진 basename rf_cell_engine.R)이면 RF_CELL_SPEC 사양에서 뽑아 factor_db_vintage.declared_factors + declared_factors_basis='cell_spec' + 사양 경로 · md5 를 기록하고 stale_at_measure 도 같은 선언으로 판정(fdv_stale 에 declared 인자). fdv_declared_factors 는 ① 기록(basis = cell_spec · status ok) ② 폴더 cell_spec.json/spec.json(같은 규칙) 순으로 읽는다. 근거 없는 선언 · NA 선언 = 알 수 없음.",
+      "files": "02_Infrastructure/contracts/factor_db_vintage.R · 02_Infrastructure/alpha_search/run_paper_replication.R(.rp_fdv_stamp 와 그 호출 줄) · 08_Tests/scenarios/test_scn_repl_measure_record.R · 08_Tests/contracts/test_factor_db_vintage.R",
+      "test": "test_scn_repl_measure_record S2b~S2e(셀 사양 → 기록 → 계약 판정 현행 · 엔진 기저/사양 없음 대조 = 낡음) · S6 돌연변이 ③(사양 경로 전달 제거 탐지) · test_factor_db_vintage T22~T25 · T27 돌연변이(기록 선언 무시 사본은 비부채 칸을 낡음 처리)"
+    },
+    {
+      "title": "2계층 풀 관문에서 isTRUE() 가 NA 를 FALSE 로 접어 pool_vintage_unknown 보류가 죽은 코드",
+      "how": "rf_l2_lib.R::l2_a_eligibility 가 fdv_stale 의 stale 을 논리값 하나일 때 그대로(NA 보존), 그 밖은 NA 로 둔다 → 측정 시각 모르는 모듈이 pool_vintage_unknown 으로 보류된다.",
+      "files": "02_Infrastructure/ops/rf_l2_lib.R · 08_Tests/scenarios/test_scn_l2_a_gate.R",
+      "test": "test_scn_l2_a_gate S3b(실행 id 없는 모듈 → held pool_vintage_unknown:1) · S3b 돌연변이(isTRUE 로 되돌린 사본 = 수리 전 코드 → eligible)"
+    },
+    {
+      "title": "수리 완료 시각 해석이 시간대 · 분 단위 표기를 조용히 틀리게 읽어 완료 시각을 앞당긴다",
+      "how": ".fdv_time(x, strict) 재작성 — 앵커 정규식으로 전체 일치만 받고 오프셋을 실제로 적용(Z/+00:00 = UTC · ±HH:MM · ±HHMM · 범위 밖 오프셋 거부) · 날짜 왕복 검사(2월 30일 · 25시 거부). 원장(fdv_ledger · strict)은 'T' 구분 + 명시 오프셋 필수 · 소수 초 · 공백 구분 · 날짜만 · 숫자형은 멈춘다. 측정 시각(비엄격)은 실행 id · 공백 · 초 없음 · 오프셋 없음(KST) · 날짜만(자정 = 측정을 앞당기는 보수 쪽)을 받되 'YYYY-MM-DD HH:MM' 을 그 분으로 읽는다. 원장 scope.factors 원소도 비지 않은 문자열인지 검사.",
+      "files": "02_Infrastructure/contracts/factor_db_vintage.R · 08_Tests/contracts/test_factor_db_vintage.R",
+      "test": "test_factor_db_vintage T18~T21 · T26 돌연변이(오프셋 버리는 사본은 02:26Z 를 KST 02:26 으로 읽어 05:00 측정을 현행 통과) · T28 돌연변이(엄격 검사 제거 사본은 '2026-11-10 11:26' 을 받아들인다) · test_rf_a_eligibility G8(오프셋 없는 분 단위 원장 → 보류)"
+    }
+  ],
+  "not_fixed": [
+    {
+      "title": "운영 루트에서 계약 · 원장 · .git 이 동시에 사라진 경우",
+      "why": "1계층 관문은 그 루트를 합성 시험 루트와 구별할 수 없어 보류하지 않는다(no_vintage_root). 코드 루트(QM_ROOT) 일치로 묶으면 QM_ROOT 를 샌드박스로 두는 기존 시험(test_replication_a_gate 등)이 깨져 채택하지 않았다. BOOK writer 는 이 경우에도 거부(fail-closed)하므로 최종 등록은 막힌다."
+    },
+    {
+      "title": "02_Infrastructure/data/factor_db_vintage_coverage.py 의 같은 시간대 무시 해석(:41 '시간대 표기는 뗀다')",
+      "why": "소유 경로 밖. 패치 제안: 계약 .fdv_time 과 같이 오프셋을 적용(datetime.fromisoformat + Z 처리)하고 원장 완료 시각은 명시 오프셋을 요구."
+    },
+    {
+      "title": "칸 사양 → 선언 규칙은 '팩터 DB 를 읽는 부품' 차단 목록 방식",
+      "why": "현재 셀 엔진에서 팩터 DB 를 읽는 경로(factors db · rf_sleeve · 파일 arm 오버레이 · rf_factor_cov)는 모두 NULL 로 막았지만, 엔진에 새 팩터 DB 소비 부품이 생기면 이 목록도 함께 고쳐야 한다(새 부품 = 알 수 없음으로 떨어지지 않는다). 셀 엔진 쪽에 '읽은 팩터 id' 를 직접 남기는 계측이 더 강하지만 소유 경로 밖(rf_cell_engine.R)."
+    }
+  ],
+  "changed_files": [
+    "02_Infrastructure/contracts/factor_db_vintage.R",
+    "02_Infrastructure/reinforcement/rf_runner_gates.R",
+    "02_Infrastructure/ops/rf_l2_lib.R",
+    "02_Infrastructure/alpha_search/run_paper_replication.R",
+    "08_Tests/contracts/test_factor_db_vintage.R",
+    "08_Tests/reinforcement/test_rf_a_eligibility.R",
+    "08_Tests/scenarios/test_scn_l2_a_gate.R",
+    "08_Tests/scenarios/test_scn_repl_measure_record.R"
+  ],
+  "new_tests": [
+    "test_factor_db_vintage T16~T28 (진행 중 · 판 표식 · 시각 해석 · 기록 선언 · 사양 규칙 · 돌연변이 3)",
+    "test_rf_a_eligibility G5~G11 (판독 불가 보류 · 운영 루트 판별 · 돌연변이 G10 · 대조 G11)",
+    "test_scn_l2_a_gate S3b + 돌연변이",
+    "test_scn_repl_measure_record S2b~S2e · S3 valid_from · S6 돌연변이 ③"
+  ],
+  "tests_run": [
+    {"path": "08_Tests/contracts/test_factor_db_vintage.R", "result": "수리 전 = 새 API 에서 중단(T12 진입 시 strict 인자 없음) · 수리 후 28/0 (최종 재실행 28 pass 0 fail)"},
+    {"path": "08_Tests/reinforcement/test_rf_a_eligibility.R", "result": "수리 전 게이트 사본 59/7(G5~G11 실패) · 수리 후 66/0"},
+    {"path": "08_Tests/scenarios/test_scn_l2_a_gate.R", "result": "22/0"},
+    {"path": "08_Tests/scenarios/test_scn_repl_measure_record.R", "result": "31/0"},
+    {"path": "08_Tests/contracts/test_replication_a_gate.R", "result": "37/0"},
+    {"path": "08_Tests/programs/test_round_candidate_gate.R", "result": "22/0"},
+    {"path": "08_Tests/scenarios/test_scn_book_registration.R", "result": "33/0"},
+    {"path": "08_Tests/contracts/test_book_registry.R", "result": "9/0 (추가 — 같은 계약 소비자)"},
+    {"path": "08_Tests/programs/test_round_core_v1_p4_chain.R", "result": "123/0 (추가 — fdv_stamp 소비자)"}
+  ],
+  "notes": "원장 06_Registry/factor_db_vintage.json 무수정. 운영 영향: 지금 원장에 진행 중 항목이 있어 fdv_stamp 가 valid_from = NA + in_progress 를 싣는다 → P4 판 표식 지문(rc_p4_vintage_default 의 md5)이 한 번 바뀌어 이미 기준 칸을 잰 사슬은 vintage_changed 로 닫힌다(그 측정들은 진행 중 수리로 어차피 낡음 · 수리 완료 시각을 적을 때도 같은 일이 생긴다). 완료 수리뿐인 원장에서는 stamp 모양이 종전과 같다. 1계층 관문의 새 상시 보류 코드 factor_db_vintage_unreadable 는 상시 보류 목록에서 factor_db_stale 앞에 넣어 H6 돌연변이 치환 문자열을 깨지 않았다. 원장 completed_at 엄격 해석은 fdv_ledger 를 쓰는 모든 소비자(BOOK · 2계층 · P4 · superfan_watch)에 적용된다 — 현 원장과 시험 원장의 표기('+09:00' · '+0900')는 모두 통과. 커밋 · 스테이징 없음."
+}

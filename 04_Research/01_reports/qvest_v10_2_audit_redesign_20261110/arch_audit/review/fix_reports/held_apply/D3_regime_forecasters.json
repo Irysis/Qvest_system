@@ -1,0 +1,30 @@
+{
+  "group": "D3_regime_forecasters",
+  "deleted": [
+    "02_Infrastructure/regime/regime_forecaster_v2.R",
+    "02_Infrastructure/regime/regime_forecaster_v4.R",
+    "02_Infrastructure/regime/regime_ensemble.R"
+  ],
+  "not_deleted": [],
+  "edits": [
+    {"file": "02_Infrastructure/data/cache_registry.json", "what": "regime_forecast_series* 4개 항목 producer 만 수정: series.parquet -> regime_forecaster.R(:88 실제 생산자) · v1vix / v2 -> '퇴역 · 생산자 없음(2026-11-10 삭제 · 태그 pre-v10.2-prune-20261110)' · v3 -> regime_forecaster_v3.R(:104). 항목 자체는 유지(cache_registry_enforce 훅의 .cache 등재 판정 보존). CRLF 737/737 보존 · JSON 파싱 OK. 감사기 확인: cache_freshness_audit.R:214 는 on_demand 에 stale 부적용 · producer 미독. producer 를 읽는 유일한 곳 cache_registry_runner.R .execute_cache 는 schedule daily/weekly/monthly(또는 수동 all)만 실행하고, 감사기는 runner 를 함수 source 만 함 -> 헛경보 없음."},
+    {"file": "06_Registry/pit_jm_c1_consumer_notices.json", "what": "forecaster_v4.code 경로 문자열 뒤에 '(삭제 2026-11-10 · 태그 pre-v10.2-prune-20261110 · 산출 regime_forecast_v4.json 은 사료로 존치)' 표기. LF 보존 · JSON 파싱 OK."},
+    {"file": "08_Tests/data/test_benchmark_level_axis.R", "what": "PINNED 목록에서 \"02_Infrastructure/regime/regime_ensemble.R\" 한 줄 제거(CRLF 보존)."}
+  ],
+  "changed_files": [
+    "02_Infrastructure/data/cache_registry.json",
+    "06_Registry/pit_jm_c1_consumer_notices.json",
+    "08_Tests/data/test_benchmark_level_axis.R",
+    "02_Infrastructure/regime/regime_forecaster_v2.R (deleted)",
+    "02_Infrastructure/regime/regime_forecaster_v4.R (deleted)",
+    "02_Infrastructure/regime/regime_ensemble.R (deleted)"
+  ],
+  "tests_run": [
+    {"path": "08_Tests/data/test_benchmark_level_axis.R", "result": "37 PASS / 0 FAIL / 0 SKIP (rc 0)"},
+    {"path": "08_Tests/data/test_cache_content_reach.R", "result": "42 pass / 0 fail (rc 0)"},
+    {"path": "08_Tests/data/test_cache_freshness_worse_of.R", "result": "14 PASS / 0 FAIL (rc 0)"},
+    {"path": "08_Tests/data/test_rawdata_size_guard.R", "result": "36 pass / 0 fail (rc 0)"},
+    {"path": "08_Tests/data/test_telegram_send_contract.R", "result": "15 PASS / 0 FAIL (rc 0 · 기본 모의 발송기 · QVEST_TG_LIVE_PROBE 미설정 — 실제 발송 없음)"}
+  ],
+  "notes": "삭제 전 재확인(작업 트리): .claude · 05_Production(Grep 도구) · 02_Infrastructure 비json 코드 · 08_Tests · 04_Research 코드에서 세 파일 호출 / source / build_regime_ensemble 호출 0. BOOK_0001 경로(run_nolayer4_monthly.sh · 02_Infrastructure/book/ · 05_Production) 적중 0 — 산출 캐시(regime_forecast_series_v2.parquet · regime_forecast_v4.json)도 읽지 않음. 남은 언급 = 리서치 사료(04_Research/l2_role_rotation/pit_audit_compile.R 가 v2 parquet 를 읽음 · mc1_is_selection.R 문자열 · stage_artifacts) · 08_Tests/validation/test_pit_quarantine_c11.R:234 는 v1vix 경로를 고정 문자열 픽스처로만 씀. 캐시 파일 자체는 지우지 않았다. 범위 밖 미적용 extra_edit: 06_Registry/infra_backlog.json:804,811 FQ-177 의 'regime_ensemble.R' -> 'regime_signal.R' 문구 정정은 소유 목록에 없어 손대지 않음(총괄 처리 필요). git 스테이징 · 커밋 없음."
+}

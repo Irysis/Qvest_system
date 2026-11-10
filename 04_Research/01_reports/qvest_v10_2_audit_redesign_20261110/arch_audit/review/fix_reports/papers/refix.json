@@ -1,0 +1,21 @@
+{
+  "refix_of": "PAPER-QUERY-AND-ORDER-REDESIGN-20261110",
+  "findings": [
+    {"title": "도중 서버 사망 = mcp_ok 침묵 실패", "verdict": "확인 · 수리",
+     "fix": "paper_recharge_mcp.py — dead 이면 status = mcp_partial_transport_failure(skipped=k/n) · n_calls_skipped 기록 · 부분 수확 후보는 유지 · dead 일 때 mcp_suspect_empty 로 덮지 않음. 일일 R 마커 조건(^mcp_ok 제외)이 선다.",
+     "tests": ["test_scn_paper_query_sorts.py S8c", "test_scn_paper_query_failcheck.R F7(판정 통과 + 마커 이름 paper_recharge_arxiv_mcp_partial_transport_failure_<D>)"]},
+    {"title": "형이 틀린 순서 설정이 선택을 멈춤", "verdict": "확인(스크래치 probe 재현) · 수리",
+     "fix": "research_pool_predicates.alpha_pending_ordered — route_order_meta · l1 셈 · order_pending 을 try 로 감싸 예외 시 _fifo_pairs(pairs, 'rule_eval_error:<예외형>')",
+     "tests": ["test_scn_paper_order.py O9b(ValueError · AttributeError · TypeError) · O9c(선택기가 논문을 낸다)"]},
+    {"title": "O14 공허한 절", "verdict": "확인 · 수리", "fix": "앞의 리터럴 절 삭제(같은 단정은 'in w0' 로 이미 있음)"},
+    {"title": "빈 엔진 셈에 진행 중 슬롯 미반영", "verdict": "설계 메모 — 미수리", "why": "결정 문언 = '소비된 논문 수'(L1). 진행 중 요청을 셈에 넣는 것은 규칙 변경이라 새 판(v2) 등록 사안 — 제안으로 남김"}
+  ],
+  "tests_run": {
+    "test_scn_paper_order.py": "39/39",
+    "test_scn_paper_query_sorts.py": "18/18",
+    "test_scn_paper_query_failcheck.R": "13/13",
+    "test_scn_paper_collect.R": "32/32",
+    "test_scn_paper_queue.py": "10/10",
+    "08_Tests/reinforcement/test_rf_pick_key.py": "6/6"
+  }
+}

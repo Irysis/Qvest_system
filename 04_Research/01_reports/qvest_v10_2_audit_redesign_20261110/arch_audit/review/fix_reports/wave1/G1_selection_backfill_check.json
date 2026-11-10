@@ -1,0 +1,16 @@
+{
+  "ok": false,
+  "issues": [
+    {
+      "title": "p2 · p3 사슬 밖 스윕 마감 경로(register.R rc_close_finalize)가 expected 없이 rcg_finalize 를 불러, 최종 후보가 이제 늘 선택 관문 미통과가 됨 — not_fixed 사유('호출부가 생기면')가 사실과 다름",
+      "problem": "수리 뒤 src_gate 는 기대 시행 집합이 없으면 통과를 내지 않는다(fail-closed). 그런데 이미 있는 운영 호출부 04_Research/programs/_lib/round_core/v1/register.R::rc_close_finalize(:206 fn <- e$rcg_finalize · :223 fn(c$artifacts, K$trials, strategy_id=…, spec_path=…, root=…, write=…))는 expected 를 넘기지 않는다. 그러면 rcg_finalize(expected = NULL 기본) → sr_regrade(expected = NULL) → src_gate 가 '기대 시행 집합 미지정'을 낸다. 그래서 p2_device · p3_construction 템플릿의 스윕형 최종 후보는 selection_rc = FALSE 로 재채점되고, 종전 DSR 경로로도 돌아가지 않으므로 A 에 닿을 수 없다. 등급이 부풀지는 않으므로 안전 방향이다. 다만 스윕 라운드의 본 경로가 조용히 막히는 회귀이고, 사유는 finalize.json 안에만 남는다. 수리자는 not_fixed 에 'P4 밖 스윕 라운드에서 호출부가 생기면'이라고 적었지만 그 호출부는 이미 있다. 그래서 그 사유는 타당하지 않다(register.R 은 소유 범위 밖이니 패치 제안으로 올려야 했다).",
+      "evidence": "register.R:150-152(마감 훅 설명) · :206 · :221-225(fn 호출 인자에 expected 없음) · round_candidate_gate.R:206(expected = NULL 기본) · :216(expected 를 그대로 전달) · selection_reality_check.R src_gate '기대 시행 집합 미지정' 가지. 패치 제안: rc_close_finalize 에서 사전등록 칸 목록으로 기대 집합을 만들어 넘긴다. 예: expected = list(n_trials = length(spec$cells), ids = basename(arts[!is.na(arts)])). 측정이 실패한 칸은 n_trials 에 남겨 두면 '점검 시행 < 등록 시행'으로 막힌다. 이 값을 fn(..., expected = expected) 로 넘기고, test_round_core_v1_flow 의 finalize_fn 대역이 expected 를 받아 n_trials = 등록 칸 수임을 단정하게 한다."
+    },
+    {
+      "title": "rcg_finalize 의 expected 전달 · rc_p4_close 의 기대 집합 계산을 단정하는 시험 없음",
+      "problem": "08_Tests/programs/test_round_candidate_gate.R 에는 'expected' 가 한 번도 나오지 않는다. 그래서 rcg_finalize 가 expected 를 대역 함수에 넘기는 줄을 지우는 돌연변이를 이 시험이 잡지 못한다. 수리자의 배선 돌연변이(mut_regrade.R)는 sr_regrade 쪽만 겨냥한다. rc_p4_close 의 기대 집합(1 + 포기 아닌 걸음 · id = 산출 폴더 이름)도 단정하는 시험이 없다(수리자가 not_fixed 에 적은 그대로). 동작은 정적 검토상 옳지만 회귀를 막는 장치가 없다. 덧붙여 src_gate 의 '채움 100%' 가지는 T30 에서 분산 0 가지가 먼저 걸리므로 따로 발화하는 시험이 없다.",
+      "evidence": "grep -n expected 08_Tests/programs/test_round_candidate_gate.R → 0건 · round_candidate_gate.R:215-216 · p4.R:1165-1173 · test_selection_reality_check.R T30 사유 = '분산 0 으로 빠진 칸'"
+    }
+  ],
+  "summary": "결함 넷의 시나리오는 소유 경로 안에서 닫혔습니다. ① src_gate 는 기대 집합 미지정 · 시행 수 부족 · id 누락 · 분산 0 칸 · 지문 불일치를 모두 막습니다. 직접 실행한 결과 test_selection_reality_check 36/0 입니다. 잡음 60칸의 1칸 점검(p 0.005)은 거부되고, 60칸 점검은 p 0.253 으로 미달입니다. 돌연변이 3종도 각 검사를 겨냥합니다. set_hash 는 종전 src_check 가 이미 정렬한 id 와 정수 n 을 썼으므로 바이트가 같습니다. ② backfill 은 gv3b_selection_gate 로 alpha · 판 · PBO 를 다시 판정하고, 저장 ok 와 AND 로 묶으며, 설정을 못 읽으면 미통과(fail-closed)로 둡니다. ③④ gv3b_fa_stale 는 factor_unavailable · md5 없음 · 같은 축 기록을 다시 채점합니다. 필드 경로(measurement_axis.epoch)는 .gv3_record_epoch 와 같습니다. 직접 실행한 결과 test_grade_v3_backfill_mark 32/0 입니다. 실기록을 읽기 전용으로 스캔한 결과는 3,166건 중 reality_check 0 · factor_unavailable 0 입니다. 같은 축 fa ok 99건은 모두 최상위 epoch 를 갖고 있어 폴백 경로가 쓰이지 않습니다. 문턱 · 채점식은 바뀌지 않았고 fail-open 도 없습니다. test_round_candidate_gate 22/0 도 확인했습니다. 남은 문제는 두 가지입니다. 하나는 소유 범위 밖의 기존 운영 호출부 register.R::rc_close_finalize(p2 · p3 스윕 마감)가 expected 를 넘기지 않는 것입니다. 이 때문에 그 경로의 최종 후보가 늘 관문 미통과가 되는데, 수리자의 not_fixed 사유는 이 호출부가 아직 없는 것처럼 적었습니다. 다른 하나는 rcg_finalize · rc_p4_close 의 expected 배선을 단정하는 시험이 없다는 것입니다."
+}

@@ -1,0 +1,49 @@
+{
+  "group": "G1_selection_backfill",
+  "fixed": [
+    {
+      "title": "p2 · p3 스윕 마감 경로(register.R rc_close_finalize)가 expected 없이 rcg_finalize 를 불러 최종 후보가 늘 관문 미통과 — 조용한 회귀 + 잘못된 not_fixed 사유",
+      "files": "02_Infrastructure/programs/round_candidate_gate.R (rcg_finalize 상태 줄) · 패치 제안 scratchpad/wfB/fix/G1_register_rc_close_finalize.patch.txt",
+      "how": "검증자 지적이 맞다. 호출부는 이미 있다(register.R:206 · :223). register.R 은 소유 밖이라 고치지 않았다. 대신 소유 안에서 회귀가 조용하지 않게 했다. expected 없이 불렸고 재채점 관문 사유가 '기대 시행 집합 미지정'이면, rcg_finalize 상태 줄(등록부 finalize 문자열 · finalize.json)에 ' · 기대 시행 집합 미지정(선택 관문 미통과 · 호출부가 expected 를 넘겨야 한다)'를 싣는다. 관문이 다른 사유로 갈렸거나 스윕이 아니면 붙이지 않으므로 기존 정확 일치 단정(test_round_candidate_gate A3)은 그대로 통과한다. fail-closed 는 유지한다. rcg_finalize 안에서 기대를 trial_dirs 로 대신 만들지 않았다. trial_dirs 는 측정 성공 칸뿐이라 그렇게 하면 감사가 약해진다. not_fixed 사유는 사실대로 다시 썼고 구체 패치를 붙였다.",
+      "test": "08_Tests/programs/test_selection_regrade.R W4(기대 없이 그 사유로 막히면 상태 줄에 드러나고, 기대를 넘기면 붙지 않음)"
+    },
+    {
+      "title": "rcg_finalize 의 expected 전달 · rc_p4_close 의 기대 집합 계산 · src_gate 채움 100% 가지를 단정하는 시험 없음",
+      "files": "04_Research/programs/_lib/round_core/v1/p4.R (닫기 sr_regrade 호출부의 기대 집합 계산을 자기 완결 함수 rc_p4_expected_trials 로 분리 · 동작 동일) · 08_Tests/programs/test_selection_regrade.R · 08_Tests/contracts/test_selection_reality_check.R",
+      "how": "test_round_candidate_gate.R 와 p4 사슬 시험은 소유 밖이다. 그래서 소유한 시험 파일에 배선 절을 더했다(합성 · 임시 루트 · 실측 산출물 불요). rcg_finalize 는 다음 다섯 가지를 단정한다. ① expected 인자 대역에 그대로 넘긴다 ② ... 대역에 넘긴다 ③ 4인자 옛 대역은 그대로 호환된다 ④ 기본 래퍼(임시 루트의 sr_regrade 대역)에 넘긴다 ⑤ 전달 줄에서 expected 를 뗀 돌연변이(소스 치환 1곳 성사)를 잡는다. rc_p4_close 쪽은 기대 집합 계산을 base 함수만 쓰는 rc_p4_expected_trials(base_artifacts, results)로 옮겼다. 시험은 p4.R 을 구문 트리로 읽어 그 정의만 꺼내 단정한다. 단정 내용은 다음과 같다. 기준 1 + 포기 아닌 걸음 = n_trials · id = 산출 폴더 이름(역슬래시 · 끝 구분자 처리) · 중복 · 결측은 id 에서만 접히고 수는 남는다 · 걸음 없음 = 1 · 그 기대 집합으로 src_gate 가 빠진 걸음을 막는다 · 호출부가 그 함수 값을 sr_regrade(expected = expected)로 넘긴다(정적) · 포기 걸음 필터 제거 돌연변이를 잡는다. src_gate 채움 100% 가지는 따로 발화시켰다. 빠진 칸 목록만 지운 위조물은 지문 검사보다 먼저 이 가지에서 막힌다(T36). if 줄을 if (FALSE) 로 바꾼 돌연변이는 이 가지를 지나 지문 사유로 넘어간다(T37). 주석 치환은 두 줄 검사에서 return 이 무조건 실행되게 만들므로 쓰지 않았다.",
+      "test": "test_selection_regrade.R W1~W6 · P1~P6 (27/0) · test_selection_reality_check.R T36~T37 (38/0)"
+    }
+  ],
+  "not_fixed": [
+    {
+      "title": "register.R::rc_close_finalize 가 rcg_finalize 에 expected 를 넘기지 않음(p2_device · p3_construction 스윕 마감 — 이미 있는 운영 호출부)",
+      "why": "소유 경로 밖(04_Research/programs/_lib/round_core/v1/register.R)이다. 앞 보고의 '호출부가 생기면'은 사실과 달랐다. 호출부는 이미 있고, 지금 그 경로의 스윕 최종 후보는 늘 '기대 시행 집합 미지정'으로 선택 관문 미통과(A 불가)다. 안전 방향이고, 재수리 뒤에는 상태 줄에 그 사유가 드러난다. 패치 제안 전문은 C:/Users/User/AppData/Local/Temp/claude/bded445ba19315c7/9fe22a2f-3836-40d8-8087-87fddf9c12ec/scratchpad/wfB/fix/G1_register_rc_close_finalize.patch.txt 에 있다. 요지: rc_close_candidates 가 expected = list(n_trials = length(spec$cells), ids = unique(basename(arts[!is.na(arts)]))) 를 반환하고(측정 실패 칸은 수에 남아 막힘 = fail-closed), rc_close_finalize 가 fn(..., expected = K$expected) 로 넘긴다. test_round_core_v1_flow 의 finalize_fn 대역(:139)은 expected 를 받아 n_trials = 등록 칸 수를 단정하고, 전달을 뗀 돌연변이를 잡게 한다."
+    },
+    {
+      "title": "요인 빌더 krf_write 의 쓰기 순서 · meta 비원자 쓰기(앞 보고에서 이월)",
+      "why": "02_Infrastructure/data/build_kr_factor_returns.R 는 이 묶음의 소유 밖이다. 재채점 쪽 수리(gv3b_fa_stale 의 factor_unavailable 같은 축 가지)로 노치 영구 누락은 닫혔다. 제안은 앞 보고와 같다. meta 를 tmp → rename 으로 마지막에 쓰거나 .building 잠금을 둔다."
+    }
+  ],
+  "changed_files": [
+    "02_Infrastructure/programs/round_candidate_gate.R",
+    "04_Research/programs/_lib/round_core/v1/p4.R",
+    "08_Tests/programs/test_selection_regrade.R",
+    "08_Tests/contracts/test_selection_reality_check.R"
+  ],
+  "new_tests": [
+    "08_Tests/programs/test_selection_regrade.R W1~W6 (rcg_finalize expected 전달 · 기본 래퍼 · 상태 줄 · 돌연변이)",
+    "08_Tests/programs/test_selection_regrade.R P1~P6 (rc_p4_expected_trials · 관문 결합 · 정적 배선 · 돌연변이)",
+    "08_Tests/contracts/test_selection_reality_check.R T36~T37 (채움 100% 가지 단독 발화 · 돌연변이)"
+  ],
+  "tests_run": [
+    {"path": "08_Tests/contracts/test_selection_reality_check.R", "result": "38/0 (total 38)"},
+    {"path": "08_Tests/programs/test_selection_regrade.R", "result": "27/0 (total 27 · skipped 0)"},
+    {"path": "08_Tests/programs/test_grade_v3_backfill_mark.R", "result": "32/0 (total 32)"},
+    {"path": "08_Tests/contracts/test_grade_v3.R", "result": "71/0 (total 71 · skipped 0)"},
+    {"path": "08_Tests/contracts/test_essence_oos_components.R", "result": "45/0 (total 45 · skipped 1)"},
+    {"path": "08_Tests/programs/test_round_candidate_gate.R", "result": "22/0 (skipped 0 · A3 정확 일치 상태 단정 불변)"},
+    {"path": "08_Tests/programs/test_round_core_v1_p4_chain.R", "result": "123/0 (total 123)"},
+    {"path": "08_Tests/scenarios/test_scn_l1_chain_e2e.R", "result": "76/0 (total 76)"}
+  ],
+  "notes": "커밋 · 스테이징 없음(git diff --cached 비어 있음). 운영 등록부 · .cache 무기록(시험은 tempdir 합성). R 자식은 R_ENVIRON_USER=빈 파일로 띄웠다. 등급 문턱 · 채점식 · src_gate 판정 순서는 불변이다. p4.R 변경은 닫기 호출부의 기대 집합 계산을 같은 의미의 자기 완결 함수로 옮긴 것뿐이다(basename 전에 역슬래시 · 끝 구분자 정규화를 더함). 이 함수는 사슬 시험 123/0 · e2e 76/0 으로 회귀가 없음을 확인했다."
+}

@@ -1,0 +1,32 @@
+{
+  "group": "F7_hooks_ps",
+  "fixed": [
+    {
+      "title": "텔레그램 가드: 자리표 글자(__qvest_hs_N__) 주입 IndexError → 허용(fail-open)",
+      "files": "02_Infrastructure/hooks/telegram_direct_call_guard.sh",
+      "how": "검증자 지적 재현 확인(P2/Q2 = allow + Traceback). ① 자리표에 명령 원문에 없는 임의 nonce(secrets.token_hex · 원문에 있으면 다시 뽑음)를 넣어 __qvest_hs_<nonce>_N__ 로 — 주입 불가 ② _unhs 는 범위 안 번호만 바꾸고 아니면 글자 그대로 ③ sys.excepthook 갈무리: 확장 추출이 예외로 죽으면 원문 전체로 판정(tg_send*( 있고 tg_agent_brief( 없으면 deny) 뒤 os._exit(0) — 셸 || DECISION='{}' 가 덮지 않게. deny 문구는 _deny_json 하나로.",
+      "test": "test_hook_powershell_coverage.sh H7(켬/끔 deny) · M8(예외 주입 사본도 H6 deny · 깨끗한 R 호출 allow) · M9(갈무리 뗀 사본 = allow) · M11(고정 자리표+범위 검사 없음+갈무리 없음 = 수리 전 꼴 → H7 allow) · fastpath 등가 t_ps_deny_hs_token_literal"
+    },
+    {
+      "title": "텔레그램 가드: @'…'@ | & $R --vanilla - (변수 실행기 + 플래그) 통과",
+      "files": "02_Infrastructure/hooks/telegram_direct_call_guard.sh",
+      "how": "재현 확인(Q1 allow · Bash P6 deny). _r_exec 의 변수 실행기 판정을 '바로 뒤 낱말이 -e/-' 에서 '뒤 어느 자리든 -e 또는 - 낱말' 로(_r_like 와 같은 fail-closed 쪽). 오탐 대조 HA4($p -replace) 허용 유지.",
+      "test": "H8(deny) · H9(Bash 대조 deny) · HA4(allow) · M10(종전 판정으로 되돌린 사본 → H8 allow) · fastpath 등가 t_ps_deny_var_exec_flag"
+    }
+  ],
+  "not_fixed": [],
+  "changed_files": [
+    "02_Infrastructure/hooks/telegram_direct_call_guard.sh",
+    "08_Tests/hooks/test_hook_powershell_coverage.sh",
+    "08_Tests/hooks/test_hook_fastpath_equivalence.sh"
+  ],
+  "procedure": "스크래치 hookwork/new2 사본 편집 → bash -n · 제어 문자 0 → 샌드박스 트리 hookwork/sbx2(훅 폴더 전체 복사 + 고친 파일 덮음 + settings.json) 에서 pscov 56/56 · forms 27/27 · fastpath 147/147 → 운영 훅(미수리)에서 새 사례 6건 FAIL 확인 → cp 사본 원본.tmp && mv -f 원본.tmp 원본 → bash -n OK · cmp 동일 · 무해 명령 2회 {} → 운영 재시험.",
+  "tests_run": [
+    {"path": "08_Tests/hooks/test_hook_powershell_coverage.sh", "result": "56/56 PASS (교체 전 운영 훅 50/56 — 새 사례 H7 H8 M8 M9 M10 M11 FAIL)"},
+    {"path": "08_Tests/hooks/test_telegram_guard_forms.sh", "result": "27/27 PASS"},
+    {"path": "08_Tests/hooks/test_hook_fastpath_equivalence.sh", "result": "147/147 PASS"},
+    {"path": "08_Tests/hooks/test_hook_backslash_paths.sh", "result": "20/20 PASS"},
+    {"path": "08_Tests/hooks/test_safety_guard_memory.sh", "result": "119/119 PASS"},
+    {"path": "08_Tests/hooks/test_boot_currency.sh", "result": "13/13 PASS"}
+  ]
+}

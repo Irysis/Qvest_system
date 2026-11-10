@@ -1,0 +1,36 @@
+{
+  "group": "D4_old_hooks",
+  "deleted": [
+    "02_Infrastructure/hooks/governor_concord_certifier.sh",
+    "02_Infrastructure/hooks/s0_enforcer/s0_enforcer.sh",
+    "02_Infrastructure/hooks/s0_enforcer/state_machine.py",
+    "02_Infrastructure/hooks/unified_agent_guard.sh",
+    "02_Infrastructure/validation/mutation_tracker.py"
+  ],
+  "not_deleted": [],
+  "edits": [
+    {"file": "02_Infrastructure/hooks/policies/cert_rules.json", "what": "governor_concord.trigger_hook 값에 '(2026-11-10 삭제 · 태그 pre-v10.2-prune-20261110)' 추가 — 키 · 구조 · LF 보존 · JSON 파싱 확인 · trigger_hook 을 읽는 코드 0(grep)"},
+    {"file": "02_Infrastructure/worktask/artifact_contract.json", "what": "cert_trigger_separate(:93) · governor_concord.trigger_hook(:164) 값에 같은 삭제 표기 — JSON 파싱 확인"},
+    {"file": "02_Infrastructure/hooks/pipeline/stage_dispatch.py", "what": "s5_to_s6_split 안의 mutation_tracker.py 호출 블록(exists 가드)을 삭제 표기 주석 1줄로 교체 · py_compile OK (파일 자체는 RETIRED — 별도 묶음 삭제 검토 대상)"},
+    {"file": "02_Infrastructure/docs/rules/harness.md", "what": ":21 · :238 unified_agent_guard 줄에 삭제 표기 · :58 alpha_discovery_certifier 줄에 동결 표기"},
+    {"file": "02_Infrastructure/docs/rules/codex-round.md", "what": ":22 s0_enforcer 줄에 s0_enforcer.sh · state_machine.py 2026-11-10 삭제 표기"},
+    {"file": "02_Infrastructure/hooks/mandate_compliance_check.sh", "what": "머리 주석 :4 의 '08_Tests·hook_e2e_battery 가 경로로 실행' 은 사실 아님(08_Tests · ops 참조 0) → 정정 문구로 교체(주석만)"}
+  ],
+  "changed_files": [
+    "02_Infrastructure/hooks/policies/cert_rules.json",
+    "02_Infrastructure/worktask/artifact_contract.json",
+    "02_Infrastructure/hooks/pipeline/stage_dispatch.py",
+    "02_Infrastructure/docs/rules/harness.md",
+    "02_Infrastructure/docs/rules/codex-round.md",
+    "02_Infrastructure/hooks/mandate_compliance_check.sh"
+  ],
+  "tests_run": [
+    {"path": "08_Tests/ops/test_hook_fire_coverage.sh", "result": "PASS 12/0"},
+    {"path": "08_Tests/hooks/test_cert_rules.R", "result": "PASS 9/0"},
+    {"path": "08_Tests/hooks/test_agent_role_guard.sh", "result": "PASS 8/0"},
+    {"path": "02_Infrastructure/hooks/qvest_hook_router.py selftest", "result": "status OK"},
+    {"path": "08_Tests/worktask/test_qepm_freeze_entrypoints.R", "result": "PASS 74/0"},
+    {"path": "08_Tests/worktask/test_qepm_freeze_residual.R", "result": "PASS 41/0"}
+  ],
+  "notes": "삭제 전 재grep: 남은 언급은 settings.json:122 _doc 문자열 · common_charter.md · cert_issuance_paths.md(WT 체인 사료 문서) · v8_readiness_gate.R:950(settings.json 에 이름이 없는지 보는 문자열 · 파일 존재 무관) · hook_fire_coverage.sh · harness_health.sh · book_write_guard.sh 주석 · 08_Tests/baseline/dependency_audit.txt 스냅샷 · arm_gen_read_guard.sh:161(mutation_tracker.json 산출물 정규식 · .py 호출 아님) · stage_artifacts/qepm 사료 — 실행 호출자 0. s0_enforcer/ 폴더는 __pycache__ 와 함께 통째로 사라짐(추적 파일 2개뿐). agent_role_guard.sh(test_agent_role_guard.sh · hook_e2e_battery.py 가 실행) · worktask_artifact_validator.sh(run_all_hooks.sh · test_label_gate_* · hook_e2e_battery.py) 머리 주석은 사실이라 그대로 둠. py_compile 이 남긴 stage_dispatch .pyc(추적 안 됨)는 지움. 08_Tests/integration/test_execution_path_unified.R · test_wt_lifecycle_e2e.R · _cert_threshold_audit.R 도 cert_rules.json 을 읽지만 바꾼 값은 아무 코드도 읽지 않는 서술 필드라 돌리지 않음. git 스테이징 · 커밋 없음."
+}

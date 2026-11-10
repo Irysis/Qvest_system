@@ -1,0 +1,53 @@
+{
+  "group": "D6_registry_data",
+  "deleted": [
+    "06_Registry/essence_regrade_20260824.json",
+    "02_Infrastructure/ops/essence_regrade_apply.R",
+    "02_Infrastructure/ops/essence_regrade_apply.py",
+    "06_Registry/next_session_task.md",
+    "06_Registry/paper_feasibility_20260813.json",
+    "06_Registry/_archive/alpha_frontier_queue_done_20260823.json",
+    "06_Registry/_archive/frontier_migration_report_20260823.json",
+    "04_Research/programs/_lib/night_state/p3r02_measured.done",
+    "04_Research/programs/_lib/night_state/pipeline.done"
+  ],
+  "not_deleted": [
+    {"path": "06_Registry/pit_c11_consumer_notices.json", "why": "유지 지정(PIT C11 소비자 표식 원장 · 도훈 결정 PIT-C11-CONVENTIONS)"},
+    {"path": "06_Registry/pit_jm_c1_consumer_notices.json", "why": "유지 지정(PIT C1 점프 모형 소비자 표식 원장)"},
+    {"path": "04_Research/programs/P3_CONSTRUCTION/P3R02_eigen_markowitz/measure.sh", "why": "유지 지정(사전등록 md5 고정 측정 절차) · 지운 센티널 두 개를 쓰고 기다리지만 이 스크립트를 부르는 살아 있는 곳은 없다"}
+  ],
+  "edits": [
+    {"file": "06_Registry/alpha_frontier_queue.json", "what": "archive_refs.done · report 값을 '(삭제됨 2026-11-10 · 태그 pre-v10.2-prune-20261110 에서 <원경로>)' 로 · 키 · infra 유지 · CRLF 보존 · JSON 파싱 확인"},
+    {"file": "02_Infrastructure/contracts/close_round.R", "what": ":192 경고 문자열을 git 이력(태그 pre-v10.2-prune-20261110 · 원경로) 안내로"},
+    {"file": "06_Registry/infra_backlog.json", "what": "FQ-238 source_refs 의 paper_feasibility 경로에 삭제 표기 · FQ-177 hypothesis · next_action 의 regime_ensemble.R 을 실제 생산자 02_Infrastructure/regime/regime_signal.R 로 정정 + 삭제 태그 · CRLF 보존 · JSON 파싱 확인 · FQ-238 닫기는 하지 않음(상태 변경은 범위 밖)"},
+    {"file": "02_Infrastructure/hooks/policies/role_permissions.json", "what": ":136 'next_session_task.md' 제거 → 'MEMORY.md / methodology_active.md (memory)' · 형식 불변 · 라우터 selftest OK"},
+    {"file": "02_Infrastructure/contracts/register_module.R", "what": ":429 주석에 '태그에서만 확인 가능' 꼬리표"},
+    {"file": "02_Infrastructure/ops/backfill_module_defensive.R", "what": ":26 주석 꼬리표"},
+    {"file": "02_Infrastructure/regime/build_module_performance.R", "what": ":84 주석 꼬리표"},
+    {"file": "02_Infrastructure/regime/l2_pool_admission.R", "what": ":20 주석 꼬리표"}
+  ],
+  "changed_files": [
+    "06_Registry/alpha_frontier_queue.json",
+    "02_Infrastructure/contracts/close_round.R",
+    "06_Registry/infra_backlog.json",
+    "02_Infrastructure/hooks/policies/role_permissions.json",
+    "02_Infrastructure/contracts/register_module.R",
+    "02_Infrastructure/ops/backfill_module_defensive.R",
+    "02_Infrastructure/regime/build_module_performance.R",
+    "02_Infrastructure/regime/l2_pool_admission.R"
+  ],
+  "tests_run": [
+    {"path": "python 02_Infrastructure/hooks/qvest_hook_router.py selftest", "result": "rc 0 · status OK"},
+    {"path": "08_Tests/hooks/test_close_round_baseline.R", "result": "17 pass / 0 fail"},
+    {"path": "08_Tests/hooks/test_p0_loop_closure.R", "result": "26 pass / 0 fail (QM_ROOT=G:/OneDrive/Quant_Module_Moltbot 정규화 · 사용자 env QM_ROOT 역슬래시면 sub 정규식 오류로 중단 — 환경 문제)"},
+    {"path": "08_Tests/programs/test_round_core_v1_p2.R", "result": "34 pass / 0 fail · 뮤턴트 15/15 (QM_ROOT 정규화 · 역슬래시 env 에선 '\\U' 파싱 오류 3 FAIL — 환경 문제)"},
+    {"path": "08_Tests/hooks/test_auto_spawn_layers.R", "result": "19 pass / 0 fail"},
+    {"path": "08_Tests/hooks/test_dryrun_no_side_effects.R", "result": "10 pass / 0 fail"},
+    {"path": "08_Tests/portfolio/test_standalone_track_queue.R", "result": "17 pass / 0 fail"},
+    {"path": "08_Tests/worktask/test_qepm_advisor_contract.R", "result": "147 pass / 0 fail"},
+    {"path": "08_Tests/hooks/test_continuity_marker_identity.py", "result": "31 pass / 0 fail"},
+    {"path": "08_Tests/hooks/test_continuity_verdict_artifact_identity.py", "result": "28/28 pass"},
+    {"path": "08_Tests/hooks/test_cluster_power.R", "result": "24 pass / 1 fail — F3 레지스트리 계열 수 16 vs 상수 15 · factor_registry.json(다른 세션 수정 중 · M)에서 온 것으로 이 묶음과 무관"}
+  ],
+  "notes": "삭제 전 재확인: 9개 모두 살아 있는 호출자 없음(module_catalog.json 의 essence_regrade_ref = 라벨 문자열 · lcode_harvester.py 는 원본 메타의 essence_regrade dict 만 읽음 · 센티널 두 개는 유지 대상 measure.sh(호출자 0)만 씀). wiring_map.json:1285 · INDEX.md · artifact_index · hygiene_report 는 색인류라 손대지 않음(생성기 재생성 몫). CHANGELOG_constitution.md:748 의 역사 언급은 그대로. git 스테이징 · 커밋 안 함."
+}

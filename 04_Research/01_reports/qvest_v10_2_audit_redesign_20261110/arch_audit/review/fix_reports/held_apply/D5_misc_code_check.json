@@ -1,0 +1,27 @@
+{
+  "group": "D5_misc_code",
+  "ok": true,
+  "summary": "적용 보고를 그대로 믿지 않고 git status · git diff · grep · 시험으로 다시 확인했습니다. 지운 12개 파일은 모두 결과 목록 H5 의 delete 안에 있습니다. 지금 작업 트리에서 이 파일들을 source · 호출 · open 하는 살아 있는 코드 · 시험 · 훅 · 스킬 · 에이전트 · 명령 · CI · bat/xml 은 없습니다. 남은 참조는 주석, 사실 기록 문자열(fx3 픽스처 · pit_quarantine · ast_field_map · infra_backlog), 끝난 WT 의 stage_artifacts 사료 스크립트뿐입니다. keep 판정 파일(pit_quarantine.json · fx3 픽스처 · score_composite.R · live_track/PPURE_* 2곳 · pit_c11_consumer_notices.json)은 모두 그대로 있습니다. ensemble-design.md 를 지우지 않은 판단은 맞습니다. 살아 있는 에이전트 문서 .claude/agents/dispatch-orchestrator.md:16 이 이 파일을 가리킵니다. 고친 파일 상태: bootstrap.sh 는 bash -n 을 통과했고 LF 입니다. CI YAML 은 파싱되고 잡이 13개이며, needs 참조와 v8_ready 언급은 0건입니다. _r_portability_baseline.json 은 LF 를 지켰고 v8 항목 3줄만 빠졌습니다. wiring_map_baseline.json 은 CRLF 240/240 을 지켰고 객체 하나만 빠졌습니다. 두 json 모두 파싱됩니다. 시험 결과: test_boot_currency.sh 는 마지막 주석 편집 뒤 다시 돌려 PASS 13/0 입니다. test_scheduler_alert_surface.sh 는 PASS 7/0 입니다. test_r_portability.R 는 FAIL 23/40 이지만 v8_readiness_gate 와 관련된 실패는 0건입니다. 실패는 모두 다른 파일의 novel_violation 과 다른 묶음이 남긴 기준선 잔여분입니다. 감사를 약하게 만든 재조준은 없습니다. 지운 시험이 없고, 기준선에서는 수리된 항목만 뺐습니다.",
+  "issues": [
+    {
+      "title": "parquet 는 git 무시 파일이라 태그로 복구할 수 없음(정보)",
+      "problem": "06_Registry/lean_carrier/carrier_20260823_171019_40176.parquet 는 .gitignore:24 의 *.parquet 규칙에 걸려 추적되지 않던 파일입니다. 그래서 태그 pre-v10.2-prune-20261110 에 들어 있지 않고, '추적 파일이라 태그로 복구 가능'이라는 전제가 이 파일에는 성립하지 않습니다. 결과 목록에 명시된 삭제 대상이고 소비자도 0이라 차단 사유는 아닙니다. 다만 복구할 수 없다는 점은 기록해 둡니다.",
+      "evidence": "git check-ignore -v → .gitignore:24:*.parquet · git ls-tree pre-v10.2-prune-20261110 -- 06_Registry/lean_carrier → meta.json 만 존재"
+    },
+    {
+      "title": "빈 폴더 02_Infrastructure/eval 잔존(사소)",
+      "problem": "harness_perf_eval.R 을 지운 뒤 02_Infrastructure/eval 이 빈 폴더로 남았습니다. git 은 빈 폴더를 추적하지 않으므로 영향은 없습니다.",
+      "evidence": "ls 02_Infrastructure/eval → 비어 있음"
+    },
+    {
+      "title": "사료 스크립트가 지운 계약을 source(비활성)",
+      "problem": "stage_artifacts/WT_R20260829_004/s5_diag.R:15 가 ml_pipeline/dpl_ens_eval_contract.R 를 source 합니다. 끝난 WT 의 진단 사료이고, 부르는 곳이 없습니다. 살아 있는 호출자가 아닙니다.",
+      "evidence": "git grep dpl_ens_eval_contract → stage_artifacts/WT_R20260829_004/s5_diag.R:15 · essence_score.R:161(주석)"
+    }
+  ],
+  "tests_run": [
+    {"path": "08_Tests/hooks/test_boot_currency.sh", "result": "PASS 13/0 (마지막 bootstrap 주석 편집 뒤)"},
+    {"path": "08_Tests/ops/test_scheduler_alert_surface.sh", "result": "PASS 7/0"},
+    {"path": "08_Tests/hooks/test_r_portability.R", "result": "FAIL 23/40 — v8_readiness_gate 관련 0건. novel_violation 38건 + baseline_not_shrunk 14건(다른 파일) + code6_sites_grew(다른 파일) 는 이 묶음과 무관"}
+  ]
+}

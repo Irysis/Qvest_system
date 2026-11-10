@@ -1,0 +1,25 @@
+{
+  "group": "R2_tau_checker (refix)",
+  "fixed": [
+    {"title": "Grade-A(하이픈/대시) 어순 통과", "how": "RC_GRADE_MARK_RX word_letter 구분자에 - – — 추가", "files": "04_Research/programs/_lib/round_core/v1/util.R", "test": "test_round_core_v1 E1 ('Grade-A 전략' · 'grade–B 후보') · test_rx_round D5 · knowledge_loop L11b"},
+    {"title": "한국어 서술형 등급 이동 · 판정 통과", "how": "RC_GRADE_NARR_RX(ko_move · verdict_a · verdict_b) 신설 — 칸/블록 라벨 · A/B 비교를 가린 사본(RC_GRADE_LABEL_MASK_RX)에만 건다(원 규칙은 원문에). .rc_grade_hits 로 통합", "files": "util.R", "test": "E1 'B에서 A로 올라갔다' · 'A로 승급' · 'A 로 올라섰다' · 'B 로 상향' · 'C에서 B로' · 'A 판정을 받았다' · '최종 판정 A' · 'F 판정' · '판정은 B' 거부 / E2 '칸 A 로 옮겨' · '칸 B에서 A로 옮겼다' · 'strict-PIT A/B 판정' · '블록 A 판정 규칙' · 'B1 블록에서 B2 블록으로' 통과"},
+    {"title": "전체 기간 · 전 구간 · 전체 표본 · 검증 구간 통과", "how": "RC_TESTWIN_KW_RX 에 전\\s*구간 · 전체\\s*(기간|구간|표본|샘플) · 검증\\s*(창|구간|기간) 추가 · '보는 창 전 구간/전체 기간'만 RC_TESTWIN_VIS_RX 로 키워드에서 제외", "files": "util.R", "test": "E1 4건 거부 · E2 '보는 창 전체 기간 Calmar 0.81' · '보는 창 전 구간 Sharpe 0.9' · 'τ_D 이전 구간 …' 통과"},
+    {"title": "시험 창 수치 규칙 줄바꿈 · 24자 우회", "how": "검사 단위를 칸(unlist(x) 원소) 안 문단으로 변경 — 빈 줄 · 마크다운 구조 줄 시작(- * + > # | 1.)에서만 나누고 그 밖 줄바꿈은 공백. 문단 안 키워드와 수치 공존이면 거리 무관 거부. 근접 정규식 RC_TESTWIN_RX 삭제. 처방 문서 헌장 등급 절의 고정 구절 '위기 복원력(CR) 노치 + OOS 관문.' 은 .rx_assert_clean allow 에 추가(코드 상수 · 같은 문단의 다른 OOS 수치는 그대로 막음 — 시험 고정)", "files": "util.R · 02_Infrastructure/programs/rx_round.R(.rx_assert_clean 만)", "test": "E1 '시험 창\\n Calmar 0.41' · 긴 간격 0.62 문장 · 'OOS 에서는\\n… 0.48' · '| 시험 창 | 0.41 |' 거부 / E2 문단이 다른 언급 통과 · rx D5 'OOS 관문 통과 · Calmar 0.41' · 고정 구절 + 'OOS Calmar 0.41' 거부 · D6 고정 구절 단독 통과 · D8 헌장 통과"}
+  ],
+  "not_fixed": [],
+  "changed_files": [
+    "04_Research/programs/_lib/round_core/v1/util.R",
+    "02_Infrastructure/programs/rx_round.R",
+    "08_Tests/programs/test_round_core_v1.R",
+    "08_Tests/programs/test_rx_round.R",
+    "08_Tests/scenarios/test_scn_knowledge_loop.R"
+  ],
+  "tests_run": [
+    {"path": "08_Tests/programs/test_round_core_v1.R", "result": "39/39 pass"},
+    {"path": "08_Tests/programs/test_rx_round.R", "result": "50/50 pass (첫 실행 D8 실패 = 헌장 'OOS 관문' 문단 → allow 추가 후 통과)"},
+    {"path": "08_Tests/scenarios/test_scn_knowledge_loop.R", "result": "59/59 pass · gap 1(L3b 기존 · 타 단위)"},
+    {"path": "08_Tests/programs/test_round_core_v1_p4_chain.R", "result": "123/123 pass"},
+    {"path": "08_Tests/scenarios/test_scn_l1_chain_e2e.R", "result": "76/76 pass"}
+  ],
+  "notes": "outcomes.R 는 이미 rc_input_issues 를 기록 · 읽기(tau_clean) 양쪽에서 부르고 미통과 옛 줄을 건너뛰며 건수 경고를 남겨 수정 불필요. p4.R .rcp4_assert_clean 은 호출만(시그니처 · 반환 형식 불변). 운영 원장 06_Registry/round_outcomes.jsonl 은 아직 없음(읽기 전용 탐침). 한계: 문단 경계(목록 항목 · 빈 줄)를 넘어 떨어진 키워드/수치는 별 문단으로 본다 — 설계 입력 표 · 목록 문서의 오탐을 막기 위한 선택."
+}

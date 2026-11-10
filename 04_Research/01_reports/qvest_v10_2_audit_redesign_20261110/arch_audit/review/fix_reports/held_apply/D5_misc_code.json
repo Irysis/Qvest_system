@@ -1,0 +1,43 @@
+{
+  "group": "D5_misc_code",
+  "deleted": [
+    "02_Infrastructure/eval/harness_perf_eval.R",
+    "02_Infrastructure/validation/v8_readiness_gate.R",
+    "02_Infrastructure/tools/qvest_v8_ready",
+    "02_Infrastructure/ml_pipeline/dpl_feature_builder.py",
+    "02_Infrastructure/ml_pipeline/dpl_ens_eval_contract.R",
+    "02_Infrastructure/ml_pipeline/build_alphasearch_feature_panel.R",
+    "02_Infrastructure/ops/lean_carrier_from_btresult.R",
+    "06_Registry/lean_carrier/carrier_20260823_171019_40176_meta.json",
+    "06_Registry/lean_carrier/carrier_20260823_171019_40176.parquet",
+    "02_Infrastructure/portfolio/ppure_paper_track.R",
+    "02_Infrastructure/prompts/_retired_v10/monitoring_init.md",
+    "02_Infrastructure/reports/insider_safe_live_track.R"
+  ],
+  "not_deleted": [
+    {"path": ".claude/skills_retired_v10/ensemble-design.md", "why": "재확인 grep 에서 살아 있는 에이전트 문서 .claude/agents/dispatch-orchestrator.md:16 이 'LOO/상관 패턴은 .claude/skills_retired_v10/ensemble-design.md(사료) 참조'로 이 파일을 가리킨다. dispatch-orchestrator 는 살아 있는 strategy-rotation SKILL · 명령이 부른다. 검증 판정의 '다른 언급 0'이 놓친 참조라 지우지 않았다. 지우려면 그 에이전트 문서 줄을 먼저 태그 기준 서술로 바꿔야 한다(소유 범위 밖). 같은 이유로 score_composite.R:5,215 주석 정리도 하지 않았다."}
+  ],
+  "edits": [
+    {"file": "02_Infrastructure/ops/bootstrap.sh", "what": "'7d. v7.2.1 v8 Readiness Gate' 절 통째 제거(옛 757-809줄 · qvest_v8_ready 를 부르던 블록 · 기본 꺼짐이었다) + 574줄 레거시 스위치 주석에서 7d 언급을 삭제 사실로 바꿈. 7c → 7e 흐름 유지 · '# 7d. PG2 정체성 정합'(627줄 · 다른 절)은 그대로 · LF 보존 · bash -n OK."},
+    {"file": ".github/workflows/qvest-kernel-ci.yml", "what": "v8_readiness_smoke 잡 제거(옛 335-367줄 · 이미 지워진 test_v8_readiness_gate.R 과 qvest_v8_ready 를 부르던 잡). needs 참조 0 · PyYAML 파싱 OK(잡 13개)."},
+    {"file": "08_Tests/hooks/_r_portability_baseline.json", "what": "v8_readiness_gate.R 항목 3줄만 제거(code6_sites 1 · entries :1 · :6). 다른 항목 · generated_at 불변 · --write-baseline 은 쓰지 않음(그러면 다른 묶음 몫까지 통째로 다시 써진다) · LF 보존 · JSON 파싱 OK."},
+    {"file": "06_Registry/wiring_map_baseline.json", "what": "standards 배열의 v8_readiness_gate.R 객체 1개(5줄) 제거 · CRLF 보존 · JSON 파싱 OK."},
+    {"file": "02_Infrastructure/ml_pipeline/PIT_C11_NOTICE.md", "what": "해당 파일 목록의 dpl_feature_builder.py 줄에 '2026-11-10 삭제 · 태그 복구 가능 · 표식은 기존 산출 인용 금지 기록으로 존치' 표기."}
+  ],
+  "changed_files": [
+    "02_Infrastructure/ops/bootstrap.sh",
+    ".github/workflows/qvest-kernel-ci.yml",
+    "08_Tests/hooks/_r_portability_baseline.json",
+    "06_Registry/wiring_map_baseline.json",
+    "02_Infrastructure/ml_pipeline/PIT_C11_NOTICE.md"
+  ],
+  "tests_run": [
+    {"path": "08_Tests/hooks/test_r_portability.R", "result": "FAIL 23 pass / 40 fail. 이 묶음 때문이 아니다. novel_violation 38건은 이 묶음과 무관한 살아 있는 파일의 기존 위반이다. baseline_not_shrunk · code6_sites 는 다른 묶음이 지운 파일 13건이 기준선에 남은 몫이다(data_collector_dart_buyback.R · update_research_philosophy.R · lcode_revalidator_v2.R 등). 이 묶음의 v8_readiness_gate.R 항목은 기준선에서 빠져 retired 에 없다. 기준선 정리는 총괄 또는 해당 묶음 몫이다."},
+    {"path": "08_Tests/hooks/test_boot_currency.sh", "result": "PASS 13/0"},
+    {"path": "08_Tests/factor_db/test_ic_frontier_check.R", "result": "PASS 32/0 (bootstrap.sh 원문을 읽는 시험)"},
+    {"path": "08_Tests/ops/test_scheduler_alert_surface.sh", "result": "PASS 7/0 (bootstrap 배선 단언)"},
+    {"path": "08_Tests/ops/test_worktree_stranded_axis.sh", "result": "PASS 15/0 (bootstrap §4h 추출)"},
+    {"path": "08_Tests/data/test_benchmark_level_axis.R", "result": "PASS 37/0 (PINNED 에 이 묶음 파일 없음)"}
+  ],
+  "notes": "삭제 전 재확인: 05_Production(Grep) 0건 · 미추적 파일 0건 · 예약 작업 bat 0건. 남은 참조는 문서 · 기록 · stage_artifacts 사료 · 색인류, 그리고 run_all_hooks.sh 402·1254줄 주석뿐이다. 남은 서술 참조(손대지 않음): 02_Infrastructure/ramp/README.md:10 (ppure_paper_track.R 를 factor_validation.R 소비자로 적은 표) · 02_Infrastructure/attribution/README.md:71 (monitoring_init.md) · essence_score.R:161 주석 (dpl_ens_eval_contract.R) · docs/rules/r-portability.md 와 continuity-firewall.md · artifact-naming.md 의 언급. 06_Registry/lean_carrier 는 비어서 rmdir 했다. 06_Registry/live_track/PPURE_* 는 지시대로 남겼다. tools/paper_recharge_daily.R:433 주석은 다른 세션이 같은 파일을 수정 중(미커밋 diff 있음)이라 손대지 않았다(선택 항목). bootstrap.sh 의 574줄 주석 수정은 시험을 돌린 뒤에 했고, 그 뒤 bash -n 으로 문법만 다시 확인했다. 시험은 다시 돌리지 않았다. git 스테이징 · 커밋은 하지 않았다."
+}

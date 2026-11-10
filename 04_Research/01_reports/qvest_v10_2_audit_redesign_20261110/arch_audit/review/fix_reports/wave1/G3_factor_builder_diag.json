@@ -1,0 +1,30 @@
+{
+  "group": "G3_factor_builder_diag",
+  "fixed": [
+    {
+      "title": "'agree' 인데 DART 보유 판 접수일이 구성일 뒤인 기업-연도(잔여분)가 정렬에서 빠지는데 진단에 잡히지 않는다",
+      "how": "규칙(.krf_pick)은 그대로 두고 진단만 더했다. .krf_avail_cause(진단 전용 · .krf_pick 과 같은 분기)로 항목(BE · OPN · TA1 · TA2)마다 출처/결측 원인을 매기고, .krf_sort_cause 가 정렬 유니버스 행마다 배타 원인 하나를 준다: sorted_quantiwise · sorted_dart_record · excl_late_no_record(기록 없음 · 판 날짜가 구성일 뒤 = 'agree'/dart_rcept 잔여분) · excl_late_restated · excl_record_no_value · excl_nonpositive · excl_new_listing(B/M 만 · 12월 말 시총 없음 · 먼저 셈) · excl_no_data. krf_annual_labels 가 연도 × 정렬(BM · OP · INV)별 건수 표(causes)를 내고, 편입 칸 합 ≠ 정렬 종목 수면 멈춘다(fail-closed). krf_build → diag$annual_causes → krf_write 가 meta.annual_sort_causes(annual_sorts 옆)와 meta.restated_record.late_version_pending(status = dohoon_decision_pending · rule_changed = FALSE · 처분 선택지 (i)/(ii) · B/M 연도별 excl_late_no_record · excl_late_restated · 유니버스 대비 비율 · 누계)을 싣는다. krf_main 이 누계 한 줄을 찍는다.",
+      "files": "02_Infrastructure/data/build_kr_factor_returns.R",
+      "test": "08_Tests/data/test_kr_factor_returns.R (g) 5건 — 합성 2011 B/M 정렬: 퀀티 23 · DART 기록 1(T12) · 판 날짜 뒤 기록 없음 1(T25) · 정정 의심 기록 날짜 뒤 1(T18) · BE≤0 1(T07) · 신규 상장 1(T30) · 자료 없음 1(T09); 칸 합 = 유니버스 · 편입 합 = n_sort; OP/INV 원인 칸; 정렬 라벨 규칙 불변; 메타 키. 수리 전 (g) 4 FAIL 확인(M8 은 치환 대상 없음으로 중단). 돌연변이 M8(late_no_record → no_data) · M9(메타 키 제거) 에서 다시 실패."
+    }
+  ],
+  "not_fixed": [
+    {
+      "title": "잔여분 처분((i) 결측 유지 / (ii) 최초 공시일로 편입)과 노치 재채점 영향 수치",
+      "why": "처분은 도훈 결정 대기 — 규칙은 바꾸지 않았다. '노치 재채점에 주는 영향'은 대안 규칙의 재빌드 없이는 잴 수 없어, 메타에는 연도별 잔여분 건수와 유니버스 대비 비율(share_late_no_record)만 실었다. 실자료 스크래치 --out 빌드(약 5분)는 기계 부하로 돌리지 않았다 — 운영 캐시 재빌드 없음 · 실자료 연도별 건수(주장 1,693)는 다음 빌드의 meta 에서 확인 대상."
+    }
+  ],
+  "changed_files": [
+    "02_Infrastructure/data/build_kr_factor_returns.R",
+    "08_Tests/data/test_kr_factor_returns.R"
+  ],
+  "new_tests": [
+    "08_Tests/data/test_kr_factor_returns.R::(g) 정렬 원인 진단 5건",
+    "08_Tests/data/test_kr_factor_returns.R::M1(일치 검사 발화) · M1b · M5g · M8 · M9"
+  ],
+  "tests_run": [
+    {"path": "08_Tests/data/test_kr_factor_returns.R (수리 전)", "result": "새 (g) 4 FAIL · M8 치환 대상 없음으로 중단(재현 확인)"},
+    {"path": "08_Tests/data/test_kr_factor_returns.R (수리 후 최종)", "result": "38 pass / 0 fail"}
+  ],
+  "notes": "새 일치 검사(편입 칸 합 = 정렬 종목 수)가 고르기 규칙만 바꾼 돌연변이(M1 · M5~M7)를 먼저 멈추게 해서, 시험의 mutant() 를 여러 치환 지원으로 넓히고 M1b · M5~M7 은 그 검사를 함께 꺼서 원래 검사(①·(a)·(b)·(c))가 직접 잡는지 그대로 확인한다(약화 없음 · M1 · M5g 는 검사 발화를 따로 단정). M7 치환 대상은 진단 함수에도 같은 부분 문자열이 생겨 .krf_pick 고유 문자열('fifelse(!is.na(dr) & dr <= at & is.finite(vr), vr,')로 좁혔다(같은 돌연변이). 메타 키 검사는 R `$` 부분 일치를 피하려 [[ ]] 로 읽는다. R 자식 = R_ENVIRON_USER 빈 파일 · 쓰기는 tempdir 뿐 · 커밋 · 스테이징 없음."
+}

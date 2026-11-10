@@ -1,0 +1,46 @@
+{
+  "group": "D2_retired_queue_runners",
+  "deleted": [
+    "02_Infrastructure/ops/alpha_search_queue_run.sh",
+    "02_Infrastructure/ops/mode_queue_research_run.sh",
+    "02_Infrastructure/ops/factor_deep_recheck_run.sh",
+    "02_Infrastructure/ops/alpha_search_queue_prompt.md",
+    "02_Infrastructure/ops/mode_queue_research_prompt.md",
+    "02_Infrastructure/ops/factor_deep_recheck_prompt.md",
+    "02_Infrastructure/ops/_queue_top_ids.py",
+    "02_Infrastructure/ops/research_effect_signature.py"
+  ],
+  "not_deleted": [],
+  "edits": [
+    {"file": "08_Tests/ops/test_alpha_queue_pending.py", "what": "배선 단언 재조준: TARGET = programs/next_replication.R(주석 뺀 코드에 research_pool_predicates.py + \"alpha-pending\" 호출 · heredoc 부활 감시) + 새 PICK = ops/rf_next_paper_pick.py(alpha_pending import · 자체 def 재분기 감시). 술어 케이스 28건 · legacy 음성 기준 그대로. 다른 드라이브 경로 표시용 _rel() 추가(relpath ValueError 회피). 돌연변이 2종(alpha-pending 치환 · import 치환)으로 W 배선 FAIL 확인."},
+    {"file": "08_Tests/ops/test_factor_recheck_pending.py", "what": "배선 단언 재조준: TARGET = ops/research_pool_status.py(import research_pool_predicates as RPP · RPP.recheck_residual / RPP.recheck_uncertain 호출 · 자체 def 재분기 감시). 술어 · 쓰기 케이스 그대로. _rel() 추가. 돌연변이(recheck_residual 치환)로 W 배선 FAIL 확인."},
+    {"file": "08_Tests/ops/test_credential_scope_wiring.sh", "what": "RUNNERS = paper_router_run 하나(paper_atlas_run.sh 는 지문 · _run_claude 앵커가 없어 이 계약 대상 아님) + 대상 0개면 FAIL 하는 공허 방지 가드 · '4개 러너' 문구 수정."},
+    {"file": "08_Tests/ops/test_llm_lane_wiring.sh", "what": "C · C7 · C8 루프를 paper_router_run.sh · paper_atlas_run.sh 로 축소 · L80-82 주석 갱신 · C7 은 bash -n 실패 시 ok 를 찍지 않게 수정('5 레인' → '2 레인')."},
+    {"file": "08_Tests/ops/test_llm_single_entry.sh", "what": "E 루프를 paper_router_run.sh 하나로(퇴역 3종 제거) · 표제 '레인 4종' → '레인'."},
+    {"file": "08_Tests/ops/test_run_completion_notify.sh", "what": "RUNNERS = paper_router_run.sh + 공허 방지 가드 · _EFFECT_SIG 줄 제거 · 귀속 축(mode_queue 디스패치 기록 · _queue_top_ids.py) 제거하고 사유 주석 · 시간제한 축 factor_deep_recheck_run.sh 제거 · _run_claude 실동작 추출을 paper_router_run.sh 로 재조준(CRLF 제거 tr -d)."},
+    {"file": "08_Tests/ops/test_stall_lock_alert.sh", "what": "RUNNERS 에서 mode_queue_research_run.sh 제거 + 공허 방지 가드."},
+    {"file": "08_Tests/ops/test_stage_timeout_and_recharge_stall.sh", "what": "분리 축 목록을 paper_router_run.sh · paper_atlas_run.sh 로 교체 + 점검 대상 0개면 FAIL."}
+  ],
+  "changed_files": [
+    "08_Tests/ops/test_alpha_queue_pending.py",
+    "08_Tests/ops/test_factor_recheck_pending.py",
+    "08_Tests/ops/test_credential_scope_wiring.sh",
+    "08_Tests/ops/test_llm_lane_wiring.sh",
+    "08_Tests/ops/test_llm_single_entry.sh",
+    "08_Tests/ops/test_run_completion_notify.sh",
+    "08_Tests/ops/test_stall_lock_alert.sh",
+    "08_Tests/ops/test_stage_timeout_and_recharge_stall.sh"
+  ],
+  "tests_run": [
+    {"path": "08_Tests/ops/test_alpha_queue_pending.py", "result": "PASS 29 / FAIL 0 (돌연변이 2종 각각 FAIL 1 = 배선 단언 이빨 확인)"},
+    {"path": "08_Tests/ops/test_factor_recheck_pending.py", "result": "PASS 18 / FAIL 0 (돌연변이 FAIL 1 확인)"},
+    {"path": "08_Tests/ops/test_credential_scope_wiring.sh", "result": "PASS 6 / FAIL 0"},
+    {"path": "08_Tests/ops/test_llm_lane_wiring.sh", "result": "PASS 12 / FAIL 0"},
+    {"path": "08_Tests/ops/test_llm_single_entry.sh", "result": "PASS 36 / FAIL 0"},
+    {"path": "08_Tests/ops/test_run_completion_notify.sh", "result": "PASS 27 / FAIL 0 (R_ENVIRON_USER=빈 파일)"},
+    {"path": "08_Tests/ops/test_stall_lock_alert.sh", "result": "PASS 9 / FAIL 0"},
+    {"path": "08_Tests/ops/test_stage_timeout_and_recharge_stall.sh", "result": "PASS 12 / FAIL 0"},
+    {"path": "08_Tests/ops/test_morning_run_rewire.sh", "result": "PASS 13 / FAIL 0 (수정 없음)"}
+  ],
+  "notes": "삭제 전 재확인 grep(.claude · 02_Infrastructure · 08_Tests · 00_Lawbook · 03_Universe · 05_Production): 살아 있는 호출자 없음 — 남은 참조는 대상 시험(재조준 완료) · test_morning_run_rewire.sh ①(부재 단언 · 그대로) · run_all_hooks.sh 1315/1320(이미 주석) · 사료 주석뿐. 사료 주석(_sched_failure_classify.sh · bootstrap.sh · research_run_notify.R · research_pool_predicates.py · research_pool_status.py · paper_router_run.sh · monitoring/extend_nolayer4_series.R · paper_id_norm.py docstring · test_research_pool_status_axes.py docstring)은 동작 무관이라 그대로 뒀다(research_pool_predicates.py · rf_next_paper_pick.py · next_replication.R 은 다른 작업의 미커밋 수정 중 — 손대지 않음). mode-queue-pending 서브명령은 범위 밖이라 그대로(유일 소비자 러너가 사라져 bootstrap 레거시 스위치와 시험만 남는다 — 보고). __pycache__ 의 research_effect_signature/_queue_top_ids .pyc(추적 밖)는 남아 있다. git 스테이징 · 커밋 안 함. 08_Tests/ops/test_suite_totals_anchor.sh 의 M 은 이 작업이 아님(남의 수정)."
+}

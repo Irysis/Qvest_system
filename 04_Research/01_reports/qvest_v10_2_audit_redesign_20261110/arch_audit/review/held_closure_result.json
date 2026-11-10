@@ -1,0 +1,199 @@
+[
+ {
+  "cluster": "H1_alpha_search_engines",
+  "delete": [
+   "02_Infrastructure/alpha_search/fe_single.R",
+   "02_Infrastructure/alpha_search/bsc_engine.R",
+   "02_Infrastructure/alpha_search/fe_coverage_delta.R",
+   "02_Infrastructure/alpha_search/fe_disclosure_meta.R",
+   "02_Infrastructure/alpha_search/dm_engine.R",
+   "02_Infrastructure/alpha_search/fe_hzz_trend.R",
+   "02_Infrastructure/alpha_search/fe_sue_pead.R",
+   "02_Infrastructure/alpha_search/fe_qfactor_hxz.R",
+   "02_Infrastructure/alpha_search/fe_qmj.R",
+   "02_Infrastructure/alpha_search/driver_ls_generic.R",
+   "02_Infrastructure/alpha_search/run_bsc_momentum.R",
+   "02_Infrastructure/alpha_search/run_coverage_delta.R",
+   "02_Infrastructure/alpha_search/run_disclosure_meta.R",
+   "02_Infrastructure/alpha_search/run_dm_momentum.R",
+   "02_Infrastructure/alpha_search/run_hzz_inverse.R",
+   "02_Infrastructure/alpha_search/run_hzz_trend.R",
+   "02_Infrastructure/alpha_search/run_pead_paper.R",
+   "02_Infrastructure/alpha_search/run_qfactor_paper.R",
+   "02_Infrastructure/alpha_search/run_qmj_paper.R"
+  ],
+  "dead_unconfirmed": [],
+  "overturned": [],
+  "keep": [],
+  "extra_edits": [
+   "08_Tests/contracts/test_grade_unification.R:178-208 — §D 의 RUNNERS 목록(189-191) · D1 · D2 를 지우거나, present 가 비면 sk() 로 건너뛰게 바꾼다. 지금 형태로는 12개가 다 없으면 D1 이 `if (length(present) && !length(stacked)) ok else ng` 로 FAIL 한다. D3(corpus 불변식)는 그대로 둔다",
+   "02_Infrastructure/INDEX.md:66 — alpha_search/ 설명의 '논문 복제 드라이버(run_qmj_paper·run_residmom_paper 등)' 예시와 건수(91건)를 바로잡는다",
+   "06_Registry/index_descriptions.json:92 — 같은 설명 문자열을 바로잡는다(INDEX.md 의 원천)",
+   "06_Registry/wiring_map.json:146,564,925,1039,1210,1342,1400 — _unverified_reimplementers · consumers 목록에서 driver_ls_generic · run_coverage_delta · run_disclosure_meta · run_hzz_inverse · run_hzz_trend · run_pead_paper · run_qfactor_paper · run_qmj_paper 경로를 뺀다(생성기가 있으면 다시 생성)",
+   "02_Infrastructure/portfolio/standalone_track_queue.R:285 — 주석의 'run_pead_paper.R 등' 예시를 손본다(선택 · 동작 영향 없음)",
+   "02_Infrastructure/replication/replication_harness.R:13,360 — 'driver_ls_generic 선례' 주석은 파일이 없어진다고 적거나 그대로 둔다(선택 · 동작 영향 없음)"
+  ]
+ },
+ {
+  "cluster": "H2_retired_queue_runners",
+  "delete": [
+   "02_Infrastructure/ops/alpha_search_queue_prompt.md",
+   "02_Infrastructure/ops/mode_queue_research_prompt.md",
+   "02_Infrastructure/ops/factor_deep_recheck_prompt.md",
+   "02_Infrastructure/ops/_queue_top_ids.py",
+   "02_Infrastructure/ops/research_effect_signature.py"
+  ],
+  "dead_unconfirmed": [],
+  "overturned": [
+   "02_Infrastructure/ops/alpha_search_queue_run.sh — 기준 7: test_alpha_queue_pending.py:42-43 TARGET=이 파일, :90 check_wiring() 이 존재 확인 없이 open(TARGET) -> 부재 시 FileNotFoundError 로 시험 전체가 죽어 살아 있는 술어(research_pool_predicates.py alpha-pending · 소비자 next_replication.R:",
+   "02_Infrastructure/ops/factor_deep_recheck_run.sh — 기준 7: test_factor_recheck_pending.py:41-42 TARGET=이 파일, :85 check_wiring() 이 무조건 open(TARGET) -> 부재 시 크래시(정본 recheck-build 술어 검사 동반 소실 · recheck_residual 은 research_pool_status.py:380 소비). run_all_hooks.sh:710",
+   "02_Infrastructure/ops/mode_queue_research_run.sh — 기준 7: 살아 있는 paper_router_run.sh 와 같은 루프로 이 파일을 대상으로 삼는 nightly 시험 — test_stall_lock_alert.sh:25,29('파일 부재' ng · run_all_hooks.sh:1330) · test_run_completion_notify.sh:26,156,200(sed 로 _run_claude 본문 추출·실행 — 부재"
+  ],
+  "keep": [
+   "live: 02_Infrastructure/ops/paper_id_norm.py — 살아 있는 모듈(부팅·큐 술어). L20 의 언급은 모듈 docstring 안의 문장이라 지우지 않는다. 문구 정리는 선택이다."
+  ],
+  "extra_edits": [
+   "08_Tests/ops/test_alpha_queue_pending.py:42-43,80-100,307 — check_wiring() 이 TARGET=alpha_search_queue_run.sh 를 open() 한다(파일이 없으면 FileNotFoundError). 배선 단언을 살아 있는 소비자(rf_next_paper_pick.py 또는 programs/next_replication.R:73)로 다시 겨누거나 빼야 한다. 술어 검사는 그대로 둔다.",
+   "08_Tests/ops/test_factor_recheck_pending.py:41-42,85-92,226 — TARGET=factor_deep_recheck_run.sh 를 open() 한다. 배선 단언을 빼거나 research_pool_status.py 로 다시 겨눈다. 술어 검사는 그대로 둔다.",
+   "08_Tests/ops/test_credential_scope_wiring.sh:32 — RUNNERS 에서 퇴역 러너 3개를 빼고 paper_router_run 만 남긴다(지금은 '파일 없음' FAIL).",
+   "08_Tests/ops/test_llm_lane_wiring.sh:84-85,103,108 — C·C7·C8 루프에서 퇴역 러너 3개를 빼고 paper_router_run.sh · paper_atlas_run.sh 만 남긴다. L80-81 주석과 L107 '5 레인' 문구도 고친다.",
+   "08_Tests/ops/test_llm_single_entry.sh:175 — E 루프에서 퇴역 러너 3개를 빼고 paper_router_run.sh 만 남긴다.",
+   "08_Tests/ops/test_run_completion_notify.sh:26,179 — RUNNERS 를 paper_router_run.sh 하나로 줄인다. L126 의 _EFFECT_SIG 줄을 뺀다. L148-171 귀속 축(mode_queue · _queue_top_ids)을 지운다. L200 의 mode_queue_research_run.sh _run_claude 추출은 paper_router_run.sh 로 다시 겨누거나 지운다.",
+   "08_Tests/ops/test_stall_lock_alert.sh:25 — RUNNERS 에서 mode_queue_research_run.sh 를 뺀다(지금은 '파일 부재' FAIL).",
+   "08_Tests/ops/test_stage_timeout_and_recharge_stall.sh:50 — [ -f ] || continue 라서 지워도 FAIL 은 없다. 목록 정리는 선택이다.",
+   "(선택) 02_Infrastructure/ops/paper_id_norm.py:20-21 — 지워진 prompt.md 를 가리키는 docstring 문장을 고친다.",
+   "(선택 · 주석) _sched_failure_classify.sh:4,522 · bootstrap.sh:1081-1083 · research_run_notify.R:6 · research_pool_predicates.py:10-11,698 · research_pool_status.py:275,375 · paper_router_run.sh:364 · monitoring/extend_nolayer4_series.R:59 — 지워진 러너를 가리키는 사료 주석이다. 동작에는 영향이 없다.",
+   "(확인 권고) research_pool_predicates.py 의 mode-queue-pending 서브명령 — 유일한 소비자 mode_queue_research_run.sh 가 사라지면 bootstrap 레거시 스위치와 시험만 남는다. 범위 밖이라 지우지 않는다."
+  ]
+ },
+ {
+  "cluster": "H3_regime_forecasters",
+  "delete": [
+   "02_Infrastructure/regime/regime_forecaster_v2.R",
+   "02_Infrastructure/regime/regime_forecaster_v4.R",
+   "02_Infrastructure/regime/regime_ensemble.R"
+  ],
+  "dead_unconfirmed": [],
+  "overturned": [],
+  "keep": [
+   "live: 02_Infrastructure/data/cache_registry.json — daily_refresh.sh:704-707 이 cache_freshness_audit 를 거쳐 매일 소비합니다. 지우지 않습니다. 해당 4개 항목(:667-710)은 on_demand orphan 입니다. cache_freshness_audit.R:214 는 on_demand 에 stale 을 적용하지 않고 producer 필드를 읽지 않습니다. producer 를 읽는",
+   "live: 06_Registry/infra_backlog.json — 살아 있는 백로그 등록부이고 FQ-177 은 status open 입니다. regime_ensemble.R 언급(:804,:811)은 메모 문자열입니다. 다만 next_action 이 가리키는 파일이 틀렸습니다. 실제 unified_regime_signal 생산자는 regime_signal.R 이므로 문구 정정이 필요합니다.",
+   "keep_frozen: 06_Registry/pit_jm_c1_consumer_notices.json — PIT C1 소비자 표식 기록이고 읽는 코드가 0입니다(PIT_C1_JM_NOTICE.md:51 · INDEX.md · regime_jump_model.R:46 주석만 적중). 결함 이력이라 보존합니다. forecaster_v4.code(:98-109)에 삭제 표기만 덧붙입니다."
+  ],
+  "extra_edits": [
+   "02_Infrastructure/data/cache_registry.json:669 — regime_forecast_series.parquet producer 를 02_Infrastructure/regime/regime_forecaster.R 로 정정(실제 생산자 regime_forecaster.R:88)",
+   "02_Infrastructure/data/cache_registry.json:679-688 — regime_forecast_series_v1vix.parquet 항목: 생산자 코드가 레포에 없음 → 항목 삭제 또는 producer 를 삭제 표기로",
+   "02_Infrastructure/data/cache_registry.json:689-699 — regime_forecast_series_v2.parquet 항목: 실제 생산자 = regime_forecaster_v2.R:115(등록부는 v3 로 오표기). 삭제 뒤 생산자가 없으므로 항목 삭제 또는 producer 를 삭제 표기로",
+   "02_Infrastructure/data/cache_registry.json:702 — regime_forecast_series_v3.parquet producer 를 02_Infrastructure/regime/regime_forecaster_v3.R 로 정정(regime_forecaster_v3.R:104)",
+   "06_Registry/infra_backlog.json:804,811 — FQ-177 의 'regime_ensemble.R' 를 실제 생산자 02_Infrastructure/regime/regime_signal.R 로 정정 + 삭제 태그 pre-v10.2-prune-20261110 명기",
+   "06_Registry/pit_jm_c1_consumer_notices.json:101-103 — forecaster_v4.code 에 '(삭제 2026-11-10 · 태그 pre-v10.2-prune-20261110 · 산출 json 은 사료로 존치)' 표기",
+   "08_Tests/data/test_benchmark_level_axis.R:256 — PINNED 목록에서 regime_ensemble.R 줄 제거(선택 · 없으면 note 만 뜨고 실패 아님)"
+  ]
+ },
+ {
+  "cluster": "H4_qepm_chain_hooks",
+  "delete": [
+   "02_Infrastructure/hooks/governor_concord_certifier.sh",
+   "02_Infrastructure/hooks/s0_enforcer/s0_enforcer.sh",
+   "02_Infrastructure/hooks/s0_enforcer/state_machine.py",
+   "02_Infrastructure/hooks/unified_agent_guard.sh",
+   "02_Infrastructure/validation/mutation_tracker.py"
+  ],
+  "dead_unconfirmed": [],
+  "overturned": [],
+  "keep": [
+   "keep_frozen: 02_Infrastructure/hooks/alpha_discovery_certifier.sh — 미등록입니다(settings.json command 줄 0 · MANIFEST.md:116 구 #36). ops/scheduler·체인·round_core·08_Tests 어디서도 부르지 않습니다. 다만 QEPM WT 체인 PG1 admission 인증 발급 트리거입니다(common_charter.md:160·214 · worktask/sch",
+   "keep_frozen: 02_Infrastructure/hooks/worktask_spec_validator.sh — 미등록입니다(MANIFEST.md:71 구 router #7). 호출자 0. qepm/mailbox/worktask/WT*/request.json 사양을 hard block 하는 WT 체인 사양 검증기입니다(artifact_contract.json:29 schema_validator · common_charter.md:206 · 동결 스킬 qve",
+   "live: 02_Infrastructure/hooks/policies/cert_rules.json — worktask/cert_rules.R:48 과 qvest_cert_eval.py:37 이 로드합니다. qvest_cert_eval 은 sr_provenance_check.sh:63 과 worktask_artifact_validator.sh:185 가 씁니다. 08_Tests/hooks/run_all_hooks.sh:188 SUITES 의 test_cert_ru",
+   "keep_frozen: 02_Infrastructure/hooks/policies/role_permissions.json — qvest_hook_router.py:152 check_permission 과 :624 selftest 가 로드하므로 지우면 selftest 가 실패합니다. check-permission CLI 호출자는 0입니다. QEPM 역할 경계를 정한 파일로 WT 체인 구성요소입니다. 보류 훅 이름을 실제로 언급하는 줄은 없습니다(grep 0).",
+   "keep_frozen: 02_Infrastructure/worktask/artifact_contract.json — 코드가 읽는 곳이 없습니다. router 의 load_artifact_contract(:97)는 정의만 있고 호출 0이며, worktask_manager.R:85 는 주석입니다. 그래도 WT 체인 산출물 계약의 JSON SOT(artifact_contract.md:4)이므로 동결 체인을 되살릴 때 필요합니다. governor 인증 줄만 정리합니다."
+  ],
+  "extra_edits": [
+   "02_Infrastructure/hooks/policies/cert_rules.json:136 — governor_concord.trigger_hook 'governor_concord_certifier.sh' 에 삭제 표기(2026-11-10 · 태그 pre-v10.2-prune-20261110)를 붙이거나 필드를 제거",
+   "02_Infrastructure/worktask/artifact_contract.json:93 — cert_trigger_separate 'governor_concord_certifier.sh ...' 에 삭제 표기",
+   "02_Infrastructure/worktask/artifact_contract.json:164 — governor_concord.trigger_hook 에 삭제 표기",
+   "02_Infrastructure/hooks/pipeline/stage_dispatch.py:121-130 — 지운 mutation_tracker.py 를 부르는 블록(exists 가드라 무해). stage_dispatch.py 자체가 RETIRED 이므로 별도 묶음에서 삭제 검토",
+   "02_Infrastructure/docs/rules/harness.md:21 · :58 · :238 — unified_agent_guard 줄에는 삭제, alpha_discovery_certifier 줄에는 동결 표기",
+   "02_Infrastructure/docs/rules/codex-round.md:22 — hooks/s0_enforcer/ 경로에 '2026-11-10 삭제 · 태그 pre-v10.2-prune-20261110' 표기",
+   "agent_role_guard.sh:4 · mandate_compliance_check.sh:4 · worktask_artifact_validator.sh:4 — unified_agent_guard 와 같은 헤더('08_Tests·hook_e2e_battery 가 경로로 실행')를 씁니다. unified 에서는 사실이 아니었고, 나머지 세 파일은 이 묶음 밖이라 확인하지 않았습니다"
+  ]
+ },
+ {
+  "cluster": "H5_misc_code",
+  "delete": [
+   "02_Infrastructure/eval/harness_perf_eval.R",
+   "02_Infrastructure/validation/v8_readiness_gate.R",
+   "02_Infrastructure/tools/qvest_v8_ready",
+   "02_Infrastructure/ml_pipeline/dpl_feature_builder.py",
+   "02_Infrastructure/ml_pipeline/dpl_ens_eval_contract.R",
+   "02_Infrastructure/ml_pipeline/build_alphasearch_feature_panel.R",
+   "02_Infrastructure/ops/lean_carrier_from_btresult.R",
+   "06_Registry/lean_carrier/carrier_20260823_171019_40176_meta.json",
+   "06_Registry/lean_carrier/carrier_20260823_171019_40176.parquet",
+   ".claude/skills_retired_v10/ensemble-design.md",
+   "02_Infrastructure/portfolio/ppure_paper_track.R",
+   "02_Infrastructure/prompts/_retired_v10/monitoring_init.md",
+   "02_Infrastructure/reports/insider_safe_live_track.R",
+   "02_Infrastructure/regime/regime_ensemble.R",
+   "02_Infrastructure/regime/regime_forecaster_v2.R",
+   "02_Infrastructure/regime/regime_forecaster_v4.R"
+  ],
+  "dead_unconfirmed": [],
+  "overturned": [],
+  "keep": [
+   "live: 06_Registry/pit_quarantine.json — ast/ast_verify.py:126-127,240,935 가 읽고 run_paper_replication.R:283 이 스캔. :92 는 사실 기록 문자열 — 유지.",
+   "live: 02_Infrastructure/ast/tests/fixtures/fx3_samemonth_vintage_fail.json — run_fixture_battery.py:26 가 사용. ast_verify.py:661 은 필드 존재만 검사하고 파일을 열지 않음 — 대상 삭제와 무관, 유지.",
+   "live: 02_Infrastructure/contracts/score_composite.R — 살아 있는 계약 — 유지. :215 note · :5 주석은 문자열뿐 — 삭제로 깨지지 않음.",
+   "unsure: 06_Registry/live_track/PPURE_BASE_W36K20 — ppure_paper_track.R 전용 산출(:62) · 소비 코드 0(live_track 소비자는 STR_1715_*/admitted id 만) · handbook_facts_audit.sh:183 은 폴더 수만 셈. 기록 데이터라 unsure.",
+   "unsure: 06_Registry/live_track/PPURE_D2_DECAYEXIT — 위와 같음(:68)."
+  ],
+  "extra_edits": [
+   "02_Infrastructure/ops/bootstrap.sh:757-806 — 7d v8 Readiness 절 통째 제거(qvest_v8_ready 삭제 시)",
+   ".github/workflows/qvest-kernel-ci.yml:335-365 — v8_readiness_smoke 잡 제거(지워진 시험 :349 · qvest_v8_ready :354)",
+   "08_Tests/hooks/_r_portability_baseline.json:32,92,93 — v8_readiness_gate.R 항목 제거(안 하면 test_r_portability.R:381 baseline_not_shrunk FAIL) 또는 --write-baseline",
+   "06_Registry/wiring_map_baseline.json:104-108 — v8_readiness_gate.R 표준 항목 제거(정합용 · 경보 없음) · wiring_map.json 은 재생성",
+   "02_Infrastructure/tools/paper_recharge_daily.R:420 — 주석의 v8_readiness_gate.R:352 참조 정리(선택)",
+   "02_Infrastructure/data/cache_registry.json:669 — producer 를 regime/regime_forecaster.R 로 정정(실제 생성기 :88)",
+   "02_Infrastructure/data/cache_registry.json:680 — v1vix producer(삭제될 v2) → '퇴역 · 생성기 없음' 표기 또는 항목 제거",
+   "02_Infrastructure/data/cache_registry.json:~691 — regime_forecast_series_v2.parquet 항목: 실제 생성기 v2(삭제) → 퇴역 표기 또는 제거",
+   "02_Infrastructure/data/cache_registry.json:702 — producer 를 regime/regime_forecaster_v3.R 로 정정(:104)",
+   "06_Registry/pit_jm_c1_consumer_notices.json:96-108 — forecaster_v4 항목에 코드 삭제 표기(선택)",
+   "08_Tests/data/test_benchmark_level_axis.R:256 — PINNED 에서 regime_ensemble.R 제거(선택 · note 만)",
+   "02_Infrastructure/contracts/score_composite.R:5,215 — ensemble-design.md 경로를 퇴역 태그 기준 서술로(선택)",
+   "02_Infrastructure/ml_pipeline/README.md · PIT_C11_NOTICE.md — 삭제 파일 언급 정리(선택)"
+  ]
+ },
+ {
+  "cluster": "H6_registry_data",
+  "delete": [
+   "06_Registry/essence_regrade_20260824.json",
+   "02_Infrastructure/ops/essence_regrade_apply.R",
+   "02_Infrastructure/ops/essence_regrade_apply.py",
+   "06_Registry/next_session_task.md",
+   "06_Registry/paper_feasibility_20260813.json",
+   "06_Registry/_archive/alpha_frontier_queue_done_20260823.json",
+   "06_Registry/_archive/frontier_migration_report_20260823.json",
+   "04_Research/programs/_lib/night_state/p3r02_measured.done",
+   "04_Research/programs/_lib/night_state/pipeline.done"
+  ],
+  "dead_unconfirmed": [],
+  "overturned": [],
+  "keep": [
+   "live: 02_Infrastructure/hooks/policies/role_permissions.json — qvest_hook_router.py:152 의 load_policy(\"role_permissions\") 가 읽는다. 언급 줄 :136 은 설명 문자열일 뿐이라 보류 파일을 살리지 않는다.",
+   "live: 06_Registry/infra_backlog.json — contracts/close_round.R:178 이 대조 대상으로 읽는다. :956 의 언급은 문자열이다.",
+   "keep_frozen: 06_Registry/pit_c11_consumer_notices.json — 읽는 코드는 0이다. 그러나 이 파일 자체가 도훈 결정 PIT-C11-CONVENTIONS ⑦('표식만 · 코드 무변경')이 정한 PIT 오염 표식 원장이다(파일 note). 전략 폴더 18곳 이상의 PIT_C11_NOTICE.md:16 과 ml_pipeline/PIT_C11_NOTICE.md:20 이 정본 등록부로 가리킨다. 지우면 C11 미해소 소비자 표식의",
+   "keep_frozen: 06_Registry/pit_jm_c1_consumer_notices.json — 참조자이며 같은 성격의 PIT C1(점프 모형) 소비자 표식 원장이다. regime_jump_model.R:46 · factor_rotation/output/PIT_C1_JM_NOTICE.md:51 · stage_artifacts/pg2_overlay_gate_composition_20260705/PIT_C1_JM_NOTICE.md:44 가 정본으로 가리킨다",
+   "live: 06_Registry/alpha_frontier_queue.json — contracts/close_round.R:178 이 읽는 활성 큐다. :2614 · :2616 은 문자열이다.",
+   "keep_frozen: 04_Research/programs/P3_CONSTRUCTION/P3R02_eigen_markowitz/measure.sh — 끝난 라운드의 측정 절차다. 사전등록 고정(prereg.json:422 · stage_artifacts/.../prereg.json:422)에 md5 df78fbce… 로 박혀 있다(note: '측정 절차를 결과 전에 고정'). 지우면 사전등록 무결성 감사 추적이 끊긴다. 부르는 곳은 없다(round_core 가"
+  ],
+  "extra_edits": [
+   "06_Registry/alpha_frontier_queue.json:2613-2617 — archive_refs 의 done · report 두 경로가 삭제 대상이 된다. 키를 빼거나 값을 '태그 pre-v10.2-prune-20261110' 표기로 바꾼다(infra 키는 유지).",
+   "02_Infrastructure/contracts/close_round.R:192 — 지운 _archive 경로를 안내하는 메시지 문자열을 git 이력 안내로 바꾼다.",
+   "06_Registry/infra_backlog.json:956 — FQ-238 source_refs 의 paper_feasibility 경로에 삭제 표기를 붙이고, paper_lane 퇴역에 따라 항목을 닫을지 검토한다.",
+   "02_Infrastructure/hooks/policies/role_permissions.json:136 — 'next_session_task.md (memory)' 문구에서 없어진 파일명을 뺀다.",
+   "06_Registry/wiring_map.json:1285 — consumers 에서 02_Infrastructure/ops/essence_regrade_apply.R 를 뺀다.",
+   "06_Registry/INDEX.md:175·:208·:219 · artifact_index.json · hygiene_report.json — 재생성기가 다시 만들 때 빠지는지만 확인한다.",
+   "선택: register_module.R:429 · backfill_module_defensive.R:26 · build_module_performance.R:84 · l2_pool_admission.R:20 의 'essence_regrade_apply.R 이 명시' 주석에 '태그에서만 확인 가능' 꼬리표를 단다."
+  ]
+ }
+]

@@ -1,0 +1,45 @@
+{
+  "group": "R1_p4_core",
+  "fixed": [
+    {"title": "P4 닫기가 재채점 쓰기 · Judge 트리거 · 모듈 풀 등재를 chain_closed 기록 전에 한다", "files": "04_Research/programs/_lib/round_core/v1/p4.R", "how": "rc_p4_close 순서 재편: (가) 닫기 점유 measure/close.claim → 점유 안 상태 재판독 · 결과 원장 사전 판독(손상이면 부작용 전 거부) → (나) 원장 chain_closing{final_k}(가드 .rcp4_unique_guard · .rcp4_need_open_chain 이 이후 걸음 열기 · 측정 · 판정 · 포기를 거부) → (다) 재채점 · 관문 · 등재 · finalize.json(closing_id · ledger_finalize) → (라) 결과 원장(잠금) → chain_closed. 재실행은 closing_id 가 같고 재채점 오류가 아니면 (다)를 건너뛰고 같은 결과로 마무리.", "test": "test_round_core_v1_p4_chain.R K1 · K2 · K3 · KM-resume · KM-preread / test_scn_l1_chain_e2e.R Z2 · Z4(재진입 관문 1회로 기대 갱신)"},
+    {"title": "사슬 닫기에 점유 · 잠금이 없다", "files": "04_Research/programs/_lib/round_core/v1/p4.R", "how": "닫기 시작에 측정과 같은 점유(.rcp4_claim 'close' · 살아 있는 보유자 = 거부 · 죽은 pid 인계) · 점유 안에서 상태 재판독 · 결과 원장 append 를 .rcs_lock 으로 감쌈 · 재실행 멱등(finalize 재사용 · round_id+사양 md5 중복 방지).", "test": "K4 · KM-claim · K3"},
+    {"title": "선택 현실 점검의 시행 집합이 사슬 하나로 끊긴다", "files": "04_Research/programs/_lib/round_core/v1/p4.R", "how": ".rcp4_same_base_trials — 같은 base.key 의 다른 사슬(기본 = P4_ASSEMBLY 아래 전부 · 인자 other_chain_dirs)의 기준 칸 + 포기 아닌 판정 걸음을 trials · expected(n_trials · ids)에 합친다. 판독 불가 사슬은 기대 수 +1 · id unreadable_chain:<폴더>(fail-closed). finalize.json 에 same_base_chains · expected 기록.", "test": "K5 · KM-samebase"},
+    {"title": "사슬 판 검사가 필수 채택 규칙의 존재만 본다", "files": "04_Research/programs/_lib/round_core/v1/p4.R", "how": ".rcp4_required_bounds(rr, rv, root) — 필수 지표마다 해석된 규칙 중 하나가 방향 · 문턱을 지켜야 등록: dS_vis op >=|> · 값 ≥ 0 / uc_vis op >=|> · 값 ≥ behavior_card uc_floor / d_dd_capture_median_vis op <=|< · 값 ≤ 0 / N1 · N2 op '>' · 값 ≥ majority_share(또는 '>=' · 값 > majority_share — 동률 불가).", "test": "K6 · KM-bounds"},
+    {"title": "기준 칸 ↔ 걸음 측정의 판 동일성(진행 중 수리)", "files": "04_Research/programs/_lib/round_core/v1/p4.R", "how": "rc_p4_vintage_default 가 n_in_progress 를 싣고, .rcp4_run_cell 이 진행 중 수리 > 0 이면 vintage_in_progress 로 측정 거부(원장 무기록). step_decide 도 진행 중 판 측정이면 거부. 측정 기록에 입력 데이터 지문 md5(data_fp_md5)를 남기고 판정 기록에 data_fp_vs_base(same|differs|unknown).", "test": "K7 · K7b · K7c · KM-vint"},
+    {"title": "측정 실패로 포기한 걸음이 기각으로 기록돼 닫기 r7 = noise", "files": "04_Research/programs/_lib/round_core/v1/p4.R · 02_Infrastructure/programs/rx_generator_scorecard.R", "how": "닫기 기본 r7 = 포기 제외 판정 걸음으로(전부 포기면 NA) · by_block 에 abandoned 따로 · extra.n_abandoned · 라벨에 포기 수. 설계 입력 §4 = '포기(측정 실패 · 가설 기각 아님)' · 사유 코드만. 상태 줄 · 생성기 검토 = abandoned 구분. 성적표 = decision 'abandoned' · n_decided · 채택률 · repeat_fail · 사유 빈도 밖 · n_abandoned.", "test": "K11 · K14 · KM-r7 · test_rx_generator_scorecard.R S22 · S23(돌연변이)"},
+    {"title": "다른 사슬 기각 기억 · 성적표 · 색인이 포기 걸음을 기각으로 셈 + 기저 구분 없음", "files": "04_Research/programs/_lib/round_core/v1/p4.R · 02_Infrastructure/programs/rx_generator_scorecard.R", "how": ".rcp4_other_chain_rejects 가 abandoned 를 뺀다 · 행에 base · same_base 열 · §4b 줄에 '같은/다른 기저 <key>'. 성적표는 위와 같이 분모에서 뺀다(색인 hypothesis_index.R 은 소유 밖 — not_fixed).", "test": "K12 · KM-rejects · S22"},
+    {"title": "사슬 사이 기각 기억이 최근이 아니라 사슬 id 알파벳 앞쪽만 남긴다", "files": "04_Research/programs/_lib/round_core/v1/p4.R", "how": "블록마다 같은 기저 먼저 · 판정 기록 시각(at) 내림차순 · 걸음 번호 내림차순으로 자른다(at 은 출력에 싣지 않음).", "test": "K13 · KM-order"},
+    {"title": "걸음 가설·기전·포기 사유는 날짜만 검사하고 등급 표기는 안 봄 — 설계 입력 영구 정지", "files": "04_Research/programs/_lib/round_core/v1/p4.R", "how": "step_open(가설 · 기전) · step_abandon(사유)이 util.R::rc_input_issues 로 검사(거부 = 원장 무기록). 이미 들어간 오염 줄은 설계 입력 §4 가 '(글 생략 — 처방 입력 검사 미통과)'로 바꾸고 message 로그(마지막 전수 검사 .rcp4_assert_clean 은 그대로).", "test": "K9 · K10 · KM-opentext · KM-abandontext · KM-design"},
+    {"title": "기각된 칸을 파일 바이트만 바꿔 다시 열 수 있다", "files": "04_Research/programs/_lib/round_core/v1/p4.R", "how": ".rcp4_spec_key = .rcp4_norm_spec(메타 키 제외 · 기저 경로 상대화) + 재귀 키 정렬(.rcp4_canon) 직렬화 md5. 걸음 열기가 기저 칸 · 이미 연 모든 칸의 서명과 대조(원시 md5 대조도 유지).", "test": "K8 · KM-dup"},
+    {"title": "(낮음) 닫기 상태 문자열이 evaluated 로 가린 등급을 오류 · 대기 경로에서 다시 드러낸다", "files": "04_Research/programs/_lib/round_core/v1/p4.R", "how": "결과 원장 · chain_closed 의 candidate_gate 는 evaluated|error → evaluated, module_pool 은 registered|not_registered|pending_manual|error → evaluated(실제 상태는 finalize.json 에만).", "test": "K15 · KM-status · J19b2"}
+  ],
+  "not_fixed": [
+    {"title": "조회 색인(hypothesis_index.R)의 STEP_REJECT 표기", "why": "02_Infrastructure/tools/hypothesis_index.R 은 이 묶음 소유 밖. 패치 제안: 걸음 원장 step_result 에서 isTRUE(r$abandoned) 이면 verdict 'STEP_ABANDONED(미측정)' 로 따로 표기하고 reject_codes · 기각 수에서 뺀다(p4.R 은 decision 'reject' + abandoned TRUE 를 호환 유지)."},
+    {"title": "원장 밖 데이터 변경(수정주가 소급 · 재무 보충)을 판 차이로 거부", "why": "기존 입력 지문(fingerprint.sh equality)은 RAWDATA 등 원천 파일의 크기 · 수정 시각이라 매일 추가(append)에도 바뀐다 — 지문 불일치를 거부 근거로 쓰면 하루를 넘는 사슬이 전부 멈춘다. 그래서 기준 칸 · 걸음 측정에 data_fp_md5 를 기록하고 판정 기록에 data_fp_vs_base 를 남기는 데까지만 했다(진행 중 수리는 거부로 막음). 소급 변경을 가르는 내용 지문(τ_D 이전 행 해시 등)은 fingerprint.sh 소유 밖 · 새 계기 필요."},
+    {"title": "측정 사본의 시행 회계(n_family_at_registration)에 같은 기저 앞 사슬 시행 수 합산", "why": "선택 현실 점검(닫기 재채점 · v3.4 관문)의 시행 · 기대 집합에는 합쳤다. 측정 시점 경과 규정 DSR 용 n_family 는 사슬 안 수로 남겼다(측정 사본 · J13 계약 · 셀 워커 쪽 영향 범위가 이 묶음 밖)."},
+    {"title": "관문 오류 · 등재 오류의 재시도", "why": "재개는 재채점 오류가 아닐 때 finalize.json 을 재사용하므로 rcg_route · 등재기 예외(finalize.json 에 error 기록)는 다시 시도하지 않는다(재채점 쓰기 반복을 피하려는 선택 · 종전 동작과 같음). 사람이 finalize.json 을 보고 rcg_route 를 따로 부르면 된다."}
+  ],
+  "changed_files": [
+    "04_Research/programs/_lib/round_core/v1/p4.R",
+    "04_Research/programs/_lib/round_core/v1/driver.R",
+    "02_Infrastructure/programs/rx_generator_scorecard.R",
+    "08_Tests/programs/test_round_core_v1_p4_chain.R",
+    "08_Tests/scenarios/test_scn_l1_chain_e2e.R",
+    "08_Tests/programs/test_rx_generator_scorecard.R"
+  ],
+  "new_tests": [
+    "08_Tests/programs/test_round_core_v1_p4_chain.R K1~K15 · KM-resume/preread/claim/samebase/bounds/vint/r7/opentext/abandontext/design/rejects/order/dup/status(수리 되돌림 돌연변이 14 · 치환 1곳 성사 · 원본 대조)",
+    "08_Tests/programs/test_rx_generator_scorecard.R S22 · S23(돌연변이)"
+  ],
+  "tests_run": [
+    {"path": "08_Tests/programs/test_round_core_v1_p4_chain.R", "result": "수리 전 K 절 실패(K2 · K3 · K4 unused argument · K5 중단) → 수리 후 pass 154 / fail 0"},
+    {"path": "08_Tests/scenarios/test_scn_l1_chain_e2e.R", "result": "첫 실행 74/2(Z4 = 재진입 관문 2회 기대 · K2 = 돌연변이 문자열) → 기대 갱신 후 pass 76 / fail 0"},
+    {"path": "08_Tests/programs/test_round_candidate_gate.R", "result": "pass 22 / fail 0"},
+    {"path": "08_Tests/programs/test_round_core_v1_flow.R", "result": "pass 41 / fail 0"},
+    {"path": "08_Tests/programs/test_round_core_v1.R", "result": "pass 39 / fail 0"},
+    {"path": "08_Tests/programs/test_rx_generator_scorecard.R", "result": "pass 23 / fail 0"},
+    {"path": "08_Tests/scenarios/test_scn_knowledge_loop.R", "result": "pass 68 / fail 0 (gap 1 — 기존 표기)"},
+    {"path": "08_Tests/programs/test_selection_regrade.R", "result": "pass 34 / fail 0"}
+  ],
+  "notes": "커밋 · 스테이징 없음. 운영 등록부 · 결과 원장 · 생성기 등록부 무접촉(시험 I7 · J22 확인). 시험은 R_ENVIRON_USER=빈 파일 · 임시 루트 · 한 번에 하나씩. 포기 기록은 호환을 위해 decision 'reject' + abandoned TRUE 를 유지하고 소비자(닫기 r7 · 기각 기억 · 설계 입력 · 상태 · 생성기 검토 · 성적표)가 abandoned 를 따로 센다. e2e Z4 기대 변경(재진입 관문 2회 → 1회)은 이번 멱등 수리의 의도된 결과."
+}

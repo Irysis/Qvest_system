@@ -1,0 +1,100 @@
+{
+  "group": "E1_engine",
+  "fixed": [
+    {
+      "title": "벤치 낙폭 예산(cdar_nu_rule=bench) + Σw=1 칸이 실행 불가 날 조용히 최소 CDaR 로 바뀐다",
+      "how": "rf_cdar_construct.R::rcd_construct 가 실행 불가 복원 시 옵션 청취자 getOption('rcd.fallback_listener') 에 통지하고 반환에 mode_used='min_cdar(fallback)' 를 싣는다(청취자 없으면 부작용 없음 · 해 비트 동일). 셀 엔진 catalog 가지가 루프 동안 청취자를 걸고(본 호출만 셈 · 탐침 제외 · finally 로 옵션 복원) 복원 신호일 .nCdFB 를 센다. 문턱 = 과반(sigma_provider pca 폴백 .nFB · 변형 폴백 .nUnt 와 같은 규칙) — 넘으면 stop, 소수면 WARN + .RF_DIAG$cdar_budget_fallback. 복원 해 자체(같은 집합 최소 CDaR · Σw=1 에서 예산에 가장 가까운 해)는 기존 결정론 규칙 그대로 유지(allow_cash 칸은 budget le 라 실행 불가가 생기지 않는다).",
+      "files": "02_Infrastructure/reinforcement/rf_cdar_construct.R · 02_Infrastructure/reinforcement/rf_cell_engine.R",
+      "test": "test_scn_rx_construct_link.R K1(수리 전 완주 = 재현 → 수리 후 멈춤) · K2 음성 대조 · K3 통지 줄 삭제 돌연변이 → 조용히 완주 · test_rf_cdar_bench_budget.R [9] mode_used · 통지 · 복원 해 CDaR 0.5512 > ν 0.4400 실증 · 청취자 유무 비트 동일 · 돌연변이"
+    },
+    {
+      "title": "allow_cash 칸에 cap_core 를 얹으면 구성 층 현금이 조용히 사라진다",
+      "how": "엔진 5절 앞에서 allow_cash + cap_core(k>0) 조합을 stop(사유 = rf_cc_compose 위성 재정규화). 이중 방어로 5.4 뒤 최종 비중에서 현금 신호일을 다시 세어 0 이면 stop(.CASH_DECL · .nCashF). rx_validate 도 같은 조합 거부. rf_cc_compose 는 바꾸지 않음(기존 칸 불변).",
+      "files": "02_Infrastructure/reinforcement/rf_cell_engine.R · 02_Infrastructure/programs/rx_round.R",
+      "test": "test_scn_rx_construct_link.R I0(양성: cap_core 없으면 현금일 > 0) · I1(수리 전 '최종 현금일 0' 으로 완주 = 재현 → 수리 후 멈춤) · I2 조합 가드 삭제 사본 → 최종 비중 재확인이 멈춤 · I3 두 가드 삭제 → 조용히 완주 · 현금 0 · test_rx_round.R F9"
+    },
+    {
+      "title": "강화 사슬(P4) 걸음 칸의 weighting 선택지가 catalog 아닌 kind 에서 조용히 무시된다 / weighting 하위 키 어휘가 닫혀 있지 않다",
+      "how": "엔진 .wt 정의 직후 kind 별 닫힌 어휘 .WT_KEYS(ew·rank_weight·rank_weight_sqrt = 없음 · score_tilt = eps · inv_vol = window · catalog = catalog_id·lookback_days·sigma_provider·allow_cash·lean_n_days·cdar_nu_rule · 모든 kind = kind·label)를 두고 밖의 키(오타 · 다른 kind 전용)는 stop. 어휘 = 각 가지가 실제로 읽는 키 그대로(저장소 JSON 의 weighting 키 집합 전수 조사: catalog{catalog_id,kind,label} 106 · ew{kind} 80 — 전부 통과). rx_validate 에 같은 어휘 + cdar_nu_rule 어휘(ew|bench) 검사 추가(기존 P-1~P-3 검사 문장은 그대로).",
+      "files": "02_Infrastructure/reinforcement/rf_cell_engine.R · 02_Infrastructure/programs/rx_round.R",
+      "test": "test_scn_rx_construct_link.R H1~H3(수리 전 모두 완주 = 재현 → 멈춤) · H4 음성 대조 · H5 가드 삭제 돌연변이 → H2 칸 조용히 완주 · H6 이중 방어 · test_rx_round.R F9(HEAD 판 rx_validate 는 다섯 거부 사례를 전부 ok=TRUE 로 통과 — 스크래치 rx_head.R 실측) · F10 돌연변이"
+    },
+    {
+      "title": "기본값 불변 회귀 시험 A1~A3 가 git HEAD 엔진과 비교한다(커밋 뒤 공허)",
+      "how": "HEAD 비교를 고정 골든 지문으로 교체 — 행 수 : md5(Date, Ticker, %a 16진 부동소수 Weight, Leg). 값은 선택지 도입 직전 엔진(98b679826 = 9a35a915b^)과 수리 전 HEAD(f6622318f) 둘로 같은 픽스처를 돌려 일치함을 실측해 얻었다(real 날짜 · synth 날짜 각각 고정 · SCN_FORCE_SYNTH_DATES=1 로 synth 강제). A4 양성 대조: 비중 1칸 1 ulp 교란 → 지문 불일치.",
+      "files": "08_Tests/scenarios/test_scn_rx_construct_link.R",
+      "test": "A1~A4 PASS(수리 후 엔진 = 골든 → 기본값 경로 비트 동일 실증)"
+    },
+    {
+      "title": "(낮음) lean_n_days = cell 가드가 공허 — n_days 를 안 읽는 arm 이 조용히 무처치",
+      "how": "기존 본문 문자열 가드는 두고, sigma 탐침과 같은 모양의 전달 탐침 추가 — 칸 창(.LB 행)이 다 찬 신호일 최대 3번 ctx$n_days 를 뺀 판과 비중 비교, 전부 같으면 stop(처치 미전달) · 탐침할 날이 없으면 stop(fail-closed).",
+      "files": "02_Infrastructure/reinforcement/rf_cell_engine.R",
+      "test": "test_scn_rx_construct_link.R L1(paper:ERCMRT2010 + cell — 수리 전 완주 = 재현 → 멈춤) · L2 가드 삭제 돌연변이 → 완주하고 기본 칸과 비트 동일 · D4(lean:ivol 양성) 유지"
+    },
+    {
+      "title": "(낮음) 요인 Σ 공급자가 날짜에 빠진 비시장 요인 열을 조용히 버린다",
+      "how": "rfc_sigma_ctx: 공허했던 anyNA(Fw$Date) 를 조인 전 날짜 덮음 직접 판정(!all(R_dates %in% F$Date))으로 교체(거동 동일 — 시장 열 결측 검사가 같은 경우를 잡고 있었다) · ts 결과에 diag$requested_missing(설정 factor_columns 중 표에 없음 ∪ 창 안 결측으로 뺀 열) 추가. 엔진이 그런 신호일을 .nDrop 으로 세어 과반이면 stop(pca 폴백과 같은 문턱) · 요약 줄에 '요인 열 축소 %d'. as-of 가용성으로 빼는 설계(설정 문구)는 유지 — 소수 신호일이면 진행.",
+      "files": "02_Infrastructure/reinforcement/rf_factor_cov.R · 02_Infrastructure/reinforcement/rf_cell_engine.R",
+      "test": "test_rf_factor_cov.R [11] 5건(결측 열 · 없는 열 · 날짜 미덮음 → pca · 돌연변이) · test_scn_rx_construct_link.R M0~M3(엔진 실제 문장 평가 · 과반 멈춤 · 소수 진행 · 집계 제거 돌연변이)"
+    },
+    {
+      "title": "(낮음) cdar_nu_rule = 'ew' 는 기본값과 같은 칸인데 별도 시행이 된다",
+      "how": "rf_spec_sig.R 에 .wt_canon — 서명에서 기본값과 같은 선언(cdar_nu_rule ew · allow_cash false · sigma_provider sample · lean_n_days native)을 지운다(지울 키가 없으면 입력 그대로 → 기존 서명 비트 동일). 엔진 탐침(.rf_nu_ignored)의 AND 판정은 그대로 둠: 부모 bench → 자식 ew 되돌림은 정당한 처치 변경이고, 'ew' 칸 포트폴리오는 생략 칸과 비트 동일하므로 같은 서명으로 접는 것이 맞다.",
+      "files": "02_Infrastructure/reinforcement/rf_spec_sig.R",
+      "test": "test_scn_rx_construct_link.R S1(기존 칸 서명 고정 문자열 불변) · S2(수리 전 FAIL = 재현 → 통과) · S3(처치 값은 다른 서명) · test_rf_spec_axes.R 35/0"
+    }
+  ],
+  "not_fixed": [
+    {
+      "title": "P4 걸음 열기(rc_p4_step_open · rc_p4_spec_diff)가 rx_validate 를 부르지 않고 md5 로 칸을 센다",
+      "why": "p4.R / driver.R 는 이 묶음 소유가 아니다. 엔진이 이제 같은 어휘로 멈추므로 실제 관문은 닫혔다(측정 전 stop). 패치 제안: rc_p4_step_open 에서 rx_validate(칸 사양의 축 부분)를 부르고, rc_p4_spec_diff · 시행 회계의 칸 동일성은 rf_spec_sig.R::.wt_canon 을 거친 weighting 으로 비교해 {cdar_nu_rule: ew} 처럼 기본과 같은 선언이 새 시행이 되지 않게 한다."
+    },
+    {
+      "title": "등록부 블록 어휘에 weighting 하위 키 목록이 없다(06_Registry/reinforce_program.json)",
+      "why": "등록부 직접 수정 금지(총괄 몫). 제안: blocks 어휘에 weighting_keys = {ew: [], score_tilt: [eps], rank_weight: [], rank_weight_sqrt: [], inv_vol: [window], catalog: [catalog_id, lookback_days, sigma_provider, allow_cash, lean_n_days, cdar_nu_rule], common: [kind, label]} 를 싣고, 엔진 .WT_KEYS 와 rx_round.R wkeys 를 그 정본에서 읽게 한다(지금은 두 곳에 같은 목록 · 각 시험이 거부/통과 양쪽을 잰다)."
+    },
+    {
+      "title": "(낮음) v3.4 스윕 예산 함수(tb_rc_*)에 시험이 없다",
+      "why": "주장이 낡았다 — 08_Tests/programs/test_trial_budget_rc.R(a0c0ef417)가 이미 계약 연결 · 정규 근사 · 최대 변형 수 · 시행 집합 · 돌연변이를 잰다(이번 실행 10/10). 남은 부분(tb_rc_max_variants 가 K_max 에서 통과하면 K_max 를 돌려줘 '상한'과 '이상'이 구분되지 않음)은 trial_budget.R 동작 변경이라 '시험 추가에 필요한 경우만' 범위 밖 — 패치 제안: 그 경우 attr(, 'censored') = TRUE 를 붙이고 CLI 가 '≥ K_max' 로 적는다."
+    },
+    {
+      "title": "CDaR 어댑터 진단 줄이 mode_used 를 안 찍는다",
+      "why": "02_Infrastructure/methods/adapters/cdar_lp_chekhlov_uryasev_zabarankin_2005.R 는 소유 밖. 진단 줄 fb= 칸에 복원 사유는 이미 찍히고, 엔진이 청취자로 세므로 판정 영향 없음. 제안: 같은 cat 줄의 mode=%s 에 o$mode_used 를 쓴다."
+    }
+  ],
+  "changed_files": [
+    "02_Infrastructure/reinforcement/rf_cell_engine.R",
+    "02_Infrastructure/reinforcement/rf_cdar_construct.R",
+    "02_Infrastructure/reinforcement/rf_factor_cov.R",
+    "02_Infrastructure/reinforcement/rf_spec_sig.R",
+    "02_Infrastructure/programs/rx_round.R",
+    "08_Tests/scenarios/test_scn_rx_construct_link.R",
+    "08_Tests/programs/test_rx_round.R",
+    "08_Tests/reinforcement/test_rf_cdar_bench_budget.R",
+    "08_Tests/reinforcement/test_rf_factor_cov.R"
+  ],
+  "new_tests": [
+    "08_Tests/scenarios/test_scn_rx_construct_link.R A1~A4(골든) · H0~H6 · I0~I3 · K1~K3 · L1~L2 · M0~M3 · S1~S3",
+    "08_Tests/programs/test_rx_round.R F9 · F10",
+    "08_Tests/reinforcement/test_rf_cdar_bench_budget.R [9] 6건",
+    "08_Tests/reinforcement/test_rf_factor_cov.R [11] 5건"
+  ],
+  "tests_run": [
+    {"path": "08_Tests/scenarios/test_scn_rx_construct_link.R (수리 전 · 재현)", "result": "pass 33 / fail 12 — H1~H3 · I1 · K1 · L1 · S2 가 결함대로 실패(+ 수리 문장 없는 돌연변이 칸)"},
+    {"path": "스크래치 rx_head.R (HEAD 판 rx_validate · 재현)", "result": "다섯 거부 사례 전부 ok=TRUE(결함 재현)"},
+    {"path": "08_Tests/reinforcement/test_rf_cell_engine_smoke.R", "result": "pass 37 / fail 0"},
+    {"path": "08_Tests/reinforcement/test_rf_capcore.R", "result": "pass 63 / fail 0"},
+    {"path": "08_Tests/reinforcement/test_rf_cdar_construct.R", "result": "pass 22 / fail 0"},
+    {"path": "08_Tests/reinforcement/test_rf_cdar_bench_budget.R", "result": "pass 36 / fail 0"},
+    {"path": "08_Tests/reinforcement/test_rf_cash_budget_link.R", "result": "pass 20 / fail 0"},
+    {"path": "08_Tests/reinforcement/test_rf_factor_cov.R", "result": "pass 45 / fail 0"},
+    {"path": "08_Tests/scenarios/test_scn_rx_construct_link.R", "result": "pass 50 / fail 0 / skip 0"},
+    {"path": "08_Tests/scenarios/test_scn_construct_pit_leak.R", "result": "pass 15 / fail 0"},
+    {"path": "08_Tests/programs/test_rx_round.R", "result": "pass 50 / fail 0"},
+    {"path": "08_Tests/programs/test_trial_budget.R", "result": "pass 16 / fail 0"},
+    {"path": "08_Tests/programs/test_trial_budget_rc.R", "result": "pass 10 / fail 0"},
+    {"path": "08_Tests/reinforcement/test_rf_sleeve.R", "result": "pass 59 / fail 0"},
+    {"path": "08_Tests/reinforcement/test_rf_spec_axes.R (서명 소비자 · 추가)", "result": "pass 35 / fail 0"}
+  ],
+  "notes": "기본값 경로 비트 동일 = 골든 지문(98b679826 · f6622318f 두 판 실측 일치)으로 수리 후 엔진에서 A1~A3 통과. 커밋 · 스테이징 없음. 운영 등록부 · .cache 쓰기 없음(scn 시험은 운영 요인 parquet 의 날짜만 읽음). 모든 R 실행은 R_ENVIRON_USER=빈 파일. CRLF 파일(엔진 · spec_sig · scn 시험 · factor_cov 시험)은 줄끝 일관 확인(LF 수 = CRLF 수) · 제어 문자 0. rx_round.R · test_rx_round.R 는 다른 묶음이 동시에 다른 부분을 고쳤다 — 내 변경은 Edit 부분 치환(weighting 블록 · F9/F10)뿐이고 동시 변경 뒤 재실행 50/0. 새 숫자 없음: 문턱 = 기존 과반 규칙 재사용 · 탐침 수 3 = sigma 탐침과 같은 수 · 비교 허용오차 1e-10 · 현금 판정 1e-6 = 엔진 기존 값."
+}

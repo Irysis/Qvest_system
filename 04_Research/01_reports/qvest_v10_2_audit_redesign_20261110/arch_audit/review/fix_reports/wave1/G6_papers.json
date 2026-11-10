@@ -1,0 +1,33 @@
+{
+  "group": "G6_papers",
+  "fixed": [
+    {
+      "title": "arXiv 전 질의 실패가 7일 뒤 mcp_ok_no_candidates 로 떨어지면 새 경보 표식이 안 남는다",
+      "files": "02_Infrastructure/tools/paper_recharge_daily.R",
+      "how": "새 함수 pr_mcp_all_queries_failed(obj)를 넣고 run_mcp_probe 가 상태를 돌려주기 전에 부른다. 상태가 mcp_ok_no_candidates 이고, 등록된 질의(obj$queries)가 하나도 빠짐없이 errors 항목의 query 이름으로 올라 있으면(search ok=False · text_block_parse_error 포함) mcp_all_queries_failed(n=질의 수)로 강등한다. 그러면 기존 마커 블록(^mcp_ok 제외 조건)이 하루 1개 마커를 남긴다(paper_recharge_arxiv_mcp_all_queries_failed_<날짜>.alert). 질의 일부만 실패했거나 후보가 있으면 종전 상태 그대로 둔다. mcp_suspect_empty(처음 7일 · 텔레그램 예외 발송)는 바꾸지 않는다. Python(paper_recharge_mcp.py)은 소유 밖이라 건드리지 않았다.",
+      "test": "test_scn_paper_collect.R C6a~C6g: run_mcp_probe 를 소스에서 떼어 임시 루트에서 실행하고, 가짜 paper_recharge_mcp.py 가 고정 보고서를 쓴다. 수리 전에는 C6b·C6c 가 실패했다(status=mcp_ok_no_candidates · 마커 0). 수리 뒤 통과한다. 일부 실패와 정상 후보는 상태가 그대로다. 소스 텍스트를 치환해 판정을 끈 돌연변이 사본에서는 다시 mcp_ok_no_candidates 가 된다(C6g)."
+    },
+    {
+      "title": "죽은 링크 '알린 집합'을 발송 전에 저장해서, 발송 실패나 --no-telegram 실행이면 새 죽은 링크가 묻힌다",
+      "files": "02_Infrastructure/tools/paper_recharge_dead_links.R, 02_Infrastructure/tools/paper_recharge_daily.R",
+      "how": "판정과 기록을 나눴다. daily.R 은 pr_dead_link_news(write = FALSE)로 판정만 하고, 본문 tg_agent_brief 의 반환이 ok=TRUE 일 때만 .tg_main_ok 를 TRUE 로 둔다(ok=FALSE 면 로그를 남긴다). 발송 블록 뒤에서 새 함수 pr_dead_link_record(res, path, delivered = .tg_main_ok)를 부른다(dry-run 이면 부르지 않는다). delivered=TRUE 면 이번에 죽은 집합 전체를 알린 것으로 저장한다. FALSE(발송 실패 · --no-telegram · 소식 없음)면 지난 집합 ∩ 이번에 죽은 집합만 저장한다. 즉 새로 죽은 링크는 더하지 않고, 되살아난 링크는 종전처럼 집합에서 뺀다. pr_dead_link_news 는 dead·prev 를 함께 돌려주고, 기존 write=TRUE 동작은 그대로다(C1 호환). 상태 JSON 의 alerted 는 I()로 늘 배열이다.",
+      "test": "test_scn_paper_collect.R C7a~C7i: .n_new_dl 부터 'done' 로그 직전까지 발송 구간 전체를 본 스크립트에서 떼어 임시 루트에서 돌린다. 가짜 telegram_notify.R 의 모의 tg_agent_brief 가 ok 를 환경변수로 정한다. 실제 발송은 없다. 수리 전에는 C7b·C7c·C7e 가 실패했다. 수리 뒤에는 발송 실패 다음 날 다시 알리고, --no-telegram 다음 무인 실행이 알리며, 성공 뒤 반복은 무음이다. 되살아난 링크는 발송 없는 날에도 빠지고, dry-run 은 상태를 쓰지 않는다. delivered = TRUE 로 바꾼 돌연변이 사본에서는 발송 실패 다음 날이 다시 무음이 된다(C7i)."
+    }
+  ],
+  "not_fixed": [],
+  "changed_files": [
+    "02_Infrastructure/tools/paper_recharge_daily.R",
+    "02_Infrastructure/tools/paper_recharge_dead_links.R",
+    "08_Tests/scenarios/test_scn_paper_collect.R"
+  ],
+  "new_tests": [
+    "08_Tests/scenarios/test_scn_paper_collect.R C6a~C6g (전 질의 실패 강등 · 마커 · 돌연변이)",
+    "08_Tests/scenarios/test_scn_paper_collect.R C7a~C7i (발송 성공 뒤에만 알린 집합 저장 · 모의 발송기 · 돌연변이)"
+  ],
+  "tests_run": [
+    {"path": "08_Tests/scenarios/test_scn_paper_collect.R (수리 전 · 새 시험 포함)", "result": "pass 25 / fail 7 / total 32 — C6b·C6c·C7b·C7c·C7e 재현 실패, C6f·C7h 는 수리 전이라 치환 대상이 없어 실패"},
+    {"path": "08_Tests/scenarios/test_scn_paper_collect.R (수리 후)", "result": "pass 32 / fail 0 / total 32"},
+    {"path": "08_Tests/scenarios/test_scn_paper_queue.py", "result": "pass 10 / fail 0 / total 10"}
+  ],
+  "notes": "R 시험은 R_ENVIRON_USER=<빈 파일>로 실행했고, 임시 루트만 쓴다(운영 stage_artifacts · .cache 무접촉). C6 은 실제 파이썬(venv)으로 가짜 MCP 스크립트를 돌린다. 남은 한계: 처음 7일 mcp_suspect_empty 구간은 전 질의 실패여도 마커 없이 텔레그램 예외로만 드러난다(종전 그대로 — 바꾸면 텔레그램 가시성이 사라져 손대지 않음). Python 쪽에서 전 질의 실패를 직접 라벨링하는 것이 더 근본적이지만 paper_recharge_mcp.py 는 소유 밖이다. 커밋 · 스테이징은 하지 않았다."
+}

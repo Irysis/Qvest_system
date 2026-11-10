@@ -1,0 +1,21 @@
+path	kind	evidence	confidence	refs	action
+02_Infrastructure/ops/alpha_search_queue_run.sh	script	헤더 ★RETIRED(v10 2026-08-29) · morning_run/bootstrap/scheduler/*.bat/작업 cmd 호출 0(grep alpha_search_queue_run) · 남은 참조는 주석·시험뿐	certain	08_Tests/ops/test_credential_scope_wiring.sh · test_llm_lane_wiring.sh · test_llm_single_entry.sh · test_alpha_queue_pending.py(배선 단언) · alpha_search_queue_prompt.md	delete
+02_Infrastructure/ops/alpha_search_queue_prompt.md	prompt	소비자 = alpha_search_queue_run.sh(퇴역)뿐	certain	alpha_search_queue_run.sh	delete
+02_Infrastructure/ops/factor_deep_recheck_run.sh	script	헤더 ★RETIRED(v10 2026-08-29) · 실행 경로 호출 0	certain	test_factor_recheck_pending.py · test_credential_scope_wiring.sh · test_llm_lane_wiring.sh · test_llm_single_entry.sh · test_morning_run_rewire.sh · test_run_completion_notify.sh · test_stage_timeout_and_recharge_stall.sh	delete
+02_Infrastructure/ops/factor_deep_recheck_prompt.md	prompt	소비자 = factor_deep_recheck_run.sh(퇴역)뿐	certain	factor_deep_recheck_run.sh	delete
+02_Infrastructure/ops/mode_queue_research_run.sh	script	헤더 ★RETIRED · morning_run [0.57] 철거(morning_run.sh:243) · bootstrap.sh:1082 주석만	certain	test_mode_queue_research_run.sh · test_effect_signature_progress.sh · run_all_hooks.sh · test_llm_* 3종	delete
+02_Infrastructure/ops/mode_queue_research_prompt.md	prompt	소비자 = mode_queue_research_run.sh(퇴역)뿐	certain	mode_queue_research_run.sh	delete
+02_Infrastructure/ops/mode_queue_axis_audit.py	script	paper_router_run.sh:462 '구 mode_queue_axis_audit.py 호출 제거(v10 09-02)' · 다른 실행 호출 0	certain	test_paper_router_prefilter.sh(문자열) · CHANGELOG	delete
+02_Infrastructure/ops/paper_research_dispatch.R	script	헤더 ★RETIRED(v10 08-29 도훈) · morning_run.sh:264 '퇴역' echo 만	certain	test_mode_queue_dispatch_schema.R(R↔Py 동치 대조) · research_pool_predicates.py 헤더 주석 · 외 8파일 주석	delete
+02_Infrastructure/ops/paper_dispatch_backfill.sh	script	morning_run.sh:243 '[0.6] paper_research_dispatch+backfill 퇴역' · 실행 호출 0	certain	test_paper_dispatch_backfill.sh · test_morning_run_rewire.sh · run_all_hooks.sh	delete
+08_Tests/ops/test_paper_dispatch_backfill.sh	test	대상 스크립트 퇴역	certain	run_all_hooks.sh SUITES	delete
+08_Tests/ops/test_mode_queue_research_run.sh	test	대상 스크립트 퇴역	certain	run_all_hooks.sh	delete
+08_Tests/ops/test_mode_queue_dispatch_schema.R	test	대상(paper_research_dispatch.R) 퇴역 — 쌍둥이 대조가 지키는 대상이 없다	probable	research_pool_predicates.py 헤더 §R 쌍둥이	delete
+08_Tests/ops/test_factor_recheck_pending.py	test	recheck 큐 소비자(factor_deep_recheck_run.sh) 퇴역 · recheck_* 술어는 research_pool_status 만 표시	probable	research_pool_predicates.py recheck_*	decide
+02_Infrastructure/tools/paper_recharge_daily.R:691-779(트리아지 · 저명저자 리프레시 블록)	code-block	산출 alpha_search_triage_*.json · notable_authors.json 소비자 0(grep 02_Infrastructure = 생산자뿐) · 텔레그램 상위 K 줄에만 쓰임(새 논문 있는 날)	probable	paper_recharge_daily.R:932-976	decide
+stage_artifacts/paper_recharge/alpha_search_handoff_*.json(69개)	artifact	매일 생산 · 소비자 0(grep alpha_search_handoff = 생산자뿐)	probable	paper_recharge_daily.R:784-863	decide
+stage_artifacts/paper_recharge/{_tg_route,_tg_recheck,tg_route,tg_recheck,_tg_alpha_queue,tg_router,_tg_router,send_tg,send_tg_router,_build_route}_*(약 50개)	artifact	LLM 라우터 · 퇴역 레인이 남긴 일회용 발송 스크립트 · 재실행 경로 0	certain	없음	delete
+stage_artifacts/paper_recharge/{factor_recheck_queue,factor_recheck_result,mode_queue,research_status,auto_quarantine}_*(122개)	artifact	퇴역 레인 산출(factor_deep_recheck · mode_queue) · 마지막 생성 09월	probable	research_pool_status.py(표시)	decide
+02_Infrastructure/docs/quant_sources.json::blog_sources · collection_policy	config	코드 소비자 0(grep blog_sources/rss_feeds/quantocracy 02_Infrastructure = 0) · RSS/블로그 수집기 없음	certain	없음	decide
+06_Registry/research_programs.json::paper_routing._doc 의 루브릭 경로 02_Infrastructure/programs/paper_route_rubric.md	doc-ref	파일 부재(ls 실패) — 정본 = ops/paper_router_prompt.md	certain	research_programs.json	decide
+02_Infrastructure/ops/paper_atlas_run.sh · paper_atlas_prompt.md · programs/mechanism_atlas.R	script	게이트 QVEST_PAPER_ATLAS_ENABLE 미설정 — 12일+ '게이트 꺼짐' · 06_Registry/mechanism_atlas.jsonl 없음 · 원장 J7[DEC]	certain	test_paper_atlas_run.sh · test_mechanism_atlas.R · morning_run.sh:222	decide

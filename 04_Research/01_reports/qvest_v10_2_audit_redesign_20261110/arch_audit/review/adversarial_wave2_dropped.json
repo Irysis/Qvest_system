@@ -1,0 +1,125 @@
+[
+ {
+  "unit": "U10_daily_chain",
+  "title": "배터리 층 요일을 배터리 시작 시각으로 잰다 — 일요일 00:03 체인의 적재가 6시간 넘게 걸리면 그 주 weekly(전체) 배터리가 nightly 로 접힌다",
+  "file": "02_Infrastructure/data/daily_refresh.sh",
+  "line": 161,
+  "why": "low 심각도 — 검증 생략",
+  "claim": "주석은 '밤 = 시작 6시간 전의 요일'인데 dr_battery_tier 는 [9] 호출 시점의 now 에서 6시간을 뺀다. 그래서 체인 시작이 아니라 배터리 시작 시각이 기준이 된다."
+ },
+ {
+  "unit": "U10_daily_chain",
+  "title": "[6v] 당월 옛 코드(M) 판정이 원장 completed_at 기록 순서에 매달린다 — 당월 교체 뒤의 시각을 완료 시각으로 적으면 매일 밤 GAP(헛경보)이고, 현재 OK 는 19초 차이의 우연",
+  "file": "02_Infrastructure/data/factor_db_vintage_coverage.py",
+  "line": 99,
+  "why": "low 심각도 — 검증 생략",
+  "claim": "M 은 '최신 당월 파일 mtime ≥ 원장 최신 completed_at' 만 본다. 수리 절차(부분 수리 → 당월을 rebuild_factor_subset.R 로 따로 교체)를 다 마친 뒤의 시각을 완료 시각으로 적으면 파일이 완료 시각보다 앞서 old_code → GAP 이 된다. [6a] 는 당월을 최대 7일 다시 짓지 않으므로 그동안 매일 밤 DR_FAILED(factor_db_vintage_gap) · rc 1 · fdb 단계 failed 가 된다."
+ },
+ {
+  "unit": "U9_alerts",
+  "title": "task_health 가 DUP 로 억제한 새 실패는 seen 기억에 이미 기록돼 다음 실행부터 '기보고'로 분류됨 — 그 실패 자체는 한 번도 안 나감",
+  "why": "기전 자체는 코드와 맞습니다. seen 은 emit 전에 파이썬 블록에서 확정되고, _will_report 는 DUP 여부를 모르며, sched_alert_emit 는 DUP 이면 return 0 합니다. 그러나 이것은 이 단위가 의도한 동작('같은 원인 = 발신처가 달라도 하루 한 통')입니다. alert_dedup.py 머리말이 바로 MorningBri"
+ },
+ {
+  "unit": "U15_hooks_boot",
+  "title": "Queue 줄을 같은 프로세스로 바꾸면서 자식 프로세스의 90초 상한이 사라졌다 — alpha_pending 이 멈추면 부팅 전체가 멈춘다",
+  "file": "02_Infrastructure/ops/boot_lean.sh",
+  "line": 128,
+  "why": "low 심각도 — 검증 생략",
+  "claim": "구판은 subprocess.run(timeout=90) 덕분에 정지하면 UNREPORTED 로 접혔습니다. 새 _alpha_pending_out 은 상한 없이 같은 프로세스에서 931개 파일(stage_artifacts/paper_recharge)을 훑으므로, 파일 읽기 하나가 멈추면 부팅 8줄 전부가 막힙니다."
+ },
+ {
+  "unit": "U12_runner",
+  "title": "결과 JSON 의 status · total_fail 이 등록부 쓰기(REGISTRY_DIRTY · 병렬 구간 포함)를 반영하기 전에 쓰인다",
+  "file": "08_Tests/hooks/run_all_hooks.sh",
+  "line": 2464,
+  "why": "low 심각도 — 검증 생략",
+  "claim": "REGISTRY_DIRTY 를 TOTAL_FAIL 에 더하는 것(:2506)이 결과 JSON 작성(:2464) 뒤라, 등록부 쓰기만 있는 실행은 결과 파일에 status PASS · total_fail 0 으로 남고 FINAL · 종료 코드만 실패를 말한다."
+ },
+ {
+  "unit": "U12_runner",
+  "title": "층 표의 층 값 오타가 조용히 nightly 로 접히고 '미배정' 수에도 안 잡힌다",
+  "file": "08_Tests/hooks/run_all_hooks.sh",
+  "line": 2133,
+  "why": "low 심각도 — 검증 생략",
+  "claim": "tsv tier 열이 fast/nightly/weekly 외 값('Fast', 'weekly ' 끝 공백, 'nighlty')이면 case 기본 가지로 nightly 가 되는데 QV_N_UNASSIGNED 는 빈 값일 때만 늘어 실행 첫머리 · 결과 JSON n_unassigned_tier 어디에도 드러나지 않는다."
+ },
+ {
+  "unit": "U12_runner",
+  "title": "병렬 구간에 시간 상한이 없고 멈춘 스위트를 이름으로 특정할 수 없다 — 밤 체인 [9] 무기한 정지",
+  "why": "인용한 코드는 주장 그대로입니다. 2301-2312행의 _qv_par_one 에 timeout 이 없고, 2330행 wait -n, 2334행 무조건 wait, 2331행 Launch 헤더만 있습니다. 그러나 시간 상한이 없는 것은 병렬 구간만의 결함이 아닙니다. 직렬 경로(2375-2381행 RAW=$(Rscript ...))에도 timeout 이 없어서"
+ },
+ {
+  "unit": "U12_runner",
+  "title": "주간 층 판정이 리프레시 시작이 아니라 [9] 도달 시각 기준이라, 긴 일요일 새벽 리프레시에서는 주간 층이 그 주 통째로 빠진다",
+  "why": "커밋된 HEAD(5185c9ad9)에서는 이 결함이 주장대로 있었습니다. 층 판정이 [9] 호출 시점의 now 를 기준으로 삼았습니다. 그러나 현재 작업 트리에는 아직 커밋되지 않은 수리가 들어가 있습니다. 이 판에서 dr_battery_tier 는 QVEST_DR_NOW 가 없으면 체인 시작 때 정해지는 DR_RUN_T0 를 기준으로 삼으므로, 일요일 0"
+ },
+ {
+  "unit": "U18_advisor",
+  "title": "새 건식 시나리오 시험의 핵심 단언이 공허하다 — 시험 안에서 정의한 함수와 문자열 결합만 검사한다",
+  "file": "08_Tests/scenarios/test_scn_advisor_dryrun.R",
+  "line": 99,
+  "why": "low 심각도 — 검증 생략",
+  "claim": "S3a · S3d 는 시험 파일이 직접 정의한 next_trial()(첫 판 chain · 둘째 sweep)의 출력을 검사할 뿐 러너 · 관문의 실제 동작은 보지 않는다. S1m · S6m '돌연변이'는 동어반복이라 언제나 녹색이다. 그래서 첫 번째 결함(chain∧N≥2 통과)과 같은 운영 경로 회귀를 잡지 못한다."
+ },
+ {
+  "unit": "U11_knowledge",
+  "title": "증류 프롬프트가 재료에 없는 '걸음 채택률'을 의무 절에 옮기라고 요구 — 미측정 수치 창작 유도",
+  "file": "02_Infrastructure/ops/cleaner_distill_run.sh",
+  "line": 91,
+  "why": "low 심각도 — 검증 생략",
+  "claim": "의무 절 (a)는 '재료 §1b — … 걸음 채택률 …'을 옮기라고 하지만, §1b(klm_format)는 걸음 지표를 일부러 내지 않는다(knowledge_loop_metrics.R:7-8 — 정본은 rxg_scorecard). 무인 증류 에이전트가 원장을 직접 세거나 추정한 값을 digest에 사실처럼 적을 여지가 생긴다."
+ },
+ {
+  "unit": "U11_knowledge",
+  "title": "결과 원장의 격리 · 처방 입력 미통과 줄 규율을 다른 읽는 쪽(색인 · 학습 계기 · 증류)이 무시한다",
+  "why": "인용한 코드는 사실입니다. outcomes.R 의 격리 · tau_clean 필터가 있고, .hi_jsonl · klm_snapshot · .cd_open_probes 에는 격리 · τ_D 검사가 없습니다. 그러나 시나리오가 전제한 상태는 실운용에 없습니다. 06_Registry/round_outcomes.jsonl 은 디스크에도 git 에도 없어서 '검사"
+ },
+ {
+  "unit": "U18_advisor",
+  "title": "어드바이저 계보의 chain/sweep 표기가 자기 신고뿐 — 둘째 판 이후를 chain 으로 적으면 선택 편향 관문과 A 자격 관문을 함께 지나간다",
+  "why": "인용한 코드 자체는 주장대로입니다. essence 는 chain 이면 DSR 을 면제하고, 관문 ④는 chain 과 N≥2 의 조합을 따로 검사하지 않습니다. 하지만 이것은 코드 결함이라기보다, 시행 회계를 호출자가 선언한다는 설계상의 신뢰 경계입니다. 스킬은 기존 계보를 잇는 첫 측정을 chain 이면서 N>1 로 적으라고 정해 두었으므로 이 조합은 정당"
+ },
+ {
+  "unit": "U4_round_core",
+  "title": "닫기 상태 문자열이 'evaluated' 로 가린 등급을 오류 · 대기 경로에서 다시 드러낸다",
+  "file": "04_Research/programs/_lib/round_core/v1/p4.R",
+  "line": 1200,
+  "why": "low 심각도 — 검증 생략",
+  "claim": "candidate_gate = 'error' 는 새 등급이 A 인 가지에서만 생기고, module_pool = 'error' · 'pending_manual' 은 등급 A/B 인 가지에서만 생긴다. 그런데 이 값들은 결과 원장(rec$extra$finalize)과 걸음 원장 chain_closed 에 그대로 실린다."
+ },
+ {
+  "unit": "U13_engine_toolbox",
+  "title": "요인 Σ 공급자가 R 날짜에 빠진 비시장 요인 열을 조용히 버린다 — 'NA 날짜' 검사는 조인 뒤라 항상 거짓",
+  "file": "02_Infrastructure/reinforcement/rf_factor_cov.R",
+  "line": 365,
+  "why": "low 심각도 — 검증 생략",
+  "claim": "rfc_sigma_ctx 의 anyNA(Fw$Date) 는 i 쪽 날짜로 조인한 결과라 결코 참이 되지 않고, 시장 열만 덮이면 SMB · HML · WML 등이 창 안 일부 날짜에 결측이어도 rfc_ts_cov 가 그 열을 빼고 model='ts' · variant_used=요청 변형으로 보고해 엔진의 미처치 셈(.nUnt)에 잡히지 않는다."
+ },
+ {
+  "unit": "U13_engine_toolbox",
+  "title": "v3.4 스윕 관문용 예산 함수(tb_rc_*)에 시험이 없다 — 시험은 진단으로 강등된 DSR 쪽만 잰다",
+  "file": "08_Tests/programs/test_trial_budget.R",
+  "line": 1,
+  "why": "low 심각도 — 검증 생략",
+  "claim": "등급 v3.4 에서 스윕 관문은 선택 현실 점검이고 변형 수 상한의 근거는 tb_rc_required_t_rho / tb_rc_max_variants / tb_rc_from_trials 인데, test_trial_budget.R 은 tb_min_sr · tb_max_trials · tb_table(DSR)만 검사한다."
+ },
+ {
+  "unit": "U13_engine_toolbox",
+  "title": "cdar_nu_rule = 'ew' 는 기본값과 같은 칸인데 전달 가드를 통과해 별도 시행이 된다",
+  "file": "02_Infrastructure/reinforcement/rf_cell_engine.R",
+  "line": 563,
+  "why": "low 심각도 — 검증 생략",
+  "claim": ".rf_nu_ignored 는 '규칙을 뺀 판 AND 어휘 밖 판이 둘 다 같아야' 무시로 판정한다. CDaR 어댑터는 어휘 밖 값에서 오류 → EW 로 떨어지므로 두 번째 조건이 늘 거짓이고, 그래서 기본(ew_candidates)과 비트 동일한 'ew' 칸도 처치된 칸으로 통과한다."
+ },
+ {
+  "unit": "U13_engine_toolbox",
+  "title": "lean_n_days = cell 가드가 공허하다 — 캐리어 함수 본문 문자열만 보고, 어댑터 · qepm arm 은 ctx$n_days 를 무시해 조용한 무처치",
+  "why": "인용한 코드는 실제로 그렇게 생겼습니다. 572-576행 가드는 .wc_lean_carrier_fn 본문 문자열만 보고, 비-lean arm 35/58종에서도 통과하며, 전달 탐침이 없습니다. 그러나 qepm_registry 캐리어는 ctx$R·ctx$Sigma 를 전부 쓰고, adapter_file 비중 어댑터도 ctx$R 전체를 쓰며 자체로 창을 자르지"
+ },
+ {
+  "unit": "U4_round_core",
+  "title": "설계 입력의 기저 풀 '자격 · 사유 코드' 열이 전기간 권위 등급(A/B 여부)을 처방 쪽에 흘린다",
+  "why": "인용한 코드는 실제로 그렇게 생겼습니다. 상설 자격이 아닌 행의 eligible 은 전기간 grade ∈ {A,B} 로 정해지고, 설계 입력 표는 자격 열과 사유 코드 열을 그대로 출력합니다. 그러나 base · blend 걸음은 기계 검사가 eligible = TRUE 인 엔진만 받습니다(p4.R:670-671 · :220 · :498 · :637). 그"
+ }
+]

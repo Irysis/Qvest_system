@@ -1,0 +1,16 @@
+{
+  "ok": false,
+  "summary": "R1_p4_core 수리는 확정 결함 11건의 시나리오를 대부분 닫았다. 확인한 것: 닫기 순서(점유 → 결과 원장 사전 판독 → chain_closing → 재채점·관문·등재·finalize.json(closing_id) → 결과 원장(중복 skip · 잠금) → chain_closed)와 재개 멱등, 같은 기저 사슬의 시행이 trials·expected 에 들어감(판독 불가 사슬은 +1 · fail-closed), 필수 채택 규칙의 방향·문턱 검사(behavior_card uc_floor 0.55 · majority_share 0.5 실재 · 등록·p4-check 경로에서만 불러 기존 사슬 판정은 그대로), 진행 중 수리 측정·판정 거부(fdv_stamp 의 in_progress 필드 실재), 포기 걸음을 r7·기각 기억·성적표·검토에서 따로 셈, 열기·포기 글의 rc_input_issues 검사와 설계 입력 생략, 기각 기억의 같은 기저 우선·최근순, 정규화 서명 중복 검사, 상태 문자열 가림. test_round_core_v1_p4_chain.R 을 직접 돌려 154/0 을 확인했다(R_ENVIRON_USER = 빈 파일). KM 돌연변이 14종은 수리 줄을 정확히 겨냥하고, 원본 대조와 치환 1곳 성사를 단정한다. 소유 밖 파일 수정은 없고 not_fixed 4건의 사유도 타당하다. 다만 남은 문제 2건이 있다. (1) chain_closing 기록이 '판정 안 된 열린 걸음'을 잠금 안에서 다시 보지 않는다 — 닫기와 걸음 열기가 겹치면 사슬이 영구 정지할 수 있고, 이는 이 수리가 새로 만든 정지 상태다. (2) 중복 칸 검사가 이미 연 칸의 서명을 기록된 값이 아니라 지금 디스크 파일에서 다시 계산한다(낮음).",
+  "issues": [
+    {
+      "title": "닫기 ↔ 걸음 열기 경합 시 '닫는 중' 사슬이 영구 정지한다(chain_closing 가드가 미판정 걸음을 보지 않음)",
+      "problem": "rc_p4_close 는 '판정 안 된 걸음' 검사(p4.R:1270)를 닫기 점유 안에서 하지만, 걸음 열기(rc_p4_step_open)는 그 점유를 잡지 않는다. 검사 뒤 chain_closing 을 쓰기(p4.R:1304) 전까지 영수증 검사와 결과 기록 조립이 이어지는데, 이 틈에 다른 프로세스(세션이나 chain_tick 무인 틱)가 step_open k 를 쓸 수 있다. 원장 가드 .rcp4_unique_guard 의 chain_closing 갈래(p4.R:598)는 '이미 닫는 중'만 보고, 열렸으나 판정되지 않은 걸음은 보지 않는다. 그래서 chain_closing 이 그대로 들어간다. 이어 (다)·(라) 단계가 실패하면 재실행이 p4.R:1270 의 미판정 걸음 검사에서 거부된다. 그 걸음을 판정·측정·포기하는 길도 .rcp4_need_open_chain 이 'closing' 이라며 모두 막는다. 결과적으로 추가 전용 원장을 사람이 손으로 고치기 전에는 사슬을 닫을 수도, 진행시킬 수도 없다. (다)·(라)가 성공해도 chain_closed 사슬에 판정 안 된 걸음이 남는다.",
+      "evidence": "p4.R:598 `chain_closing = if (closing) \"이미 닫는 중인 사슬이다(다른 프로세스)\" else \"\"` — 미판정 걸음 조건이 없다. step_open 갈래(p4.R:601-603)는 같은 잠금 안에서 미판정 걸음을 다시 확인하는데 chain_closing 갈래에는 그 확인이 없다. 재현: 닫기 검사(1270)를 지난 뒤 `.rcp4_append(cd, list(event='step_open', k=2, ...))` 를 끼워 넣고 regrade_file 이 오류를 내게 하거나 결과 원장 쓰기가 실패하게 한다 → chain_closing 이 기록되고, 다시 p4-close → '판정 안 된 걸음이 있다: 2', p4-step-decide·abandon 2 → '닫는 중인 사슬이다'. 패치 제안: chain_closing 갈래에 step_open 갈래와 같은 미판정 조건(setdiff(step_open k, step_result k) 가 비어 있지 않으면 거부)을 더하고, 그 반례를 K 절에 시험으로 추가한다."
+    },
+    {
+      "title": "중복 칸 서명이 이미 연 칸의 '지금 파일'에서 다시 계산된다 — 원래 파일을 고치면 의미가 같은 재제출이 다시 열린다(낮음)",
+      "problem": "rc_p4_step_open 의 usedk(p4.R:764-765)는 opens 레코드의 cell_spec_path 가 가리키는 지금 디스크 파일로 서명을 다시 만든다. 열 때의 서명이나 측정 사본(measured_spec)으로 만들지 않는다. 원시 md5 는 원장에 기록된 값(cell_spec_md5)과 대조하므로 정확한 사본은 막힌다. 하지만 생성기가 기각된 걸음의 원래 칸 파일을 덮어쓴 뒤 원래 내용에 라벨만 바꾼 새 파일을 내면, 원시 md5 도 다르고 정규화 서명도 바뀐 파일과 달라 통과한다. 생성기 작업 디렉터리가 칸 파일 위치라면 쓰기 권한이 있어 가능한 경로다. 결함 시나리오('기각된 칸을 파일 바이트만 바꿔 다시 연다')의 변형이 남는다.",
+      "evidence": "p4.R:764 `vapply(st$opens, function(r) as.character(r$cell_spec_path %||% NA_character_), \"\")` → .rcp4_spec_key(지금 파일) · p4.R:775-777 step_open 레코드에 spec_key 를 남기지 않는다. 패치 제안: step_open 레코드에 spec_key = nk 를 기록하고 대조는 기록값을 먼저 쓴다(옛 레코드만 measured_spec 사본 → 지금 파일 순으로 대체). 또 기록된 cell_spec_md5 와 지금 파일 md5 가 다르면 대조 불가로 보고 거부한다(fail-closed)."
+    }
+  ]
+}

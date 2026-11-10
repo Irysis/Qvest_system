@@ -1,0 +1,35 @@
+{
+  "group": "G2_vintage_gates",
+  "fixed": [
+    {
+      "title": "선언 팩터 규칙이 cap_core 베타 짝 위성(beta_kind = db)을 놓쳐 fail-open",
+      "how": "fdv_spec_declared_factors 가 cap_core 를 해석한다: satellite = random_beta_matched ∧ beta_kind(생략 = db, rf_capcore.R::rf_cc_parse 기본값) = db 이면 beta_factor 를 선언에 더한다. beta_kind 가 price/none/null_perm 이면 더하지 않는다. floor(생략 포함)는 RAWDATA 만 쓰므로 더하지 않는다. cap_core 가 목록이 아니거나, 위성 · beta_kind 를 모르거나, 베타 id 가 없으면 NULL(알 수 없음 = 닿은 것으로)을 돌려준다. 러너 .rp_fdv_stamp 는 같은 함수를 쓰므로 측정 기록에도 그대로 반영된다. 검증자 재현 capcore.R 의 결과는 선언 = BETA_X·A1, stale = TRUE 다.",
+      "files": "02_Infrastructure/contracts/factor_db_vintage.R",
+      "test": "08_Tests/contracts/test_factor_db_vintage.R T29(칸 사양 → 선언 9사례) · T30(검증자 재현 그대로 → 낡음 · hits = BETA-REPAIR) · T32(돌연변이: 'ids <- c(ids, bf)' 치환 1곳 성사 → 선언 A1 뿐 · 현행 통과)"
+    },
+    {
+      "title": "(경미) 선언으로 비켜 간 측정의 사유 문구가 사실과 반대",
+      "how": "fdv_stale 가 비켜 간 수리(측정보다 늦게 끝났거나 진행 중인데 선언 팩터가 범위 밖인 수리)를 bypassed 로 따로 모은다. 그런 수리가 있으면 사유를 '측정(m)은 수리 X 보다 앞서거나 그 수리가 진행 중이지만 선언 팩터(n개)가 그 범위(팩터 목록) 밖이다 — 닿는 수리는 모두 측정 전에 끝났다'로 적는다. '마지막 수리 뒤다'는 실제로 모든 수리 뒤에 잰 측정에만 쓴다. 반환값에 bypassed 필드를 더했다(판정 값은 그대로).",
+      "files": "02_Infrastructure/contracts/factor_db_vintage.R",
+      "test": "08_Tests/contracts/test_factor_db_vintage.R T31"
+    }
+  ],
+  "not_fixed": [],
+  "changed_files": [
+    "02_Infrastructure/contracts/factor_db_vintage.R",
+    "08_Tests/contracts/test_factor_db_vintage.R"
+  ],
+  "new_tests": [
+    "08_Tests/contracts/test_factor_db_vintage.R T29 · T30 · T31 · T32"
+  ],
+  "tests_run": [
+    {"path": "08_Tests/contracts/test_factor_db_vintage.R", "result": "32/32 PASS"},
+    {"path": "08_Tests/reinforcement/test_rf_a_eligibility.R", "result": "66/66 PASS"},
+    {"path": "08_Tests/scenarios/test_scn_l2_a_gate.R", "result": "22/22 PASS"},
+    {"path": "08_Tests/scenarios/test_scn_repl_measure_record.R", "result": "31/31 PASS"},
+    {"path": "08_Tests/contracts/test_replication_a_gate.R", "result": "37/37 PASS"},
+    {"path": "08_Tests/programs/test_round_candidate_gate.R", "result": "22/22 PASS"},
+    {"path": "08_Tests/scenarios/test_scn_book_registration.R", "result": "33/33 PASS"}
+  ],
+  "notes": "앞선 수리에서 처리한 다섯 확정 결함(판독 실패 · 원장 부재 → factor_db_vintage_unreadable 보류, T12/T15 진행 중 허용, 측정 기록의 declared_factors, rf_l2_lib 의 NA 보존, 완료 시각 엄격 해석)은 코드에서 그대로인 것을 다시 확인했다. 셀 엔진이 팩터 DB 를 읽는 경로도 다시 셌다. load_month_factors 호출은 .load_factor(db) 안에만 있고, .load_factor 호출부는 factors[] · defense_sleeve(NULL 처리) · cap_core(이번에 반영) 세 곳이다. 원장 · 운영 등록부는 건드리지 않았다. 커밋 · 스테이징도 하지 않았다."
+}

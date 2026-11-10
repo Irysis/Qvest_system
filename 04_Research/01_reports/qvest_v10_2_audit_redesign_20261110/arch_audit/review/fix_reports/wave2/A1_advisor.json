@@ -1,0 +1,80 @@
+{
+  "group": "A1_advisor",
+  "fixed": [
+    {
+      "title": "어드바이저 측정의 A 관문 통과 산출물이 일반 충실구현 Judge 트리거와 구별되지 않는다",
+      "how": "run_paper_replication.R: 최상위 판별 함수 .rp_is_advisor_lane(measurement_tags$lane == advisor 또는 strategy_name 접두 ADV_, 둘 중 하나면 어드바이저로 보는 fail-closed)을 두고, 러너 본문에서 .rp_adv_lane 을 계산해 권위 기록에 lane=advisor · measurement_regime.lane=advisor · module_admission{registered:false, code:advisor_lane} 를 싣는다(표지가 없으면 키를 추가하지 않는다). .rp_a_route 에 advisor 인자를 더했고, 라우터가 권위 기록(lane · measurement_regime.lane · strategy_name)을 직접 다시 읽어 판정한다(호출자 표지와 OR). 관문은 그대로 태우지만 어드바이저면 통과여도 judge_request.eligible.json 을 쓰지 않는다. 대신 judge_request.held.json(status held:advisor_lane, a_eligibility.lane=advisor, lane=advisor, requires=dohoon_instruction, gate_eligible=관문 자체 판정)을 쓰고, 반환값에도 lane 과 gate_eligible 을 싣는다. 측정 · 채점 로직은 바꾸지 않았다. judge.md ③ 에 어드바이저 표지 한 줄을 넣고, SKILL ④ Grade A 분기도 고쳤다.",
+      "files": "02_Infrastructure/alpha_search/run_paper_replication.R, .claude/agents/judge.md, .claude/skills/qvest-advisor/SKILL.md",
+      "test": "08_Tests/scenarios/test_scn_advisor_dryrun.R S8a~S8i · S10 (수리 전 HEAD 코드 = S8b~S8i · S10 red, 대조 S8a · S8f 는 수리 전후 모두 green)"
+    },
+    {
+      "title": "어드바이저 경로 전체에 정보 경계 τ_D 규정이 없다(2계층 풀 · 재료 큐 유입)",
+      "how": "(a) 코드: 러너 §7-c 가 어드바이저 계보(.rp_adv_lane)이면 module_catalog 자동 등재를 하지 않고 로그에 사유 advisor_lane 을 남긴다. 권위 기록 module_admission 에도 같은 사유를 적는다. 일반 레인 등재는 그대로이고, 블록을 떼어 부르는 test_module_admission_seam C6 와도 맞도록 get0 로 처리했다. (b) SKILL: '## 정보 경계 τ_D — 어드바이저 적용' 절을 새로 넣었다. 출처는 behavior_card.json::tau_d 이고, pit.md · lean-loop.md 규정을 적용한 것이지 새 정책이 아님을 밝혔다. 내용은 네 가지다. 전기간 결과는 볼 수 있다(사람 쪽 판단). 본 뒤 고친 판은 sweep 으로 신고한다(chain 금지, n_trials 에 앞 판 포함). 재료 큐로 넘길 때는 τ_D 뒤 정보를 뺀 사본만 rc_input_issues 검사를 통과한 뒤 넘긴다(검사 한 줄 포함). 풀 자동 등재는 없다. ④ 운영 쓰기 경로 서술도 코드 사실에 맞게 고쳤다.",
+      "files": "02_Infrastructure/alpha_search/run_paper_replication.R, .claude/skills/qvest-advisor/SKILL.md, 08_Tests/worktask/test_qepm_advisor_contract.R",
+      "test": "test_scn_advisor_dryrun.R S9a~S9d(블록 eval · 등재 대역 호출 0/1) · S13a~S13m(SKILL 검사 줄을 실제 실행 — 새는 메모는 멈추고 깨끗한 메모는 통과, stopifnot 제거 돌연변이 = red) · test_qepm_advisor_contract.R G5c · MG5d · MG5e"
+    },
+    {
+      "title": "동결된 qvest-multi-track 워크플로가 실제로는 동결되지 않았다",
+      "how": "dossier-pipeline 과 같은 모양으로 첫 실행문에 log(QEPM 동결) + return {status:'QEPM_FROZEN', decision:'QEPM-R0-FREEZE'} 를 넣었다. 에이전트는 하나도 띄우지 않는다. meta.description 에 '실행 시 즉시 종료' 를 적었다.",
+      "files": ".claude/workflows/qvest-multi-track.js",
+      "test": "test_scn_advisor_dryrun.R S12a(node 합성 실행: QEPM_FROZEN · alpha-research 0) · S12m(return 블록 삭제 돌연변이 = alpha-research 2건 스폰 + ICIR 순위) — 수리 전 HEAD 는 S12a red"
+    },
+    {
+      "title": "스킬이 봉쇄라고 적은 WT 생성(wt_create)은 코드상 막혀 있지 않다",
+      "how": "wt_create 의 첫 실행문에 QEPM-R0-FREEZE stop 을 넣었다. 디렉터리와 request.json 을 만들기 전에 멈추고, 해제하려면 decision_register 재상정이 필요하다. 환경변수 우회로는 없다. 시험 가운데 wt_create 를 실제로 부르는 것은 없어 시험 전용 주입점은 필요 없었다. /worktask 명령에 disable-model-invocation: true 와 create 봉쇄 표기를 넣고, qvest-worktask SKILL · advisor SKILL 금지 절도 코드 가드 사실로 고쳤다.",
+      "files": "02_Infrastructure/worktask/worktask_manager.R, .claude/commands/worktask.md, .claude/skills/qvest-worktask/SKILL.md, .claude/skills/qvest-advisor/SKILL.md",
+      "test": "test_scn_advisor_dryrun.R S11a(임시 루트 거부 · 디렉터리 0) · S11m(가드 줄 삭제 돌연변이 = WT 디렉터리 생성) · S11b · test_qepm_advisor_contract.R G7b · MG7b — 수리 전 HEAD 는 S11a red(WT 생성)"
+    },
+    {
+      "title": "(낮음) 새 건식 시나리오 시험의 핵심 단언이 공허하다",
+      "how": "S3a(시험 안 next_trial)를 지우고, 회계 판정은 S8e · S8f 로 옮겼다. 여기서는 정본 rf_a_eligibility 를 러너 라우터로 태워 sweep/2 = accounting_fail 보류를 잰다. S1m 은 같은 검출 파이프라인에 가짜 경로를 넣은 스킬 사본을 통과시켜 그 경로가 잡히는지 본다. S6m 은 같은 검출 루프를 돌연변이 사본 문서에 돌려 그 항목만 red 인지 본다.",
+      "files": "08_Tests/scenarios/test_scn_advisor_dryrun.R",
+      "test": "test_scn_advisor_dryrun.R S1m · S6m · S8e · S8f"
+    }
+  ],
+  "not_fixed": [
+    {
+      "title": ".claude/commands/advisor.md 4번 줄의 운영 쓰기 서술이 낡았다(소유 밖)",
+      "why": "명령 파일은 소유 경로가 아니다. 지금 문구는 'B 이상·방어형 = module_catalog.json 등재' 인데 어드바이저 계보는 이제 등재하지 않는다. 패치 제안: 그 괄호를 '러너 운영 쓰기(어드바이저 계보 = module_catalog.json 자동 등재 없음 · advisor_lane · A 는 관문 통과여도 judge_request.held.json held:advisor_lane · L-code · lookup 인덱스 재생성)' 로 바꾼다. 계약 시험 G5b 는 module_catalog.json 언급 여부만 보므로 지금도 green 이다."
+    },
+    {
+      "title": "programs/round_candidate_gate.R::rcg_route 와 기타 재판정 경로의 어드바이저 표지(소유 밖 · 범위 밖)",
+      "why": "프로그램 라운드를 닫을 때 같은 A 관문을 다시 태워 judge_request.eligible.json 을 쓰는 경로다. 어드바이저 측정은 라운드를 거치지 않으므로 지금 경로상 닿지 않는다. 다만 표지 판독(권위 기록 lane = advisor)을 거기에도 넣으면 심층 방어가 된다. 패치 제안: rcg_route 에서 auth$lane == 'advisor' 이면 held:advisor_lane 으로 낸다."
+    },
+    {
+      "title": "02_Infrastructure/ops/mode_queue_research_prompt.md:83 의 wt_create 안내(소유 밖)",
+      "why": "동결된 paper_promotion 진입로 문서다. 이제 wt_create 가 동결 stop 으로 멈추므로 그 안내를 따르면 즉시 오류가 난다(fail-closed). 문구 정정은 소유 밖이다."
+    },
+    {
+      "title": "test_qepm_freeze_entrypoints.R A5 단언 보강(소유 밖)",
+      "why": "그 시험의 A5 는 multi-track 의 meta.description 만 본다. 실행 동결(QEPM_FROZEN · 스폰 0 · 돌연변이)은 소유 시험 test_scn_advisor_dryrun.R S12 가 잰다. A5 에 'rm_$calls 길이 0 · status QEPM_FROZEN' 을 더하는 것은 패치 제안으로 남긴다."
+    }
+  ],
+  "changed_files": [
+    "02_Infrastructure/alpha_search/run_paper_replication.R",
+    "02_Infrastructure/worktask/worktask_manager.R",
+    ".claude/workflows/qvest-multi-track.js",
+    ".claude/skills/qvest-advisor/SKILL.md",
+    ".claude/skills/qvest-worktask/SKILL.md",
+    ".claude/commands/worktask.md",
+    ".claude/agents/judge.md",
+    "08_Tests/scenarios/test_scn_advisor_dryrun.R",
+    "08_Tests/worktask/test_qepm_advisor_contract.R"
+  ],
+  "new_tests": [
+    "08_Tests/scenarios/test_scn_advisor_dryrun.R S8a~S8i · S9a~S9d · S10a/b · S11a/m/b · S12a/m · S13a/a'/b/c/m (+ S1m · S6m 재작성)",
+    "08_Tests/worktask/test_qepm_advisor_contract.R G5c · MG5d · MG5e · G7a · MG7a · G7b · MG7b"
+  ],
+  "tests_run": [
+    {"path": "08_Tests/scenarios/test_scn_advisor_dryrun.R (QVEST_ADV_SRC_ROOT = 수리 전 HEAD 코드 사본 — 재현)", "result": "pass 49 / fail 15 / total 64 (S8b~S8i · S9a · S9d · S10 · S11a/m/b · S12a/m red = 결함 재현 · 대조 S8a · S8f · S9b · S9c green)"},
+    {"path": "08_Tests/scenarios/test_scn_advisor_dryrun.R", "result": "pass 65 / fail 0 / total 65"},
+    {"path": "08_Tests/worktask/test_qepm_advisor_contract.R (수리 전 기준선)", "result": "pass 140 / fail 0 / total 140"},
+    {"path": "08_Tests/worktask/test_qepm_advisor_contract.R", "result": "pass 147 / fail 0 / total 147"},
+    {"path": "08_Tests/contracts/test_replication_a_gate.R", "result": "pass 37 / fail 0 / total 37"},
+    {"path": "08_Tests/scenarios/test_scn_repl_measure_record.R", "result": "pass 31 / fail 0 / total 31"},
+    {"path": "08_Tests/contracts/test_module_admission_seam.R (QM_ROOT=G:/OneDrive/Quant_Module_Moltbot 명시)", "result": "pass 38 / fail 0 / total 38"},
+    {"path": "08_Tests/worktask/test_qepm_freeze_entrypoints.R", "result": "pass 74 / fail 0 / total 74"},
+    {"path": "08_Tests/worktask/test_qepm_freeze_residual.R", "result": "pass 41 / fail 0 / total 41"}
+  ],
+  "notes": "08_Tests/worktask/ 아래에서 wt_create 를 실제로 부르는 시험은 0건이다(grep 결과 문자열 언급은 test_qepm_advisor_contract.R 의 우회 정규식 하나뿐). 그래서 'wt_create 를 쓰는 시험' 묶음은 동결 시험 2종(entrypoints · residual)으로 대신 확인했다. worktask_manager.R 을 source 하는 다른 시험(08_Tests/integration/test_execution_path_unified.R · 08_Tests/hooks/test_sot_access_paths.R)은 wt_create 를 부르지 않는다. 다만 둘 다 저장소 안(qepm/mailbox · .cache)에 쓰는 기존 시험이라 돌리지 않았다. 수리 전 재현은 HEAD 의 코드 3파일 사본을 스크래치에 두고 QVEST_ADV_SRC_ROOT 로 같은 시험을 돌려 확인했다. 커밋 · 스테이징은 하지 않았다."
+}

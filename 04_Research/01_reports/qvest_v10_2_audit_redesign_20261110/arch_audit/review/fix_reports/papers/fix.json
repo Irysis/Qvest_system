@@ -1,0 +1,31 @@
+{
+  "task": "논문 수집 질의 재편 + 다음 논문 순서 가중 (PAPER-QUERY-AND-ORDER-REDESIGN-20261110)",
+  "changed_files": [
+    "02_Infrastructure/docs/quant_sources.json",
+    "02_Infrastructure/tools/paper_recharge_mcp.py",
+    "02_Infrastructure/tools/paper_recharge_daily.R",
+    "02_Infrastructure/ops/paper_router_prompt.md",
+    "02_Infrastructure/ops/research_pool_predicates.py",
+    "02_Infrastructure/ops/rf_next_paper_pick.py",
+    "02_Infrastructure/programs/next_replication.R",
+    "06_Registry/next_paper_order.json (new)",
+    "08_Tests/scenarios/test_scn_paper_queue.py (header comment only)",
+    "08_Tests/scenarios/test_scn_paper_query_sorts.py (new)",
+    "08_Tests/scenarios/test_scn_paper_query_failcheck.R (new)",
+    "08_Tests/scenarios/test_scn_paper_order.py (new)"
+  ],
+  "tests_run": {
+    "test_scn_paper_query_sorts.py": "17/17 (before fix: S6 hung >600s — readline blocked past timeout)",
+    "test_scn_paper_query_failcheck.R": "12/12 (before fix: 6 fail)",
+    "test_scn_paper_order.py": "35/35 (before fix: crash, config/functions missing)",
+    "test_scn_paper_queue.py": "10/10",
+    "test_scn_paper_collect.R": "32/32",
+    "test_rf_pick_key.py": "6/6",
+    "test_rf_reimplement_queue.R": "40/40",
+    "test_replication_lane.sh": "87/87",
+    "test_alpha_queue_pending.py": "29/29",
+    "test_research_pool_status_axes.py": "17/17",
+    "test_replication_slots.py": "30 PASS then NameError 'S' in boot_lean PEND (known pre-existing, audit C §9; not this change)"
+  },
+  "real_queue_readonly_check": "counts return 22 / construction 8 / defense 3 / unmapped 10 / pending 65 (unchanged); head = 2506.12587 defense crisis=reported"
+}

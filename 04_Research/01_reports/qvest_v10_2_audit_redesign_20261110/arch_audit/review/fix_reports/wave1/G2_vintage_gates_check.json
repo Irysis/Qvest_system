@@ -1,0 +1,16 @@
+{
+  "ok": false,
+  "issues": [
+    {
+      "title": "선언 팩터 규칙이 cap_core 베타 짝 위성(beta_kind = db)을 놓쳐, 새로 연 비켜 가기가 fail-open 이 된다",
+      "problem": "fdv_spec_declared_factors(02_Infrastructure/contracts/factor_db_vintage.R:115~146)는 base_signal · engine_blend · defense_sleeve · overlay/overlay_cell · weighting.sigma_provider 만 '팩터 DB 를 따로 읽는 부품'으로 막는다. 그런데 셀 엔진은 SPEC$cap_core 가 satellite = random_beta_matched 이면 .load_factor(list(kind = .CC$beta_kind, id = .CC$beta_factor))로 팩터 DB 를 읽는다(rf_cell_engine.R:692 · beta_kind 기본값 = db, rf_capcore.R:36,51). 이 경로는 막혀 있지 않아서 선언에는 factors[] 의 db id 만 남는다. 결과적으로 베타 팩터를 범위로 잡은 팩터 목록 수리 이전의 측정이 '현행'으로 통과한다(A 자격 · P4 기저 풀 · 2계층 풀 · BOOK 이 모두 같은 계약을 쓴다). 수리 전에는 선언이 늘 NULL 이어서 과잉 보류(fail-closed) 쪽이었는데, 이번 수리가 비켜 가기를 실제로 켜면서 새 누출 경로가 생겼다. 이 경로는 운영에서도 쓰인다. random_beta_matched 는 06_Registry/reinforce_program.json · prereg 초안 · L1 원장에 등장한다. not_fixed 3번의 사유('팩터 DB 를 읽는 부품은 모두 막았다')는 사실과 다르다. T25 에도 cap_core 사례가 없다.",
+      "evidence": "재현 스크립트 C:/Users/User/AppData/Local/Temp/claude/bded445ba19315c7/9fe22a2f-3836-40d8-8087-87fddf9c12ec/scratchpad/wfB/chk_g2/capcore.R. 입력은 spec = {base_signal: mom_12_1, factors: [{kind: db, id: A1}], cap_core: {k: 5, satellite: random_beta_matched, beta_factor: BETA_X, beta_kind: db, seed: 7}}이다. 출력: fdv_spec_declared_factors = \"A1\". 이어서 원장 {BETA-REPAIR, completed_at 2026-11-10T11:00:00+09:00, scope.factors = [BETA_X]}에 실행 id 20261110_050000_001 측정을 넣으면 fdv_stale 결과는 stale = FALSE 다. 수리 전 측정이 현행으로 판정된다. 제안: fdv_spec_declared_factors 에서 cap_core 가 있으면 NULL 을 돌려주거나, satellite = random_beta_matched ∧ beta_kind = db 일 때 beta_factor 를 ids 에 더한다(defense_sleeve 의 beta_factor 도 같은 모양). T25 에 cap_core 사례와 그 돌연변이를 추가한다. 근본 처방은 엔진이 읽은 팩터 id 를 기록하는 계측이다."
+    },
+    {
+      "title": "(경미) 선언으로 비켜 간 측정의 사유 문구가 사실과 반대다",
+      "problem": "fdv_stale 의 not-stale 사유는 '측정(%s)이 마지막 수리(%s) 뒤다'로 고정돼 있다(factor_db_vintage.R:195~196). 그래서 팩터 목록 수리보다 앞선 측정이 선언 범위 밖이라 비켜 간 경우에도 '수리 뒤'라고 적힌다. 진행 중 수리가 있을 때만 꼬리말이 붙는다. 판정 값은 맞지만 facts · 보고에 실리는 사유가 사람을 속인다.",
+      "evidence": "위 재현의 출력: reason = '측정(2026-11-10 05:00)이 마지막 수리(2026-11-10T11:00:00) 뒤다'. 05:00 은 11:00 보다 앞이다."
+    }
+  ],
+  "summary": "나머지 네 결함은 시나리오가 닫혔다. ① 1계층 관문 판독 실패 · 원장/계약 부재 → factor_db_vintage_unreadable 상시 보류(G5~G10 과 돌연변이 실증 · 66/66 재실행 통과). ② 진행 중 항목: T12 · T15 수정, valid_from = NA · in_progress 반영(28/28 통과). ③ 2계층 isTRUE 접기 제거와 S3b 돌연변이(22/22 통과). ④ 시간대 · 분 단위 엄격 해석과 T18~T21 · T26 · T28 돌연변이. test_scn_repl_measure_record 도 31/31 통과했다. 가드를 느슨하게 하거나 문턱을 바꾼 곳은 없고, 소유 범위 밖 변경도 보지 못했다. 다만 이번 수리로 켜진 선언 팩터 비켜 가기가 cap_core 베타 짝 위성(beta_kind = db)의 팩터 DB 읽기를 놓친다. 그래서 그 베타 팩터를 범위로 잡은 수리 이전 측정이 현행으로 통과하는 새 fail-open 이 생긴다(재현 확인). not_fixed 3번의 '모두 막았다'는 사유도 이 때문에 타당하지 않다. not_fixed 1번(운영 루트에서 세 가지가 동시 소실)과 2번(소유 밖 Python)의 사유는 타당하다."
+}

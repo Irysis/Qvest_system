@@ -1,0 +1,61 @@
+{
+  "group": "F7_hooks_ps",
+  "fixed": [
+    {
+      "title": "빠른 길이 대소문자를 구분해 PowerShell 갈래의 -i 판정을 우회한다(소문자 05_production 쓰기 통과)",
+      "files": "02_Infrastructure/hooks/safety_guard.sh",
+      "how": "_qsg_fast_ps_clear 추가 — _qsg_fast_fields 뒤 TOOL_NAME=PowerShell 이면 ${INPUT,,} 에 05_production|01_literature|normalizepath 가 있으면 느린 길로. Bash·Write·Edit 는 느린 길도 대소문자 구분이므로 타지 않음(그 갈래 판정·빠른 길 불변). 빠른 길 증명 주석에 ③ 추가. 기존 case 문구는 그대로(등가 시험 sg_token 돌연변이 유지).",
+      "test": "test_hook_powershell_coverage.sh S13/S14/S15/S20(켬·끔 둘 다 단언) + M4(재검사 뗀 사본 = 켬 allow·끔 deny) · test_hook_fastpath_equivalence.sh s_ps_block_lower/upper/allow_lower_read/s_bash_lower_unchanged — 수리 전 E/V 실패 4건 확인"
+    },
+    {
+      "title": "PowerShell 백틱 줄 이음으로 쓰기 동사와 경로를 두 줄로 가르면 Rule 2 를 통과한다",
+      "files": "02_Infrastructure/hooks/safety_guard.sh",
+      "how": "_qsg_psjoin 추가 — PowerShell 갈래에서 _qsg_join 직후 백틱+CRLF/LF/CR(백틱+CR 여럿도) 을 공백 하나로 잇는다(PowerShell 의미 = 공백 · 글자를 지우지 않아 낱말을 만들지 않으므로 빠른 길 증명에 새 경우 없음). 줄 이음 아닌 개행은 명령 경계 그대로.",
+      "test": "S16/S17(차단) · S18(개행 경계 유지 허용) · S19(백틱 읽기 허용) · M5(줄 이음 뗀 사본은 S16 통과) · 등가 시험 s_ps_block_backtick"
+    },
+    {
+      "title": "PowerShell here-string 으로 R 에 흘려 넣는 직접 호출을 텔레그램 가드가 놓친다",
+      "files": "02_Infrastructure/hooks/telegram_direct_call_guard.sh",
+      "how": "TG_GUARD_TOOL 전달. PowerShell 이면 ① @'…'@/@\"…\"@ 본문을 자리표로 바꿔 보관(줄 이음보다 먼저 — 본문 끝 백틱이 닫는 '@ 를 밀지 않게 · 줄끝 \\r* 허용: Windows print 가 LF→CRLF 로 넘긴다) ② 백틱+개행 → 공백. 명령 안에 R 실행 조각(R 이름 낱말 또는 $R -e/-)이 있으면 here-string 본문 전부를 페이로드로(fail-closed). -e 인자의 자리표는 본문으로 되돌림. shlex 실패 조각은 건너뛰지 않고 공백 낱말로 R 실행기·-e 를 보면 조각 원문 전체를 페이로드로(Bash 도 해당 — --no-save + 꼬리 주석 it's 우회 막음). Bash 의 scan == cmd 라 종전 판정 유지.",
+      "test": "test_hook_powershell_coverage.sh H1~H6(차단) · HA1~HA3(정본 진입·커밋 메시지·파일 쓰기 허용) · T5(백틱 Rscript/-e) · M6/M7 · test_telegram_guard_forms.sh D11 · A9 · M3 · 등가 시험 t_ps_deny_herestring/t_ps_deny_backtick/t_ps_allow"
+    },
+    {
+      "title": "PowerShell 시험이 운영 입력 모양(압축 JSON)을 쓰지 않아 빠른 길을 한 번도 타지 않고, S10 은 주장한 것을 재지 않는다",
+      "files": "08_Tests/hooks/test_hook_powershell_coverage.sh",
+      "how": "입력을 Claude Code 압축 JSON(separators=(',',':') · session_id 등 필드)으로, 사례마다 QVEST_HOOK_FASTPATH=1/0 두 판정을 단언. F 축 = 스파이 해석기로 켬 파이썬 0회·끔 ≥1 단정(SG·TG). S10 을 rm 이 경로 앞 낱말 안에 오는 Format-Hex -Path .\\term_list.txt, <경로> 로 바꾸고 M3(낱말 경계 뗀 Bash 판 정규식 사본 → S10 deny) 로 실증. 임시 루트·QVEST_EVENT_LEDGER=0 로 운영 원장 무접촉.",
+      "test": "수리 전 훅에서 48 중 15 FAIL(S13·S14·S16·S17·S20·T5·H1~H5 + 새 돌연변이 M4~M7 치환 0) · 수리 후 48/48"
+    }
+  ],
+  "not_fixed": [
+    {
+      "title": "Bash 갈래 · Write/Edit(Rule 1) · fail-closed 의 소문자 경로(05_production) 우회",
+      "why": "확정 결함 판정이 '원래부터 통과 · 범위 밖 일관성'으로 적었고, 수리 방향 지침은 PowerShell 입력에 한정했다. 넓히면 빠른 길 case 를 소문자 기준으로 바꿔야 해 test_hook_fastpath_equivalence 의 sg_token 돌연변이(사례 추가만 허용)가 깨진다. 현재 사실은 test_hook_powershell_coverage L1(Bash 소문자 cp = 허용)과 등가 시험 s_bash_lower_unchanged 로 기록. 패치 제안: Rule 1·Bash Rule 2·fail-closed 를 grep -qi 로, 빠른 길 case 를 ${INPUT,,} 기준으로 바꾸고 등가 시험 sg_token 돌연변이 식을 함께 갱신(별도 결정)."
+    }
+  ],
+  "changed_files": [
+    "02_Infrastructure/hooks/safety_guard.sh",
+    "02_Infrastructure/hooks/telegram_direct_call_guard.sh",
+    "08_Tests/hooks/test_hook_powershell_coverage.sh",
+    "08_Tests/hooks/test_telegram_guard_forms.sh",
+    "08_Tests/hooks/test_hook_fastpath_equivalence.sh"
+  ],
+  "new_tests": [
+    "08_Tests/hooks/test_hook_powershell_coverage.sh — F 축 · S13~S20 · T5 · H1~H6 · HA1~HA3 · L1 · M3~M7(기존 파일 재작성)",
+    "08_Tests/hooks/test_telegram_guard_forms.sh — D11 · A9 · M3a/M3",
+    "08_Tests/hooks/test_hook_fastpath_equivalence.sh — 사례 9건(s_ps_* 5 · s_bash_lower_unchanged · t_ps_* 3)"
+  ],
+  "tests_run": [
+    {"path": "08_Tests/hooks/test_hook_powershell_coverage.sh (샌드박스 · 수리 전 훅)", "result": "pass 33 / fail 15 (재현)"},
+    {"path": "08_Tests/hooks/test_telegram_guard_forms.sh (샌드박스 · 수리 전 훅)", "result": "pass 25 / fail 2 (D11 재현 · M3a 대상 없음)"},
+    {"path": "08_Tests/hooks/test_hook_fastpath_equivalence.sh (샌드박스 · 수리 전 훅)", "result": "pass 136 / fail 7 (새 PowerShell 사례 재현)"},
+    {"path": "08_Tests/hooks/test_hook_fastpath_equivalence.sh (샌드박스 · 수리 후)", "result": "pass 143 / fail 0"},
+    {"path": "08_Tests/hooks/test_hook_backslash_paths.sh (샌드박스 · 수리 후)", "result": "pass 20 / fail 0"},
+    {"path": "08_Tests/hooks/test_safety_guard_memory.sh (QVEST_SG_HOOK=수리 사본)", "result": "pass 119 / fail 0"},
+    {"path": "08_Tests/hooks/test_hook_powershell_coverage.sh (운영 교체 후)", "result": "pass 48 / fail 0"},
+    {"path": "08_Tests/hooks/test_telegram_guard_forms.sh (운영 교체 후)", "result": "pass 27 / fail 0"},
+    {"path": "08_Tests/hooks/test_hook_fastpath_equivalence.sh (운영 교체 후)", "result": "pass 143 / fail 0"},
+    {"path": "08_Tests/hooks/test_hook_backslash_paths.sh (운영 교체 후)", "result": "pass 20 / fail 0"},
+    {"path": "08_Tests/hooks/test_safety_guard_memory.sh (운영 교체 후)", "result": "pass 119 / fail 0"}
+  ],
+  "notes": "절차: 스크래치 사본(wfB2/hookwork/new) 편집 → bash -n · 내장 파이썬 compile · 제어문자 0 · CR 0 → 샌드박스 훅 트리(sbx)에서 시험 → cp 사본 원본.tmp && mv -f 로 원자 교체 → bash -n 원본 · 무해 입력 스모크({} rc 0) · 실 Bash/PowerShell 도구 호출 정상 → 운영 재시험. 되돌림 불필요. 발견: telegram 가드의 COMMAND 는 Windows 파이썬 print 로 LF→CRLF 변환돼 넘어온다(원문 CRLF = CR CR LF) — 정규식을 \\r* 로 받음. test_boot_currency.sh 는 safety_guard 이름만 쓰고 실행하지 않아 제외. 08_Tests/hooks/run_all_hooks.sh 의 기존 수정은 이 묶음이 아님(손대지 않음). 커밋·스테이징 없음."
+}

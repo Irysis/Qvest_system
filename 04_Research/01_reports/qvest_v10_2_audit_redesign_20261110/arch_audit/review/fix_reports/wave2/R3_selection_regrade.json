@@ -1,0 +1,38 @@
+{
+  "group": "R3_selection_regrade",
+  "fixed": [
+    {
+      "title": "sr_regrade 재실행이 규칙 변경 수혜 표식(benefits_from_rule_change)을 FALSE 로 덮어 rule_change_beneficiary 보류가 사라진다",
+      "files": "02_Infrastructure/programs/selection_regrade.R",
+      "how": "비교 기준을 직전 등급(old)에서 측정 당시 등급(measured_grade)으로 바꿨다. 측정 당시 등급은 기록의 selection_regrade$measured_grade 에서 읽고, 없으면(옛 도구가 쓴 기록) authoritative_remeasure.pre_selection_regrade.json 의 essence_grade, 첫 재채점이면 직전 등급을 쓴다. 기록에 measured_grade · measured_grade_source 를 남긴다. 표식 = 직전 표식 TRUE || (발효 전 측정 && (측정 당시 등급 판독 불가 || 측정 당시 등급보다 오름)). 그래서 한 번 TRUE 인 표식은 재실행이 내리지 못하고, 재실행인데 측정 당시 등급을 어디서도 못 읽으면 fail-closed 로 TRUE 다. 반환값에도 같은 표식과 measured_grade 를 싣는다. 드라이런(write = FALSE)은 디스크를 건드리지 않는다(T18). 원본 복원 경로는 저장소에 없어 정합할 대상이 없다(grep: pre_selection_regrade 소비자는 이 파일뿐).",
+      "test": "08_Tests/programs/test_selection_regrade.R T16~T22: 수리 전 7건 실패(27/34) → 수리 후 34/34. T22 는 판정 줄을 수리 전 식(seen_before && rank[new] > rank[old])으로 되돌린 돌연변이 사본(소스 텍스트 치환 1곳 성사)이 두 번째 재채점에서 표식을 FALSE 로 덮는 것을 확인한다. 08_Tests/reinforcement/test_rf_a_eligibility.R H7: 재실행 모양의 기록(직전 A · 측정 당시 B · 표식 TRUE)이 rule_change_beneficiary 보류를 유지한다."
+    }
+  ],
+  "not_fixed": [
+    {
+      "title": "(관련 · 범위 밖 관찰) 보존 원본 pre_selection_regrade.json 은 '없을 때만' 쓴다",
+      "why": "후보 폴더가 재측정되어 authoritative_remeasure.json 이 새로 쓰이면(selection_regrade 필드 없음) 이 수리는 첫 재채점으로 보고 직전 등급을 측정 당시 등급으로 쓴다. 그래서 표식 판정은 맞다. 다만 보존 원본 파일은 옛 측정본으로 남는다. 보고된 결함이 아니고 보존 규약을 바꾸는 일이라 고치지 않았다. 제안: 첫 재채점(prev NULL)인데 보존 원본이 있으면 이름에 시각을 붙여 새로 보존한다."
+    },
+    {
+      "title": "(관련 · 범위 밖 관찰) rcg_finalize 드라이런은 디스크 권위 기록으로 rcg_route 를 판정한다",
+      "why": "write = FALSE 이면 재채점 표식이 디스크에 없다. 드라이런 경로에서 첫 수혜 기록의 관문 판정은 표식을 보지 못한다. 드라이런은 요청을 발행하지 않으므로 실해는 없다. 소유 경로(round_candidate_gate.R) 밖이라 기록만 남긴다."
+    }
+  ],
+  "changed_files": [
+    "02_Infrastructure/programs/selection_regrade.R",
+    "08_Tests/programs/test_selection_regrade.R",
+    "08_Tests/reinforcement/test_rf_a_eligibility.R"
+  ],
+  "new_tests": [
+    "08_Tests/programs/test_selection_regrade.R::T16~T22",
+    "08_Tests/reinforcement/test_rf_a_eligibility.R::H7"
+  ],
+  "tests_run": [
+    {"path": "08_Tests/programs/test_selection_regrade.R (수리 전)", "result": "pass 27 · fail 7 · total 34 (T16~T22 실패 = 재현)"},
+    {"path": "08_Tests/programs/test_selection_regrade.R", "result": "pass 34 · fail 0 · total 34 · skipped 0"},
+    {"path": "08_Tests/reinforcement/test_rf_a_eligibility.R", "result": "pass 67 · fail 0 · total 67 · skipped 0"},
+    {"path": "08_Tests/programs/test_round_candidate_gate.R", "result": "pass 22 · fail 0 · skipped 0"},
+    {"path": "08_Tests/programs/test_grade_v3_backfill_mark.R", "result": "pass 32 · fail 0 · total 32"}
+  ],
+  "notes": "시험은 하나씩 R_ENVIRON_USER=<빈 파일> 로 돌렸다. 대상은 임시 폴더 사본뿐이다(실측 산출물 1건 복사 · 운영 산출물 · 등록부 무접촉). 세 파일 모두 제어 문자 0 이다. 커밋 · 스테이징은 하지 않았다."
+}

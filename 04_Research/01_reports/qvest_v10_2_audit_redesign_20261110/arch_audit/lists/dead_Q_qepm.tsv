@@ -1,0 +1,57 @@
+path	kind	evidence	confidence	refs	action
+.claude/skills/qvest-worktask/SKILL.md	skill	description '[동결 — QEPM-R0-FREEZE]' · 살아 있는 스킬 · 명령에서 호출 0(/qvest ④ = qvest-advisor) · 세션 문맥 220자	certain	08_Tests/worktask/test_qepm_freeze_entrypoints.R · test_qepm_freeze_residual.R · .claude/skills/{alpha,risk,optimizer}-research/SKILL.md(리다이렉트)	decide
+.claude/commands/worktask.md	command	'[동결 — QEPM-R0-FREEZE]' · 72자 · 동결 검사가 행 존재를 단언(qvest.md /worktask 동결 행 E5)	certain	test_qepm_freeze_entrypoints.R · test_qepm_advisor_contract.R E5	decide
+.claude/workflows/qvest-dossier-pipeline.js	workflow	QEPM_FREEZE 상수 · 실행 즉시 종료(22–29행) · 스킬 목록 description+whenToUse ≈ 520자	certain	test_qepm_freeze_entrypoints.R(dossier.js 합성 실행 · run_all_hooks.sh:1687)	decide
+.claude/workflows/qvest-multi-track.js	workflow	'[동결 — QEPM-R0-FREEZE]' · 스킬 목록 ≈ 280자 · 호출처 0	certain	test_qepm_freeze_entrypoints.R	decide
+.claude/agents/forge.md	agent	동결 표기(11행) · /advisor 는 forge 미스폰 · 에이전트 목록 209자 · Work Dir C:/Users/99922(구 경로)	certain	test_qepm_advisor_contract.R(스폰 대상 ⊆ 자문 에이전트) · test_qepm_freeze_entrypoints.R	decide
+.claude/skills/alpha-research/SKILL.md	skill-stub	skillOverrides user-invocable-only · 리다이렉트 대상 = qvest-worktask §3(동결)	certain	-	decide
+.claude/skills/risk-research/SKILL.md	skill-stub	같음 · qvest-worktask §3 Step 2	certain	-	decide
+.claude/skills/optimizer-research/SKILL.md	skill-stub	같음 · qvest-worktask §3 Step 3	certain	-	decide
+02_Infrastructure/hooks/discovery_graduation_gate.sh	hook(registered PreToolUse Write)	차단은 'WT-P*/request.json' 쓰기뿐(빠른 길 증명 · 41–51행) · 동결 체인 전용 · Write 마다 1회 기동 실측 168ms(빈 bash 152ms)	certain	08_Tests/hooks(3건) · test_hook_fastpath_equivalence.sh · test_hook_backslash_paths.sh · measurement-graduation.md §0/§3	decide
+02_Infrastructure/hooks/worktask_constraint_enforcer.sh	hook(registered PreToolUse Write)	차단은 '*/optimization_package.json' 쓰기뿐(빠른 길 · 39–47행) · 살아 있는 고정 축 강제는 R 계약(rf_axes.R · measurement_axis.R) · 실측 161ms/Write	certain	test_worktask_constraint_enforcer_v10.sh(16s) · test_hook_fastpath_equivalence.sh · test_hook_backslash_paths.sh	decide
+02_Infrastructure/hooks/backtest_contract_audit.sh	hook(registered PreToolUse Write)	보호 대상 methodology_(active|memory).md 는 살아 있는 기억 레인(memory/weekly_distill.R · lcode_corpus_rebuild.R)이 쓴다 — WT 전용 아님	probable	test_backtest_contract_audit_gate.R(21s)	keep
+02_Infrastructure/hooks/worktask_sequence_enforcer.sh	hook(unregistered)	settings.json 미등록 · v9 등록 해제(risk-research.md 35행)	certain	-	decide
+02_Infrastructure/hooks/worktask_spec_validator.sh	hook(unregistered)	settings.json 미등록 · 마지막 수정 2026-07-24	certain	-	decide
+02_Infrastructure/hooks/worktask_artifact_validator.sh	hook(unregistered)	settings.json 미등록 · v9 해제(forge.md 81행)	certain	08_Tests(3건 · run_all_hooks.sh:1004 주석)	decide
+02_Infrastructure/hooks/forge_integration_audit.sh	hook(unregistered)	v9 해제(forge.md 25행) · 시험 0	certain	-	decide
+02_Infrastructure/hooks/schedule_fidelity_check.sh	hook(unregistered)	v9 해제(optimizer-research.md 61행 · forge.md 56행) · 시험 0	certain	-	decide
+02_Infrastructure/hooks/sr_provenance_check.sh	hook(unregistered)	미등록 · forge_package 대상 · 시험 0 · 2026-07-03	certain	-	decide
+02_Infrastructure/hooks/sr_provenance_pre_certifier.sh	hook(unregistered)	미등록 · 시험 0 · 2026-07-03	certain	-	decide
+02_Infrastructure/hooks/agent_role_guard.sh	hook(unregistered)	미등록 · alpha-style 이 '훅 차단'이라 적었던 대상(11-10 정정)	certain	08_Tests/hooks/test_agent_role_guard.sh(10s · run_all_hooks.sh:140)	decide
+02_Infrastructure/hooks/risk_crowding_score_check.sh	hook(unregistered)	미등록 · 시험 0 · risk-style 정정(11-10)	certain	-	decide
+02_Infrastructure/hooks/attribution_quarterly_trigger.sh	hook(unregistered)	미등록 · 시험 0 · attribution-style 정정(11-10)	certain	-	decide
+02_Infrastructure/hooks/mandate_compliance_check.sh	hook(unregistered)	미등록 · 시험 0 · alpha-research Universe v2 절이 가리킴(사료 처리 11-10)	certain	-	decide
+02_Infrastructure/hooks/ast_spec_gate.sh	hook(unregistered)	미등록 · alpha-hypothesis WT 절차(45행)만 언급	certain	08_Tests/hooks/test_ast_spec_gate.sh(33s · run_all_hooks.sh:484)	decide
+02_Infrastructure/hooks/hypothesis_precheck_gate.sh	hook(unregistered)	미등록 · worktask/schema.json 참조	probable	08_Tests(4건)	decide
+02_Infrastructure/hooks/role_objective_guard.sh	hook(unregistered)	미등록 · 시험 0	probable	-	decide
+02_Infrastructure/hooks/method_shopping_limiter.sh	hook(unregistered)	미등록 · 시험 0	probable	-	decide
+02_Infrastructure/hooks/governor_concord_certifier.sh	hook(unregistered)	governor 폐지(v10) · 미등록 · 시험 0	certain	-	decide
+02_Infrastructure/worktask/worktask_manager.R	code	WT 생성 · 목록 · 전이 — 동결 · 코드 호출처 0(essence_score.R · sot_access_paths.R 는 주석 · safe_run.sh 는 사용 예시 주석)	probable	08_Tests/integration/test_wt_lifecycle_e2e.R · test_sot_access_paths.R	decide
+02_Infrastructure/worktask/state_machine.R	code	WT 상태 기계(동결) · 호출처 = v8_readiness_gate.R(존재 검사) · strategy_analyzer.R(주석)	probable	test_wt_lifecycle_e2e.R · test_qepm_freeze_residual.R(가드 실재 단언)	decide
+02_Infrastructure/worktask/wt_inflight_lock.R	code	코드 호출처 0(git grep 'wt_inflight_lock' — 시험 · run_all_hooks 만)	certain	08_Tests/worktask/test_wt_inflight_lock.R(3s)	decide
+02_Infrastructure/worktask/run_all_template.R	code	호출처 0(git grep)	certain	-	decide
+02_Infrastructure/worktask/cert_issuance_paths.md	doc	참조 0	certain	-	decide
+02_Infrastructure/worktask/schema.json	schema	forge_package 정의 · 참조 = 미등록 hypothesis_precheck_gate.sh 뿐	probable	-	decide
+02_Infrastructure/worktask/artifact_contract.json	schema	참조 = qvest_hook_router.py(라우터 등록 여부 미확인)	probable	-	decide
+02_Infrastructure/worktask/cert_rules.R	code	참조 = alpha_discovery_certifier.sh(미등록) · qvest_cert_eval.py · cert_backfill_audit.R	probable	-	decide
+02_Infrastructure/worktask/role_card_cert_inheritance.R	code	참조 = cert_backfill_audit.R 뿐	probable	-	decide
+02_Infrastructure/worktask/v61_compliance_audit.R	code	참조 = lockbox_audit_trail.sh(미등록 · lockbox 폐지)	certain	-	decide
+02_Infrastructure/worktask/red_flag_rules.md	doc	참조 = red_flag_detector.sh(미등록)	certain	-	decide
+02_Infrastructure/worktask/windowing.R	code	★살아 있음 — judge_oos_helper.R:70 이 source(Judge 경로)	certain	-	keep
+02_Infrastructure/worktask/lockbox_paths.R	code	★windowing.R 가 source(judge_oos_helper.R:687 주석) — 함께 이동해야 함	probable	-	keep
+02_Infrastructure/worktask/lineage_utils.R	code	lookahead_detector.R 는 주석 참조 · 04_Research/strategies 일부가 source	probable	-	keep
+02_Infrastructure/worktask/constraint_defaults.json	registry	★살아 있음 — tier_graduation · measurement_axis 정본(폴더 이름만 worktask)	certain	다수	keep
+02_Infrastructure/worktask/common_charter.md	doc	참조 = answer_principles_grep.sh(미등록) · update_research_philosophy.R · 에이전트 5종 'Research Philosophy' 절	probable	-	decide
+qepm/mailbox/worktask/	mailbox(210MB · 299 WT)	WT 체인 산출물 · hypothesis_index.R .hi_parse_wt_inflight 가 읽는다(지식 색인 원천) — 삭제 시 색인 원천 소실	probable	hypothesis_index.R:697	decide
+qepm/research/	data(789MB)	구 QEPM 리서치 산출물 · 살아 있는 소비자 미확인	probable	-	decide
+qepm/R/orchestration/state_machine.R	code	★telegram_listener.py:551–577 이 source(리스너 가동 여부 미확인)	probable	telegram_listener.py	keep
+08_Tests/hooks/test_worktask_sequence_gate.sh	test	대상 훅 worktask_sequence_enforcer.sh 미등록 · 3s · run_all_hooks.sh:139	certain	_worktask_sequence_cases.R	decide
+08_Tests/hooks/_worktask_sequence_cases.R	test-fixture	위 시험 전용	certain	-	decide
+08_Tests/hooks/test_worktask_constraint_enforcer_v10.sh	test	동결 경로 훅 · 16s · run_all_hooks.sh:260	certain	-	decide
+08_Tests/hooks/test_agent_role_guard.sh	test	대상 훅 미등록 · 10s · run_all_hooks.sh:140	certain	-	decide
+08_Tests/hooks/test_ast_spec_gate.sh	test	대상 훅 미등록 · 33s · run_all_hooks.sh:484	certain	-	decide
+08_Tests/integration/test_wt_lifecycle_e2e.R	test	동결 WT 수명주기 · 29s · run_all_hooks.sh:1208	certain	-	decide
+08_Tests/worktask/test_wt_inflight_lock.R	test	호출처 0 인 모듈 시험 · 3s · run_all_hooks.sh:1157	certain	-	decide
+08_Tests/worktask/test_qepm_freeze_entrypoints.R	test	동결 봉쇄 검사 — (가)안이면 대상 소멸 · (나)(다)안이면 유지 · 4s	certain	test_qepm_advisor_contract.R 가 has·adv_ok·STALE 를 parse 로 빌림	decide
+08_Tests/worktask/test_qepm_freeze_residual.R	test	동결 잔여 검사 · 2s	certain	-	decide
+08_Tests/worktask/test_qepm_advisor_contract.R	test	★살아 있음 — /advisor 문언 계약 140 단언 · 1s(폴더만 worktask)	certain	-	keep

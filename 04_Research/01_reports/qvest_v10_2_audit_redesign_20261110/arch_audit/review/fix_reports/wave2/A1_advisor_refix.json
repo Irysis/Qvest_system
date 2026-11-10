@@ -1,0 +1,27 @@
+{
+  "group": "A1_advisor (refix)",
+  "fixed": [
+    {
+      "title": "어드바이저 이름 표지 'ADV_' 가 오버레이 적대 재실행 이름(rf_overlay_adversary.R:622 sprintf(\"ADV_%s_%s_%s\"))과 충돌",
+      "how": "검증자 지적 확인(적대 재실행 이름 → 셀 워커 → run_paper_replication(strategy_name) → .rp_is_advisor_lane TRUE → 권위 기록 lane/measurement_regime.lane/module_admission 오염). 어드바이저 접두를 저장소 · 등록부에 기존 사용처 0 인 'ADVISOR_' 로 바꿨다(상수 .RP_ADVISOR_PREFIX · 라우터 .rp_a_route 는 정의 8종만 떼어 부르는 test_replication_a_gate 와 호환되게 같은 글자를 그대로 쓴다). measurement_tags$lane 표지는 그대로(fail-closed 유지). 스킬 호출 규약 · 운영 쓰기 경로 · Grade A 분기 문언과 judge.md 스폰 조건 ③ 표지 줄을 같은 접두로 고쳤다.",
+      "files": "02_Infrastructure/alpha_search/run_paper_replication.R (표지 상수 · .rp_is_advisor_lane · .rp_a_route 접두) · .claude/skills/qvest-advisor/SKILL.md · .claude/agents/judge.md · 08_Tests/scenarios/test_scn_advisor_dryrun.R",
+      "test": "test_scn_advisor_dryrun.R S8i_0(적대 이름 서식을 rf_overlay_adversary.R 소스에서 떼어 실제 이름 생성) · S8i 진리표 9행(ADV_x_1 · 적대 재실행 이름 · 원장 L1 실재 모양 = 어드바이저 아님, 함수 = 라우터) · S8i'(상수 = 라우터 글자) · S8im 돌연변이(접두 2곳을 ADV_ 로 소스 치환 · 성사 단정 → 함수 · 라우터 모두 적대 이름을 보류 = red)"
+    }
+  ],
+  "not_fixed": [],
+  "changed_files": [
+    "02_Infrastructure/alpha_search/run_paper_replication.R",
+    ".claude/skills/qvest-advisor/SKILL.md",
+    ".claude/agents/judge.md",
+    "08_Tests/scenarios/test_scn_advisor_dryrun.R"
+  ],
+  "tests_run": [
+    {"path": "08_Tests/scenarios/test_scn_advisor_dryrun.R", "result": "pass 68 / fail 0"},
+    {"path": "08_Tests/worktask/test_qepm_advisor_contract.R", "result": "pass 147 / fail 0"},
+    {"path": "08_Tests/contracts/test_replication_a_gate.R", "result": "pass 37 / fail 0"},
+    {"path": "08_Tests/scenarios/test_scn_repl_measure_record.R", "result": "pass 31 / fail 0"},
+    {"path": "08_Tests/contracts/test_module_admission_seam.R", "result": "pass 38 / fail 0"},
+    {"path": "08_Tests/worktask/test_qepm_freeze_residual.R", "result": "pass 41 / fail 0 (라우터 deparse 검사 · 추가 확인)"}
+  ],
+  "notes": "08_Tests/worktask/ 아래 wt_create 를 쓰는 시험은 test_qepm_advisor_contract.R 하나뿐(grep) — 위에서 통과. 기존 ADV_ 접두로 이미 잰 어드바이저 산출물은 없다(저장소 · 등록부 ADVISOR_ 사용처 0 · 기존 ADV_ 이름은 전부 적대 재실행/원장 L1). 커밋 · 스테이징 없음."
+}

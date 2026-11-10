@@ -1,0 +1,37 @@
+{
+  "group": "G4_book_writer",
+  "fixed": [
+    {
+      "title": "BOOK writer 가 권위 기록 파일을 등록 대상 strategy_id 와 대조하지 않는다 / BOOK 권위 파일이 등록 대상 전략의 것인지 검사하지 않는다 (같은 결함 2건)",
+      "files": "02_Infrastructure/book/book_registry.R",
+      "how": ".bk_verify_authoritative(authoritative_path, root, strategy_id) 가 이제 등급 A 를 확인한 직후 권위 기록의 전략 식별자(1계층 strategy_id = run_paper_replication 이 쓰는 RP_<run_id> · 2계층 fr_id)를 모아 등록 strategy_id 와 대조한다. 식별자가 없으면 거부하고(fail-closed), 다르면 '다른 전략의 권위 기록'으로 거부한다. 같은 폴더에 judge_request(.eligible/.held/구판).json 이 있으면 그 strategy_id 와 artifacts(산출 폴더 꼬리 '부모/폴더' 비교 · 기계마다 다른 루트 C:/Users/... 와 G:/ 를 허용)도 대조하고, 판독이 안 되면 거부한다. 새 .bk_verify_verdict_binding 은 판결서에 run_id 나 date 가 있으면 권위 기록의 run_id 와 remeasured_at 날짜에 맞는지 본다. run_id 가 다르거나 판결서 날짜가 측정 날짜보다 앞서면 거부한다. 축 기록(엔트리 measurement_axis)에 strategy_id · run_id · remeasured_at 을 함께 남긴다. mandate 예외 경로 · read_book · 트래킹 · 상태 변경은 바꾸지 않았다.",
+      "test": "08_Tests/scenarios/test_scn_book_registration.R B14(남의 A 권위 기록 + 내 PASS → 거부) · B15(식별자 없음 → 거부) · B16(2계층 fr_id 대조) · B17/B17b(같은 폴더 Judge 요청서 대상 · 폴더 불일치) · B18(측정보다 앞선 판결서) · B19(run_id 불일치) · 정상 B9 는 다른 기계 루트로 적힌 artifacts 요청서가 있어도 통과 · 돌연변이 M4(권위 대상 비교 끔) · M5(요청서 대상 비교 끔) · M6(날짜 대조 끔) 치환 성사 단정 뒤 각각 통과로 바뀜. 수리 전 판(HEAD writer 사본)에서 B14 는 S1 을 남의 A 기록으로 실제 등록했다(그 결과 B9 가 중복으로 실패). 수리 전 판 결과 22/33, 실패 11. 08_Tests/contracts/test_book_registry.R ⑦ 남의 권위 기록 거부 추가."
+    }
+  ],
+  "not_fixed": [
+    {
+      "title": "판결서 reproduction.grade_reproduced == 'A' ∧ match · evidence_paths 에 권위 파일 포함 요구(두 번째 발견의 부가 제안)",
+      "why": "총괄 지침은 전략 식별자 대조가 범위다. judge_verdict_v2 의 reproduction · evidence_paths 를 필수로 만들면 판결서 형식 계약(.claude/agents/judge.md)을 바꾸게 되므로 소유 밖이다. 패치 제안: .bk_verify_verdict_binding 에 isTRUE(v$reproduction$match) && identical(v$reproduction$grade_reproduced, 'A') 를 넣고, judge.md 에 필수 필드로 공지하면 된다."
+    },
+    {
+      "title": "판결서 run_id · date 필수화",
+      "why": "judge_verdict_v2 예시에 run_id 는 없고 date 만 있다. 두 필드를 지금 필수로 만들면 형식 계약을 바꾸게 된다. 그래서 두 값이 다 있을 때만 대조한다. 남의 산출물을 막는 핵심 관문(권위 기록 strategy_id 대조와 식별자가 없을 때의 거부)은 fail-closed 다. 판결서에 run_id 를 필수로 넣는 일은 judge.md 개정이 함께 필요하다."
+    }
+  ],
+  "changed_files": [
+    "02_Infrastructure/book/book_registry.R",
+    "08_Tests/scenarios/test_scn_book_registration.R",
+    "08_Tests/contracts/test_book_registry.R"
+  ],
+  "new_tests": [
+    "08_Tests/scenarios/test_scn_book_registration.R::B14,B15,B16,B17,B17b,B18,B19,M4,M5,M6",
+    "08_Tests/contracts/test_book_registry.R::⑦"
+  ],
+  "tests_run": [
+    {"path": "08_Tests/scenarios/test_scn_book_registration.R (수리 전 HEAD writer 사본 · scratchpad 트리)", "result": "pass 22 / fail 11 (B14~B19 · B9 중복 · M4~M6 치환 0곳 — 결함 재현)"},
+    {"path": "08_Tests/scenarios/test_scn_book_registration.R", "result": "pass 33 / fail 0"},
+    {"path": "08_Tests/contracts/test_book_registry.R", "result": "pass 9 / fail 0"},
+    {"path": "운영 06_Registry/book/book_registry.json read_book 읽기 전용 확인", "result": "BOOK_0001 정상 판독 · md5 전후 동일(9387fe2b468520f0d739ef3915a5c58a)"}
+  ],
+  "notes": "커밋 · 스테이징 없음. 운영 등록부는 읽기만 했다. 시험은 R_ENVIRON_USER=빈 파일로 하나씩 돌렸다. 실제 권위 기록 형식: 1계층 auth$strategy_id = RP_<run_id>(run_paper_replication.R:849) · 2계층 FR <id>_result.json 은 fr_id 만 있다. 현 축 기록이 없는 FR 결과는 종전대로 축 관문에서 거부된다."
+}

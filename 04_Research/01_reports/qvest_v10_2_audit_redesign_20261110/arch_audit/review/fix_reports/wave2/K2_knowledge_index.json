@@ -1,0 +1,67 @@
+{
+  "group": "K2_knowledge_index",
+  "fixed": [
+    {
+      "title": "수확 뒤 철회된 L-code 가 corpus 경로로 조회 색인에 계속 남는다(철회 수리가 절반만 적용)",
+      "files": "02_Infrastructure/tools/hypothesis_index.R",
+      "how": "빌더 앞에 (b0) 단계를 새로 두고 철회 집합을 먼저 만든다. 철회 집합 = corpus.invalidated_lcodes ∪ corpus 보다 새 원본 가운데 정본 판정기(lcode_validity.py check)가 철회로 본 것의 l_code 키(.hi_raw_key — .hi_raw_lcode_entry 와 같은 규칙, 못 읽으면 파일명 L-<숫자>, 그것도 없으면 coverage lcode_retracted_key_unknown 에 세고 WARN). (b) corpus 사본 적재는 철회 집합에 든 키를 건너뛴다(coverage lcode_corpus_retracted_excluded). (b+) 보충 스캔은 종전 필터를 그대로 둔다. 그래서 경로마다 가드가 하나씩이고, 돌연변이로 각각 따로 확인된다. 판정을 R 로 재구현하지 않았다.",
+      "test": "test_scn_knowledge_index.R I12a~e. 수리 전에는 I12a/b/c 가 FAIL 이었다(RP_HV_1·RP_HV_3 가 색인에 남음 · coverage NULL). 수리 후 PASS. 건너뛰기 줄을 지운 돌연변이에서는 I12e 가 RP_HV_1 을 다시 색인한다. 기존 I3 돌연변이(보충 스캔 필터 삭제)도 계속 red 다."
+    },
+    {
+      "title": "학습 고리 계기의 '사전 감사 1차 통과율'이 재시도·회차 소진 통과를 통과로 셈 — 실측 0.869 vs 실제 0.632",
+      "files": "02_Infrastructure/memory/knowledge_loop_metrics.R",
+      "how": "분모 preaudit_n 은 논문(paper 키)마다 저널 전체에서 첫 사전 감사 사건 하나만 세고, 그 첫 사건이 속한 주에 넣는다. 분자 preaudit_pass 는 그 첫 사건이 rc 0 이면서 result 에 verdict=pass 가 든 경우다. 따로 세는 열 넷을 KLM_COLUMNS 허용 목록에 더했다: preaudit_retry_pass(첫 검사에서 지적 → 나중에 통과) · preaudit_exhausted(why=rounds_exhausted) · preaudit_unkeyed(논문 키 없음 · 분모 밖) · preaudit_events. 모두 개수이고 성과 수치는 없다. 분모가 0 이면 NA 다. klm_format 은 '1차 통과 a/b(r) · 재시도 뒤 통과 · 회차 소진 · 사건 · 키 없음'으로 분자와 분모를 함께 싣는다. 운영 저널을 읽기 전용으로 재보니 전체 논문 19 · 첫 검사 통과 12(0.632) · 회차 소진 1 로, 검증자 수치와 같다.",
+      "test": "test_scn_knowledge_loop.R K2a~d(새 사례). 분모 = 논문 3 · 분자 1 · 재시도 1 · 소진 1 · 키 없음 1 · 사건 6 · 빈 저널 NA · 형식화 출력을 본다. 정의를 사건 단위 rc==0 으로 되돌린 돌연변이에서는 K2a 와 K2d 가 FAIL 한다."
+    },
+    {
+      "title": "결과 원장의 격리 · 처방 입력 미통과 줄 규율을 다른 읽는 쪽(색인 · 학습 계기 · 증류)이 무시한다",
+      "files": "02_Infrastructure/memory/knowledge_loop_metrics.R · 02_Infrastructure/tools/hypothesis_index.R · 02_Infrastructure/ops/cleaner_distill_lib.R",
+      "how": "공용 읽기 klm_read_outcomes() 를 하나 만들었다. 이 함수는 round_core v1 의 util.R · standing.R · outcomes.R 를 사적 환경에 적재해(호출만 · 수정 없음) rc_outcomes_read(tau_clean = τ_D) 와 rc_open_probes(tau_clean = τ_D) 를 그대로 부른다. τ_D 는 설계 입력과 같은 출처인 06_Registry/behavior_card.json::tau_d 에서 읽고, 못 읽으면 NA 가 되어 모든 라운드 줄이 미통과로 빠진다(fail-closed). 반파 줄(판독 불가 · 격리 안 됨)만 이 함수가 먼저 걸러 건수를 경고로 남기고, 격리 줄은 공용 함수가 md5 로 뺀다. 반환값은 통과 줄 · 열린 탐침 · bad · quarantined · input_excluded(+id)이다. round_core 를 못 찾으면 멈춘다. 세 소비자 모두 이 함수를 쓴다. ① klm_collect / klm_snapshot 은 재판독하지 않고, 형식화 첫 줄에 '⚠ 결과 원장에서 뺀 줄: 격리 n · 처방 입력 검사 미통과 n(id)'를 싣는다. ② hypothesis_index (h) 는 .hi_outcome_recs 로 klm 을 사적 환경에 적재해 쓴다. coverage 에 v102_outcomes_bad_lines · quarantined · input_excluded 를 남기고, 읽기 도구가 없으면 그 원천만 건너뛴다(v102_outcomes_reader_error). 코드 루트는 이 파일 위치 → root → QM_ROOT 순으로 찾는다. ③ cleaner_distill_lib 의 .cd_open_probes 는 직접 읽지 않고 ev$outcomes$open_probes 만 싣는다. 색인 RO_ 항목은 원래 grade 가 빈칸이고, 이제 통과 줄만 실리므로 등급 표기나 τ_D 뒤 글이 색인으로 들어오지 않는다.",
+      "test": "test_scn_knowledge_index.R I13a~e(미통과 · 격리 줄 제외 · coverage 1/1/1 · 반파 경고 · 직접 읽기로 되돌린 돌연변이에서 다시 색인). test_scn_knowledge_loop.R K3a~e(누계 · 열린 탐침 · 주별 사슬 수 제외 · 건수 · 경고 · 반파 경고. τ_D 검사를 끈 돌연변이에서 K3a~d FAIL). test_scn_knowledge_distill.sh D6a~e. 같은 시험을 HEAD 판 코드 사본에 돌리면 D6a/b/d 가 FAIL 하고, 수리 후에는 PASS 한다."
+    },
+    {
+      "title": "(낮음) 증류 프롬프트가 재료에 없는 걸음 채택률을 의무 절에 옮기라고 요구 — 미측정 수치 창작 유도",
+      "files": "02_Infrastructure/ops/cleaner_distill_run.sh · 02_Infrastructure/ops/cleaner_distill_lib.R · .claude/skills/cleaner/SKILL.md",
+      "how": "의무 절 (a) 에서 '걸음 채택률'을 뺐다. 대신 '§1b 표에 있는 개수 · 비율만 옮긴다 — 재료에 없는 지표(사슬 걸음 지표 등)는 원장을 직접 세거나 추정해 채우지 말고 미측정'이라고 쓰고, 1차 통과의 새 정의와 '뺀 줄 경고'를 명시했다. 재료 §1b 끝에도 같은 안내 한 줄을 실었다. SKILL 학습 고리 절은 같은 내용으로 맞췄다(1차 통과 정의 · 걸음 지표는 재료에 없음 · 결과 원장 공용 규율 · 뺀 줄 경고).",
+      "test": "test_scn_knowledge_distill.sh D7a~c. HEAD 판 run.sh 와 lib 에서는 D7a/b/c 가 FAIL 하고, 수리 후 PASS 한다."
+    }
+  ],
+  "not_fixed": [
+    {
+      "title": "색인 · 계기의 측정 실패 포기 걸음(abandoned)을 STEP_REJECT 로 셈 · 사슬 사이 기각 기억 정렬 · 설계 입력 §4 등급 표기 정지(같은 U11 단위의 다른 확정 결함)",
+      "why": "이 묶음에 배정된 네 항목이 아니다. 주 수리 지점이 p4.R · rx_generator_scorecard.R 로 다른 묶음 소유이고, 손대지 않았다. hypothesis_index.R .hi_parse_chain_steps 에 대한 제안은 이렇다: isTRUE(rr[[1]]$abandoned) 이면 verdict 를 'STEP_ABANDONED' 로 두고 reject_codes 는 그대로 둔다."
+    },
+    {
+      "title": "test_rf_prereg.R(hypothesis_index.R 를 합성 루트로 복사) · 셸 시험 3종(test_axiom_inject_tau_d.sh · test_inject_usage_ranking.sh · test_rf_clean_lane.sh)",
+      "why": "돌리지 않았다. 셸 3종은 'hypothesis_index.R lookup' 안내 문자열만 grep 하고 코드를 실행하지 않는다. test_rf_prereg.R 은 lookup(auto_rebuild = FALSE · 빌드 경로 아님)만 쓴다. 이 시험은 머리말이 'ROOT = QM_ROOT · 운영 트리에서 직접 돌리지 말 것'이라 하고 돌연변이 52종이 있는 무거운 시험이라, 바쁜 기계에서 운영 트리 대상으로 돌리지 않았다."
+    }
+  ],
+  "changed_files": [
+    "02_Infrastructure/tools/hypothesis_index.R",
+    "02_Infrastructure/memory/knowledge_loop_metrics.R",
+    "02_Infrastructure/ops/cleaner_distill_lib.R",
+    "02_Infrastructure/ops/cleaner_distill_run.sh",
+    ".claude/skills/cleaner/SKILL.md",
+    "08_Tests/scenarios/test_scn_knowledge_index.R",
+    "08_Tests/scenarios/test_scn_knowledge_distill.sh",
+    "08_Tests/scenarios/test_scn_knowledge_loop.R"
+  ],
+  "new_tests": [
+    "08_Tests/scenarios/test_scn_knowledge_index.R I12a~e · I13a~e",
+    "08_Tests/scenarios/test_scn_knowledge_loop.R K2a~d · K3a~e",
+    "08_Tests/scenarios/test_scn_knowledge_distill.sh D6a~e · D7a~c"
+  ],
+  "tests_run": [
+    {"path": "08_Tests/scenarios/test_scn_knowledge_index.R", "result": "pass 31 / fail 0 (수리 전 새 사례 8 FAIL 재현)"},
+    {"path": "08_Tests/scenarios/test_scn_knowledge_loop.R", "result": "pass 68 / fail 0 / gap 1(기존 L3b GAP) · 돌연변이 m1(τ_D 검사 끔) 4 FAIL · m2(사건 단위 rc0) 2 FAIL"},
+    {"path": "08_Tests/scenarios/test_scn_knowledge_distill.sh", "result": "pass 16 / fail 0 (HEAD 판 코드 사본 대상 10/6 — D6a/b/d · D7a/b/c FAIL 재현)"},
+    {"path": "08_Tests/hooks/test_knowledge_index_stale.R", "result": "pass 20 / fail 0"},
+    {"path": "08_Tests/ops/test_hypothesis_index_paper_lane.R", "result": "pass 17 / fail 0"},
+    {"path": "08_Tests/hooks/test_p0_loop_closure.R", "result": "pass 26 / fail 0 (QM_ROOT=G:/OneDrive/Quant_Module_Moltbot 슬래시 표기로 실행. 셸 상속 QM_ROOT 가 옛 PC 역슬래시 경로라 기존 줄의 sub(paste0('^', QM_ROOT …)) 정규식이 TRE 오류로 멈춘다 — 수리 전부터 있던 환경 문제이고 이번 편집 범위 밖)"},
+    {"path": "08_Tests/hooks/test_draft_marker_approval.R", "result": "pass 31 / fail 0"},
+    {"path": "08_Tests/axiom/test_lcode_cell_relabel.R", "result": "pass 23 / fail 0"},
+    {"path": "08_Tests/hooks/test_knowledge_index_consumer_heal.R", "result": "pass 31 / fail 0"},
+    {"path": "08_Tests/worktask/test_qepm_advisor_contract.R", "result": "pass 147 / fail 0"}
+  ],
+  "notes": "K1e 는 기존 사례이고 K 절 안에 있다. 그 합성 레인 저널 두 줄을 실제 형식(paper 키 + verdict 토큰)으로 바꿨고, 단정(preaudit_n 2 · 비율 0.5)은 그대로다. 옛 데이터는 논문 키가 없어 새 정의에서 분모 밖이 된다. 색인 시험 첫 합성 루트에 behavior_card.json 사본을 더했다. τ_D 를 못 읽으면 fail-closed 로 결과 원장 줄이 모두 빠지기 때문이다. 증류 시험 임시 루트에도 round_core v1 의 util.R · standing.R · outcomes.R 와 behavior_card.json 사본을 더했다. round_core · 06_Registry · 운영 색인은 쓰지 않았다(hypothesis_index.json mtime 12:52 = 이 작업 전). 커밋 · 스테이징은 하지 않았다. 운영 결과 원장이 아직 없어서 실운영 색인 · 계기 출력은 결과 원장 쪽에서 변화가 없다. 운영 lookup 재빌드는 round_outcomes.jsonl 이 생기면 그때 klm 과 round_core 3파일을 적재한다."
+}

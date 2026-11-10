@@ -1,0 +1,4 @@
+path	kind	evidence	confidence	refs	action
+02_Infrastructure/portfolio/advanced_weights.R:1073-1092 (calc_cdar_weights FRAPO 분기)	code_branch	.HAS_FRAPO = FALSE(이 PC 실측 'FRAPO=MISSING') · 같은 분기의 max_cdar 인자는 양쪽 가지 모두 무시(:1078-1082 if/else 동일 호출) · 운영 기계 설치 계획 없음(설치 = 도구 세션 밖)	probable	08_Tests/portfolio/test_cdar_lp_solver_parity.R(솔버 사슬 시험 — FRAPO 가지는 안 탐)	decide
+02_Infrastructure/portfolio/advanced_weights.R:1058-1060 (calc_cdar_weights max_cdar 인자)	dead_param	호출처 grep 'max_cdar' = 정의부뿐 · 분기 양쪽이 같은 호출(PMinCDaR(prices_dummy, percentage = FALSE))	certain	없음	decide
+02_Infrastructure/portfolio/weight_catalog.R:70 (.wc_root 후보 경로 C:/Users/99922/...)	stale_fallback	메인 PC 경로 = G:/OneDrive/Quant_Module_Moltbot(메모리 카드 11-07) · 앞의 QM_ROOT · getwd 판정이 먼저라 실해는 없음 · 노트북에서만 맞는 값	probable	08_Tests/ops/test_method_adapter_contract.R:31 같은 패턴	keep

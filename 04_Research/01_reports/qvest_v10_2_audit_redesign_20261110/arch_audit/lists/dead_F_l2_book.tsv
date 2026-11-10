@@ -1,0 +1,24 @@
+path	kind	evidence	confidence	refs	action
+02_Infrastructure/book/tg_book_dispatch.R	script	git grep 'tg_book_dispatch' = 자기 자신 + qepm/observability/events.jsonl(사료)뿐 · .claude 에이전트/스킬 언급 0 · 마지막 수정 2026-08-30	certain	없음	delete
+04_Research/factor_rotation/run_wf_ensemble_fr002.R	script	git grep 참조 = 06_Registry/wiring_map.json(자동 생성 지도) 1 · FR_002 계보 종료(2026-07-04 마지막 수정) · 러너 정본 = run_wf_ensemble.R	certain	wiring_map.json	delete
+04_Research/factor_rotation/regime_study_overlay.R	script	참조 0 · 2026-06-05	certain	없음	delete
+04_Research/factor_rotation/_plot_overlay.R	script	참조 0 · 2026-06-10	certain	없음	delete
+04_Research/factor_rotation/_tg_valearn_overlay.R	script	참조 0 · 2026-06-10 · 텔레그램 직접 발송 스크립트(tg_agent_brief 단일 진입 이전 사료)	certain	없음	delete
+04_Research/factor_rotation/leadlag_multihorizon_ic.R	script	참조 0 · 2026-06-10	certain	없음	delete
+04_Research/factor_rotation/verify_1715.R	script	참조 0 · 2026-06-10	certain	없음	delete
+04_Research/factor_rotation/fr_regime_search.R	script	참조 1(문서) · 2026-06-05	probable	-	delete
+04_Research/factor_rotation/ep_oos_diag.R	script	참조 1 · 2026-06-10	probable	-	delete
+04_Research/factor_rotation/run_tsmom_timing.R	script	참조 1 · 2026-06-10	probable	-	delete
+04_Research/factor_rotation/tg_report.R	script	참조 1 · 2026-06-10	probable	-	delete
+04_Research/factor_rotation/{regime_study_decisive,_diag_dd_regime,_diag_placebo,_diag_robust,ep_orthogonality,sjm_ep_seed_check,ep_multisleeve,sjm_ep_ablation,run_fr002_scrap_pool,run_valearn_overlay,regime_jm_ensemble_ab,regime_jm_validation}.R	script	참조 2~6(대부분 연구 노트 · output json) · 2026-06~08 · 예약 작업/훅/스킬 호출 0	probable	연구 노트	decide
+04_Research/factor_rotation/run_factor_rotation.R	script	구 2계층 진입점(module_performance 갱신의 옛 호출처 · daily_refresh [8.2] 주석) · 스킬 진입은 /strategy-rotation 수동 · 2026-06-05	probable	daily_refresh.sh 주석 · 문서 다수	decide
+02_Infrastructure/regime/regime_factor_alloc_engine.R	script	참조 = factor_db_connector.R 주석 + 문헌 리뷰 md · 2026-04-17	probable	-	decide(국면 코어 소유자)
+02_Infrastructure/regime/{regime_engine_option2,regime_garch,regime_absorption_ratio,regime_derivatives}.R	script	2026-04-17 이후 미수정 · 시험 0~1 · 운영 호출(예약 작업 · daily_refresh) 미확인	probable	-	decide(국면 코어 소유자)
+02_Infrastructure/regime/{regime_forecaster_v1tune,regime_forecaster_v2,regime_forecaster_v3}.R	script	2026-07-03 이후 미수정 · 시험 0 · 정본 예측기 = v4/as-of 판(L2 v0 pit_audit: 운영 MSM = 전 표본 모수 C1 · PIT-clean = JM 하나)	probable	-	decide(국면 코어 소유자)
+02_Infrastructure/regime/overlay_candidate_ab_lh.R	script	시험 0 · 2026-07-04 · 오버레이 후보 레인(AuditWatch/AxiomActivate Disabled)	probable	-	decide
+02_Infrastructure/monitoring/run_nolayer4_monthly.bat	script	예약 작업 noLayer4_Monthly_PaperTracking 이 이 PC 에 없음(Get-ScheduledTask) · 실행 정본 = run_nolayer4_monthly.sh · 2026-07-03	probable	scheduler xml backup	decide
+02_Infrastructure/ops/scheduler/_task_xml_backup/noLayer4_Monthly_PaperTracking.xml	config	등록 안 됨(이 PC) — 삭제가 아니라 '재등록 또는 퇴역' 결정 대상(BOOK 월간 트래킹 무인 경로가 지금 없다)	certain	run_nolayer4_monthly.sh 주석	decide
+02_Infrastructure/ops/rf_l2_auto.sh + rf_l2_auto.R + rf_l2_lib.R	lane	l2_auto.enabled=false(09-24 C11 봉쇄 · 재개 수동) · 요청 생성기 rf_director.R 10-13 퇴역 · 호출 = reinforce_auto_tick.sh(ReinforceAutoLoop Disabled) · 마지막 실행 09-23 FR_003_n1 — 죽은 것이 아니라 정지(설계 L2-ROLE-ROTATION 과 다른 π₀ 경로)	certain(정지)	08_Tests/ops/test_rf_l2_auto.sh · test_rf_l2_driver.R · scenarios/test_scn_l2_a_gate.R	decide
+06_Registry/l2_unit_request.json	registry	status=done(09-23) · 이후 발행자 없음(디렉터 퇴역)	certain(정지)	rf_l2_lib.R	keep
+daily_refresh.sh [8.1r]+[8.2] (rf_role_classify_all.R · rf_role_register_reps.R · build_module_performance.R)	nightly_step	매일 밤 2계층 풀 재조립 · 유일 측정 소비자(run_wf_ensemble/rf_l2_auto) 09-24 이후 미실행 · 부소비자 = rf_diversification_gate.R(module_performance) · register_measured_module.R(strategy_roles)	probable(무소비 야간 작업)	test_l2_pool_close_t1.R 등	decide
+04_Research/l2_role_rotation/allocator_engine.R · allocator_engine_v1.R · run_l2_v1.R · prereg_l2v1.R 등	research	역할 슬리브 v0(10-10 · 5 arm 전부 C) · v1 은 MC2 FAIL 로 단계 2 종료 · 이후 실행 0 · 원장 L2 미등재(어댑터 미구현)	probable	README · RESULT_v0.md	keep(다음 2계층 설계의 출발점)

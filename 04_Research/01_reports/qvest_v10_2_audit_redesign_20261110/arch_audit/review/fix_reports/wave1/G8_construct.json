@@ -1,0 +1,51 @@
+{
+  "group": "G8_construct",
+  "fixed": [
+    {
+      "title": "dd_state 위기 표본이 요인 열의 가용 시작일에 묶인다(complete.cases 가 시장 경로를 잘라 고점 재설정)",
+      "files": "02_Infrastructure/reinforcement/rf_factor_cov.R",
+      "how": "rfc_ts_cov dd_state 가지에서 상태 표식을 시장 열 하나의 전체 이력(값이 있는 날 · mrow <- is.finite(H[, mkt]))으로 먼저 만들고, Ω 표본 = 상태일 ∩ 선택 요인 열 완전 행으로 따로 고른다(표식과 표본 선택 분리). 시장 열이 F 또는 이력에 없으면 종전처럼 멈춘다. diag 에 state_path_n · n_state_days 를 더하고, rfc_sigma_asof · rfc_sigma_ctx 는 dd_state 일 때 diag$state_path_start(시장 열 첫 유효일)를 남긴다. 열 결측 없는 이력에서는 종전과 같은 행 집합이다(기존 [4] 시험 그대로 통과).",
+      "test": "08_Tests/reinforcement/test_rf_factor_cov.R [9] (SMB5 앞 250행 NA · 앞부분 35% 하락 이력: 수리 전 '표본 0 < 40 → base' 로 FAIL → 수리 후 n_omega 350 = 독립 기대값 · Ω = cov(상태일 ∩ 완전 행) · state_path_start = 시장 첫날) + [10] 돌연변이(mrow 를 complete.cases 로 되돌림 · 치환 1 → n_omega 252 ≠ 350 검출)"
+    },
+    {
+      "title": "셀 엔진이 factor:ts:downside/dd_state 칸에서 변형이 base 로 떨어진 날을 세지 않는다(pca 폴백만 셈)",
+      "files": "02_Infrastructure/reinforcement/rf_factor_cov.R · 02_Infrastructure/reinforcement/rf_cell_engine.R · 02_Infrastructure/methods/adapters/factor_cov_fan_fan_lv_2008.R",
+      "how": "rfc_ts_cov · rfc_pca_cov · rfc_cs_cov 가 variant_used(실제로 쓴 변형 · 표본 부족 폴백이면 \"base\")를 반환한다. 셀 엔진 catalog 가지의 pca 폴백 집계와 같은 자리에서 .nVFB(variant_used ≠ 요청 변형)와 .nUnt(pca ∪ 변형 폴백)를 세고, 기존 pca 과반 가드 바로 뒤에 같은 과반 규칙(.nUnt × 2 > .nSig → 처치 미전달 · 측정 무효)을 둔다. 요약 줄에 '변형 폴백 %d' 를 싣는다. base 변형이면 .nUnt = .nFB 라 기존 가드와 결과가 같다. 시그마 어댑터 진단 줄에 used= 를 더했다.",
+      "test": "08_Tests/scenarios/test_scn_rx_construct_link.R (f) F0~F6 — 엔진의 실제 집계 · 가드 문장을 실제 공급자 출력(.so)으로 평가: 과반 3/5 → 멈춤 · 2/5 → 진행 · base 변형 집계 0 · 집계 문장 제거 돌연변이 → 안 멈춤(검출). 수리 전 F0·F2~F6 FAIL. test_rf_factor_cov.R [9] variant_used 단언 + [10] variant_used 고정 돌연변이(치환 1) 검출."
+    },
+    {
+      "title": "weighting.cdar_nu_rule 은 아무 arm 에나 실리고 전달 가드가 없다",
+      "files": "02_Infrastructure/reinforcement/rf_cell_engine.R",
+      "how": "catalog 가지에 ν 규칙 전달 탐침 .rf_nu_ignored(afn, ctx, w)를 두었다 — ①규칙(cdar_nu_rule · bench_ret · R_dates)을 뺀 ctx ②어휘 밖 값(\"__nu_rule_probe__\")을 준 ctx 로 다시 돌려 둘 다 비중이 같으면 '규칙을 안 읽는 arm'. 정본 CUZ 어댑터는 rcd_nu_rule 이 어휘 밖을 거부해 래퍼 EW 로 떨어지므로 ew 별칭(규칙 없음과 비트 동일)도 '읽음'으로 판정된다. sigma_provider 탐침과 같은 수(처음 3 신호일)로 돌리고, 탐침 전부 같으면 'cdar_nu_rule … 처치 미전달'로 멈춘다. 탐침 출력은 capture.output 으로 삼킨다. cdar_nu_rule 이 없으면 아무 것도 실행되지 않는다(기본 경로 비트 동일 — A1~A3 HEAD 대조 통과).",
+      "test": "test_scn_rx_construct_link.R G1(lean:ivol + ew → 수리 전 완주 FAIL · 수리 후 멈춤) · G2(bench) · G3 가드 삭제 돌연변이(치환 1) → 조용히 완주(검출). test_rf_cdar_bench_budget.R [8] 양성 대조: 실제 CUZ 어댑터 bench · ew → '읽음' · μ 비례 arm → '안 읽음' · 어휘 밖 탐침 제거 돌연변이 → ew 칸 오판(검출)."
+    }
+  ],
+  "not_fixed": [
+    {
+      "title": "CDaR(CUZ) · 요인 Σ 어댑터가 어떤 등록부에도 없다",
+      "why": "운영 등록부(06_Registry/method_registry.json · weight_catalog.json) 쓰기라 총괄이 따로 처리한다는 지시. 손대지 않았다. 참고: 이번 ν 규칙 가드로 qepm:CDaR_LP 등 비독자 arm 에 cdar_nu_rule 을 단 칸은 이제 fail-closed 로 멈춘다(조용한 무시 없음)."
+    }
+  ],
+  "changed_files": [
+    "02_Infrastructure/reinforcement/rf_factor_cov.R",
+    "02_Infrastructure/reinforcement/rf_cell_engine.R",
+    "02_Infrastructure/methods/adapters/factor_cov_fan_fan_lv_2008.R",
+    "08_Tests/reinforcement/test_rf_factor_cov.R",
+    "08_Tests/reinforcement/test_rf_cdar_bench_budget.R",
+    "08_Tests/scenarios/test_scn_rx_construct_link.R"
+  ],
+  "new_tests": [
+    "08_Tests/reinforcement/test_rf_factor_cov.R [9] [10]",
+    "08_Tests/reinforcement/test_rf_cdar_bench_budget.R [8]",
+    "08_Tests/scenarios/test_scn_rx_construct_link.R (f) F0~F6 · G1~G3"
+  ],
+  "tests_run": [
+    {"path": "08_Tests/reinforcement/test_rf_factor_cov.R", "result": "수리 전 31/9 FAIL(재현) → 수리 후 pass 40 fail 0"},
+    {"path": "08_Tests/scenarios/test_scn_rx_construct_link.R", "result": "엔진 수리 전 17/9 FAIL(재현 · G1 완주) → 수리 후 pass 26 fail 0 skipped 0(A1~A3 HEAD 비트 동일 포함)"},
+    {"path": "08_Tests/reinforcement/test_rf_cdar_bench_budget.R", "result": "pass 30 fail 0 (수리 전 엔진 HEAD 에 .rf_nu_ignored 0건 → [8] 은 HEAD 에서 실패)"},
+    {"path": "08_Tests/reinforcement/test_rf_cash_budget_link.R", "result": "pass 20 fail 0"},
+    {"path": "08_Tests/reinforcement/test_rf_cell_engine_smoke.R", "result": "pass 37 fail 0"},
+    {"path": "08_Tests/reinforcement/test_rf_capcore.R", "result": "pass 63 fail 0"}
+  ],
+  "notes": "커밋 · 스테이징 없음. 모든 R 시험은 R_ENVIRON_USER=빈 파일로 한 번에 하나씩. 시나리오 시험은 운영 .cache/kr_factor_returns_daily.parquet 를 읽기만 한다(종전과 같음). 시나리오 시험 파일은 CRLF 를 유지했다(편집 중 LF 로 바뀐 것을 바이트 단위로 되돌림). 새 숫자 없음 — 과반 규칙 · 탐침 3회 · 허용 오차 1e-10 은 기존 sigma_provider 가드의 값을 그대로 썼다. 요약 줄 형식이 '… pca 폴백 %d · 변형 폴백 %d · 탐침 …' 으로 바뀌었다(저장소 안 소비자는 B1 접두어 grep 뿐)."
+}

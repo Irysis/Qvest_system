@@ -1,0 +1,16 @@
+{
+  "ok": false,
+  "issues": [
+    {
+      "title": "텔레그램 가드: 자리표 글자(__qvest_hs_N__)를 명령에 넣으면 IndexError 로 파이썬이 죽고 허용으로 바뀐다(수리 전에는 차단되던 명령)",
+      "problem": "telegram_direct_call_guard.sh:141 의 _unhs 는 hs_bodies[int(m.group(1))] 를 범위 검사 없이 읽는다. PowerShell 명령에 here-string 이 하나 이상 있고, 다른 -e 인자에 __qvest_hs_7__ 같은 글자가 들어 있으면 IndexError 가 난다. 그러면 DECISION=$(...) || DECISION='{}' 로 떨어져 허용이 된다. pattern_dq 가 이미 잡은 페이로드도 판정 전에 버려진다. 수리가 새로 연 fail-open 이다. 운영에서 이런 글자가 우연히 들어갈 일은 드물지만, 가드를 우회하는 길이 하나 생겼다.",
+      "evidence": "탐침(압축 JSON · PowerShell): \"@'<LF>x<LF>'@ | Out-Null; Rscript -e \\\"tg_send('x') __qvest_hs_7__\\\"\" → 수리 후 운영 훅 = allow(stderr 에 Traceback). 같은 입력을 git HEAD 판 훅에 넣으면 deny. 탐침 스크립트: C:/Users/User/AppData/Local/Temp/claude/bded445ba19315c7/9fe22a2f-3836-40d8-8087-87fddf9c12ec/scratchpad/wfB2/chk/probe_tg.sh(P2) · probe_tg2.sh(Q2). 수리 제안: i < len(hs_bodies) 일 때만 바꾸고 아니면 m.group(0) 을 그대로 둔다(또는 명령 원문에 없는 nonce 를 자리표에 쓴다). 시험에 이 입력을 차단 사례로 추가한다."
+    },
+    {
+      "title": "텔레그램 가드: 변수 실행기에 플래그를 붙여 here-string 을 파이프로 넘기면(@'…'@ | & $R --vanilla -) 여전히 통과한다",
+      "problem": "telegram_direct_call_guard.sh:146 의 _r_exec 는 변수 실행기를 rest[1] in ('-e','-') 일 때만 R 실행으로 본다. 그래서 '-' 앞에 --vanilla · --no-save 같은 플래그가 오는 꼴은 r_exec_seen 이 켜지지 않고 here-string 본문을 놓친다. Bash 의 같은 꼴(\"$R\" --vanilla - <<'EOF')은 _r_like 로 잡혀 차단되므로 두 도구 사이에 틈이 남는다. 결함 3의 here-string 파이프 꼴 가운데 변수 실행기 변형이 아직 열려 있다.",
+      "evidence": "탐침 Q1(PowerShell): \"@'<LF>tg_send(\\\"x\\\")<LF>'@ | & $R --vanilla -\" → allow. 대조 P6(Bash): \"\\\"$R\\\" --vanilla - <<'EOF'<LF>tg_send(\\\"x\\\")<LF>EOF\" → deny. 같은 명령에 $R = '...Rscript.exe' 대입이 있으면(P4) R 이름 낱말 때문에 deny 가 된다. 수리 제안: 변수 실행기 판정을 _r_like 와 맞춘다(첫 낱말이 $ 로 시작하고 뒤에 '-' 또는 '-e' 낱말이 있으면 R 실행). 이 꼴을 H 축 차단 사례로 추가한다."
+    }
+  ],
+  "summary": "결함 4건의 시나리오는 모두 닫혔습니다. 1) 소문자 05_production 쓰기는 PowerShell 압축 JSON 입력에서 빠른 길 켬 · 끔 모두 차단됩니다(S13/S14/S20 · 등가 시험 s_ps_block_lower/upper). 2) 백틱+LF · CRLF 줄 이음 쓰기도 차단되고, 개행 경계와 읽기 허용은 그대로입니다(S16~S19). 3) here-string 두 시나리오(@'…'@ | Rscript - · Rscript -e @'…'@ 에 홀수 작은따옴표)도 차단됩니다(H1/H2 · D11). 4) 시험이 운영 입력 모양을 쓰고, 빠른 길을 탔는지 스파이로 단정하며, S10 의 경계도 M3 로 실증합니다. 돌연변이 M1~M7 은 각 수리 줄을 소스 텍스트 치환으로 겨냥하고 치환 성사를 단정합니다. 직접 돌린 결과는 다음과 같습니다(한 번에 하나씩): powershell_coverage 48/48 · telegram_guard_forms 27/27 · fastpath_equivalence 143/143 · safety_guard_memory 119/119 · backslash_paths 20/20. bash -n 은 훅 2개와 시험 3개 모두 통과했습니다. 가드의 Bash 갈래 판정과 문턱은 그대로이고, 빠른 길 PowerShell 재검사는 느린 길로 보내기만 하므로 느슨해진 곳은 없습니다. 소유 범위 밖 수정도 없습니다(run_all_hooks.sh · test_runner_accounting.sh 는 다른 묶음의 변경). not_fixed(Bash · Write/Edit 소문자 경로)는 수리 전부터 있던 일관성 결함이고, 지침이 범위를 PowerShell 로 정했으므로 미룬 사유가 타당합니다. 다만 텔레그램 가드에 남은 두 가지를 issue 로 올립니다. (a) 자리표 IndexError 로 생긴 fail-open 회귀(수리 전 차단 → 수리 후 허용) (b) 변수 실행기 + 플래그 here-string 파이프 꼴의 누락. 참고로 이번 결함 밖의 정적 한계가 하나 더 있습니다. 낱말 안 백틱 이스케이프(05_Pro`duction)는 PowerShell 에서 05_Production 으로 읽히지만 두 길 모두 못 봅니다(종전 한계와 같은 부류). 제 실수도 하나 보고합니다. 점검 중 _shared_parse.sh 를 RESOLVE_ONLY 없이 source 해서 운영 원장 qepm/observability/events.jsonl 에 hook_name=unknown 인 hook_fired 1행(2026-11-10T17:59:30)이 남았습니다. 그 밖의 저장소 파일은 고치지 않았습니다."
+}

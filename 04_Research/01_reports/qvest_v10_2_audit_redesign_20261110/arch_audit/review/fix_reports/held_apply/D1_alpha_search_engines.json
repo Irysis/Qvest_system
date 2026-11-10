@@ -1,0 +1,41 @@
+{
+  "group": "D1_alpha_search_engines",
+  "deleted": [
+    "02_Infrastructure/alpha_search/fe_single.R",
+    "02_Infrastructure/alpha_search/bsc_engine.R",
+    "02_Infrastructure/alpha_search/fe_coverage_delta.R",
+    "02_Infrastructure/alpha_search/fe_disclosure_meta.R",
+    "02_Infrastructure/alpha_search/dm_engine.R",
+    "02_Infrastructure/alpha_search/fe_hzz_trend.R",
+    "02_Infrastructure/alpha_search/fe_sue_pead.R",
+    "02_Infrastructure/alpha_search/fe_qfactor_hxz.R",
+    "02_Infrastructure/alpha_search/fe_qmj.R",
+    "02_Infrastructure/alpha_search/driver_ls_generic.R",
+    "02_Infrastructure/alpha_search/run_bsc_momentum.R",
+    "02_Infrastructure/alpha_search/run_coverage_delta.R",
+    "02_Infrastructure/alpha_search/run_disclosure_meta.R",
+    "02_Infrastructure/alpha_search/run_dm_momentum.R",
+    "02_Infrastructure/alpha_search/run_hzz_inverse.R",
+    "02_Infrastructure/alpha_search/run_hzz_trend.R",
+    "02_Infrastructure/alpha_search/run_pead_paper.R",
+    "02_Infrastructure/alpha_search/run_qfactor_paper.R",
+    "02_Infrastructure/alpha_search/run_qmj_paper.R"
+  ],
+  "not_deleted": [],
+  "edits": [
+    {"file": "08_Tests/contracts/test_grade_unification.R", "what": "§D 의 RUNNERS 목록 · D1(essence 스택 부재) · D2(hurdle 접미어 유지)를 걷고 사유 주석(PRUNE-EXTRA-DELETIONS-20261110 · 복구 태그)으로 대체. 남는 러너 0 (run_residmom_paper · run_te_sink · run_volmanaged 는 이미 부재). D3 corpus 불변식은 그대로."},
+    {"file": "02_Infrastructure/portfolio/standalone_track_queue.R", "what": "285행 주석 'run_pead_paper.R 등' 을 '구 … (2026-11-10 삭제)' 로 표기(동작 영향 없음)"},
+    {"file": "02_Infrastructure/replication/replication_harness.R", "what": "13행 주석에 driver_ls_generic.R 삭제 · 복구 태그 표기(360행은 그대로 · 동작 영향 없음)"}
+  ],
+  "changed_files": [
+    "08_Tests/contracts/test_grade_unification.R",
+    "02_Infrastructure/portfolio/standalone_track_queue.R",
+    "02_Infrastructure/replication/replication_harness.R"
+  ],
+  "tests_run": [
+    {"path": "08_Tests/contracts/test_grade_unification.R", "result": "삭제 전 25 pass / 0 fail · 수정+삭제 후 23 pass / 0 fail / 0 skip (D1 · D2 2개 제거)"},
+    {"path": "08_Tests/contracts/test_replication_harness.R", "result": "46 pass / 0 fail"},
+    {"path": "08_Tests/data/test_benchmark_level_axis.R", "result": "37 pass / 0 fail / 0 skip"}
+  ],
+  "notes": "삭제 전 재확인: 19개 basename 을 추적·비추적 파일(bat/xml/sh/ps1/R/py/md, 02_Infrastructure · .claude · 08_Tests · 06_Registry)에서 grep — 살아 있는 호출자 0. 남은 참조는 서로(묶음 내부) · 주석 2곳 · 시험 §D · 색인(INDEX.md · index_descriptions.json · wiring_map.json) · CHANGELOG(사료) · stage_artifacts/qepm mailbox/04_Research 보고서/reinforce_ladder_ledger.json(과거 기록 데이터). 동적 로딩(paste0('fe_'...)) 없음. 색인은 손대지 않음 — 생성기: 02_Infrastructure/ops/wiring_map_build.R (wiring_map.json) · 02_Infrastructure/tools/build_artifact_index.R / 02_Infrastructure/ops/artifact_hygiene_audit.R (INDEX.md · index_descriptions.json). index_descriptions.json:92 의 alpha_search 설명 문자열(run_qmj_paper 예시 · 건수)은 생성기가 설명문을 원천에서 다시 쓰지 않으면 남을 수 있음 — 총괄 판단. git 스테이징·커밋 안 함."
+}

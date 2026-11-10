@@ -1,0 +1,15 @@
+{
+  "group": "D6_registry_data",
+  "ok": true,
+  "checks": {
+    "deleted_9_confirmed": "작업 트리에서 9개 모두 사라졌고(전부 추적 파일이라 태그로 복구할 수 있다), 유지 3개(pit_c11 · pit_jm_c1 · P3R02 measure.sh)는 남아 있다. measure.sh md5 는 df78fbce4542b63867467809d4acb156 으로 사전등록 고정값과 같다.",
+    "live_refs": "색인류 · 문서 · stage_artifacts · 99_Archive 를 빼고 저장소 전체를 grep 했다. 남은 것은 꼬리표가 붙은 주석 4곳, close_round.R:192 경고 문자열, 역사 문서(CHANGELOG:748 · weekly_digest · GLOSSARY · 감사 목록), 그리고 frontier_queue_migrate_v2.py 이다. migrate_v2.py 는 _archive 파일을 쓰는 1회성 이관기로, 그 파일을 읽지 않는다. 나머지 하나는 유지 대상인 measure.sh 의 센티널 대기 · touch 줄인데, measure.sh 는 부르는 곳이 0이다. 08_Tests · .claude 에서는 0건이다. close_round.R 은 alpha_frontier_queue.json · infra_backlog.json 본문에서 FQ-id 를 찾을 뿐 _archive 를 읽지 않았다(HEAD 판 확인).",
+    "overdelete": "06_Registry · night_state · ops 아래에서 지워진 것은 목록 9개와 lean_carrier meta 하나다. lean_carrier meta 는 D5_misc_code 묶음 몫이다. night_state 의 다른 센티널(p2r03 · p2r04 · p3r03 · p2r05)은 그대로 있다.",
+    "registry_json": "HEAD 와 구조를 비교했다. 키 순서 · 배열 길이가 같고, 바뀐 값은 다음뿐이다. alpha_frontier_queue: archive_refs.done · report. infra_backlog: entries[35] hypothesis · next_action(FQ-177), entries[42] source_refs(FQ-238). role_permissions: q-lead.can_write[2]. 줄끝은 CRLF 2617/1001, LF 148 으로 그대로이고, BOM · 끝 개행 상태도 같다. 세 파일 모두 파싱된다.",
+    "syntax": "고친 R 5개는 parse 로 OK, measure.sh 는 bash -n 으로 OK, PIT 원장 2개는 JSON 파싱 OK 다.",
+    "tests": "qvest_hook_router.py selftest 는 rc 0 · status OK 다. 08_Tests/hooks/test_close_round_baseline.R 은 17 pass / 0 fail 이다(QM_ROOT 는 슬래시로, R_ENVIRON_USER 는 빈 파일로 실행). 이 묶음에서 시험 재조준은 없다."
+  },
+  "notes": [
+    "06_Registry/pit_jm_c1_consumer_notices.json 에 수정(M)이 하나 있다. :102 regime_forecaster_v4.R 에 붙은 삭제 표기인데, D6 적용자 보고에는 없고 국면 묶음(D3)의 몫으로 보인다. 파일은 유지되었고 JSON 도 유효하다."
+  ]
+}

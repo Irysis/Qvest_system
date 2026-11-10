@@ -1,0 +1,74 @@
+{
+  "group": "G1_selection_backfill",
+  "fixed": [
+    {
+      "title": "관문이 시행 집합의 크기·구성을 검증하지 않음 — 후보 1칸만 넣은 점검도 통과",
+      "files": "02_Infrastructure/contracts/selection_reality_check.R · 02_Infrastructure/contracts/essence_score.R(.essence_selection_gate 와 호출부) · 02_Infrastructure/programs/selection_regrade.R · 02_Infrastructure/programs/round_candidate_gate.R(rcg_finalize) · 04_Research/programs/_lib/round_core/v1/p4.R(rc_p4_close 의 sr_regrade 호출부)",
+      "how": "src_gate(check, port_t, cfg, tol, expected = list(n_trials, ids)) 신설 인자. 기대 집합을 모르면(NULL · 빈 것) 통과 아님(fail-closed). 분산 0 으로 빠진 칸이 있거나 채움 100%(후보와 날짜가 하나도 안 겹침) 칸이 있으면 거부. n_trials = length(trial_ids) · 중복 없음 · 후보 ∈ id 일관성, 점검 시행 수 ≥ 등록 시행 수, 등록 id ⊆ 점검 id, set_hash 재계산 일치(지문 함수 .src_set_hash 를 src_check 와 공유 — 종전 지문과 바이트 동일). essence_score 는 n_trials_cumulative 를 기대 시행 수로 넘기고 기록에 expected_n_trials · n_dropped_zero_variance 를 남긴다(점검 미제출 스윕 = 종전 DSR 경과 규정 경로는 그대로). sr_regrade 에 expected 인자(+ CLI --expect-n · --expect-ids) — trial_dirs 로 기대를 대신하지 않는다. rcg_finalize 에 expected 인자(대역이 expected 또는 ... 를 받을 때만 넘김 — 기존 4인자 대역 호환). rc_p4_close 는 사슬 원장에서 기대 집합을 따로 센다(기준 칸 1 + 포기하지 않은 판정 걸음 · id = 산출 폴더 이름) — 시행 목록이 중복·결측 제거로 줄면 관문이 막는다. 등급 문턱 · 채점식 불변.",
+      "test": "08_Tests/contracts/test_selection_reality_check.R T26a~T35(잡음 60칸 최고: 60칸 조정 p 0.253 미달 vs 1칸 0.005 → 등록 60 · 1칸 점검 거부 · id 누락 · 기대 미지정 · 분산 0 칸 · 날짜 비중첩 칸 · id/수 부풀린 위조물 지문 불일치 · 맞는 집합은 p 판정으로 · 돌연변이 3종(수 검사 · 미지정 검사 · 분산 0 검사 줄 제거) 각각 결함 재개 · 치환 1곳 성사) · 08_Tests/contracts/test_grade_v3.R E4f~E4h(essence: 등록 60 · 점검 4 + 위조 p → 미통과 · n_trials_cumulative NULL → 미통과 · 등록 4 대조) · 08_Tests/programs/test_selection_regrade.R T12~T15 · 수리 전 실행: 계약 시험이 src_gate(expected=) unused argument 로 중단(결함 재현) · 배선 돌연변이(scratchpad/wfB/fix/mut_regrade.R: sr_regrade 의 expected 전달 제거 → 사유가 '등록 시행' 대신 '미지정'으로 바뀜) 1/1"
+    },
+    {
+      "title": "일괄 재채점은 저장된 selection_gate$ok 를 그대로 다시 쓴다 — alpha · 설정 판이 바뀌어도 관문을 다시 판정하지 않는다",
+      "files": "02_Infrastructure/programs/grade_v3_backfill.R",
+      "how": "gv3b_selection_gate(A, scfg) 신설 — 저장 판정 통과(재계산 못 하는 시행 집합 검사 등) ∧ 설정 판 같음 ∧ 저장 조정 p ≤ 현행 alpha ∧ (PBO 가 관문이면 현행 문턱) · 설정 판독 실패 · 값 결측 = 미통과. 워커가 현행 src_cfg(ROOT) 를 SRC_CFG 로 읽고(실패 = NULL → fail-closed), reality_check 기록의 관문 = 재판정 결과(gates <- c(selection_rc = isTRUE(SG$ok))). 재판정이 저장 판정과 다르면 규칙 판이 같아도 'already' 로 건너뛰지 않고 다시 채점(sel_stale · trigger selection_cfg_changed) · selection_gate$rejudged 에 재판정 기록. clusterExport 에 함수 추가.",
+      "test": "08_Tests/programs/test_grade_v3_backfill_mark.R S1~S7(alpha 0.05→0.01 이면 저장 통과 p 0.03 미통과 · 판 변경 · 저장 미통과는 AND 로 유지 · 설정 없음/p 없음 fail-closed · PBO 역할 관문 · 돌연변이: 현행 alpha 재판정 줄 제거 → S2 통과로 남음 · 치환 1곳 성사) + W0c 배선(저장 ok 그대로 쓰는 줄 없음). 수리 전 실행 16 FAIL 재현."
+    },
+    {
+      "title": "요인 파일 다중 쓰기 창(또는 [5c] 중도 실패) 동안 채점된 기록은 노치 없이 굳고 재채점 대상에서 영구히 빠진다",
+      "files": "02_Infrastructure/programs/grade_v3_backfill.R",
+      "how": "gv3b_fa_stale(A, fa_md5_now, fa_epoch_now) — 저장 fa$status = factor_unavailable · factor_md5 없음이고, 지금 요인 문맥이 ok(md5 · epoch 를 안다)이며 기록의 measurement_axis[['epoch']](정확 일치 · $ 부분 일치 회피) = 현행 요인 epoch 일 때만 다시 채점(trigger factor_ctx_restored). 다른 축 · 축 모름 · 지금도 문맥 없음 = 대상 아님(전 기록 재채점 폭주 방지). 워커가 FA_EPOCH = CTX$fa$epoch 를 읽는다. 곁들여 prior_factor_md5 가 새 블록의 md5 를 읽던 것을 재채점 전 값(old_fa_md5)으로 바로잡음. 빌더(krf_write)의 쓰기 순서 · 원자성은 소유 밖이라 손대지 않음(not_fixed).",
+      "test": "08_Tests/programs/test_grade_v3_backfill_mark.R U1~U6(복구 + 같은 축 → 대상 · 다른 축/축 없음 → 아님 · 문맥 없음 → 아님 · not_configured/fa 미평가 → 아님 · 기존 md5 판정 불변 · 돌연변이: factor_unavailable 가지 끔 → U1 놓침 · 치환 1곳) + W0/W0b 배선. 실기록 읽기 전용 스캔(scratchpad/wfB/fix/scan_blast.py): grade_v3 기록 3,148 중 fa.status ok 3,144 · 없음 4 · factor_unavailable(md5 없음) 0건 → 이번 가지로 다시 채점될 기록 0(폭주 없음)."
+    },
+    {
+      "title": "요인 문맥이 잠깐 없던 때 채점된 기록은 gv3b_fa_stale 가 다시 채점하지 않는다",
+      "files": "02_Infrastructure/programs/grade_v3_backfill.R",
+      "how": "위 항목과 같은 수리(같은 결함의 다른 서술). 검증자 판단대로 'error' 상태는 factor_md5 가 남으므로 기존 md5 비교 가지가 맡는다 — error 는 새 가지에 넣지 않았다(같은 md5 면 재채점해도 결정론적으로 같은 결과).",
+      "test": "위와 같음(U1~U6)"
+    }
+  ],
+  "not_fixed": [
+    {
+      "title": "요인 빌더 krf_write 의 쓰기 순서 · meta 비원자 쓰기(쓰기 창 자체 축소)",
+      "why": "02_Infrastructure/data/build_kr_factor_returns.R 는 이 묶음의 소유 경로 밖. 재채점 쪽 수리로 그 창에 채점된 기록이 문맥 복구 뒤 다시 채점되므로 노치 영구 누락은 닫혔다. 제안: krf_write 에서 meta 를 tmp → file.rename 으로 맨 끝에 쓰고, 월간 parquet 교체를 meta 쓰기 직전으로 옮기거나 쓰기 중 잠금 파일(.building)을 두어 gv3_fa_ctx 가 '빌드 중'을 별도 사유로 내게 할 것."
+    },
+    {
+      "title": "sr_regrade 가 trial_dirs 를 라운드 등록부에서 직접 읽기 · 비-P4 라운드 호출부의 기대 집합",
+      "why": "검증자 제안 중 '등록부 직접 판독'은 하지 않았다 — 기대 집합은 호출자(rc_p4_close 는 사슬 원장)가 넘기고, 넘기지 않으면 관문 미통과(fail-closed)다. rcg_finalize 를 부르는 다른 호출부(현재 저장소에서는 시험만)나 수동 CLI 는 이제 --expect-n/--expect-ids 또는 expected 를 줘야 A 관문을 통과할 수 있다. P4 외 라운드형(round.sh 스윕 사양)의 sr_regrade 호출부가 생기면 등록 변형 수 상한(사전등록)을 expected$n_trials 로 넘겨야 한다."
+    },
+    {
+      "title": "rc_p4_close 의 기대 집합 전달을 직접 단정하는 시험",
+      "why": "p4 의 사슬 시험(08_Tests/programs/test_round_core_v1_p4_chain.R · 08_Tests/scenarios/test_scn_l1_chain_e2e.R)은 소유 밖이라 고치지 않았다(대역 sr_regrade 가 ... 를 받아 회귀 없이 통과). 제안: e2e Z3 의 대역이 expected 를 로그에 쓰게 하고 n_trials = 1 + 포기 아닌 걸음 수(이 시나리오 4) · ids = 산출 폴더 이름임을 단정."
+    }
+  ],
+  "changed_files": [
+    "02_Infrastructure/contracts/selection_reality_check.R",
+    "02_Infrastructure/contracts/essence_score.R",
+    "02_Infrastructure/programs/selection_regrade.R",
+    "02_Infrastructure/programs/grade_v3_backfill.R",
+    "02_Infrastructure/programs/round_candidate_gate.R",
+    "04_Research/programs/_lib/round_core/v1/p4.R",
+    "08_Tests/contracts/test_selection_reality_check.R",
+    "08_Tests/programs/test_selection_regrade.R",
+    "08_Tests/programs/test_grade_v3_backfill_mark.R",
+    "08_Tests/contracts/test_grade_v3.R"
+  ],
+  "new_tests": [
+    "08_Tests/contracts/test_selection_reality_check.R T26a~T35 (시행 집합 크기 · 구성 · 지문 · 돌연변이 3)",
+    "08_Tests/contracts/test_grade_v3.R E4f~E4h (essence 선택 관문의 기대 시행 수)",
+    "08_Tests/programs/test_selection_regrade.R T12~T15 (기대 시행 집합 전달)",
+    "08_Tests/programs/test_grade_v3_backfill_mark.R U1~U6 · S1~S7 · W0c (요인 문맥 복구 재채점 · 선택 관문 재판정 · 돌연변이 2)",
+    "scratchpad/wfB/fix/mut_regrade.R (sr_regrade 기대 집합 배선 돌연변이 · 저장소 밖 1회용)"
+  ],
+  "tests_run": [
+    {"path": "08_Tests/contracts/test_selection_reality_check.R", "result": "수리 전: src_gate(expected=) unused argument 로 중단(재현) · 수리 후 36/0 (total 36)"},
+    {"path": "08_Tests/programs/test_selection_regrade.R", "result": "15/0 (total 15 · skipped 0)"},
+    {"path": "08_Tests/programs/test_grade_v3_backfill_mark.R", "result": "수리 전 16 pass / 16 fail(재현) · 수리 후 32/0 (total 32)"},
+    {"path": "08_Tests/contracts/test_grade_v3.R", "result": "71/0 (total 71 · skipped 0)"},
+    {"path": "08_Tests/contracts/test_essence_oos_components.R", "result": "45/0 (total 45 · skipped 1)"},
+    {"path": "08_Tests/programs/test_round_candidate_gate.R", "result": "22/0 (skipped 0 · C1 실제 sr_regrade 경로: 기대 집합 없이 → 등급 C · 관문 skip)"},
+    {"path": "08_Tests/programs/test_round_core_v1_p4_chain.R", "result": "123/0 (total 123)"},
+    {"path": "08_Tests/scenarios/test_scn_l1_chain_e2e.R", "result": "76/0 (total 76)"},
+    {"path": "scratchpad/wfB/fix/mut_regrade.R", "result": "1/0 (sr_regrade expected 전달 제거 돌연변이 검출)"}
+  ],
+  "notes": "커밋 · 스테이징 없음. 운영 등록부 · .cache 무기록(시험은 tempdir · 실측 산출물 사본만). 실기록 영향 스캔은 읽기 전용(python). 동작 변화: 선택 현실 점검을 낸 스윕은 이제 기대 시행 집합(essence = n_trials_cumulative · sr_regrade/rcg_finalize = expected)이 있어야 A 관문을 통과한다 — 기대가 없으면 '기대 시행 집합 미지정'으로 미통과. 점검을 내지 않은 스윕의 종전 DSR 경로 · 사슬형 · 단일 시행은 불변. 지문 함수는 종전과 같은 문자열을 만들어 이미 저장된 selection_reality_check.json 의 set_hash 와 호환. 남은 위험: essence 호출자가 n_trials_cumulative 에 계보 누적 수(예: 260)를 넣고 이번 라운드 칸만으로 점검하면 미통과 — 의도된 엄격성(선택에 영향을 줄 수 있었던 모든 칸)."
+}

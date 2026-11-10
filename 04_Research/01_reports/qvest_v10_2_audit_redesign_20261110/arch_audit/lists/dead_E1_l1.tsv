@@ -1,0 +1,25 @@
+path	kind	evidence	confidence	refs	action
+04_Research/programs/_lib/night_pipeline_20261013.sh	script	호출처 0(grep 'night_pipeline_20261013' — ops · programs · _lib · 08_Tests · .claude 전부) · 10-13 일회성 야간 파이프라인 · night_state 표식 생산자	certain	_lib/night_state · night_pipeline.log	delete
+04_Research/programs/_lib/pipeline_v2_20261015.sh	script	호출처 0(grep) · 10-15 일회성 · measure_round_cell.R · eval_parallel.sh · detached_env.sh · fdb_partcache_prefetch.R 의 유일 소비자	certain	pipeline_v2.log	delete
+04_Research/programs/_lib/pipeline_v2_p3r02_tail.sh	script	호출처 0(grep) · P3R02 끝난 라운드(complete) 꼬리 실행	certain	pipeline_v2_p3r02_tail.log	delete
+04_Research/programs/_lib/night_state	state	생산자 = 위 일회성 파이프라인 · P2R05 라운드 고유 스크립트(measure.sh · notify_done.sh) 소비 · round_core 는 .cache/round_core/state 사용	probable	P2R05_distribution_target/*.sh	decide
+04_Research/programs/_lib/run_tick_once.sh	script	호출처 0(grep)	certain	-	delete
+04_Research/programs/_lib/run_lane.sh	script	유일 호출처 = run_tick_once.sh(호출처 0)	probable	run_tick_once.sh	delete
+04_Research/programs/_lib/close_light_rounds.R	script	호출처 0(grep) · 닫기는 round_core rc_close · rc_p4_close	certain	-	delete
+04_Research/programs/_lib/detached_env.sh	script	유일 호출처 = pipeline_v2_20261015.sh(호출처 0)	probable	-	delete
+04_Research/programs/_lib/fdb_partcache_prefetch.R	script	유일 호출처 = pipeline_v2_20261015.sh(호출처 0) · 캐시 워밍 가치 있음(속도 §) — 실행기에 다시 붙일지 결정	probable	-	decide
+04_Research/programs/_lib/eval_parallel.sh	script	호출처 = 일회성 파이프라인 2개 + test_round_kit_shard.R · round.sh evaluate 가 대체(README '라운드별 eval_parallel 대체')	probable	08_Tests/programs/test_round_kit_shard.R	delete
+04_Research/programs/_lib/measure_round_cell.R	script	호출처 = 일회성 파이프라인 · measure_server.R(측정 서버 미연결 WP2) · round_core v1/measure_cell.R 가 대체	probable	measure_server.R	delete
+04_Research/programs/_lib/round_kit.R	lib	소비 = P4R01_skeleton_rx(구 골격 · 0회 실행) · v1/p3.R · util.R 주석 이관 표기 · test_round_kit_* — 코어 이관 끝(README '이관')	probable	test_round_kit_pair_alpha.R · test_round_kit_shard.R · P4R01_skeleton_rx/*	decide
+04_Research/programs/_lib/round_visual_report.R	lib	유일 소비 = round_kit.R	probable	round_kit.R	decide
+04_Research/programs/_lib/qm_cache_backup_purge.ps1	script	호출처 0 · 예약 작업 없음(미확인 — 작업 스케줄러 조회 안 함) · 10-14 일회성 목록 파일 동반	probable	qm_cache_backup_purge_list_20261014.txt	delete
+04_Research/programs/_lib/qm_cache_backup_purge_list_20261014.txt	data	위 스크립트 입력(일회성)	probable	-	delete
+04_Research/programs/_lib/*.log (night_pipeline · pipeline_v2 · pipeline_v2_p3r02_tail · tick_1810_08384* · v2_prefetch · v2_rcpp_precompile)	log	일회성 실행 로그 · 소비자 없음	certain	-	delete
+04_Research/programs/P4_ASSEMBLY/P4R01_skeleton_rx/	round	P4 골격(prepare_analyst · round_kit) — v10.2 강화 사슬(p4.R)이 대체 · 등록부 라운드 목록에 없음(P4 rounds 0)	probable	round_kit.R	decide
+08_Tests/programs/test_round_kit_pair_alpha.R	test	대상 round_kit.R(위 decide) — round_kit 를 지우면 함께	probable	-	decide
+08_Tests/programs/test_round_kit_shard.R	test	대상 round_kit.R · eval_parallel.sh(위) — 코어 샤딩은 test_round_core_v1_p2.R 가 본다	probable	-	decide
+04_Research/programs/_lib/round_core/measure_server.R	lib	실행기 미연결(README '다음 — WP2') · 호출처 = 자기 시험 + run_all_hooks SUITES	probable	08_Tests/programs/test_round_core_measure_server.R · run_all_hooks.sh	decide
+04_Research/programs/_lib/round_core/PERFORMANCE.md · PERF.json · PERF_measure.json · PERF_measure.md	doc	10-20 측정 기록(사료) · 코드 소비 0	probable	README	keep
+04_Research/programs/_lib/round_core/rejudge/	lib	끝난 라운드 재판정(결과 동일 실증 · heavy_ 시험 · test_round_core_v1_p2 가 RESULTS.json 읽음)	certain	test_round_core_v1_p2.R · heavy_round_core_v1_p2_rejudge.R	keep
+04_Research/programs/P2_DEFENSE/P2R05_distribution_target/{measure.sh,notify_done.sh,notify.R,warm_*.sh,warm_engine.R,lane_hold_wait.sh,gpu_chain.sh,precheck.R,rehearse.R,evaluate_fixture.R}	round	등록부 status = registered(측정 미시작 · 11-10 미룸) · 코어 이전 라운드 고유 실행기(night_state 의존) · 재개 = 재핀 필요(핀 불일치 수 미확인)	probable	prereg.json(등록본 보존 필수)	decide
+02_Infrastructure/programs/trial_budget.R	tool	살아 있음(SKILL §0-1 3항) — 단 등급 v3.4 의 스윕 관문은 선택 현실 점검이라 DSR 표는 진단 계획값(감사 보고 결정 항목)	certain	test_trial_budget.R	keep

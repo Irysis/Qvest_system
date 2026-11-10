@@ -1,0 +1,33 @@
+{
+  "group": "R1_p4_core",
+  "refix": true,
+  "fixed": [
+    {
+      "title": "닫기 ↔ 걸음 열기 경합 시 '닫는 중' 사슬이 영구 정지한다(chain_closing 가드가 미판정 걸음을 보지 않음)",
+      "files": "04_Research/programs/_lib/round_core/v1/p4.R (.rcp4_unique_guard chain_closing 갈래)",
+      "how": "원장 추가 잠금 안 가드의 chain_closing 갈래가 '이미 닫는 중'에 더해 step_open k 집합 − step_result k 집합(미판정 걸음)을 다시 보고 있으면 거부한다. 닫기의 잠금 밖 미판정 검사 뒤 다른 프로세스가 걸음을 열어도 chain_closing 이 기록되지 않으므로, 그 걸음은 정상 판정 · 측정 · 포기할 수 있고 다시 닫으면 마무리된다. 반대 순서(chain_closing 먼저)는 기존 closing 거부가 step_open 을 막는다.",
+      "test": "test_round_core_v1_p4_chain.R K16(.rcp4_receipt_need 를 감싸 닫기 검사와 chain_closing 쓰기 사이에 걸음 2를 연다 → 닫기 거부 · 걸음 2 판정 성공 · 다시 닫기 성공 · chain_closing/closed 각 1줄 · 미판정 0) + KM-race 돌연변이(가드 조건 FALSE = 탐침 거짓)"
+    },
+    {
+      "title": "중복 칸 서명이 이미 연 칸의 지금 파일에서 다시 계산된다(낮음)",
+      "files": "04_Research/programs/_lib/round_core/v1/p4.R (rc_p4_step_open 중복 칸 검사 · step_open 기록)",
+      "how": "step_open 기록에 열 때의 정규화 사양 서명 spec_key 를 남기고, 대조는 기록값으로 한다. 기록이 없는 옛 줄과 기저 칸은 지금 파일 md5 가 기록된 cell_spec_md5 와 같을 때만 지금 파일로 서명을 계산하고, 다르거나 파일이 없으면 NA → '대조할 수 없다' 거부(fail-closed).",
+      "test": "K17(기각 칸 파일을 다른 처치로 덮어쓴 뒤 라벨만 바꾼 원래 처치 = '이미 쓴' 거부 · 열기 기록에 spec_key · 서명 없는 옛 줄 + 파일 변경 = '대조할 수 없다' 거부) + KM-dupkey · KM-dupna 돌연변이"
+    }
+  ],
+  "not_fixed": [],
+  "changed_files": [
+    "04_Research/programs/_lib/round_core/v1/p4.R",
+    "08_Tests/programs/test_round_core_v1_p4_chain.R"
+  ],
+  "tests_run": [
+    {"path": "08_Tests/programs/test_round_core_v1_p4_chain.R", "result": "pass 159 / fail 0"},
+    {"path": "08_Tests/scenarios/test_scn_l1_chain_e2e.R", "result": "pass 76 / fail 0"},
+    {"path": "08_Tests/programs/test_round_candidate_gate.R", "result": "pass 22 / fail 0"},
+    {"path": "08_Tests/programs/test_round_core_v1_flow.R", "result": "pass 41 / fail 0"},
+    {"path": "08_Tests/programs/test_round_core_v1.R", "result": "pass 39 / fail 0"},
+    {"path": "08_Tests/programs/test_rx_generator_scorecard.R", "result": "pass 23 / fail 0"},
+    {"path": "08_Tests/scenarios/test_scn_knowledge_loop.R", "result": "pass 68 / fail 0 (gap 1 기존)"},
+    {"path": "08_Tests/programs/test_selection_regrade.R", "result": "pass 34 / fail 0"}
+  ]
+}

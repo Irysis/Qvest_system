@@ -1,0 +1,20 @@
+path	kind	evidence	confidence	refs	action
+02_Infrastructure/ops/d1_apply_mapping_20260725.R	script	git grep 이름 = 호출처 0 · 일회성 07-25 수동 d1_* (daily_refresh.sh:110 주석이 '마지막 실행 = 수동 d1_*'로 사료 언급만)	certain	-	delete
+02_Infrastructure/ops/d1_incremental_all_20260725.R	script	git grep 호출처 0(자기 · 형제 d1_us_append 상호참조뿐) · 07-25 일회성	certain	-	delete
+02_Infrastructure/ops/d1_investor_incr_20260725.R	script	git grep 호출처 0 · 07-25 일회성	certain	-	delete
+02_Infrastructure/ops/d1_us_append_20260725.R	script	호출처 = d1_incremental_all_20260725.R 뿐(같이 죽음) · 07-25	certain	-	delete
+02_Infrastructure/data/dart_insider_milestone_test.R	script	코드 호출처 0 · 참조 = 06_Registry/ast_field_map_v0.json · wiring_map.json(생성물) · 마지막 수정 07-06	probable	ast_field_map_v0.json	decide
+02_Infrastructure/data/run_dart_annual_backfill.bat	script	호출처 0 · 예약 작업 DART_Priority_Backfill_2015_2024 는 이 PC 에 없음(Get-ScheduledTask Qvest_*/DART_* 목록 부재)	probable	_task_xml_backup/DART_Priority_Backfill_2015_2024.xml	decide
+02_Infrastructure/ops/scheduler/_task_xml_backup/DART_Priority_Backfill_2015_2024.xml	config	이 PC 미등록 작업의 XML	probable	-	decide
+02_Infrastructure/data/run_dart_insider_backfill.bat	script	DART_Insider_Backfill 작업 Disabled · never_run(267011) · 호출처 = dart_backfill_status.R(문자열) · Qvest_InsiderBackfill 이 별도로 매일 02:00 rc 0	probable	dart_backfill_status.R · _task_xml_backup/DART_Insider_Backfill.xml	decide
+02_Infrastructure/ops/scheduler/_task_xml_backup/DART_Insider_Backfill.xml	config	작업 Disabled · never_run	probable	-	decide
+02_Infrastructure/data/repair_benchmark_scale_break_20260727.R	script	일회성 수리(07-27) · 호출처 = 08_Tests/data/test_benchmark_level_axis.R 만 · 벤치 퀀티 단일 전환(BENCHMARK-QW-ONLY-20261017)으로 리베이스 체인 소멸	probable	08_Tests/data/test_benchmark_level_axis.R	decide
+02_Infrastructure/data/repair_benchmark_level_axis.R	script	일회성 수리 · 호출처 = test_benchmark_level_axis.R 만 · 같은 사유	probable	08_Tests/data/test_benchmark_level_axis.R	decide
+02_Infrastructure/data/naver_benchmark_update.py	script	daily_refresh.sh:161 '호출 0'(BENCHMARK-QW-ONLY-20261017) · 다른 참조는 주석 · cache_registry.json 표기	probable	cache_registry.json · benchmark_axis.py · benchmark_currency_gate.R(주석)	decide
+02_Infrastructure/data/naver_data_collector.R	script	RAWDATA-QW-ONLY-20261017 '구 [1] Naver T+0 퇴역(호출 0)' — 남은 참조 실행 여부 미확인(incremental_update_file.R · rawdata_bm_ret_sync.R 가 source 하는지 확인 필요)	probable	cache_registry.json · naver_collector_config.json	decide
+02_Infrastructure/data/naver_collector_config.json	config	naver_data_collector.R 전용	probable	-	decide
+02_Infrastructure/data/naver_investor_collector.R	script	코드 호출처 0 · 참조 = 생성물 · stage_artifacts json · 마지막 수정 04-17	certain	ast_field_map_v0.json	delete
+08_Tests/data/test_freshness_audit_outputs.R	test	대상 F6(.fa_output_audit)이 운영 freshness_audit.R 에 미설치 → preflight f6_not_installed 로 항상 실패 · SUITES 미등록 · 후보판은 04_Research/01_reports/quantiwise_data_expansion_20261106/candidates_F6/	certain	candidates_F6	decide
+02_Infrastructure/factor_db/(update_daily_fdb stub 경로 · daily_refresh [6b] QVEST_FDB_DAILY_AUTOREBUILD)	wiring	[6b] 자동 재빌드 기본 OFF · '미완 stub' 주석(06-10) — 매일 WARN 만 · 팩터 DB 는 다른 세션 소유	probable	daily_refresh.sh:741-760	decide
+.cache/kr_factor_returns.parquet	data	06-08 이후 갱신 없음(cache_freshness_audit lag 251 WARN) · 현행 = kr_factor_returns_v2 · _daily · _meta([5c])	probable	cache_registry.json	decide
+02_Infrastructure/ops/scheduler/Qvest_AuditWatch.bat	script	작업 Disabled · never_run	probable	_task_xml_backup/Qvest_AuditWatch.xml	decide

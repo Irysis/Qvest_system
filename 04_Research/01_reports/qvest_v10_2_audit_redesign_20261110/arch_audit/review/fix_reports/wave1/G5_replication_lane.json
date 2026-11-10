@@ -1,0 +1,40 @@
+{
+  "group": "G5_replication_lane",
+  "fixed": [
+    {
+      "title": "verify_interrupted 되살림에 회차 상한이 없음",
+      "files": "02_Infrastructure/ops/rf_replication_auto.sh",
+      "how": "상태 전이 단계에서 되살림(revived_verify ∧ 지문 같음)마다 verify_interrupt_count 를 1 올린다. 상한은 설정 cell_max_retry(06_Registry/reinforce_auto_config.json · 현재 2 · '일시적 실패의 재개 상한'과 같은 뜻)에서 읽고, 판독이 안 되면 1(재구현 1회 정책)로 둔다. 상한을 넘으면 failed_needs_session/verify_crash_loop(세션 대기)로 보내고 원인 로그(verify_crash_log · 마지막 슬롯 로그 30줄 꼬리 · failure_detail · verify_crash_loop_at)를 요청에 남긴다. 저널 verify_crash_loop 를 쓰고 측정 없이 끝낸다. 재시도 단계(PYRETRY)는 verify_crash_loop 를 auto_retries 로 되살리지 않는다. 그래서 에이전트 재작성 · 소진 · 스킵리스트 'unreproducible' 같은 판정으로 굳지 않는다. 세션 해제는 pending + session_reverify 다. 카운터는 되살림이 아닌 착수에서 지운다.",
+      "test": "08_Tests/scenarios/test_scn_repl_lane.sh L7a''(회차 1) · L7c(회차 cap+1 → 세션 대기 · 에이전트 0 · 측정 0 · 저널 1) · L7c'(다음 틱 자동 재시도 없음) · L7m2(상한 삭제 돌연변이 → 검증기만 재실행 재발 = L7c 실패). 수리 전 L7a''/L7c/L7c' FAIL 확인"
+    },
+    {
+      "title": "측정 도중 중단된 실행이 남긴 Judge 트리거(judge_request.eligible.json)가 되살림 뒤에도 pending 으로 남는다",
+      "files": "02_Infrastructure/ops/rf_replication_auto.sh · 02_Infrastructure/ops/rf_replication_verify.R",
+      "how": "레인이 되살림 때 지운 verify_started_at 을 요청의 verify_interrupted_since 로 넘긴다(가장 이른 창을 유지). 검증기 앞머리(측정 · 감사 전)의 .v1001_interrupted_withdraw_step 이 그 창 이후 같은 엔진(engine_path = 이 WDIR/engine.R · 경로 표기 정규화)이 낸 stage_artifacts/replication/<run>/ 과 <run>/variants/<run>/ 의 judge_request.eligible.json 을 기존 .v1001_hold_judge 형식(held:verify_interrupted · 원 필드 보존)으로 옮긴다. 다 거두면 표식을 지우고, 하나라도 실패하면 표식을 남겨 다음 검증기가 다시 거둔다. 시각을 읽을 수 없으면 거둔다(fail-closed). 되살림 상한 초과 경로는 RP_WITHDRAW_ONLY=1 로 거두기만 한다(측정 · 보고 · 요청 상태 변경 없음). rcg_withdraw 는 사유 코드가 not_A 로 고정돼 있어 쓰지 않았다(사유가 틀리게 기록된다). 대신 검증기 자신의 기존 보류 형식을 재사용했다. 산출 루트 덮기 QVEST_RP_ART_ROOT 는 검사 격리 전용이다.",
+      "test": "test_scn_repl_lane.sh L8a(창 안 · 같은 엔진 · 변형 → held) · L8b(창 이전 · 다른 엔진 남김) · L8c(요청 창 표식만 지움 · 상태 불변 · rc 0) · L8d(저널) · L8m(거두기 삭제 돌연변이 → pending 잔존). 실제 검증기를 RP_WITHDRAW_ONLY 로 구동했고 R_ENVIRON_USER 는 빈 파일. 수리 전 L8a/L8c/L8d FAIL 확인"
+    },
+    {
+      "title": "시험 L7 은 표식 소비만 보고 표식 생산(rp_verify 의 verify_engine_md5 쓰기)을 단언하지 않는다",
+      "files": "08_Tests/scenarios/test_scn_repl_lane.sh",
+      "how": "L7a' 를 더했다. 실행 뒤 요청의 verify_engine_md5 가 지금 engine.R 의 md5 와 같고, verify_started_at 이 심어 둔 옛 값과 다른 새 값인지 단언한다. 착수 단계가 표식을 지우므로 생산자 블록만이 이 상태를 만든다. L7m1 에서는 생산 줄을 소스 텍스트 치환('pass' · 치환 1회 단정)으로 지운 돌연변이 사본을 돌려 L7a' 가 빨개지는 것을 보였다.",
+      "test": "L7a' OK · L7m1 OK(돌연변이 검출)"
+    }
+  ],
+  "not_fixed": [],
+  "changed_files": [
+    "02_Infrastructure/ops/rf_replication_auto.sh",
+    "02_Infrastructure/ops/rf_replication_verify.R",
+    "08_Tests/scenarios/test_scn_repl_lane.sh"
+  ],
+  "new_tests": [
+    "08_Tests/scenarios/test_scn_repl_lane.sh L7a' L7a'' L7c L7c' L7m1 L7m2 L8a L8b L8c L8d L8m"
+  ],
+  "tests_run": [
+    {"path": "08_Tests/scenarios/test_scn_repl_lane.sh (수리 전 · 새 단언 포함)", "result": "pass 12 / fail 8 (L7a'' · L7c · L7c' · L7m2 치환 대상 없음 · L8a · L8c · L8d · L8m — 결함 재현)"},
+    {"path": "08_Tests/scenarios/test_scn_repl_lane.sh", "result": "pass 20 / fail 0"},
+    {"path": "08_Tests/ops/test_replication_lane.sh", "result": "pass 87 / fail 0"},
+    {"path": "08_Tests/contracts/test_replication_a_gate.R", "result": "pass 37 / fail 0 (R_ENVIRON_USER=빈 파일)"},
+    {"path": "08_Tests/ops/test_rf_verify_judge_hold.R (검증기 보류 함수 관련 추가 확인)", "result": "pass 14 / fail 0"}
+  ],
+  "notes": "bash -n(rf_replication_auto.sh · test_scn_repl_lane.sh)과 R parse(rf_replication_verify.R)를 통과했다. 세 파일 모두 원래 LF 이고 CRLF 0 을 유지했다. 커밋 · 스테이징 · 발송 없음(L8 은 QVEST_TG_DRY_RUN=1). 수리 전 L8 구동에서는 검증기가 engine_too_small 로 fail() 에 닿았고, 이때 dry-run 미리보기만 냈다. 운영 등록부 · .cache 에는 쓰지 않았다(전부 mktemp 격리). 남은 위험: verify_crash_loop 세션 대기는 그 슬롯을 세션 해제 전까지 점유한다. 이는 '실패로 굳히지 않는다'는 지침을 따른 선택이며, 슬롯 상태 표면(rf_replication_slots.py ATTENTION 의 failed_needs_session)으로 드러난다. 트리거 거두기가 실패하면 측정은 막지 않고 표식을 남겨 다음 검증기가 다시 거둔다(Judge 스폰은 세션 수동)."
+}

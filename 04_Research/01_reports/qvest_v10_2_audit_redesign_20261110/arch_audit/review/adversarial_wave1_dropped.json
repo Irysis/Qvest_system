@@ -1,0 +1,127 @@
+[
+ {
+  "unit": "U1_selcheck",
+  "title": "essence_score 의 선택 점검 설정 캐시가 루트로만 무효화되어, 같은 프로세스 안에서는 설정 변경(alpha 강화)이 반영되지 않음",
+  "why": "low 심각도 — 검증 생략"
+ },
+ {
+  "unit": "U3_factor_builder",
+  "title": "특성 패널의 '쓸 수 있는 최근 회계연도'가 BE 값 없이 날짜만 있는 해로 넘어가 앞 해의 유효 BE 를 버린다",
+  "why": "low 심각도 — 검증 생략"
+ },
+ {
+  "unit": "U3_factor_builder",
+  "title": "요인 md5 가 표 전체 해시라 매달 새 완결 월이 붙을 때마다 모든 기록이 '요인 바뀜'으로 재채점되고 규칙 변경 수혜 표식이 붙는다",
+  "why": "low 심각도 — 검증 생략"
+ },
+ {
+  "unit": "U3_factor_builder",
+  "title": "시험이 판 불일치 경로 · 빈 RS · 운영 적재 경로를 다루지 않는다 — 171행을 지워도 29/29 통과",
+  "why": "low 심각도 — 검증 생략"
+ },
+ {
+  "unit": "U2_vintage_gates",
+  "title": "판 판정 입력 해석이 관문 나머지와 다르다 — artifacts 목록/JSON 파일 형식은 'unknown', 선언 팩터 면제는 실제 산출물에 없고 engine_blend 를 놓친다",
+  "why": "low 심각도 — 검증 생략"
+ },
+ {
+  "unit": "U1_selcheck",
+  "title": "재채점을 다시 돌리면 수혜 표식(benefits_from_rule_change)이 FALSE 로 덮여 rule_change_beneficiary 보류가 풀림",
+  "why": "코드는 주장대로입니다. selection_regrade.R:78 의 up 은 직전 기록 등급과 비교하므로 2차 재채점(A→A)에서는 FALSE 가 됩니다. 또 :89-95 가 selection_regrade 블록을 통째로 다시 쓰기 때문에 1차에서 남긴 benefits_from_rule_change=TRUE 가 사라집니다. 이는 §3b-2 규정과 어긋나는 "
+ },
+ {
+  "unit": "U1_selcheck",
+  "title": "sr_regrade 의 cfg 인자가 점검과 관문 양쪽에 그대로 쓰여, alpha·seed·재표집 수를 바꾼 채 권위 기록을 쓸 수 있음",
+  "why": "인용한 코드는 주장대로 생겼습니다. selection_regrade.R:55 에서 cfg 기본값을 정하고, :58 src_check_dirs 와 :62 src_gate 가 같은 cfg 를 쓰며, src_gate 는 seed·mean_block 을 검사하지 않습니다. 그러나 운영 호출부는 cfg 를 넘기지 않습니다. CLI(:118)와 유일한 프로그램 호출자"
+ },
+ {
+  "unit": "U1_selcheck",
+  "title": "재채점 시험의 고정 자료가 등급 C 라서 관문 결과가 등급을 바꾸는 경로를 하나도 시험하지 않는다",
+  "why": "고정 자료의 등급이 C(PORT_t 0.35)인 것은 맞습니다. 하지만 주장의 핵심 시나리오는 T05 가 잡아냅니다. 그 시나리오는 sr_regrade 가 gates 인자를 무시하거나 늘 selection_rc = TRUE 로 채점해도 시험이 통과한다는 것입니다. gv3_decide 는 등급 띠와 상관없이 실패한 관문을 blocked_by 에 gate:<이"
+ },
+ {
+  "unit": "U2_vintage_gates",
+  "title": "selection_regrade 의 수혜 표식이 끈질기지 않다 — 다시 돌리면 benefits_from_rule_change 가 FALSE 로 덮인다",
+  "why": "코드는 주장대로입니다. old 는 현재 essence_grade 이고, up 은 직전 등급과 비교하며, selection_regrade 블록은 통째로 교체됩니다. 그래서 두 번째 재채점에서는 benefits_from_rule_change 가 FALSE 로 덮이고, rc_close 를 다시 돌리면 이 경로가 실제로 열립니다. 하지만 주장한 결과, 곧 A 자격"
+ },
+ {
+  "unit": "U2_vintage_gates",
+  "title": "rule_change_beneficiary 표식이 실제 수혜 기록(v3.3 재채점으로 오른 33건 · A 5건)에 없다 — v3.4 호환 건너뜀으로 영영 안 붙는다",
+  "why": "기전 서술은 사실이다: grade_v3_backfill.R:81 이 v3.3(RULES_COMPAT) 기록을 'already' 로 돌려 :111 표식에 닿지 않고, 표식 코드(ca1424ba6 · 11-10 13:28)는 v3.3 재채점(04:45~04:57) 뒤에 들어왔으며, 재현 스캔에서도 오른 33건 · A 5건 모두 rule_change_benefi"
+ },
+ {
+  "unit": "U3_factor_builder",
+  "title": "판 불일치 검사가 원시 BE 만 버리고 같은 정정본 원장(fundamental_dart) 값을 옛 접수일 날짜로 쓴다",
+  "why": "코드는 주장한 모양 그대로입니다. 171행은 판이 어긋나면 BEP_r·PREF_r 만 NA 로 바꾸고, 172행은 fcoalesce(BEP_r, TE_r)로 값을 채우며, TA_r·OPN_r 은 판을 대조하지 않습니다. 불일치 수(mismatch)는 세기만 하고 멈추지 않습니다. 그러나 주장한 운용 시나리오는 생기지 않습니다. 월간 [5a] dart_run"
+ },
+ {
+  "unit": "U3_factor_builder",
+  "title": "정정 의심 기록이 0행이거나 대부분 빠져도 빌드가 통과한다 — 'v1.0 규칙으로 조용히 돌아가지 않는다' 가드는 NULL 과 파일 부재만 막는다",
+  "why": "인용한 코드는 주장대로입니다. 103행은 NULL 만 거부하고, 167행은 내부 결합이며, 176-179행은 diag 만 기록하고 커버리지를 단정하지 않습니다. 그러나 시나리오의 입력은 생산자 구조상 생기지 않습니다. build_fundamental_v2.py 는 정정 의심 집합을 chk 에서 뽑는데, chk 는 DART_Date 와 내부 결합한 표입니다."
+ },
+ {
+  "unit": "U6_replication",
+  "title": "판 표식 실패가 기록 안 status 문자열에만 남는다 — 저널 · 경보가 없어 판 표식 없는 측정이 조용히 쌓인다",
+  "why": "low 심각도 — 검증 생략"
+ },
+ {
+  "unit": "U6_replication",
+  "title": "원자적 쓰기가 이름 바꾸기 전에 기존 권위 기록을 먼저 지운다 · 이름 바꾸기 일시 실패에 재시도가 없어 끝난 측정을 버린다",
+  "why": "low 심각도 — 검증 생략"
+ },
+ {
+  "unit": "U5_l2_book",
+  "title": "BOOK 등록부 읽기-수정-쓰기에 잠금이 없고 임시 파일 경로가 고정이다",
+  "why": "low 심각도 — 검증 생략"
+ },
+ {
+  "unit": "U5_l2_book",
+  "title": "BOOK 등록부 쓰기에 잠금이 없다 — 등록과 트래킹(리밸 러너)이 겹치면 한쪽 항목이 사라진다",
+  "why": "low 심각도 — 검증 생략"
+ },
+ {
+  "unit": "U7_papers",
+  "title": "nid() 판 접미어 정규화가 구식 arXiv id(cond-mat/9801240v1)와 대문자 V 를 못 벗긴다",
+  "why": "low 심각도 — 검증 생략"
+ },
+ {
+  "unit": "U7_papers",
+  "title": "시험이 prefilter 분기와 실제 배선 경로를 실행하지 않는다(돌연변이가 살아남는다)",
+  "why": "low 심각도 — 검증 생략"
+ },
+ {
+  "unit": "U5_l2_book",
+  "title": "도훈 mandate 예외가 grade_basis 접두어 문자열 하나로 열린다 — 모든 관문 무검증 우회",
+  "why": "인용한 코드는 사실입니다. book_registry.R:102-119 에서 confirm 은 nzchar(trimws()) 만 검사하고, is_mandate = grepl('^dohoon_mandate') 이면 권위 파일 · 축 · 판 · 판결서 검사를 모두 건너뜁니다. 그러나 이 mandate 예외는 이번 커밋(2f1cb3917)이 새로 연 구멍이 아닙니"
+ },
+ {
+  "unit": "U5_l2_book",
+  "title": "보류(held) 결과가 앞선 pending l2_judge_request.json 을 무효화하지 않고, Judge 트리거 조건은 a_eligibility 를 재확인하지 않는다",
+  "why": "코드는 주장대로 생겼습니다. rf_l2_auto.R:131-138 에서 eligible 요청은 고정 경로를 덮어쓰고, held 는 별도 파일에 쓰며 기존 pending 요청을 무효화하지 않습니다. judge.md:26 도 status=pending 만 서술합니다. 그러나 주장이 말하는 실제 피해, 즉 수리 전 풀의 결과가 PIT PASS 를 받아 BOOK "
+ },
+ {
+  "unit": "U6_replication",
+  "title": "엔진 지문이 engine.R 하나뿐이라 FIDELITY.json(대표 변형 · 포트폴리오 사양) 변경이 '검증기만' 경로를 막지 않는다",
+  "why": "코드에 대한 서술은 맞습니다. 지문은 engine.R md5 하나뿐입니다(rf_replication_auto.sh:461-463 · :487-492). 그러나 verify_interrupted 는 정상 경로에서 사전검사(:1151)를 통과하고 rp_verify 에 들어간 요청에만 생기고, 크래시 뒤 작업 폴더의 FIDELITY.json 을 쓰는 자동 주체는"
+ },
+ {
+  "unit": "U7_papers",
+  "title": "v4 시절 '이미 판정' 스텁(verdict 빈값 · route=skip)을 결정 판정으로 세어 testable 논문을 큐에서 뺀다",
+  "why": "코드는 주장대로 생겼습니다. research_pool_predicates.py:326-333 은 verdict=='redundant' 인 기록만 건너뛰고, verdict 가 비어 있고 route=skip 인 스텁은 is_testable=False 인 결정 판정으로 기록합니다. 그러나 이 스텁 형식은 2026-08-30~09-17 의 닫힌 과거 파일에만 있고"
+ },
+ {
+  "unit": "U14_construct",
+  "title": "가지치기 재풀이에서 w_prev 결측을 0 으로 채우지 않아 회전 인지 항이 켜지면 LP 가 NA 로 죽는다",
+  "why": "low 심각도 — 검증 생략"
+ },
+ {
+  "unit": "U14_construct",
+  "title": "CDaR 어댑터의 'ew 로 조용히 내려가지 않는다' 멈춤이 wrap_adapter 에서 EW 비중으로 바뀐다(현금 칸이면 전액 투자 EW)",
+  "why": "코드 동작 자체는 주장대로입니다. 어댑터가 stop 하면 wrap_adapter 의 eq 판과 le 판이 둘 다 1/n 을 돌려줍니다. 그러나 주석 '(ew 로 조용히 내려가지 않는다)'는 ν 규칙을 말하는 것으로 읽힙니다. bench ν 가 ew_candidates ν 로 바뀌지 않는다는 뜻이고, rcd_bench_align:197 의 메시지도 같은 뜻입"
+ },
+ {
+  "unit": "U14_construct",
+  "title": "운영 경로의 요인 표 컷(rfc_sigma_ctx)은 어떤 시험도 지키지 않는다 — 누출 시나리오 시험은 운영에서 안 불리는 asof 진입점만 돌연변이한다",
+  "why": "사실 부분은 맞습니다. rf_factor_cov.R:343 의 F[Date < dd] 를 지운 돌연변이는 기존 시험이 잡지 못합니다. rfc_sigma_ctx 를 부르는 시험은 모두 이미 결정일 전으로 자른 요인 표를 넘기거나, 요인 열이 없어 pca 로 떨어지는 입력을 씁니다. 그러나 이 컷은 안쪽에 있는 중복 방어선이고, 운영 경로 두 곳은 모두 바깥에"
+ }
+]

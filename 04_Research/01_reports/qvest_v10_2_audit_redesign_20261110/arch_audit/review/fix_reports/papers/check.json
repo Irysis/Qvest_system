@@ -1,0 +1,44 @@
+{
+  "ok": false,
+  "summary": "결정 문언(질의 10개 문자열 그대로 · 표적만 relevance+date · 기존 30개 relevance 불변 · 빈 엔진/롱 레그/위기 보고/FIFO 꼬리) · 정보 경계(_order_view 화이트리스트) · 설정 부재 FIFO · 기존 선택 제약 · alpha_pending 불변 · 전 질의 실패 판정의 호출 단위 대조 · 라우터 필드 하위호환 · 문법은 모두 확인했습니다. 직접 돌린 시험: order 35/35 · query_sorts 17/17 · failcheck 12/12 · paper_collect 32/32. 다만 침묵 실패가 하나 새로 생겼습니다. 수집 도중 서버가 죽으면 종전에는 mcp_error(경보)였는데, 이제는 앞서 성공한 호출이 하나라도 있으면 mcp_ok 로 기록됩니다. S8 시험은 머리 주석에 'status mcp_error'라고 적어 놓고 실제로는 상태를 단정하지 않습니다. 그 밖에 결함이 둘 있습니다. 하나는 JSON 으로는 읽히지만 값의 형이 틀린 설정을 넣으면 선택기가 FIFO 로 떨어지지 않고 오류로 멈춘다는 것입니다. 다른 하나는 O14 의 단정 하나가 공허하다는 것입니다.",
+  "issues": [
+    {
+      "title": "수집 도중 서버가 죽으면 mcp_error 대신 mcp_ok 로 기록됨(침묵 실패 회귀)",
+      "problem": "paper_recharge_mcp.py 새 루프는 전송 실패가 연속 2회 나오면 dead 로 두고 남은 호출을 skipped 로 기록합니다. 그런데 report status 는 '모든 호출이 전송 실패'일 때만 mcp_error 가 됩니다. 앞에서 1회라도 성공하면 후보 수에 따라 mcp_ok 또는 mcp_ok_no_candidates 가 됩니다. 종전에는 루프 안 RuntimeError 가 실행 전체를 mcp_error 로 만들었고, 일일 R 의 마커 조건(^mcp_ok 제외)이 경보를 띄웠습니다. 이제는 예컨대 5회 성공 뒤 서버가 죽어 50 호출 중 45 호출을 잃어도 mcp_ok · 마커 0 · 텔레그램 0 입니다. pr_mcp_all_queries_failed 는 mcp_ok_no_candidates 만 강등하므로 이 경우를 잡지 못합니다. 결정이 요구한 '한 질의의 실패가 다른 질의를 막지 않는다'는 질의 단위 격리를 말합니다. 서버 사망을 정상 완료로 보이게 하라는 뜻이 아닙니다. 수리 제안: dead 가 한 번이라도 켜지면 status 를 mcp_partial_transport_failure(^mcp_ok 아님 → 마커) 같은 별도 값으로 둡니다. 또는 최소한 R 판정에 skipped 비율 문턱을 둡니다. 그리고 S8 에 status 단정을 넣습니다.",
+      "evidence": "paper_recharge_mcp.py 새 루프 — `if calls and all((\"exception\" in c) or (\"skipped\" in c) for c in calls): raise RuntimeError(...)`. 그렇지 않으면 뒤에서 `report[\"status\"] = \"mcp_ok\" if kept else \"mcp_ok_no_candidates\"`. test_scn_paper_query_sorts.py:15 머리 주석은 'S8 … status mcp_error'인데, :185-187 단정은 len(c8)==50 · skipped 43 · ok 5 · candidates>0 만 보고 status 는 실패 상세에만 찍습니다. 같은 조건이면 실제 status 는 mcp_ok 입니다."
+    },
+    {
+      "title": "형이 틀린 순서 설정은 FIFO 로 떨어지지 않고 선택을 멈춤",
+      "problem": "load_order_rule 은 schema · enabled · step 이름만 봅니다. step 매개변수의 형은 검사하지 않습니다. order_pending 의 int(min_base_consumed) 나 rank 값 비교가 예외를 내면 alpha_pending_ordered 가 그 예외를 그대로 올립니다. 그러면 rf_next_paper_pick._pairs 가 alpha_pending_failed 오류를 반환해 공급기 · 슬롯 발행기가 다음 논문을 고르지 못합니다. 이는 '설정 파일을 못 읽으면 FIFO(안전한 쪽)'라는 과제 문언과 어긋납니다. 현재 등록본은 정상이라 운영 영향은 없습니다. 위험은 앞으로 판을 고칠 때에만 생깁니다. 수리 제안: alpha_pending_ordered 안에서 order_pending 을 try 로 감싸 예외가 나면 _fifo_pairs(pairs, 'rule_eval_error')로 보냅니다. 또는 load_order_rule 에서 형을 검사합니다.",
+      "evidence": "스크래치 검증 probe_badcfg.py — min_base_consumed=\"one\" → `EXC ValueError invalid literal for int()` (alpha_pending_ordered 밖으로 전파). rf_next_paper_pick.py _pairs: `except Exception as e: return None, {\"error\": \"alpha_pending_failed: %s\" % e}`."
+    },
+    {
+      "title": "O14 단정의 한 절이 공허함(경미)",
+      "problem": "`\"engine=defense(소비 0\" and \"fifo#2/2\" in w0` 에서 앞 문자열 리터럴은 늘 참입니다. 같은 문자열을 뒤에서 `in w0` 로 다시 검사하므로 결과는 맞지만, 첫 절은 아무것도 단정하지 않습니다.",
+      "evidence": "08_Tests/scenarios/test_scn_paper_order.py O14 check 식."
+    },
+    {
+      "title": "빈 엔진 셈에 진행 중 슬롯이 들어가지 않음(설계 메모 · 경미)",
+      "problem": "engine_gap 은 L1 소비 기록만 셉니다. 여러 슬롯이 동시에 고르면 진행 중인 요청(같은 엔진)이 셈에 반영되지 않아 모든 슬롯이 가장 빈 엔진으로 몰립니다. 결정 문언('소비된 논문 수')과는 맞으므로 결함은 아닙니다. 다만 다중 슬롯 운영에서는 물 채우기가 한 박자 늦게 움직입니다.",
+      "evidence": "research_pool_predicates.l1_engine_counts — reinforce_ledger_l1.json entries[].paper_key 만 셈 · replication_request / 슬롯 점유는 읽지 않음."
+    }
+  ],
+  "verified_ok": [
+    "질의 10개 = audit_C_papers.md:142 P-C1(a) 문자열과 일치 · 기존 30개 뒤 · 기존 30개 sorts 없음(relevance 1회) · 표적 sorts [relevance, date] · categories/max_results/recency 불변 · 호출 50",
+    "정보 경계: 순서 절은 _order_view(engine · long_leg · long_only · crisis_evidence · strategy_reported)와 L1 paper_key 만 읽음 · O12a(등급 · 성과 · confidence · L1 status 를 바꿔도 불변) · O12b(소스 토큰 정적 단정) 통과",
+    "설정 부재 · unreadable · schema · disabled · unknown_step · l1_unreadable → FIFO + stderr + order_why (O9 · O15b E2E)",
+    "건너뛰기(active 제외 · revoked 재후보) · L1 소비 · 원문 링크 · --exclude · --only-key 유지(O13) · 재구현 대기열은 next_replication.R 의 기존 앞단 그대로",
+    "alpha_pending() 본문 · 서명 · CLI 불변(주석만) — 부팅 Queue 줄 등 개수 소비자 영향 없음",
+    "pr_mcp_all_queries_failed: calls 가 있으면 query+탭+sort_by 로 대조 · relevance 40 실패 + date 10 성공 → 강등 안 함 · 옛 보고서 경로 리터럴 보존 · fromJSON(simplifyVector=FALSE)라 lapply 대상이 list(F1~F6 · M 통과)",
+    "라우터 필드: route 소비자(program_paper_sync.R · rf_replication_verify.R · research_pool_*.py)는 list/dict 명명 접근이라 새 필드 · 결측에 안 깨짐 · testable 조건 불변",
+    "돌연변이 M1~M4(순서) · M1/M2(failcheck) · S6(시한 치환) 모두 치환 성사 단정 + 발화",
+    "문법: py_compile 5개 · R parse 3개 · JSON 2개 OK",
+    "소유 범위: 변경 파일은 보고된 12개뿐 · 다른 scenarios 수정분(knowledge_index · rx_construct_link · tg_alert_noise · tg_alert_dedup_e2e)은 다른 작업 소관"
+  ],
+  "tests_run": [
+    {"path": "08_Tests/scenarios/test_scn_paper_order.py", "result": "pass 35 / fail 0 / total 35"},
+    {"path": "08_Tests/scenarios/test_scn_paper_query_sorts.py", "result": "pass 17 / fail 0 / total 17"},
+    {"path": "08_Tests/scenarios/test_scn_paper_query_failcheck.R", "result": "pass 12 / fail 0 / total 12"},
+    {"path": "08_Tests/scenarios/test_scn_paper_collect.R", "result": "pass 32 / fail 0 / total 32"}
+  ]
+}
