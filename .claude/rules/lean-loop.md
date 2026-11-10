@@ -1,9 +1,21 @@
-# 1계층 루프 — 목표 역산형 리서치 프로그램 (Level 0 · v10.01 루프 정본)
+# 1계층 루프 — 목표 역산형 리서치 프로그램 (Level 0 · v10.01 루프 정본 · v10.2 사다리 루프 개정)
 
 **발효**: 2026-10-13 (도훈 지시 — 1계층 처방 재설계 D1~D16. 구 v10 루프(충실구현 → 고정 격자 강화)는 git 사료 · 롤백 태그 `pre-v10.01-prescription-20261013`).
 **원칙**: 루프가 기본 상태다. 세션은 인프라가 아니라 라운드로 시작해 라운드로 끝난다.
 **절차 정본**: `.claude/skills/research-program/SKILL.md` · 설계 = `04_Research/01_reports/l1_prescription_redesign_20261013/README.md`.
 **철학**: 남들 다 깨질 때 덜 잃고(위기 하락 포착↓) 강세를 충분히 따라가(상승 포착 ≥0.55) 복리를 지킨다 — 비대칭이 필요조건(정적 노출 축소로는 안 된다).
+
+## v10.2 사다리 루프 (2026-11-10 도훈 지시 — 일하는 순서를 바꾼다)
+
+검증 장치(PIT · 사전등록 · τ_D · β 짝 · MC8)는 그대로다. 설계 = `04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/README.md` · 절차 = research-program SKILL §0-1.
+1. **기준점부터** — 관문 · 루프는 아는 답을 한 번 통과시킨 뒤에 믿는다(A 경로 소방 훈련 · 기준 사다리 재도출 시험).
+2. **새 계보** — 생성기 = 논문 레인 · 자체 엔진 레인 · 처방 레인. 새 엔진 없이 한 엔진 위에 방어 장치 라운드를 더 붙이지 않는다.
+3. **시행은 예산** — 스윕형 라운드는 등록 전에 `programs/trial_budget.R` 로 변형 수 상한의 근거를 계산한다. 처방 루프는 사슬형(가설 하나씩 · 보는 창 선택).
+4. **상설 판** — 규칙은 프로그램에 한 번 등록하고 후보를 흘린다(P1 상설 자격부터).
+5. **막지 않는다** — 환경 핀은 측정 시작 때 건다. 측정을 못 시작한 등록 라운드가 다른 일을 묶으면 그 라운드를 뒤로 미룬다(등록본 보존 · 재개 때 재핀).
+6. **닫으면 남긴다** — `round.sh close` 가 다음 탐침 ≥ 2 · 교훈 · 목표 축 판독을 결과 원장(`06_Registry/round_outcomes.jsonl`)에 쓴다. 다음 설계는 그 원장에서 출발한다.
+
+루프가 고쳐 쓰는 것은 생성기(처방 프롬프트 · 도구 상자 · 탐색 순서)뿐이다 — 판정 규칙은 새 판으로 다시 등록한다.
 
 ## 입력 — 등록부가 정한다
 
@@ -27,10 +39,10 @@
 
 1. **사전등록**(측정 전 · 파일) — 가설 · 기대 방향(행동 카드 지표) · 반증 조건 · 변형 수 상한 · 최종 후보 선택 규칙. `pr_record_round` 로 등록(결과 뒤 변경 = writer 거부). 설계안이 정해지면 **철학 Superfan P1**(투자철학 정렬 · 백그라운드 · 기다리지 않음 — 10-16 도훈 지시) 의견을 반영해 등록한다.
 2. **측정** — 정본 계약만(`run_paper_replication` → essence). 손계산 금지(AX-008).
-3. **행동 카드** — `contracts/matched_controls.R::mc_card(dir)`(행동 카드 `behavior_card.R` · 위기 = Lunde-Timmermann 20/20 첫 통과 구간 + MC8 크기·노출 짝 대조 · 귀속 = 선택/크기/노출 방어/방어 없음 · 판정은 무작위 짝 플라시보의 분위). 방어 주장 = 귀속 라벨과 함께(크기 방어 · 노출 방어를 '실력'으로 쓰지 않는다 · CR '강함' 등급 노치는 선택 방어(노출 경로 짝까지 이김) 또는 증거 (a)(b)(c)를 갖춘 타이밍 방어만 — 등급 v3.2 · 헌장 빈칸 9 A′ · 라운드 평가가 증거를 `grade_v3.R::gv3_timing_evidence_add` 로 기록).
-4. **판정** — 사전등록한 반증 조건으로. 판정 직후 **철학 Superfan P2**가 방향 판정(향함 · 중립 · 역행)을 남기고 보고에 1줄로 실린다(규약 `00_Lawbook/specs/superfan_protocol.md` §11). 권위 등급(`authoritative_remeasure.json::essence_grade`)만 인용 — **등급 v3**(종합점수 S = Calmar 6 : PORT_t 4 가중 기하평균 + 하한 + 위기 복원력 노치 + τ_D OOS · 2026-10-13 MC7 승격). MDD 직접 문턱 없음(Calmar 와 CR 노치로만 닿는다).
+3. **행동 카드** — `contracts/matched_controls.R::mc_card(dir)`(행동 카드 `behavior_card.R` · 위기 = Lunde-Timmermann 20/20 첫 통과 구간 + MC8 크기·노출 짝 대조 · 귀속 = 선택/크기/노출 방어/방어 없음 · 판정은 무작위 짝 플라시보의 분위). 방어 주장 = 귀속 라벨과 함께(크기 방어 · 노출 방어를 '실력'으로 쓰지 않는다 · CR '강함' 등급 노치는 선택 방어(노출 경로 짝까지 이김) 또는 증거 (a)(b)(c)를 갖춘 타이밍 방어만 — 등급 v3.2 에서 정한 규칙 · 현행 판 v3.3 · 헌장 빈칸 9 A′ · 라운드 평가가 증거를 `grade_v3.R::gv3_timing_evidence_add` 로 기록).
+4. **판정** — 사전등록한 반증 조건으로. 판정 직후 **철학 Superfan P2**가 방향 판정(향함 · 중립 · 역행)을 남기고 보고에 1줄로 실린다(규약 `00_Lawbook/specs/superfan_protocol.md` §11). 권위 등급(`authoritative_remeasure.json::essence_grade`)만 인용 — **등급 v3.3**(종합점수 S = Calmar 6 : PORT_t 4 가중 기하평균 + 하한 + 팩터 조정 알파 노치 + 위기 복원력 노치 + 시험 창 OOS 관문 · 11-10 발효). MDD 직접 문턱 없음(Calmar 와 CR 노치로만 닿는다).
 5. **보고** — 리서치 1단위 = 1통 `prep_send`(`programs/program_report.R` · 발송 규칙 = qvest-telegram SKILL §0).
-6. **교훈** — 기전이 특정되는 실패만 L-code · next_probes ≥2 · 교훈 카드엔 τ_D 이전 수치만.
+6. **닫기 · 교훈** — `round.sh close`: 다음 탐침 ≥ 2(없으면 사유) · 교훈 · 목표 축 판독 → 결과 원장. 기전이 특정되는 실패만 L-code · 교훈엔 τ_D 이전 수치만.
 
 Grade A → A 자격 관문(`run_paper_replication` §11 · `rf_a_eligibility`) — 통과 = 산출물 `judge_request.eligible.json`(Judge 트리거) · 보류 = `judge_request.held.json`(사유 코드 · 스폰 없이 도훈 보고) → Judge(PIT 전담) → PASS → BOOK 후보(도훈 confirm). 미달 = 그 프로그램의 다음 라운드(고정 격자 강화는 퇴역).
 
@@ -45,7 +57,7 @@ Grade A → A 자격 관문(`run_paper_replication` §11 · `rf_a_eligibility`) 
 
 ## 하지 않는 것
 
-고정 격자 강화 러너 부활 · 결과를 본 뒤 사전등록 수정 · τ_D 이후 성과를 처방 입력으로 쓰기 · Grade A 전 Judge 스폰 · BOOK 자동 등록 · 부팅 WARN 즉시 수리.
+고정 격자 강화 러너 부활 · 새 엔진 없이 같은 계보에 장치 라운드 추가 · 스윕을 사슬이라고 부르기 · 결과를 본 뒤 사전등록 수정 · τ_D 이후 성과를 처방 입력으로 쓰기 · Grade A 전 Judge 스폰 · BOOK 자동 등록 · 부팅 WARN 즉시 수리.
 ★면제되지 않는 것: PIT · 축 · `dohoon_decision` 임의 착수 금지 · 하드코딩 금지(수치는 등록부·논문에서 온다 · 처방 레인 근거 논문 의무는 해제 — `evidence` 기록).
 
 ## 보고 형식 (3줄 · 세션 응답)

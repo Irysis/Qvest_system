@@ -1,6 +1,6 @@
 ---
 name: qvest
-description: "Qvest v10.01 부팅 — 상태 8줄 후 진행 계층 질문(1계층/2계층/BOOK/어드바이저) → 해당 레인 진입"
+description: "Qvest v10.2 부팅 — 상태 8줄 후 진행 계층 질문(1계층/2계층/BOOK/어드바이저) → 해당 레인 진입"
 disable-model-invocation: true
 user-invocable: true
 ---

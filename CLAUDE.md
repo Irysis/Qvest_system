@@ -2,7 +2,7 @@
 
 ## Active Version
 
-**Qvest v10.01 — 목표 역산형 1계층 리서치 · 2계층 로테이션 · BOOK · Judge=PIT 전담 · 행동 카드(위기 방어)** (세션 모델 정본 `claude-opus-5-5`. 2026-10-13 도훈 지시 — 1계층 처방 재설계 D1~D16. 설계 `04_Research/01_reports/l1_prescription_redesign_20261013/README.md` · 등록 훅 13 · 직전 판 v10.4 · 롤백 태그 `pre-v10.01-prescription-20261013`)
+**Qvest v10.2 — 목표 역산형 1계층 리서치 · 사다리 루프 · 2계층 로테이션 · BOOK · Judge=PIT 전담 · 행동 카드(위기 방어)** (세션 모델 정본 `claude-opus-5-5`. 2026-11-10 도훈 지시 — 인프라 전수점검 + 1계층 재편. 설계 `04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/README.md` · 1계층 처방 원설계(10-13 D1~D16) `04_Research/01_reports/l1_prescription_redesign_20261013/README.md` · 등록 훅 13 · 직전 판 v10.01 · 롤백 태그 `pre-v10.2-ladder-20261110`)
 
 > **★버전·모델 표기 단일 출처**: 위 줄이 정본(`boot_currency_check.sh` C0 파생). 타 문서는 위임.
 
@@ -21,18 +21,23 @@
 
 ## Session Startup
 
-`/qvest` — 부팅 6줄(상태만) → **계층 질문**(①1계층 ②2계층 ③BOOK ④`/advisor`). WARN 은 보고 대상이지 그 세션의 과제가 아니다.
+`/qvest` — 부팅 8줄(상태만) → **계층 질문**(①1계층 ②2계층 ③BOOK ④`/advisor`). WARN 은 보고 대상이지 그 세션의 과제가 아니다.
 
-## 파이프라인 (v10.01)
+## 파이프라인 (v10.2)
 
 ```
 [무인] 수집 → 라우터 v5(엔진 분류) → 프로그램 재료 큐 · 논문 지도(paper_atlas)
        + 충실구현 레인 → 권위 등급 + 행동 카드 → 재료 큐 · 다음 논문(next_replication)
+       + 자체 엔진 레인(v10.2 · 팩터 가족 단위 · 사양 사전 고정) → 상설 판(P1 자격) → 엔진 풀
 [1계층] 리서치 프로그램 P0 실현 가능성 지도 → P1 수익 · P2 방어 · P3 구성 → P4 조립·처방 루프
-        라운드 = 사전등록 → 측정(R 계약) → 행동 카드 → 판정 → 보고 → 교훈 · 선행 = 측정 계약 MC1~MC8
+        라운드 = 사전등록 → 측정(R 계약) → 행동 카드 → 판정 → 보고 → 닫기(다음 탐침 · 교훈 → 결과 원장) · 선행 = 측정 계약 MC1~MC8
 [2계층] 로테이션(B+ 풀 · 국면 배합 · FR 등급) → 미달: 강화 무한(원장 L2) → A → Judge → BOOK
 [BOOK]  A + PIT PASS → 06_Registry/book/book_registry.json(도훈 confirm) · 트래킹 /book
 ```
+
+**사다리 루프(v10.2)** — 검증 장치는 그대로 두고 순서를 바꾼다: ① 기준점부터(관문 · 루프는 아는 답을 통과시킨 뒤에 믿는다) ② 새 계보(새 엔진 없이 한 엔진 위에 장치 라운드를 더 붙이지 않는다)
+③ 시행은 예산(스윕형은 `programs/trial_budget.R` 로 등록 전 계산 · 처방 루프는 사슬형) ④ 상설 판(규칙 한 번 등록 · 후보는 흐른다) ⑤ 막지 않는다(환경 핀 = 측정 시작 때)
+⑥ 닫으면 남긴다(`06_Registry/round_outcomes.jsonl`). 루프가 고쳐 쓰는 것은 생성기뿐 — 판정 규칙은 새 판으로 재등록. 규칙 정본 = `.claude/rules/lean-loop.md`.
 
 구 1계층 고정 격자 강화 = 퇴역(블록 정의는 도구 상자 어휘). QEPM WT = 동결.
 
