@@ -781,7 +781,7 @@ SUITES=(
   #   → 237/237 WT 가 "no_lockbox_access (clean)" 로 구조적 PASS. **P2 는 실패할 수 없었다.**
   #   경로 리터럴 동기화만 보는 정적 검사로는 부족하다 — 실제로 훅을 돌려 위반을 주입하고
   #   FAIL 이 나오는지, 그리고 구판 로직 재현본이 같은 주입에서 PASS 로 뒤집히는지까지 본다.
-  # (v10 2026-08-29) test_lockbox_audit_path.R 퇴역 — lockbox 제도 폐지 (파일 존치, 사료)
+  # (v10 2026-08-29) test_lockbox_audit_path.R 퇴역 — lockbox 제도 폐지 (파일은 2026-11-10 삭제 · 복원 = 태그 pre-v10.2-prune-20261110)
   "08_Tests/worktask/test_judge_verdict_v2.R"
   # 2026-08-02 추가: tg_send_rich 미지원-entity 스캔 오프셋 계약.
   #   원 결함 = TRE(기본 엔진)가 위치를 **UTF-16 코드유닛**으로 세는데 regmatches/substr 은
@@ -1165,7 +1165,7 @@ SUITES=(
   #   축: 양성(정본 실재) · 음성(가짜 뿌리 0) · 위반주입 · 별칭 ON/OFF · 재할당 무효화 · 과잉교정 아님.
   #   ★[F] 재할당 축은 도입 당일 R 판의 잠복 과잉교정을 검거했다(python 만 고치고 R 은 안 고쳤던 것).
   "08_Tests/hooks/test_sot_access_paths.R"
-  "08_Tests/hooks/test_sot_access_paths_py.py"
+  # (2026-11-10) test_sot_access_paths_py.py 삭제 — 대상 ops/sot_access_paths_py.py 가 죽은 코드로 삭제됐다(R 판 test_sot_access_paths.R 은 유지)
   # ── 2026-08-20 추가: mvo 주석↔서명 기본값 정합 (문서 드리프트 금지) ──
   #   주석은 산문이라 파생할 수 없으므로 **드리프트를 금지**한다. 값은 정규식이 아니라
   #   R 파서 formals() 에서 읽어 서명 형식 변경에 안 깨진다. 4필드가 실제로 갈려 있었다
@@ -2079,6 +2079,8 @@ SUITES=(
   "08_Tests/validation/test_lookahead_c17_comment.R"
   # 러너 자신(자기 사본 · 병렬 슬롯 · 층 · 자동 편입)의 양성 대조
   "08_Tests/hooks/test_runner_parallel_tiers.sh"
+  # 러너 집계(2026-11-10 적대적 검토 U12): 요약 수치가 정수가 아니면 그 스위트만 실패로 세고 계속 간다 · 집계 루프가 끊기면 실패로 센다
+  "08_Tests/hooks/test_runner_accounting.sh"
   # 다른 레인이 11-10 오후에 쓴 신규 시험(편입 검사기가 미편입으로 잡음)
   "08_Tests/programs/test_rx_generator_scorecard.R"
   "08_Tests/reinforcement/test_rf_cdar_construct.R"
@@ -2288,7 +2290,20 @@ for line in sys.stdin.read().splitlines():
 print(pick)
 # 둘째 줄(2026-11-10): 고른 요약의 수치 — "ok <pass> <fail> <skipped>" 또는 "no". 종전엔 본 루프가 같은 JSON 을 파이썬으로
 #   네 번 더 읽었다(키 확인 1 + 수치 3 · 스위트당 약 0.8초 × 400여 스위트). 값은 종전과 같은 d.get(키, 0) 이다.
-print(("ok %s %s %s" % (d0.get("pass",0), d0.get("fail",0), d0.get("skipped",0))) if pick else "no")
+# ★수치 가드(2026-11-10 · 적대적 검토 U12): pass/fail/skipped 는 음이 아닌 정수(bool 아님)여야 "ok" 다. 그 밖(2.0 · [3] · null ·
+#   true · -1 · "3")은 "bad <원값>" — 본 루프가 그 스위트를 실패(미측정) 1건으로 계상하고 다음 스위트로 간다. 종전엔 원값을
+#   %s 로 그대로 찍어 $((TOTAL_PASS + PASS)) 산술 오류가 for 루프 전체를 버렸다(남은 스위트 미실행 · ALL PASS · rc 0).
+#   키가 없으면 0(종전과 같음 — skipped 를 안 내는 스위트가 대부분이다). 양성 대조: 08_Tests/hooks/test_runner_accounting.sh
+def _qv_n(v):
+    return isinstance(v, int) and not isinstance(v, bool) and v >= 0
+if pick:
+    vals = [d0.get("pass",0), d0.get("fail",0), d0.get("skipped",0)]
+    if all(_qv_n(v) for v in vals):  # QV-NUM-GUARD
+        print("ok %d %d %d" % tuple(vals))
+    else:
+        print("bad " + json.dumps(vals, ensure_ascii=True)[:80])
+else:
+    print("no")
 ' 2>/dev/null
 }
 
@@ -2345,6 +2360,18 @@ if (( QV_JOBS > 1 )); then
     echo "=== 병렬 구간 끝 — 아래는 SUITES 순서의 집계(병렬분은 저장 출력 재생) ==="
   fi
 fi
+
+# ★집계 루프 완주 대조 (2026-11-10 · 적대적 검토 U12): 러너는 -e 없이 돈다(set -uo pipefail). bash 에서 루프 본문의 확장 오류
+#   (산술 · unbound)는 둘러싼 for 루프 나머지를 통째로 버리고 루프 뒤를 계속 실행한다 — 남은 스위트가 조용히 빠진 채 결과
+#   JSON · FINAL 이 부분 합계로 쓰인다. 위 수치 가드가 아는 경로는 막지만, 모르는 경로까지 막는 것은 이 대조다:
+#   필터를 통과한 스위트 수(기대)를 루프 전에 세고, 본문 맨 끝에서 센 수(완주)와 루프 뒤에 견준다. 어긋나면 빠진 수만큼
+#   실패로 계상한다(최소 1 · 종료 코드 ≠ 0). 기대 수는 본 루프와 같은 두 필터로만 센다(층 선택은 이미 SUITES 에 반영).
+_QV_N_EXPECT=0; _QV_N_DONE=0
+for _s in "${SUITES[@]}"; do
+  [[ -n "${QVEST_SUITES_EXCLUDE:-}" && "$_s" =~ $QVEST_SUITES_EXCLUDE ]] && continue
+  [[ -n "${QVEST_SUITES_ONLY:-}" && ! "$_s" =~ $QVEST_SUITES_ONLY ]] && continue
+  _QV_N_EXPECT=$((_QV_N_EXPECT + 1))
+done
 
 for test_script in "${SUITES[@]}"; do
   # 프로필 필터 (설명은 SUITES 위 프로필 필터 주석 참조). 2026-08-24 사전 스캔 제거 후
@@ -2406,7 +2433,16 @@ for test_script in "${SUITES[@]}"; do
   fi
   _ok=""; PASS=0; FAIL=0; SKIP=0
   read -r _ok PASS FAIL SKIP <<< "$_SUMLINE" || true
-  if [[ "$_ok" == "ok" && -n "$OUT" ]]; then
+  # 셸 쪽 이중 가드 — 산술에 넣기 전에 음이 아닌 10진 정수(앞자리 0 없음 · 8진 해석 방지)인지 본다. 아니면 'bad' 로 돌린다.
+  if [[ "$_ok" == "ok" ]] && ! [[ "$PASS" =~ ^(0|[1-9][0-9]*)$ && "$FAIL" =~ ^(0|[1-9][0-9]*)$ && "$SKIP" =~ ^(0|[1-9][0-9]*)$ ]]; then _ok="bad"; fi   # QV-NUM-GUARD-SH
+  if [[ "$_ok" == "bad" && -n "$OUT" ]]; then
+    # 요약은 냈으나 수치가 정수가 아니다 = 측정 불가. 실패 1건으로 계상하고(건수 미상 · 과소계상) 다음 스위트로 계속 간다.
+    _badv="${_SUMLINE#bad }"; _badv="${_badv:0:80}"
+    UNMEASURED_FAILING+=("$test_script (요약 수치 비정수: $_badv · exit ${RC:-?})")
+    TOTAL_FAIL=$((TOTAL_FAIL + 1))
+    _timing_add "$test_script" "$_dt" "${RC:-}" "" "" ""
+    echo "⚠ UNMEASURED+FAILING: $test_script — 요약 JSON 의 pass/fail/skipped 가 음이 아닌 정수가 아님($_badv) → 실패 1건 계상(실제 건수 미상)." >&2
+  elif [[ "$_ok" == "ok" && -n "$OUT" ]]; then
     TOTAL_PASS=$((TOTAL_PASS + PASS))
     TOTAL_FAIL=$((TOTAL_FAIL + FAIL))
     TOTAL_SKIP=$((TOTAL_SKIP + SKIP))
@@ -2453,7 +2489,15 @@ for s in sk:
       echo "⚠ UNMEASURED: $test_script — exit 0 이나 요약 JSON 없음 = 측정 안 됨(통과 아님). (마지막 줄: ${OUT:0:120})" >&2
     fi
   fi
+  _QV_N_DONE=$((_QV_N_DONE + 1))   # 본문 맨 끝 — 여기까지 온 스위트만 '완주'로 센다(위 완주 대조)
 done
+
+if (( _QV_N_DONE != _QV_N_EXPECT )); then
+  _qv_short=$((_QV_N_EXPECT - _QV_N_DONE)); (( _qv_short < 1 )) && _qv_short=1
+  UNMEASURED_FAILING+=("[집계 루프] 기대 ${_QV_N_EXPECT} 스위트 중 ${_QV_N_DONE} 만 집계 — 루프가 중간에 끊겼다(남은 스위트 미실행 · 직전 확장 오류를 위 출력에서 확인)")
+  TOTAL_FAIL=$((TOTAL_FAIL + _qv_short))
+  echo "✗ 집계 루프 조기 이탈: 기대 ${_QV_N_EXPECT} · 완주 ${_QV_N_DONE} → 실패 ${_qv_short}건 계상(부분 합계로 통과 판정하지 않는다)" >&2
+fi
 
 if (( ${#UNREPORTED[@]} > 0 )); then
   echo "⚠ 요약 JSON 미발행 suite ${#UNREPORTED[@]}건: ${UNREPORTED[*]}" >&2
@@ -2480,7 +2524,7 @@ cat > "$RESULTS_FILE" <<EOF
                  if [[ -n "$_j" ]]; then _j+=","; fi; _j+="\"$_e\""
                done; printf '%s' "$_j")],
   "registry_dirty": [$(_j=""; for _l in ${REGISTRY_DIRTY[@]+"${REGISTRY_DIRTY[@]}"}; do
-                 _e="${_l//\/\\}"; _e="${_e//\"/\\\"}"
+                 _e="${_l//\\/\\\\}"; _e="${_e//\"/\\\"}"
                  if [[ -n "$_j" ]]; then _j+=","; fi; _j+="\"$_e\""
                done; printf '%s' "$_j")],
   "skips": [$(_j=""; for _l in ${SKIP_LINES[@]+"${SKIP_LINES[@]}"}; do
@@ -2491,6 +2535,8 @@ cat > "$RESULTS_FILE" <<EOF
   "jobs": $QV_JOBS,
   "n_parallel": $QV_N_PARALLEL,
   "n_selected": ${#SUITES[@]},
+  "n_expected": $_QV_N_EXPECT,
+  "n_run": $_QV_N_DONE,
   "n_declared": $QV_N_DECLARED,
   "n_unassigned_tier": $QV_N_UNASSIGNED,
   "elapsed_sec": $SECONDS,
@@ -2528,7 +2574,7 @@ fi
 # ★미측정은 FINAL **위에** 먼저 나열한다 — 숫자만 남으면 다음 사람은 그 숫자가 무엇의
 #   부재인지 알 수 없고, 알 수 없는 항목은 무시된다(SKIPPED 와 같은 이유).
 if (( ${#UNMEASURED_FAILING[@]} > 0 )); then
-  echo "✗ UNMEASURED+FAILING ${#UNMEASURED_FAILING[@]}건 — exit≠0 인데 요약 JSON 없음."
+  echo "✗ UNMEASURED+FAILING ${#UNMEASURED_FAILING[@]}건 — exit≠0 인데 요약 JSON 없음 · 요약 수치 비정수 · 집계 루프 이탈."
   echo "   각 1건으로 계상됐으나 **실제 실패 건수는 미상**(과소계상). 요약 JSON 이관 대상:"
   for _l in "${UNMEASURED_FAILING[@]}"; do echo "    $_l"; done
   echo "────────────────────────────────────────"

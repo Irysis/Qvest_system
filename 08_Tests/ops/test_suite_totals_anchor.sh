@@ -21,8 +21,10 @@ ROOT="${QM_ROOT:-${CLAUDE_PROJECT_DIR:-C:/Users/99922/OneDrive/Quant_Module_Molt
 # 경로 정규화는 하지 않는다 — QM_ROOT/CLAUDE_PROJECT_DIR 은 이 저장소 규약상 슬래시 형식이고,
 # 역슬래시 치환 표현(${v//\//}, tr)은 bash 판본별로 슬래시를 삼키거나 경고를 낸다(2026-08-20 실측).
 export QVEST_ST_LIB=1
+# ST_WATCH_SRC = 감시기 판본 바꿔 끼우기(수리 전 판으로 재현할 때 · 돌연변이 사본). 기본 = 정본.
+WATCH="${ST_WATCH_SRC:-$ROOT/02_Infrastructure/ops/suite_totals_watch.sh}"
 # shellcheck disable=SC1090
-. "$ROOT/02_Infrastructure/ops/suite_totals_watch.sh"
+. "$WATCH"
 
 PASS=0; FAIL=0
 chk() { # name expected actual
@@ -152,22 +154,97 @@ if [ -f "$PROF" ]; then
   done < "$PROF"
 fi
 chk "R9 운영 밤 제외 목록 — 경로 전부 실재 · 배터리 목록에 있음(${n}종)" "0" "$miss"
-# 단계가 다른 수집은 총계를 견주지 않는다 · 밤 수집은 기준선이 될 수 없다
-BASELINE="$TD/base.json"; LATEST="$TD/latest.json"
+# 단계가 다른 수집은 등록부 기준선과 총계를 견주지 않는다 · 대신 같은 층의 층별 기준과 견준다(2026-11-10 · U12) · 밤 수집은 등록부 기준선이 될 수 없다
+BASELINE="$TD/base.json"; LATEST="$TD/latest.json"; TIER_REF="$TD/tier_ref.json"
+yn2() { if grep -q -- "$2" <<< "$1"; then echo yes; else echo no; fi; }
+mkL() { printf '{"collected_at":"2026-11-10T03:00:00+09:00","tree_head":"x",%s}\n' "$1" > "$LATEST"; }
+mkR() { printf '{"schema":"suite_totals_tier_baseline_v1","tiers":{%s}}\n' "$1" > "$TIER_REF"; }
 printf '{"collected_at":"2026-08-03T09:56:04+09:00","tree_head":"x","hooks":1000,"regime":50,"hooks_fail":0}\n' > "$BASELINE"
-printf '{"collected_at":"2026-11-10T03:00:00+09:00","tree_head":"x","tier":"nightly","hooks":870,"regime":50,"hooks_fail":0,"regime_fail":0}\n' > "$LATEST"
+rm -f "$TIER_REF"
+mkL '"tier":"nightly","hooks":870,"regime":50,"hooks_fail":0,"hooks_unmeasured":0,"regime_fail":0'
 out_n="$(check 2>&1)"; rc_n=$?
-chk "R10 밤 수집(870) vs 전체 기준선(1000) → '총계 감소' 아님(rc 0)" "0" "$rc_n"
-chk "R11 생략 사실을 출력에 적는다"                 "yes" "$(printf '%s' "$out_n" | grep -q '총계 비교 생략' && echo yes || echo no)"
-printf '{"collected_at":"2026-11-10T03:00:00+09:00","tree_head":"x","tier":"full","hooks":870,"regime":50,"hooks_fail":0,"regime_fail":0}\n' > "$LATEST"
+chk "R10 밤 수집(870) · 같은 층 기준 없음 vs 전체 기준선(1000) → '총계 감소' 아님(rc 0)" "0" "$rc_n"
+chk "R11 같은 층 기준 없음 → '미판정'을 적고 OK 로 끝내지 않는다" "yes no" "$(yn2 "$out_n" '총계 미판정') $(yn2 "$out_n" '\] OK ')"
+mkR '"nightly":{"collected_at":"2026-11-09T03:00:00+09:00","hooks":1200,"regime":50,"hooks_unmeasured":0}'
+mkL '"tier":"nightly","hooks":1000,"regime":50,"hooks_fail":0,"hooks_unmeasured":0,"regime_fail":0'
+out_w1="$(check 2>&1)"; rc_w1=$?
+chk "W1 밤 수집 1200 → 1000(같은 층 직전 대비 감소) → 경보(rc 1 · '총계 감소')" "1 yes" "$rc_w1 $(yn2 "$out_w1" '총계 감소')"
+mkL '"tier":"nightly","hooks":1210,"regime":50,"hooks_fail":0,"hooks_unmeasured":0,"regime_fail":0'
+out_w2="$(check 2>&1)"; rc_w2=$?
+chk "W2 [대조] 밤 수집이 같은 층 직전 이상 → OK(rc 0 · hooks=1210 표시)" "0 yes" "$rc_w2 $(yn2 "$out_w2" 'OK .*hooks=1210')"
+mkL '"tier":"nightly","hooks":1200,"regime":0,"hooks_fail":0,"hooks_unmeasured":0,"regime_fail":0'
+check >/dev/null 2>&1; rc_w3=$?
+chk "W3 밤 수집 regime 50 → 0(계측 사망) → 경보(rc 1)" "1" "$rc_w3"
+mkR '"full":{"collected_at":"2026-11-07T03:00:00+09:00","hooks":10975,"regime":50,"hooks_unmeasured":0}'
+printf '{"collected_at":"2026-08-03T09:56:04+09:00","tree_head":"x","hooks":954,"regime":5,"hooks_fail":0}\n' > "$BASELINE"
+mkL '"tier":"weekly","hooks":2000,"regime":50,"hooks_fail":0,"hooks_unmeasured":0,"regime_fail":0'
+out_w4="$(check 2>&1)"; rc_w4=$?
+chk "W4 주간 10975 → 2000 — 낡은 등록부 기준선(954)보다 커도 같은 층 직전 대비 감소로 경보(rc 1)" "1 yes" "$rc_w4 $(yn2 "$out_w4" '총계 감소')"
+chk "W5 등록부 기준선 낡음을 적는다"                 "yes" "$(yn2 "$out_w4" '기준선이 같은 층 직전 실측보다 작다')"
+printf '{"collected_at":"2026-08-03T09:56:04+09:00","tree_head":"x","hooks":1000,"regime":50,"hooks_fail":0}\n' > "$BASELINE"
+rm -f "$TIER_REF"
+mkL '"tier":"nightly","hooks":1200,"regime":50,"hooks_fail":0,"hooks_unmeasured":40,"regime_fail":0'
+out_u1="$(check 2>&1)"; rc_u1=$?
+chk "U1 밤 수집 hooks_unmeasured 40 → 미측정 경보(rc 1)" "1 yes" "$rc_u1 $(yn2 "$out_u1" '미측정')"
+mkL '"tier":"weekly","hooks":2000,"regime":50,"hooks_fail":0,"hooks_unmeasured":40,"regime_fail":0'
+check >/dev/null 2>&1; rc_u2=$?
+chk "U2 주간 수집 hooks_unmeasured 40 → 미측정 경보(rc 1)" "1" "$rc_u2"
+mkL '"tier":"nightly","hooks":null,"regime":null,"hooks_fail":null,"hooks_unmeasured":null,"regime_fail":null'
+out_u3="$(check 2>&1)"; rc_u3=$?
+chk "U3 밤 수집 hooks null(결과 파일 없음 · 낡음) → 미측정 경보(rc 1 · 0 으로 접지 않음)" "1 yes" "$rc_u3 $(yn2 "$out_u3" '미측정')"
+mkL '"tier":"full","hooks":1200,"regime":50,"hooks_fail":0,"regime_fail":0'
+check >/dev/null 2>&1; rc_u4=$?
+chk "U4 hooks_unmeasured 키 없음(미측정 여부 미상) → 경보(rc 1)" "1" "$rc_u4"
+mkL '"tier":"full","hooks":870,"regime":50,"hooks_fail":0,"hooks_unmeasured":0,"regime_fail":0'
 check >/dev/null 2>&1; rc_f=$?
-chk "R12 [대조] 전체 수집이 줄었으면 그대로 경보(rc 1)" "1" "$rc_f"
-printf '{"collected_at":"2026-11-10T03:00:00+09:00","tree_head":"x","tier":"nightly","hooks":870,"regime":50,"hooks_fail":3,"regime_fail":0}\n' > "$LATEST"
+chk "R12 [대조] 전체 수집이 등록부 기준선보다 줄었으면 그대로 경보(rc 1)" "1" "$rc_f"
+mkL '"tier":"nightly","hooks":870,"regime":50,"hooks_fail":3,"hooks_unmeasured":0,"regime_fail":0'
 check >/dev/null 2>&1; rc_ff=$?
 chk "R13 밤 수집이어도 fail > 0 은 경보(rc 1)"       "1" "$rc_ff"
 cp "$BASELINE" "$TD/base_before.json"
 promote >/dev/null 2>&1; rc_p=$?
-chk "R14 밤 수집은 기준선 승격 거부(rc 1 · 기준선 불변)" "1 same" "$rc_p $(cmp -s "$BASELINE" "$TD/base_before.json" && echo same || echo changed)"
+chk "R14 밤 수집은 등록부 기준선 승격 거부(rc 1 · 기준선 불변)" "1 same" "$rc_p $(cmp -s "$BASELINE" "$TD/base_before.json" && echo same || echo changed)"
+
+echo
+echo "=== 층별 기준 흡수 (2026-11-10 · U12 — 수집이 덮어쓰기 직전 앞 수집을 그 층 칸에) ==="
+refv() { "$PY" -c 'import io,json,sys; d=json.load(io.open(sys.argv[1],encoding="utf-8")); v=(d.get("tiers") or {}).get(sys.argv[2]) or {}; print(v.get(sys.argv[3]))' "$TIER_REF" "$1" "$2" 2>/dev/null | tr -d '\r'; }
+rm -f "$TIER_REF"
+mkL '"tier":"nightly","hooks":900,"regime":50,"hooks_fail":0,"hooks_unmeasured":0,"regime_fail":0'
+st_tier_ref_absorb "$LATEST" "$TIER_REF" >/dev/null; rc_a1=$?
+chk "A1 건강한 밤 수집 → 밤 칸 흡수(rc 0 · hooks 900)" "0 900" "$rc_a1 $(refv nightly hooks)"
+mkL '"tier":"nightly","hooks":950,"regime":50,"hooks_fail":0,"hooks_unmeasured":40,"regime_fail":0'
+st_tier_ref_absorb "$LATEST" "$TIER_REF" >/dev/null; rc_a2=$?
+chk "A2 미측정 40 인 수집은 기준이 되지 못함(rc 1 · 900 유지)" "1 900" "$rc_a2 $(refv nightly hooks)"
+mkL '"tier":"nightly","hooks":800,"regime":50,"hooks_fail":0,"hooks_unmeasured":0,"regime_fail":0'
+st_tier_ref_absorb "$LATEST" "$TIER_REF" >/dev/null; rc_a3=$?
+chk "A3 직전보다 줄어든 수집은 기준이 되지 못함(rc 1 · 900 유지 — 연이은 결손이 서로를 기준 삼지 않게)" "1 900" "$rc_a3 $(refv nightly hooks)"
+st_tier_ref_absorb "$LATEST" "$TIER_REF" --force >/dev/null; rc_a4=$?
+chk "A4 사람의 수용(--force · --accept-tier)은 감소를 받아들인다(rc 0 · 800)" "0 800" "$rc_a4 $(refv nightly hooks)"
+mkL '"tier":"nightly","hooks":null,"regime":50,"hooks_fail":null,"hooks_unmeasured":null,"regime_fail":0'
+st_tier_ref_absorb "$LATEST" "$TIER_REF" --force >/dev/null; rc_a5=$?
+chk "A5 --force 여도 미측정 수집은 거부(rc 1 · 800 유지)" "1 800" "$rc_a5 $(refv nightly hooks)"
+mkL '"tier":"weekly","hooks":10975,"regime":50,"hooks_fail":0,"hooks_unmeasured":0,"regime_fail":0'
+st_tier_ref_absorb "$LATEST" "$TIER_REF" >/dev/null
+chk "A6 weekly 수집은 full 칸(check 와 같은 층 규칙) · 밤 칸 불변" "10975 800" "$(refv full hooks) $(refv nightly hooks)"
+printf '{"tier":"nightly","timings":[]}\n' > "$TD/res_t.json"
+chk "T4 러너 결과 파일의 층을 읽는다"               "nightly" "$(st_result_tier "$TD/res_t.json")"
+printf '{"tier":"bogus"}\n' > "$TD/res_tb.json"
+chk "T5 알 수 없는 층 값 → 빈 값(요청한 층으로 둔다)" "" "$(st_result_tier "$TD/res_tb.json")"
+
+echo
+echo "=== 돌연변이 (소스 텍스트 치환 · 치환 성사 단정) — 검출이 그 코드에서 오는가 ==="
+mut_run() { # <치환 sed 식> <표식 grep> <LATEST 내용> <TIER_REF 내용 또는 빈 값> → "<치환 수> <rc>"
+  local m="$TD/watch_mut.sh" n rc b="$BASELINE" l="$LATEST" t="$TIER_REF"
+  sed -e "$1" "$WATCH" > "$m"; n="$(grep -c -- "$2" "$m")"
+  mkL "$3"; if [ -n "$4" ]; then mkR "$4"; else rm -f "$TIER_REF"; fi
+  # 사본을 source 하면 경로 변수가 운영 경로로 다시 잡힌다 — source 뒤에 시험 경로로 되돌린다(운영 파일을 읽지 않게)
+  ( . "$m"; BASELINE="$b"; LATEST="$l"; TIER_REF="$t"; check >/dev/null 2>&1 ); rc=$?
+  printf '%s %s' "$n" "$rc"
+}
+chk "X3 미측정 축(ST-UM-HITS) 끔 → U1 을 놓친다(rc 0) = 미측정 판정이 그 줄에서 온다" "1 0" \
+  "$(mut_run 's/^um_hits = \[.*# ST-UM-HITS$/um_hits = []  # MUTATED-UM/' 'MUTATED-UM' '"tier":"nightly","hooks":1200,"regime":50,"hooks_fail":0,"hooks_unmeasured":40,"regime_fail":0' '')"
+chk "X4 같은 층 비교(ST-TIER-REF) 끔 → W1 을 놓친다(rc 0) = 밤 층 감소 판정이 그 줄에서 온다" "1 0" \
+  "$(mut_run 's/^if ref_t is not None:  # ST-TIER-REF$/if False:  # MUTATED-REF/' 'MUTATED-REF' '"tier":"nightly","hooks":1000,"regime":50,"hooks_fail":0,"hooks_unmeasured":0,"regime_fail":0' '"nightly":{"collected_at":"2026-11-09T03:00:00+09:00","hooks":1200,"regime":50,"hooks_unmeasured":0}')"
 rm -rf "$TD" 2>/dev/null
 
 echo

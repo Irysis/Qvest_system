@@ -13,9 +13,20 @@
 # 사용:
 #   --collect   4개 러너 실행 → 현재 총계를 .cache 에 기록 (느림, 무인/수동용)
 #   --check     기록 vs 기준선 비교만 (빠름, 부트 배선용) — 기본 동작
-#   --baseline  현재 수집값을 기준선으로 승격 (06_Registry, 커밋 대상)
+#   --baseline  현재 수집값을 기준선으로 승격 (06_Registry, 커밋 대상 · 전체 층만) + 층별 기준도 이 값으로
+#   --accept-tier  현재 수집값을 그 층의 층별 기준으로 받아들인다(정당한 총계 감소 확인 뒤 · 미측정이면 거부)
 #
-# 종료코드: 0=정상/정보부족 · 1=총계 감소 감지
+# 층별 기준 (2026-11-10 · 적대적 검토 U12): 밤(nightly) 수집을 전체 기준선과 견주면 일부러 뺀 만큼이 '감소'로 뜨므로 종전엔
+#   층이 다르면 hooks · regime 비교를 아예 생략했다 — 밤 기준선은 승격될 길이 없어 7일 중 6일(tiers.json full_weekday 하루만 전체)
+#   총계 감시가 꺼져 있었다. 또 등록부 기준선(08-03 hooks 954)은 현 전체 총계보다 한참 작아 주간 수집의 급감도 통과했다.
+#   ⇒ 층별 기준 = .cache/suite_totals_tier_baseline.json(층 → 같은 층의 직전 '건강한' 수집 실측). 수집이 새 값을 쓰기 직전에
+#     앞 수집을 그 층 칸에 흡수한다 — 흡수 조건: hooks 정수 · hooks_unmeasured = 0 · hooks · regime 이 그 칸의 직전 값 이상.
+#     조건을 못 채운 수집(감소 · 미측정)은 기준이 되지 못한다(연이은 결손이 서로를 기준 삼아 조용해지지 않게). 숫자는 전부 실측에서
+#     오고 여기 상수는 없다. 정당한 감소(스위트 퇴역)는 --accept-tier(또는 전체 층 --baseline)로 사람이 받아들인다.
+#   check 는 결과의 층(러너 결과 파일의 tier)과 같은 층 칸하고만 hooks · regime 을 견준다 — 같은 층 칸이 없으면 '미판정'으로 적는다
+#   (조용한 OK 아님). 미측정(hooks null · hooks_unmeasured > 0 · null)은 층과 무관하게 판정한다.
+#
+# 종료코드: 0=정상/정보부족(같은 층 기준 없음 포함 — 출력에 '미판정') · 1=총계 감소 · fail>0 · 미측정
 #==============================================================================
 set -uo pipefail
 
@@ -24,6 +35,7 @@ DIR="$(_norm "${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}")"
 
 BASELINE="$DIR/06_Registry/suite_totals_baseline.json"
 LATEST="$DIR/.cache/suite_totals_latest.json"
+TIER_REF="$DIR/.cache/suite_totals_tier_baseline.json"
 MODE="${1:---check}"
 
 _py() {
@@ -99,6 +111,72 @@ st_profile_regex() {     # <프로필 파일> → 러너의 QVEST_SUITES_EXCLUDE
   grep -v '^[[:space:]]*#' "$1" | tr -d '\r' | grep -v '^[[:space:]]*$' | sed 's/[[:space:]]*$//; s/\./\\./g' | paste -sd'|' -
 }
 
+# --- 러너 결과 파일의 층 (2026-11-10 · U12) — 수집 기록의 tier 는 요청한 값이 아니라 러너가 실제로 돈 층이다 ---
+st_result_tier() {       # <hook_dryrun_results.json> → fast | nightly | weekly | full (못 읽으면 빈 값)
+  [ -x "$PY" ] && [ -f "${1:-}" ] || return 0
+  "$PY" -c 'import io, json, sys
+try:
+    t = json.load(io.open(sys.argv[1], encoding="utf-8")).get("tier")
+    print(t if t in ("fast", "nightly", "weekly", "full") else "")
+except Exception:
+    pass' "$1" 2>/dev/null | tr -d '\r'
+}
+
+# --- 층별 기준 흡수 (2026-11-10 · U12 · 설계 = 맨 위 '층별 기준') ---------------
+#   <수집 기록.json> <층 기준 파일.json> [--force] → 1줄 보고 · 종료 0 = 흡수 · 1 = 흡수 안 함.
+#   --force(사람의 수용)는 '직전 값보다 작음'만 넘는다 — 미측정 기록은 어떤 경우에도 기준이 되지 못한다.
+st_tier_ref_absorb() {
+  [ -x "$PY" ] && [ -f "${1:-}" ] || { echo "[suite-totals] 층 기준 흡수 생략 — 기록 또는 python 없음"; return 1; }
+  "$PY" - "$1" "${2:-}" "${3:-}" <<'PYEOF'
+import io, json, os, sys
+src, dst = sys.argv[1], sys.argv[2]
+force = len(sys.argv) > 3 and sys.argv[3] == "--force"
+try:
+    l = json.load(io.open(src, encoding="utf-8"))
+except Exception as e:
+    print("[suite-totals] 층 기준 흡수 생략 — 기록 판독 실패: %s" % e); sys.exit(1)
+t = l.get("tier") or "full"
+t = "full" if t in ("full", "weekly") else t      # weekly = 전체(모든 스위트) — check 와 같은 규칙
+ref = {}
+if os.path.exists(dst):
+    try:
+        ref = json.load(io.open(dst, encoding="utf-8"))
+    except Exception as e:
+        print("[suite-totals] ⚠ 층 기준 파일 판독 실패(%s) — 새로 시작한다" % e); ref = {}
+if not isinstance(ref, dict):
+    ref = {}
+tiers = ref.get("tiers") if isinstance(ref.get("tiers"), dict) else {}
+prev = tiers.get(t) if isinstance(tiers.get(t), dict) else None
+isint = lambda v: isinstance(v, int) and not isinstance(v, bool)
+hard, soft = [], []
+if not isint(l.get("hooks")):
+    hard.append("hooks 미측정(%s)" % l.get("hooks"))
+if not (isint(l.get("hooks_unmeasured")) and l.get("hooks_unmeasured") == 0):
+    hard.append("hooks_unmeasured=%s" % l.get("hooks_unmeasured"))
+if prev:
+    for k in ("hooks", "regime"):
+        pv, lv = prev.get(k), l.get(k)
+        if isint(pv) and not (isint(lv) and lv >= pv):
+            soft.append("%s %s < 직전 기준 %s" % (k, lv, pv))
+if hard or (soft and not force):
+    print("[suite-totals] 층 %s 기준 유지 — 이번 기록은 기준이 되지 못함(%s)" % (t, " · ".join(hard + soft)))
+    sys.exit(1)
+tiers[t] = {k: l.get(k) for k in ("collected_at", "tree_head", "tier", "hooks", "regime",
+                                  "hooks_unmeasured", "hooks_fail", "regime_fail")}
+out = {"schema": "suite_totals_tier_baseline_v1",
+       "_doc": "층별 총계 기준(같은 층의 직전 건강한 수집 실측). writer = 02_Infrastructure/ops/suite_totals_watch.sh — 손으로 고치지 않는다.",
+       "tiers": tiers}
+d = os.path.dirname(dst)
+if d:
+    os.makedirs(d, exist_ok=True)
+tmp = dst + ".tmp"
+io.open(tmp, "w", encoding="utf-8").write(json.dumps(out, ensure_ascii=False, indent=2) + "\n")
+os.replace(tmp, dst)
+print("[suite-totals] 층 %s 기준 ← %s 수집(hooks=%s · regime=%s)%s"
+      % (t, l.get("collected_at"), l.get("hooks"), l.get("regime"), " · 수용(--force)" if (force and soft) else ""))
+PYEOF
+}
+
 collect() {
   mkdir -p "$DIR/.cache"
   local hooks regime contract continuity
@@ -151,6 +229,11 @@ collect() {
     echo "[suite-totals] ⚠ 러너 FINAL/결과 파일이 이번 실행의 것이 아님(FINAL='${hooks_out:-없음}' · 결과 파일 mtime ${_rm} < 시작 ${_st0}) — 총계 null"
     hooks_out=""
   fi
+  # (2026-11-10 U12) 기록하는 층 = 러너 결과 파일이 적은 층(이번 실행의 것일 때만). 못 읽으면 요청한 층.
+  if [ -n "$hooks_out" ]; then
+    local _rt; _rt="$(st_result_tier "$_res")"
+    [ -n "$_rt" ] && tier="$_rt"
+  fi
   unset _hooks_raw
   hooks=$(printf '%s' "$hooks_out" | grep -oE '[0-9]+ total' | grep -oE '[0-9]+')
   hooks_fail=$(printf '%s' "$hooks_out" | grep -oE '[0-9]+ fail' | grep -oE '[0-9]+')
@@ -182,6 +265,9 @@ collect() {
   #   ★시간이 아니라 트리가 판정의 유효범위다("mtime→최신성" 대체 계열).
   local head_sha
   head_sha=$(cd "$DIR" && git rev-parse --short HEAD 2>/dev/null)
+
+  # (2026-11-10 U12) 덮어쓰기 직전 — 앞 수집을 그 층의 층별 기준으로 흡수한다(조건 미달이면 기준 유지 · 위 '층별 기준').
+  [ -f "$LATEST" ] && { st_tier_ref_absorb "$LATEST" "$TIER_REF" || true; }
 
   # 빈 값 = 수집 실패 → 0 이 아니라 null 로 남긴다(0 으로 적으면 그 자체가 거짓 경보/거짓 안심)
   printf '{\n' > "$LATEST"
@@ -223,8 +309,8 @@ check() {
     ncommits=$(cd "$DIR" && git rev-list --count "${snap_head}..HEAD" 2>/dev/null)
   fi
 
-  "$PY" - "$BASELINE" "$LATEST" "${cur_head:-}" "${ncommits:-}" <<'PYEOF'
-import datetime, io, json, sys
+  "$PY" - "$BASELINE" "$LATEST" "${cur_head:-}" "${ncommits:-}" "$TIER_REF" <<'PYEOF'
+import datetime, io, json, os, sys
 b = json.load(io.open(sys.argv[1], encoding="utf-8"))
 l = json.load(io.open(sys.argv[2], encoding="utf-8"))
 cur_head = sys.argv[3] if len(sys.argv) > 3 else ""
@@ -276,23 +362,73 @@ if fail_hits:
         print("  ※이 수치는 위 수집 시점 트리의 사실입니다. 현재 상태를 알려면 "
               "'bash 02_Infrastructure/ops/suite_totals_watch.sh --collect' 재실행.", file=sys.stderr)
 
-# (2026-11-10) 단계가 다른 수집은 총계를 견주지 않는다 — 밤(nightly) 수집을 전체(full) 기준선과 비교하면 일부러 뺀 만큼이 '감소'로 뜬다.
-#   fail 축(위)은 단계와 무관하게 그대로 본다.
+# (2026-11-10 · U12) ★미측정 축 — 층과 무관하게 판정한다. 요약을 못 낸 스위트(러너 UNMEASURED)의 단언은 총계에 0 으로 들어가는
+#   조용한 커버리지 구멍이라 fail 과 같은 급이다(collect 의 hooks_unmeasured 주석). 종전엔 '_fail' 접미만 봐서 어느 층에서도
+#   판정되지 않았다. hooks 자체가 null(러너 FINAL · 결과 파일 없음 · 낡음 · 파싱 실패)이거나 hooks_unmeasured 가 null 이면
+#   '미측정 여부 미상'으로 같은 급에 올린다(0 으로 접지 않는다).
+isint = lambda v: isinstance(v, int) and not isinstance(v, bool)
+um_hits = [(k, v) for k, v in l.items() if k.endswith("_unmeasured") and isint(v) and v > 0]  # ST-UM-HITS
+if l.get("hooks") is None:
+    um_hits.append(("hooks", "null — 러너 FINAL/결과 파일 없음 · 낡음 · 파싱 실패"))
+elif l.get("hooks_unmeasured") is None:
+    um_hits.append(("hooks_unmeasured", "null — 미측정 여부 미상"))
+if um_hits:
+    print(scope("[suite-totals] ★미측정 — 측정 안 된 것은 통과가 아니다:"), file=sys.stderr)
+    for k, v in um_hits:
+        print("  - %-20s %s" % (k, v), file=sys.stderr)
+
+# (2026-11-10) 단계(층)가 다른 수집은 등록부 기준선과 hooks · regime 을 견주지 않는다 — 밤(nightly) 수집을 전체(full) 기준선과
+#   비교하면 일부러 뺀 만큼이 '감소'로 뜬다. 대신 (2026-11-10 · U12) 같은 층의 층별 기준(같은 층 직전 건강한 수집 실측 · 맨 위
+#   '층별 기준')과 견준다 — 종전엔 여기서 비교를 생략만 해 밤 층 총계 감시가 꺼져 있었다. fail 축(위)은 층과 무관하게 본다.
 _n = lambda t: "full" if (t or "full") in ("full", "weekly") else t   # weekly = 전체(모든 스위트) — 같은 단계로 본다
 lt, bt = _n(l.get("tier")), _n(b.get("tier"))
-tier_skip = ("hooks", "regime") if lt != bt else ()
-if tier_skip:
-    print("[suite-totals] 단계 %s 수집 — 기준선(%s)과 총계 비교 생략(%s). 전체 실행에서 비교한다" % (lt, bt, " · ".join(tier_skip)))
-keys = [k for k in b if k not in ("collected_at", "note", "tree_head", "tier") and k not in tier_skip]
-drops, unknown, ok = [], [], []
+TOT = ("hooks", "regime")
+ref_path = sys.argv[5] if len(sys.argv) > 5 else ""
+tref = {}
+if ref_path and os.path.exists(ref_path):
+    try:
+        tref = json.load(io.open(ref_path, encoding="utf-8"))
+    except Exception as e:
+        print("[suite-totals] ⚠ 층별 기준 파일 판독 실패(%s) — 같은 층 비교 불가" % e, file=sys.stderr)
+        tref = {}
+ref_t = (tref.get("tiers") or {}).get(lt) if isinstance(tref, dict) and isinstance(tref.get("tiers"), dict) else None
+if not isinstance(ref_t, dict):
+    ref_t = None
+cmp_skip = TOT if lt != bt else ()
+keys = [k for k in b if k not in ("collected_at", "note", "tree_head", "tier") and k not in cmp_skip]
+drops, unknown, ok, unjudged = [], [], {}, []
 for k in keys:
     bv, lv = b.get(k), l.get(k)
     if lv is None:
-        unknown.append(k)
-    elif isinstance(bv, int) and lv < bv:
-        drops.append((k, bv, lv))
+        if k != "hooks":                # hooks null 은 위 미측정 축이 이미 판정했다
+            unknown.append(k)
+    elif isint(bv) and lv < bv:
+        drops.append(("%s[등록부 기준선]" % k, bv, lv))
     else:
-        ok.append((k, lv))
+        ok[k] = lv
+if ref_t is not None:  # ST-TIER-REF
+    for k in TOT:
+        rv, lv = ref_t.get(k), l.get(k)
+        if not isint(rv):
+            continue
+        if lv is None:
+            if k != "hooks" and k not in unknown:
+                unknown.append(k)
+        elif lv < rv:
+            drops.append(("%s[같은 층 %s 직전 %s]" % (k, lt, ref_t.get("collected_at") or "?"), rv, lv))
+            ok.pop(k, None)
+        elif not any(d[0].startswith(k + "[") for d in drops):
+            ok[k] = lv
+    # 등록부 기준선이 같은 층 직전 실측보다 작으면 낡은 것이다 — 그 기준선만으로는 급감이 통과한다(08-03 954 사례).
+    if lt == bt:
+        stale = [(k, b.get(k), ref_t.get(k)) for k in TOT if isint(b.get(k)) and isint(ref_t.get(k)) and ref_t.get(k) > b.get(k)]
+        if stale:
+            print("[suite-totals] ⓘ 등록부 기준선이 같은 층 직전 실측보다 작다(낡음): %s — 감소 판정은 같은 층 직전 실측으로도 한다 · "
+                  "재승격 = --collect 뒤 --baseline" % " · ".join("%s %s < %s" % s for s in stale), file=sys.stderr)
+elif cmp_skip:
+    unjudged = list(cmp_skip)
+    print("[suite-totals] ⚠ 단계 %s 수집 — 같은 층 기준 없음(등록부 기준선은 %s 층) → %s 총계 미판정. 다음 같은 층 수집부터 비교한다"
+          "(지금 값을 기준으로 받아들이려면 --accept-tier)" % (lt, bt, " · ".join(unjudged)), file=sys.stderr)
 if drops:
     print(scope("[suite-totals] ★총계 감소 — 회귀가 아니라 '침묵 결손'을 먼저 의심하세요:"), file=sys.stderr)
     for k, bv, lv in drops:
@@ -300,9 +436,13 @@ if drops:
     print("  점검: 해당 러너를 직접 돌려 케이스가 실행되는지 확인(총계 0 = 계측 사망)", file=sys.stderr)
 if unknown:
     print("[suite-totals] ⚠ 수집 실패(null): %s — 수치 없음은 '정상'이 아니다" % ", ".join(unknown), file=sys.stderr)
-if not drops and not unknown and not fail_hits:
-    print(scope("[suite-totals] OK " + " · ".join("%s=%s" % (k, v) for k, v in ok)))
-sys.exit(1 if (drops or fail_hits) else 0)
+if not drops and not unknown and not fail_hits and not um_hits:
+    txt = " · ".join("%s=%s" % (k, v) for k, v in ok.items())
+    if unjudged:
+        print(scope("[suite-totals] 부분 판정(%s 미판정 · 같은 층 기준 없음) " % " · ".join(unjudged) + txt))
+    else:
+        print(scope("[suite-totals] OK " + txt))
+sys.exit(1 if (drops or fail_hits or um_hits) else 0)
 PYEOF
 }
 
@@ -324,6 +464,17 @@ l["note"] = ("테스트 스위트 총계 기준선. 감소 = 회귀가 아니라
 io.open(sys.argv[2], "w", encoding="utf-8").write(json.dumps(l, ensure_ascii=False, indent=2) + "\n")
 print("기준선 갱신:", {k: v for k, v in l.items() if k not in ("note", "collected_at")})
 PYEOF
+  local _prc=$?
+  # (2026-11-10 U12) 등록부 기준선을 사람이 승격했으면 같은 층의 층별 기준도 그 값으로(낮아진 값의 수용 포함)
+  if [ "$_prc" -eq 0 ]; then st_tier_ref_absorb "$LATEST" "$TIER_REF" --force || true; fi
+  return "$_prc"
+}
+
+# (2026-11-10 U12) 층별 기준 수용 — 정당한 총계 감소(스위트 퇴역 등)를 확인한 사람이 현재 수집을 그 층 기준으로 받아들인다.
+#   미측정 수집(hooks null · hooks_unmeasured ≠ 0)은 거부한다(종료 1). 등록부 기준선은 건드리지 않는다.
+accept_tier() {
+  [ -f "$LATEST" ] || { echo "[suite-totals] 수집 결과 없음 — 먼저 --collect"; return 1; }
+  st_tier_ref_absorb "$LATEST" "$TIER_REF" --force
 }
 
 # 라이브러리 모드: QVEST_ST_LIB=1 로 source 하면 디스패처를 돌리지 않는다(테스트용).
@@ -331,5 +482,6 @@ if [ "${QVEST_ST_LIB:-0}" = "1" ]; then return 0 2>/dev/null || exit 0; fi
 case "$MODE" in
   --collect)  collect "${2:-}" ;;
   --baseline) promote ;;
+  --accept-tier) accept_tier ;;
   --check|*)  check ;;
 esac
