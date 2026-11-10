@@ -1,6 +1,6 @@
 export const meta = {
   name: 'qvest-multi-track',
-  description: '[동결 — QEPM-R0-FREEZE 2026-09-25 · 해제 = decision_register 재상정] QEPM 다중-track 병렬 alpha 리서치 — N 가설 fan-out → cross-comparison 통합 (Cycle 2 4-track 패턴 codify)',
+  description: '[동결 — QEPM-R0-FREEZE 2026-09-25 · 실행 시 즉시 종료 · 해제 = decision_register 재상정] QEPM 다중-track 병렬 alpha 리서치 — N 가설 fan-out → cross-comparison 통합 (Cycle 2 4-track 패턴 codify)',
   whenToUse: '★동결 중 — 쓰지 않는다(QEPM WT 체인 동결). 구 용도: 한 theme에 대해 여러 alpha 가설/스펙을 병렬 탐색하고 4-way 비교가 필요할 때. args = {wt_id, tracks:[{tag,prompt}]} (v10: lockbox cutoff 폐지 — 전기간 사용)',
   phases: [
     { title: 'Alpha Tracks', detail: 'track별 alpha-research 병렬 spawn' },
@@ -12,6 +12,18 @@ export const meta = {
 const wt = (args && args.wt_id) || 'WT-MULTI'
 const tracks = (args && args.tracks) || []
 // v10 (2026-08-29): lockbox cutoff 폐지 — 전기간 사용 (도훈 '반박 금지')
+
+// ★QEPM 동결 (도훈 결정 QEPM-R0-FREEZE · 2026-09-25 · 06_Registry/decision_register.json) ──────────────────
+//   WT 체인(/worktask·dossier·multi-track·forge) 동결 — 이 워크플로는 에이전트를 하나도 띄우지 않고 즉시 끝난다
+//   (QEPM-WT-CHAIN-UNWIRE-20261110 note '다중 트랙 워크플로 즉시 종료' · 11-10 감사 U18).
+//   이유: 아래 본문은 alpha-research 를 트랙마다 띄워 IC·ICIR·DSR·순 SR 을 정본 계약(run_paper_replication → essence) 밖에서
+//   자체 산출하고 전기간 ICIR 로 순위를 매긴다(시행 회계 없음 · 평가 창 통계로 선정 = C1/D-E · τ_D 규정 없음).
+//   해제 = decision_register 에 개정 결정 재상정(도훈) → 이 블록을 걷는다.
+//   (검사 = 08_Tests/scenarios/test_scn_advisor_dryrun.R S12 — 실행 시 QEPM_FROZEN · 에이전트 0 · 블록 삭제 돌연변이에서 스폰이 다시 보인다)
+const QEPM_FREEZE = 'QEPM-R0-FREEZE'
+log(`QEPM 동결(${QEPM_FREEZE}) — qvest-multi-track 은 실행하지 않는다. 해제 = decision_register 재상정.`)
+return { wt_id: wt, status: 'QEPM_FROZEN', decision: QEPM_FREEZE,
+  note: 'QEPM WT 체인 동결(2026-09-25 도훈) — alpha-research 스폰 0 · 자체 IC/DSR 산출 0. 자문 = /advisor(QEPM-ADVISOR-MODE) · 측정 = run_paper_replication 정본 계약만.' }
 
 const ALPHA_SCHEMA = {
   type: 'object',

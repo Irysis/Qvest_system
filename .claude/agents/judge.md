@@ -30,6 +30,7 @@ allowed-tools: Bash(Rscript*) Read Grep Glob Write
      통과분만 산출 디렉터리에 `judge_request.eligible.json`(`status=pending` · schema `judge_request_v2` · a_eligibility) 발행 — 그것이 충실구현
      트리거다(grade_a_queue 미기록 · 스폰 = Q-Lead). 보류 = 같은 자리 `judge_request.held.json`(`held:<코드>` · 사유) · 요청 미발행 → 스폰 없이
      `[1계층]` A 후보(보류 사유 병기)로 도훈에게 보고한다. 어드바이저 측정은 통과여도 자동 스폰하지 않는다(도훈 지시로만 — 어드바이저 규약).
+     ★어드바이저 표지(11-10 감사 U18): `measurement_tags$lane = "advisor"` ∨ `strategy_name` 접두 `ADVISOR_`(적대 재실행 이름 `ADV_…` 와 다르다) 인 측정은 러너가 관문 통과여도 `judge_request.eligible.json` 을 쓰지 않고 `judge_request.held.json`(`held:advisor_lane` · `lane = "advisor"` · `requires = "dohoon_instruction"`)만 쓴다 — 요청서 · `a_eligibility.lane` 이 `advisor` 면 트리거가 아니다(도훈 승인 뒤 Q 가 수동 스폰).
      ★v10.2(2026-11-10): **스윕형 선정의 최종 후보**(프로그램 라운드의 사전등록 최종 후보 · 강화 사슬의 닫기 후보)는 닫을 때 선택 현실 점검으로
      다시 채점한 뒤(`programs/selection_regrade.R`) `programs/round_candidate_gate.R::rcg_route` 가 같은 A 자격 관문을 한 번 더 태운다 —
      통과면 같은 자리 `judge_request.eligible.json`(`source = "round_candidate_gate"`), 보류면 `judge_request.held.json`. 측정 시점에 나간 요청보다

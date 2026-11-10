@@ -23,7 +23,7 @@ description: "QEPM 리서치 어드바이저 (/advisor · 도훈 결정 QEPM-ADV
 - **자체 등급** — 에이전트·메모·Q 가 등급·PORT_t·Calmar 를 계산하거나 추정하는 것(essence·hurdle 손계산 포함). 등급은 러너가 쓴 `authoritative_remeasure.json::essence_grade` 인용만.
 - **승인 전 성과 엿보기** — 측정 승인 전 백테스트·IC·수익 계산. 시행 회계 밖의 시행(스누핑)이 된다.
 - **forge·dossier·multi-track** — forge 에이전트, `qvest-dossier-pipeline`, `qvest-multi-track` 호출 금지(동결 — QEPM-R0-FREEZE).
-- **Judge 스폰** — 어떤 등급에서도 어드바이저는 Judge 를 스폰하지 않는다(A 도 관문 경로 안내까지). `/worktask promote`·JUDGE_* 전이·WT 생성(`wt_create`) 금지(봉쇄 — QEPM-R0-FREEZE).
+- **Judge 스폰** — 어떤 등급에서도 어드바이저는 Judge 를 스폰하지 않는다(A 도 관문 경로 안내까지). `/worktask promote`·JUDGE_* 전이·WT 생성(`wt_create`) 금지(봉쇄 — QEPM-R0-FREEZE · 코드 가드: `state_machine.R` JUDGE_* 전이 거부 · `worktask_manager.R::wt_create` 첫 줄 동결 stop · `qvest-multi-track` · `qvest-dossier-pipeline` 워크플로 즉시 종료).
 - **BOOK** — 등록·수정 금지(BOOK = Judge PASS + 도훈 confirm · writer `book_registry.R` 경유).
 - **원장 쓰기** — `06_Registry/reinforce_ledger_l1.json`·`_l2.json`(`rf_open_entry`·`rf_append_attempt`·`rf_record_result`), `06_Registry/grade_a_queue.json`, `qepm/mailbox/judge_request_*`, `qepm/mailbox/worktask/`, `06_Registry/decision_register.json`. 측정 때 러너의 L1 소비 기록(구 강화 원장 auto-open · v10.01 부터 개설 즉시 parked)은 기본 억제한다(④ · 대가 = ④ 운영 쓰기 ③).
 - **근거 논문 우회** — `require_source_paper = FALSE`(강화 레인 전용) 사용 금지.
@@ -118,7 +118,7 @@ Q 가 에이전트 산출을 읽고 **종합**한다(재작성하지 않는다 �
 Sys.setenv(QVEST_NO_LEDGER_OPEN = "1")   # 기본 — 미달 시 러너 §11 의 L1 소비 기록(rf_open_entry → 즉시 rf_park_entry · v10.01) 억제. 아래 '운영 쓰기 경로' ③ 참조
 source(file.path(Sys.getenv("QM_ROOT"), "02_Infrastructure", "alpha_search", "run_paper_replication.R"))
 res <- run_paper_replication(
-  strategy_name        = "ADV_<slug>_<k>",
+  strategy_name        = "ADVISOR_<slug>_<k>",   # ★접두 ADVISOR_(ADV_ 아님 — ADV_ = 오버레이 적대 재실행 이름 · rf_overlay_adversary.R)
   strategy_idea        = "<메모 §3 가설 1줄>",
   factor_engine_path   = normalizePath("engine.R", winslash = "/"),
   portfolio_spec       = list(construction = "top_n_long", weighting = "ew", n_long = 25L),  # 메모 §11 사전 선언값(예시)
@@ -133,13 +133,26 @@ res <- run_paper_replication(
 
 - **인용** = `<res$out_dir>/authoritative_remeasure.json` 의 `essence_grade`·`essence`(CAGR·SR·MDD·Calmar·PORT_t·oos_retention)·`selection_type`·`n_trials_cumulative`·`measurement_regime` 만. 손계산·재구성 금지 · `hurdle` 등급 = 진단(인용 금지) · 등급 = 등급 v3(2026-10-13 MC7 · `grade_v3` 근거 블록 · 구 판정 `grade_v921` 인용 금지) · MDD 직접 문턱 없음(Calmar 와 위기 복원력 노치로만).
 - **시행 기록** `trials.jsonl` 에 1줄 append — `{k, run_id, out_dir, strategy_id, selection_type, n_trials_cumulative, n_trials_basis, measured_at, approval}`. 등급은 적지 않는다(정본 = auth 경로). 원장이 아니라 계보 N 의 원천이다.
-- **운영 쓰기 경로(투명화 — 어드바이저가 손으로 쓰지 않지만 정본 계약을 경유하면 생긴다)**: ① 측정 1회 = `stage_artifacts/replication/<run_id>/`(bt_result.rds·authoritative_remeasure.json·차트 · A 면 러너 §11 A 자격 관문 산출 `judge_request.eligible.json`(통과) 또는 `judge_request.held.json`(보류 · P0-13)) + `paper_replication` L-code(`stage_artifacts/l_code/paper_replication/`) + 텔레그램 1회 + **essence B 이상(A·B) 또는 방어형 자격이면 `06_Registry/module_catalog.json` 등재**(러너 §7-c `register_measured_module.R::rmm_register_measured` · 자격 = `ds_pool_eligible` — 2계층 모듈 풀 공급. 끄는 스위치 `QVEST_RP_REGISTER=0` 은 계약 경로를 끊으므로 쓰지 않는다) · 억제 줄을 빼면 L1 소비 기록(`reinforce_ledger_l1.json` entry 개설 후 즉시 parked — v10.01 · 강화 실행 없음). ② `hypothesis_index.R lookup <kw>` = 원천(L-code·module_catalog 등)이 인덱스보다 새로우면 `06_Registry/hypothesis_index.json` 을 **인라인 재생성**한다(`lookup_hypothesis(auto_rebuild = TRUE)` 기본) — 측정 직후 조회가 인덱스를 다시 쓰는 것은 정상 경로다. 이 쓰기들은 계약 writer 의 것이다 — 어드바이저가 고치거나 되돌리지 않고, 보고에 '운영 쓰기 발생'(등재 여부 = 러너 로그 `모듈 등재:` 줄)으로 적는다. ③ ★억제의 대가(11-10 감사 사실): 충실구현 레인의 논문 선택기(`02_Infrastructure/ops/rf_next_paper_pick.py::_consumed` — 소비 정본 = `reinforce_ledger_l1.json` 의 paper_key)는 어드바이저가 잰 논문을 소비로 보지 못한다. 같은 논문이 큐에 있으면 레인이 다시 `chain`/1 로 잴 수 있다(같은 계보의 시행이 두 번 '첫 측정'으로 기록된다). 측정한 논문의 paper_key 가 큐 · 재료에 있으면 메모 §12 와 보고에 그 사실을 적는다.
+- **운영 쓰기 경로(투명화 — 어드바이저가 손으로 쓰지 않지만 정본 계약을 경유하면 생긴다)**: ① 측정 1회 = `stage_artifacts/replication/<run_id>/`(bt_result.rds·authoritative_remeasure.json·차트 · A 면 러너 §11 A 자격 관문 산출 — 어드바이저 계보는 관문 통과여도 `judge_request.held.json`(`held:advisor_lane` · `lane = "advisor"` · 트리거 아님 · 11-10 감사 U18)) + `paper_replication` L-code(`stage_artifacts/l_code/paper_replication/`) + 텔레그램 1회. 일반 충실구현 레인은 essence B 이상(A·B) 또는 방어형 자격이면 `06_Registry/module_catalog.json` 등재(러너 §7-c `register_measured_module.R::rmm_register_measured` · 자격 = `ds_pool_eligible` — 2계층 모듈 풀 공급)지만 **어드바이저 계보(`measurement_tags$lane = "advisor"` 또는 `strategy_name` 접두 `ADVISOR_`)는 등재하지 않는다**(사유 `advisor_lane` — 권위 기록 `module_admission` · 러너 로그 `모듈 등재: 미등재 (advisor_lane …)` · '원장 쓰기 없음' 문언 · 등재 = 도훈 결정) · 억제 줄을 빼면 L1 소비 기록(`reinforce_ledger_l1.json` entry 개설 후 즉시 parked — v10.01 · 강화 실행 없음). ② `hypothesis_index.R lookup <kw>` = 원천(L-code·module_catalog 등)이 인덱스보다 새로우면 `06_Registry/hypothesis_index.json` 을 **인라인 재생성**한다(`lookup_hypothesis(auto_rebuild = TRUE)` 기본) — 측정 직후 조회가 인덱스를 다시 쓰는 것은 정상 경로다. 이 쓰기들은 계약 writer 의 것이다 — 어드바이저가 고치거나 되돌리지 않고, 보고에 '운영 쓰기 발생'(등재 여부 = 러너 로그 `모듈 등재:` 줄)으로 적는다. ③ ★억제의 대가(11-10 감사 사실): 충실구현 레인의 논문 선택기(`02_Infrastructure/ops/rf_next_paper_pick.py::_consumed` — 소비 정본 = `reinforce_ledger_l1.json` 의 paper_key)는 어드바이저가 잰 논문을 소비로 보지 못한다. 같은 논문이 큐에 있으면 레인이 다시 `chain`/1 로 잴 수 있다(같은 계보의 시행이 두 번 '첫 측정'으로 기록된다). 측정한 논문의 paper_key 가 큐 · 재료에 있으면 메모 §12 와 보고에 그 사실을 적는다.
 - **보고** = lean-loop 3줄 양식(① 등급 · 위기 방어 강함/보통/약함 · CAGR · Calmar · 위기 하락 포착 · 상승 포착 — 출처 auth `grade_v3` 블록: `cr.overall` · `cr.dd_capture_median` · `cr.uc_median` · `cr.cdar` · `mc8.label`(귀속 — 크기 · 노출 방어를 실력으로 쓰지 않는다)) ② 기전 1줄 + 논문 기준 병기 ③ 다음).
 - **분기**
-  - **Grade A** → 자동 Judge 스폰 금지. 1계층과 같은 경로만: `rf_a_eligibility` 관문(`02_Infrastructure/reinforcement/rf_runner_gates.R` · 설정 `06_Registry/a_eligibility_gate.json`) → 통과 = `judge_request.eligible.json` → Judge(PIT) → PASS → BOOK(도훈 confirm). Judge 스폰 조건의 정본은 `.claude/agents/judge.md` "스폰 조건" 이다. 러너 §11 이 A 면 같은 관문을 충실구현 어댑터로 태운다(P0-13) — 통과 = 산출 디렉터리 `judge_request.eligible.json`, 보류 = `judge_request.held.json`(사유 코드). Q 는 그 결과(반환 `res$a_gate` · 통과/보류 코드)를 "A — 관문 통과" 또는 "A — 관문 보류(<코드>)" 로 보고하고, Judge 는 통과여도 도훈 지시로만 진행한다. 보류 파일과 강화 셀 산출물 `judge_request.json` 은 트리거가 아니다. 충실구현 회계 요건 = 관문 설정 `accounting_fail.replication_required_selection_type`(현행 `chain`) — 이 측정의 `selection_type` 과 다르면(결과를 본 뒤 바꾼 두 번째 판부터 `sweep`) 관문 보류(`accounting_fail`)가 난다. 회계를 관문에 맞춰 바꾸지 않는다.
+  - **Grade A** → 자동 Judge 스폰 금지. 1계층과 같은 경로만: `rf_a_eligibility` 관문(`02_Infrastructure/reinforcement/rf_runner_gates.R` · 설정 `06_Registry/a_eligibility_gate.json`) → 통과 = `judge_request.eligible.json` → Judge(PIT) → PASS → BOOK(도훈 confirm). Judge 스폰 조건의 정본은 `.claude/agents/judge.md` "스폰 조건" 이다. 러너 §11 이 A 면 같은 관문을 충실구현 어댑터로 태운다(P0-13). ★어드바이저 계보는 관문을 통과해도 `judge_request.eligible.json`(자동 스폰 조건)을 쓰지 않고 `judge_request.held.json`(`status = held:advisor_lane` · `lane = "advisor"` · `requires = "dohoon_instruction"` · `gate_eligible` = 관문 자체 판정)만 쓴다(11-10 감사 U18 — 표지 = `measurement_tags$lane = "advisor"` ∨ `strategy_name` 접두 `ADVISOR_`). Q 는 그 결과(반환 `res$a_gate$gate_eligible` · 코드)를 "A — 관문 통과(어드바이저 보류)" 또는 "A — 관문 보류(<코드>)" 로 보고하고, Judge 는 통과여도 도훈 지시로만 진행한다(도훈 승인 뒤 Q 가 수동 스폰). 보류 파일과 강화 셀 산출물 `judge_request.json` 은 트리거가 아니다. 충실구현 회계 요건 = 관문 설정 `accounting_fail.replication_required_selection_type`(현행 `chain`) — 이 측정의 `selection_type` 과 다르면(결과를 본 뒤 바꾼 두 번째 판부터 `sweep`) 관문 보류(`accounting_fail`)가 난다. 회계를 관문에 맞춰 바꾸지 않는다.
   - **B/C/F** → 보고 + 다음 행동 제안. 재료 이관은 도훈 선택 — 승인되면 리서치 프로그램 재료 큐(`programs/program_registry.R::pr_enqueue` · `Skill(research-program)`)에 넣는다(v10.01 — 1계층 고정 격자 강화 퇴역). 어드바이저가 원장을 직접 쓰지 않는다.
   - **PIT 위반**(러너 중단 게이트 포함) → 등급 무관 절대 기각 — 결과 무효 · 원인 기록 · 재설계.
 - **텔레그램** = 러너가 `[1계층]` 표제로 1회 보낸다(`send_telegram` 기본 · 손발송 금지). 메모만 끝난 요청은 보내지 않는다.
+
+## 정보 경계 τ_D — 어드바이저 적용 (11-10 감사 U18)
+
+τ_D = `06_Registry/behavior_card.json::tau_d`(현행 2022-12-31). 이 절은 `.claude/rules/pit.md` Lockbox 절 끝 τ_D 규정과 `.claude/rules/lean-loop.md` '정보 경계' 절의 **적용**이지 새 정책이 아니다.
+
+- **볼 수 있다** — 자문 에이전트와 Q 는 측정 결과를 전기간(2023-01~ 시험 창 포함) 볼 수 있다. 사람 쪽 판단(도훈 보고 · 등급 인용)이기 때문이다.
+- **본 뒤 고친 판 = 스윕 신고** — 전기간(τ_D 뒤 시험 창 포함) 결과를 본 뒤 설계를 고친 판은 `selection_type = "sweep"` 으로 신고한다(`"chain"` 금지 — chain 자격 ② IS-only 선택을 지킬 수 없다) · `n_trials_cumulative` 에 앞 판을 모두 포함한다(위 ④ 시행 회계). 결과를 보지 않은 사전 선언 1안만 `chain` 이다.
+- **처방 쪽 입력으로 넘길 때 = τ_D 뒤 정보 제거 사본만** — 메모를 1계층 리서치 프로그램 재료 큐(`pr_enqueue`)로 넘기거나 처방 에이전트가 읽을 자리에 둘 때는, τ_D 뒤 수치 · 연도 · 등급 판정 표기를 뺀 사본(`memo_for_queue.md`)만 넘긴다. 넘기기 전에 정본 검사기(`04_Research/programs/_lib/round_core/v1/util.R::rc_input_issues` — 처방 입력 검사 `programs/rx_round.R` 과 같은 구현)를 돌려 `ok = TRUE` 일 때만 넘긴다(아래 한 줄 · R 파일로 써서 실행 · 실패 = 이관하지 않는다).
+- **2계층 풀** — 어드바이저 계보는 `module_catalog.json` 에 자동 등재되지 않는다(④ 운영 쓰기 경로 · `advisor_lane`). 풀 편입은 도훈 결정이다.
+
+```
+e <- new.env(); sys.source(file.path(Sys.getenv("QM_ROOT"), "04_Research/programs/_lib/round_core/v1/util.R"), envir = e); tau <- as.Date(jsonlite::fromJSON(file.path(Sys.getenv("QM_ROOT"), "06_Registry/behavior_card.json"))$tau_d); ci <- e$rc_input_issues(readLines("memo_for_queue.md", warn = FALSE, encoding = "UTF-8"), tau); stopifnot(isTRUE(ci$ok))
+```
 
 ## ⑤ L-code
 

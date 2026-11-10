@@ -5,7 +5,7 @@ description: "[동결 — QEPM-R0-FREEZE 2026-09-25 · 해제 = decision_registe
 
 # Qvest WorkTask Skill
 
-> ★**동결(사료) — 도훈 결정 `QEPM-R0-FREEZE`(2026-09-25)**: WT 체인 신규 착수·promote·JUDGE_* 전이 금지(`state_machine.R` 동결 가드 · dossier 워크플로 즉시 종료). 강화 = `Skill(reinforce)`(셀 엔진 + `run_paper_replication`) · Judge 트리거 = `.claude/agents/judge.md` §스폰 조건 · 살아 있는 부품(weight_method_registry·backtest_harness·contracts·judge·book-tracker·BOOK writer)은 유지 · 에이전트 자문 용도 = 결정 `QEPM-ADVISOR-MODE`(측정은 정본 계약만). 해제 = `06_Registry/decision_register.json` 재상정.
+> ★**동결(사료) — 도훈 결정 `QEPM-R0-FREEZE`(2026-09-25)**: WT 체인 신규 착수·promote·JUDGE_* 전이 금지(`state_machine.R` 동결 가드 · `worktask_manager.R::wt_create` 동결 가드(WT 생성 봉쇄 · 11-10) · dossier · multi-track 워크플로 즉시 종료). 강화 = `Skill(reinforce)`(셀 엔진 + `run_paper_replication`) · Judge 트리거 = `.claude/agents/judge.md` §스폰 조건 · 살아 있는 부품(weight_method_registry·backtest_harness·contracts·judge·book-tracker·BOOK writer)은 유지 · 에이전트 자문 용도 = 결정 `QEPM-ADVISOR-MODE`(측정은 정본 계약만). 해제 = `06_Registry/decision_register.json` 재상정.
 
 **Active SOT**: `CLAUDE.md`(v10 헌법) + `.claude/rules/lean-loop.md` + 본 문서 (구 `qvest_v8_1_sot.md`·`qvest_modes_sot.md` 2종 = 사료)
 

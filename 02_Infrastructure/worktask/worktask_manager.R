@@ -59,6 +59,11 @@ wt_create <- function(hypothesis_title = NULL,
                        max_names = NULL,
                        override_constraints = NULL) {
 
+  # ★QEPM 동결(도훈 결정 QEPM-R0-FREEZE 2026-09-25 · QEPM-WT-CHAIN-UNWIRE-20261110 note '동결 가드(WT 생성 …)는 따로 넣는다'):
+  #   WT 생성 봉쇄 — 디렉터리 · request.json 을 하나도 만들지 않고 멈춘다. 우회 스위치 없음. 해제 = decision_register 재상정 후 이 줄 삭제.
+  #   (검사 = 08_Tests/scenarios/test_scn_advisor_dryrun.R S11 — 가드 줄 삭제 돌연변이에서 WT 가 다시 생긴다)
+  stop("[wt_create] QEPM 동결(QEPM-R0-FREEZE) — WT 생성 봉쇄(WT 체인 동결 · 어드바이저 = QEPM-ADVISOR-MODE 는 WT 를 쓰지 않는다 · 해제 = decision_register 재상정)")
+
   if (is.null(hypothesis_title) && is.null(theme)) {
     stop("[wt_create] hypothesis_title 또는 theme 중 최소 하나 필요")
   }

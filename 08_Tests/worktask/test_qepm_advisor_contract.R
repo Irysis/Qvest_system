@@ -405,10 +405,15 @@ HIt <- rd("02_Infrastructure/tools/hypothesis_index.R"); RMt <- rd("02_Infrastru
 cat_fact <- has(RPR, "register_measured_module.R") && has(RPR, "rmm_register_measured(") &&
   has(RMt, "\"module_catalog.json\"") && has(rd("02_Infrastructure/contracts/register_measured_module.R"), "ds_pool_eligible")
 idx_fact <- grepl("lookup_hypothesis <- function\\([^)]*auto_rebuild = TRUE", HIt, perl = TRUE) && has(HIt, "build_hypothesis_index(root = root, out_path = index_path")
-cat(sprintf("       (재도출: 러너 module_catalog 등재=%s · lookup 인라인 재빌드=%s)\n", cat_fact, idx_fact))
-write_doc_ok <- function(txt, cf = cat_fact, xf = idx_fact) {
+## ★(11-10 감사 U18) 어드바이저 계보 등재 생략 사실 = 러너 §7-c 등재 조건에 표지 변수(.rp_adv_lane)가 걸려 있는가(코드 재도출)
+adv_skip_fact <- grepl("QVEST_RP_REGISTER\", \"1\"), \"0\") && !isTRUE(get0(\".rp_adv_lane\"", RPR, fixed = TRUE) &&
+  has(RPR, ".rp_adv_lane <- .rp_is_advisor_lane(measurement_tags, strategy_name)")
+cat(sprintf("       (재도출: 러너 module_catalog 등재=%s · 어드바이저 등재 생략=%s · lookup 인라인 재빌드=%s)\n", cat_fact, adv_skip_fact, idx_fact))
+write_doc_ok <- function(txt, cf = cat_fact, xf = idx_fact, af = adv_skip_fact) {
   s <- sec_split(txt, "^## ④ ")$sec; L <- lines_of(s); b <- L[grepl("^- \\*\\*운영 쓰기 경로", L, perl = TRUE)]
   says_cat <- length(b) == 1L && has_all(b, c("module_catalog.json", "B 이상", "rmm_register_measured"))
+  says_skip <- length(b) == 1L && has_all(b, c("어드바이저 계보", "등재하지 않는다", "advisor_lane"))
+  if (!identical(says_skip, isTRUE(af))) return(FALSE)
   says_idx <- length(b) == 1L && has_all(b, c("hypothesis_index.json", "재생성", "auto_rebuild = TRUE"))
   identical(says_cat, isTRUE(cf)) && identical(says_idx, isTRUE(xf))
 }
@@ -554,6 +559,22 @@ chk("MG4e 스킬 ① 의 data_pipeline_queue.json 조회 삭제 → red", !q1_ok
 chk("MG5 스킬 ④ '운영 쓰기 경로' 항목 삭제 → red", !write_doc_ok(del_line(SKLt, "^- \\*\\*운영 쓰기 경로")))
 chk("MG5b 코드가 등재를 멈춘 가상 상태(cat_fact=FALSE) → 현 문서의 등재 서술이 red(문서 낙후 검출)", !write_doc_ok(SKLt, cf = FALSE))
 chk("MG5c lookup 이 재빌드를 멈춘 가상 상태(idx_fact=FALSE) → 현 문서가 red", !write_doc_ok(SKLt, xf = FALSE))
+## (11-10 감사 U18) 어드바이저 등재 생략 — 코드 사실과 문서 서술 양방향
+chk("G5c 러너 §7-c 가 어드바이저 계보 등재를 생략한다(코드 재도출) — 스킬 서술이 그 사실과 같다", isTRUE(adv_skip_fact) && write_doc_ok(SKLt))
+chk("MG5d 코드가 생략을 멈춘 가상 상태(adv_skip_fact=FALSE) → 현 문서(생략 서술)가 red", !write_doc_ok(SKLt, af = FALSE))
+MG5E_T <- sub("등재하지 않는다**", "**", SKLt, fixed = TRUE)
+chk("MG5e 스킬에서 생략 서술('등재하지 않는다') 삭제 → red", !identical(MG5E_T, SKLt) && !write_doc_ok(MG5E_T))
+## (11-10 감사 U18) judge.md ③ 어드바이저 표지 · /worktask create 봉쇄 문언 = 코드 사실(러너 held:advisor_lane · wt_create 동결 stop)
+adv_held_fact <- has(RPR, "codes <- unique(c(codes, \"advisor_lane\"))") && has(RPR, "lane = if (adv) \"advisor\" else \"replication\"")
+WMt <- rd("02_Infrastructure/worktask/worktask_manager.R")
+wt_frz_fact <- has(WMt, "stop(\"[wt_create] QEPM 동결(QEPM-R0-FREEZE)")
+jdg3_adv_ok <- function(t) has_all(t, c("held:advisor_lane", "requires = \"dohoon_instruction\"", "트리거가 아니다(도훈 승인 뒤 Q 가 수동 스폰)"))
+chk("G7a judge.md ③ 어드바이저 표지 줄 = 러너 사실(held:advisor_lane · lane advisor)", isTRUE(adv_held_fact) && jdg3_adv_ok(rd(".claude/agents/judge.md")))
+chk("MG7a judge.md 에서 held:advisor_lane 삭제 → red", !jdg3_adv_ok(gsub("held:advisor_lane", "", rd(".claude/agents/judge.md"), fixed = TRUE)))
+WKt <- rd(".claude/commands/worktask.md")
+wk_ok <- function(t) has(t, "`/worktask create \"{hypothesis}\"` — ★**봉쇄") && grepl("(?m)^disable-model-invocation: true\\s*$", t, perl = TRUE)
+chk("G7b /worktask create = 봉쇄 표기 + disable-model-invocation(코드 사실 wt_create 동결 stop 과 일치)", isTRUE(wt_frz_fact) && wk_ok(WKt))
+chk("MG7b /worktask 의 disable-model-invocation 삭제 → red", !wk_ok(sub("disable-model-invocation: true", "", WKt, fixed = TRUE)))
 chk("MG6 judge.md 구 description('어떤 리서치 모드든 … 직후에만 스폰') 재주입 → red",
     length(univ_hits(paste(JDGt, "description: Judge Agent (v10) — 어떤 리서치 모드든(1계층 충실구현·강화 / 2계층 로테이션) essence Grade A 확정 직후에만 스폰"))) > 0L)
 ## (v10.01) 블록 보고 단위 줄은 퇴역 러너와 함께 문서에서 빠졌다 — 전칭 'A 면 Judge' 문언 재주입을 G6b 판정기가 잡는지만 잰다

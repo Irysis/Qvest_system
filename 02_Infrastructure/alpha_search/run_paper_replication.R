@@ -261,6 +261,23 @@ source(file.path(.RP_INFRA, "contracts", "measurement_axis.R"))   # MC1 · MC3 �
     identical(basename(as.character(engine_path)[1]), "rf_cell_engine.R")
 }
 
+#' 어드바이저 계보 판별 (QEPM-ADVISOR-MODE · 2026-11-10 감사 U18) — 판독만 · 쓰기 0.
+#'   표지 = measurement_tags$lane == "advisor"(스킬 측정 블록) 또는 strategy_name 접두 .RP_ADVISOR_PREFIX = "ADVISOR_"(스킬 호출 규약 ADVISOR_<slug>_<k>).
+#'   둘 중 하나면 어드바이저다(fail-closed — 표지 하나가 빠져도 어드바이저로 본다).
+#'   ★접두는 "ADV_" 가 아니다(11-10 재검증): rf_overlay_adversary.R 의 적대 재실행 이름 sprintf("ADV_%s_%s_%s") 가 셀 워커를 거쳐
+#'     strategy_name 으로 들어오고 원장 L1 에도 ADV_ 이름이 실재한다 — 그 접두를 쓰면 비어드바이저 산출물의 권위 기록에 lane = advisor 가 적힌다.
+#'     "ADVISOR_" 는 저장소 · 등록부에 기존 사용처 0(11-10 grep) · "ADV_…" 는 4번째 글자가 '_' 라 이 접두와 겹치지 않는다.
+#'   어드바이저 = 자문 + 도훈 승인 뒤 정본 측정만 · Judge 자동 스폰 · 원장(모듈 카탈로그 포함) 쓰기 없음 →
+#'   §7-c 등재 생략(advisor_lane) · §11 A 관문은 태우되 통과여도 judge_request.eligible.json 대신 held:advisor_lane 보류.
+#'   ★§11 라우터(.rp_a_route)는 이 함수를 부르지 않고 권위 기록(lane · measurement_regime.lane · strategy_name)을 같은 두 표지로 다시 읽는다
+#'     (라우터는 검사가 정의 8종만 떼어 부른다 — 표지 판정이 갈리지 않는지는 08_Tests/scenarios/test_scn_advisor_dryrun.R 가 진리표로 잰다).
+.RP_ADVISOR_PREFIX <- "ADVISOR_"
+.rp_is_advisor_lane <- function(measurement_tags = NULL, strategy_name = NULL) {
+  ln <- if (is.list(measurement_tags)) as.character(unlist(measurement_tags[["lane"]]))[1] else NA_character_
+  nm <- as.character(unlist(strategy_name))[1]
+  isTRUE(!is.na(ln) && identical(tolower(trimws(ln)), "advisor")) || isTRUE(!is.na(nm) && startsWith(nm, .RP_ADVISOR_PREFIX))
+}
+
 #' 관문 정본(rf_runner_gates.R)을 격리 환경에 적재 — 전역 오염 없음. 반환 list(env, err) · 실패면 env=NULL + 사유(호출자가 gate_error 보류).
 #'   적재 동안만 QM_ROOT = root(정본이 의존 파일을 .RFG_ROOT() 에서 source 한다 — 다른 트리의 사본을 섞지 않는다).
 .rp_gate_env <- function(root) {
@@ -314,7 +331,7 @@ source(file.path(.RP_INFRA, "contracts", "measurement_axis.R"))   # MC1 · MC3 �
 #' @param gate  관문 술어(정본 rf_runner_gates.R::rf_a_eligibility) — 비함수·gx 없음 = 적재 실패 → gate_error 보류(fail-closed)
 #' @param gx    관문 정본 환경(.rp_gate_env()$env) — 어댑터가 rf_a_gate_config·rf_runner_ctx·rf_a_ctx 를 여기서 부른다
 .rp_a_route <- function(out_dir, grade, strategy_id, engine_path, cell, gate, gx, root, gate_err = "",
-                        now = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")) {
+                        now = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), advisor = FALSE) {
   `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
   if (!identical(grade, "A")) return(NULL)
   if (isTRUE(cell)) {
@@ -344,6 +361,26 @@ source(file.path(.RP_INFRA, "contracts", "measurement_axis.R"))   # MC1 · MC3 �
   ok <- isTRUE(el$eligible)
   codes <- as.character(el$codes %||% character(0))
   if (!ok && !length(codes)) codes <- "gate_error"            # 부적격인데 코드가 비면 사유 없는 보류 — 그렇게 두지 않는다
+  # ★어드바이저 계보(QEPM-ADVISOR-MODE · 11-10 감사 U18) — 관문은 그대로 태우고(판정 기록), 통과여도 발행하지 않는다:
+  #   judge_request.eligible.json(자동 스폰 조건 · judge.md ③) 대신 held:advisor_lane 보류 — 도훈이 승인하면 Q 가 수동으로 Judge 를 띄운다.
+  #   판별 = 호출자 표지(advisor) ∨ 권위 기록 lane ∨ measurement_regime.lane = "advisor" ∨ strategy_name 접두 ADVISOR_(어느 하나면 어드바이저 · fail-closed ·
+  #   표지 정의 = .rp_is_advisor_lane 머리 주석 — 여기서는 같은 두 표지를 권위 기록에서 다시 읽는다). 일반 충실구현 레인(표지 없음)은 구판 그대로.
+  #   접두는 글자 그대로 쓴다(= .RP_ADVISOR_PREFIX · 적대 재실행 이름 ADV_… 와 겹치지 않는다) — 이 라우터만 떼어 부르는 검사(정의 8종)가
+  #   상수 없이도 같은 판정을 내게. 상수와 같은지는 08_Tests/scenarios/test_scn_advisor_dryrun.R S8i 진리표가 잰다.
+  adv_auth <- tryCatch(jsonlite::fromJSON(file.path(out_dir, "authoritative_remeasure.json"), simplifyVector = FALSE), error = function(e) NULL)
+  adv_ln <- function(x) { v <- as.character(unlist(x))[1]; !is.na(v) && identical(tolower(trimws(v)), "advisor") }
+  adv_nm <- if (is.list(adv_auth)) as.character(unlist(adv_auth[["strategy_name"]]))[1] else NA_character_
+  adv <- isTRUE(advisor) || (is.list(adv_auth) && (adv_ln(adv_auth[["lane"]]) ||
+           (is.list(adv_auth[["measurement_regime"]]) && adv_ln(adv_auth[["measurement_regime"]][["lane"]])) ||
+           isTRUE(!is.na(adv_nm) && startsWith(adv_nm, "ADVISOR_"))))
+  gate_ok <- ok
+  det <- el$detail %||% list(); if (!is.list(det)) det <- as.list(det)
+  if (adv) {
+    ok <- FALSE
+    codes <- unique(c(codes, "advisor_lane"))
+    det[["advisor_lane"]] <- paste0("어드바이저 측정(QEPM-ADVISOR-MODE) — 관문 판정(", if (gate_ok) "통과" else "보류",
+                                    ")과 무관하게 자동 Judge 트리거를 내지 않는다 · Judge = 도훈 승인 뒤 Q 수동 스폰")
+  }
   req <- list(schema = "judge_request_v2",
               status = if (ok) "pending" else paste0("held:", paste(codes, collapse = "+")),
               requested_at = now, source = "run_paper_replication",
@@ -352,21 +389,26 @@ source(file.path(.RP_INFRA, "contracts", "measurement_axis.R"))   # MC1 · MC3 �
               engine_path = engine_path, base_engine_path = engine_path, spec = "",
               a_eligibility = list(eligible = ok, codes = as.list(codes),
                                    inactive = as.list(as.character(el$inactive %||% character(0))),
-                                   detail = el$detail %||% list(),
+                                   detail = det,
                                    checked_at = el$evaluated_at %||% now, regime = el$regime_current %||% NA_character_,
                                    gate = el$gate_source %||% "", gate_active = as.list(as.character(el$gate_active %||% character(0))),
-                                   lane = "replication", adapter = "run_paper_replication.R::.rp_a_gate_inputs (P0-13)",
+                                   lane = if (adv) "advisor" else "replication", adapter = "run_paper_replication.R::.rp_a_gate_inputs (P0-13)",
                                    required_selection_type = el$required_selection_type %||% NA_character_,
                                    facts = el$facts %||% list()),
               note = if (ok) "P0-13: 충실구현 Grade A → A 자격 관문 통과분만 발행 — Judge(PIT 전담) 트리거(.claude/agents/judge.md §스폰 조건 ③ · 스폰 = 세션 Q-Lead)."
                      else "P0-13: A 자격 관문 보류 — 등급 불변 · 요청 미발행(트리거 아님). 사유 해소 뒤 재측정 또는 도훈 지시.")
   if (!ok) req$held <- list(codes = as.list(codes), at = now, by = "run_paper_replication §11 · A 자격 관문(P0-13)")
+  if (adv) {
+    req$lane <- "advisor"; req$requires <- "dohoon_instruction"; req$gate_eligible <- gate_ok
+    req$note <- paste0("어드바이저 측정(QEPM-ADVISOR-MODE) — 트리거 아님. A 자격 관문 ", if (gate_ok) "통과" else "보류",
+                       " · 등급 불변 · Judge 는 도훈 승인 뒤 Q 가 수동 스폰(.claude/agents/judge.md §스폰 조건 ③).")
+  }
   p <- file.path(out_dir, if (ok) .RP_JR_ELIGIBLE else .RP_JR_HELD)
   tmp <- paste0(p, ".tmp_", Sys.getpid())
   writeLines(jsonlite::toJSON(req, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = NA), tmp, useBytes = TRUE)
   if (!isTRUE(file.rename(tmp, p))) { file.copy(tmp, p, overwrite = TRUE); unlink(tmp) }
   list(mode = "replication", action = if (ok) "publish" else "hold", eligible = ok, codes = if (ok) character(0) else codes,
-       path = p, verdict = el)
+       path = p, verdict = el, lane = if (adv) "advisor" else "replication", gate_eligible = gate_ok)
 }
 # ── 데이터 컷오프 (P0-07 · 2026-09-24 · 감사 D4-11·D8-03 · 플랜 qvest-1-drifting-eclipse) ──
 #   load_rawdata 직후 RAWDATA·BM_DT 를 cutoff 이하로 자른다. 호출자가 data_cutoff 를 안 주면 이 함수는 불리지 않는다
@@ -557,6 +599,8 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
 
   run_id      <- paste0(format(Sys.time(), "%Y%m%d_%H%M%S"), "_", Sys.getpid())
   strategy_id <- paste0("RP_", run_id)
+  # 어드바이저 계보 표지(QEPM-ADVISOR-MODE · 11-10 감사 U18) — §7-c 등재 생략 · §11 Judge 트리거 대신 held:advisor_lane (.rp_is_advisor_lane 머리 주석)
+  .rp_adv_lane <- .rp_is_advisor_lane(measurement_tags, strategy_name)
   if (is.null(out_root)) out_root <- file.path(PROJECT_ROOT, "stage_artifacts", "replication")
   OUT_DIR <- file.path(out_root, run_id)
   dir.create(OUT_DIR, recursive = TRUE, showWarnings = FALSE)
@@ -919,6 +963,13 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
     if (!is.null(SIGNAL_BREADTH)) ma_signal_coverage(NULL, RAWDATA, breadth = SIGNAL_BREADTH[Date >= as.Date(start_date)]) else
     if (!is.null(FACTORS) && nrow(FACTORS)) ma_signal_coverage(FACTORS, RAWDATA, basis = "factors") else ma_signal_coverage(WEIGHTS, RAWDATA, basis = "holdings"),
     error = function(e) list(status = paste("error:", conditionMessage(e))))))
+  # 어드바이저 계보 기록(11-10 감사 U18) — 권위 기록에 lane 을 싣는다(§11 라우터 · Judge 트리거 판정이 읽는다) · 등재 생략 사유. 표지 없으면 키 추가 0(구판 그대로).
+  if (isTRUE(.rp_adv_lane)) {
+    auth$lane <- "advisor"
+    if (is.list(auth$measurement_regime)) auth$measurement_regime$lane <- "advisor"
+    auth$module_admission <- list(registered = FALSE, code = "advisor_lane",
+                                  note = "어드바이저 계보(QEPM-ADVISOR-MODE '원장 쓰기 없음') — module_catalog 자동 등재(2계층 풀 공급)를 하지 않는다 · 등재 = 도훈 결정")
+  }
   # ★창 진단(MC3 B) — 실효 시작 규칙이 창 기준을 정하면(window_anchor = effective_start) essence 진단의 창 이탈을 그 기준으로 다시 잰다
   #   (essence_score.R 같은 부품 .essence_month_diff · 허용 = 같은 설정). A 관문(rf_cell_window ②)이 이것을 읽는다 — 전역 기준일(2005)로
   #   재면 데이터가 늦게 서는 신호(컨센서스 등)가 데이터 사정만으로 자동 보류된다. 규칙이 없으면 쓰지 않는다(구판 동작 = ④ 재도출).
@@ -957,7 +1008,11 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
   #     술어(ds_pool_eligible → essence ∈ {A,B} ∨ 방어형)가 낸다. 자격 미달은 등재하지
   #     않는다(카탈로그 폭주 방지). 실패는 저널에 사유가 남는다 — 조용한 실패 없음.
   #   kill switch: QVEST_RP_REGISTER=0
-  if (!identical(Sys.getenv("QVEST_RP_REGISTER", "1"), "0")) tryCatch({
+  #   ★어드바이저 계보(.rp_adv_lane · 11-10 감사 U18)는 자동 등재하지 않는다 — 사유 advisor_lane(권위 기록 module_admission · 아래 로그 줄).
+  #     get0 = 이 블록을 떼어 부르는 검사(test_module_admission_seam C6)의 샌드박스에는 표지 변수가 없다 — 러너 본문은 위에서 늘 정의한다(검사가 정적으로 잰다).
+  if (isTRUE(get0(".rp_adv_lane", ifnotfound = FALSE)))
+    cat("[replication] 모듈 등재: 미등재 (advisor_lane — 어드바이저 계보는 module_catalog 자동 등재 없음 · QEPM-ADVISOR-MODE)\n")
+  if (!identical(Sys.getenv("QVEST_RP_REGISTER", "1"), "0") && !isTRUE(get0(".rp_adv_lane", ifnotfound = FALSE))) tryCatch({
     .rmm_env <- new.env(parent = globalenv())     # 전역 %||% 오염 방지 — 격리 적재
     sys.source(file.path(.RP_INFRA, "contracts", "register_measured_module.R"), envir = .rmm_env)
     .reg <- .rmm_env$rmm_register_measured(
@@ -1056,7 +1111,8 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
     .a_gx <- if (.a_cell) list(env = NULL, err = "") else .rp_gate_env(PROJECT_ROOT)
     a_gate <- .rp_a_route(OUT_DIR, grade = grade, strategy_id = strategy_id, engine_path = factor_engine_path,
                           cell = .a_cell, gate = if (is.environment(.a_gx$env)) .a_gx$env$rf_a_eligibility else NULL,
-                          gx = .a_gx$env, root = PROJECT_ROOT, gate_err = .a_gx$err)
+                          gx = .a_gx$env, root = PROJECT_ROOT, gate_err = .a_gx$err,
+                          advisor = isTRUE(get0(".rp_adv_lane", ifnotfound = FALSE)))   # 라우터도 권위 기록에서 다시 읽는다(둘 중 하나면 보류)
     cat(sprintf("[replication] ★Grade A — %s\n", switch(a_gate$action,
       legacy  = "강화 셀: judge_request.json 기록(관문 판정 = 강화 러너 · 수집 시점)",
       publish = sprintf("A 자격 관문 통과 → %s 발행(Judge 트리거 · 스폰은 세션 소관)", basename(a_gate$path)),
