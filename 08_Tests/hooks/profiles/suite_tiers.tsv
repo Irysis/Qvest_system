@@ -3,7 +3,7 @@
 # 레인: parallel = 병렬 슬롯에서 먼저(샌드박스 · 보호 등록부 미참조 · git/러너 미호출 · 실 .cache 쓰기 없음) · serial = 직렬 + 스위트별 지문.
 # 배정 없는 스위트 = nightly · serial(러너가 그 수를 찍는다). 줄을 바꾸면 근거 열도 함께 바꾼다. 소요 시간 실측(결과 파일 timings)이 쌓이면 재배정.
 suite	tier	lane	reason
-08_Tests/hooks/test_worktask_sequence_gate.sh	nightly	serial	기본(합성 자료 위주 · rs 3 proc 10 data 0)
+08_Tests/hooks/test_worktask_sequence_gate.sh	weekly	serial	동결 QEPM WT 체인 가드(2026-11-10 배선 분리 — 코드 보존) · 주간 층
 08_Tests/hooks/test_agent_role_guard.sh	nightly	serial	기본(합성 자료 위주 · rs 0 proc 14 data 0)
 08_Tests/hooks/test_cert_rules.R	fast	parallel	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 1s(11-10 부하 중 · 직렬) · 샌드박스 · 보호 등록부 미참조
 08_Tests/hooks/test_r_portability.R	nightly	serial	기본(합성 자료 위주 · rs 5 proc 22 data 0)
@@ -26,7 +26,7 @@ suite	tier	lane	reason
 08_Tests/hooks/test_prereq_skip_contract.sh	nightly	serial	기본(합성 자료 위주 · rs 10 proc 51 data 1)
 08_Tests/data/test_contract_panel.R	nightly	parallel	기본(합성 자료 위주 · rs 1 proc 1 data 4) · 샌드박스 · 보호 등록부 미참조
 08_Tests/hooks/test_boot_currency.sh	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 10 data 0) · 샌드박스 · 보호 등록부 미참조
-08_Tests/hooks/test_worktask_constraint_enforcer_v10.sh	nightly	serial	기본(합성 자료 위주 · rs 0 proc 11 data 0)
+08_Tests/hooks/test_worktask_constraint_enforcer_v10.sh	weekly	serial	동결 QEPM WT 체인 가드(2026-11-10 배선 분리 — 코드 보존) · 주간 층
 08_Tests/contracts/test_replication_harness.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 0 data 1) · 샌드박스 · 보호 등록부 미참조
 08_Tests/contracts/test_replication_exec_parity.R	fast	parallel	훅 · 관문 · 계약 핵심 · 합성 자료 · 프로세스 기동 적음(rs 0 · proc 0) · 실측 11s(11-10 부하 중 · 직렬) · 샌드박스 · 보호 등록부 미참조
 08_Tests/contracts/test_replication_weekly.R	nightly	parallel	기본(합성 자료 위주 · rs 0 proc 1 data 2) · 샌드박스 · 보호 등록부 미참조

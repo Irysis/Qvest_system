@@ -13,4 +13,4 @@ QEPM optimizer-research 단계 수동 트리거. **절차 정본 (Read 후 진�
 2. `02_Infrastructure/prompts/optimizer_research_init.md` — 에이전트 시스템 프롬프트 SOT (method_comparison ≥3·net-of-cost objective·selection_objective=net_ir)
 
 입력: `alpha_package.json` + `risk_package.json` · 산출: `optimization_package.json`(+weights.csv) + `challenge_note.md`.
-경계: alpha 재해석·Σ 재정의 절대 금지. 25종·long-only·Σw=1 hard (v10: 비중 상한 폐지. Hook block — worktask_constraint_enforcer).
+경계: alpha 재해석·Σ 재정의 절대 금지. 25종·long-only·Σw=1 hard (v10: 비중 상한 폐지. 훅 worktask_constraint_enforcer 는 2026-11-10 등록 해제 — 동결 체인이라 규칙만 남는다).

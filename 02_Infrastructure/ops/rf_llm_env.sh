@@ -43,7 +43,7 @@
 #       오염됐다. 무인 레인 27 세션이 기억 디렉터리에 카드 19장 + MEMORY.md 를 썼다(D7-02).
 #     QVEST_UNATTENDED_LANE=1 — 훅 safety_guard.sh 가 이 표식을 보면 기억 디렉터리 쓰기를 차단하고
 #       06_Registry/memory_inbox/ 로 안내한다(스위치가 꺼져도 쓰기는 막히는 두 번째 층).
-#   ★cwd 는 옮기지 않는다 — 프로젝트 훅 13종은 저장소 cwd 기준으로 로드된다(cwd 이동 = 훅 전멸, critique M3).
+#   ★cwd 는 옮기지 않는다 — 프로젝트 훅(등록 10종 · 2026-11-10)은 저장소 cwd 기준으로 로드된다(cwd 이동 = 훅 전멸, critique M3).
 #   ★이관 레인(P0-M1 · 10종)은 LLM_FALLBACK_MODEL="" 로 부른다 — 구판 동작 보존(구판은 --fallback-model 없음).
 #     한도 폴백을 싣는 호출자 = 이관 전부터 이 함수를 쓰던 replication·b5_design·overlay_audit 뿐
 #     (검사 08_Tests/ops/test_llm_single_entry.sh §G 가 허용 목록으로 잰다).

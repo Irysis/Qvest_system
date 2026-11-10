@@ -45,7 +45,7 @@
   "hooks": {
     "PreToolUse": [
       {
-        "_doc_v9": "v9 lean loop 2026-08-23: router dispatch retired. v10 2026-08-29: 자본 게이트 개념 폐지 — 남은 것은 측정 규율(graduation HARD 3종)·고정축·보호선·PIT. unregistered hooks are listed in 02_Infrastructure/hooks/_archive_v8_enforcement/MANIFEST.md (filenames intentionally not listed here)",
+        "_doc_v9": "v9 lean loop 2026-08-23: router dispatch retired. v10 2026-08-29: 자본 게이트 개념 폐지 — 남은 것은 보호선·PIT·원장 integrity. unregistered hooks are listed in 02_Infrastructure/hooks/_archive_v8_enforcement/MANIFEST.md (filenames intentionally not listed here). ★2026-11-10(도훈 결정 QEPM-WT-CHAIN-UNWIRE-20261110): 동결된 QEPM WT 체인의 가드 3개(구 폴더 쓰기 차단 · WT-P 졸업 관문 · WT 최적화 패키지 고정축 강제)를 등록 해제했다 — 코드는 hooks 폴더에 남아 있고, 체인을 되살릴 때(QEPM-R0-FREEZE 재상정) 이 파일의 git 이력에서 등록 줄을 되돌린다. 1계층 · 2계층의 고정축과 A 자격은 훅이 아니라 측정 계약과 관문(rf_a_eligibility · l2_a_eligibility · BOOK writer)이 지킨다.",
         "matcher": "Write|Edit",
         "hooks": [
           {
@@ -54,25 +54,7 @@
           },
           {
             "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/legacy_write_block.sh\" 2>>/tmp/legacy_write_block.log || true"
-          },
-          {
-            "type": "command",
             "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/book_write_guard.sh\" 2>>/tmp/book_write_guard.log || true"
-          }
-        ]
-      },
-      {
-        "_doc_measurement_gates": "측정 규율 게이트 2종 — graduation HARD 3종(PORT_t≥2.95·oos_retention≥0.7·Calmar≥0.64 = essence A 문턱의 부분집합) fail-closed + 고정축(≤25종·long-only·Σw=1 — 종목별 비중 상한은 v10 폐지) 강제. 둘 다 stdout JSON decision:block 으로 차단하므로 '|| true' 는 exit code 만 무시한다(차단력 불변).",
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/discovery_graduation_gate.sh\" 2>>/tmp/discovery_graduation.log || true"
-          },
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/worktask_constraint_enforcer.sh\""
           }
         ]
       },

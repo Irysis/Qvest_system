@@ -55,7 +55,7 @@ user-invocable: true
 ## 정본 위임 (사본은 낙후한다 — 여기에 목록을 다시 적지 않는다)
 
 - agents / skills = `ls .claude/agents .claude/skills` (퇴역분 = `.claude/agents_retired_v10/`)
-- hooks = `.claude/settings.json` (예산 ≤13 — v10.2 arm_gen_read_guard 신설분 포함. 세는 건 distinct .sh)
+- hooks = `.claude/settings.json` (현행 10 · 예산 ≤13 — 2026-11-10 동결 QEPM WT 가드 3개 등록 해제. 세는 건 distinct .sh)
 - **BOOK = `06_Registry/book/book_registry.json`** (writer = `02_Infrastructure/book/book_registry.R` 경유만 · 도훈 confirm)
 - 리서치 프로그램 = `06_Registry/research_programs.json`(writer `programs/program_registry.R`) · 원장 L2 = `06_Registry/reinforce_ledger_l2.json` · L1 = 충실구현 소비 기록
 - alerts = `.cache/alerts_digest.md` · 헌법 = `CLAUDE.md` (예산 ≤8KB)

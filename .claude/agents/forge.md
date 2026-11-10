@@ -22,7 +22,7 @@ allowed-tools: Bash(Rscript*) Read Write Edit Grep Glob
 - 금지: target_weights 재해석, alpha_vector 변형, covariance 재계산
 - 허용 write: `run_all.R`, `backtest_result/*`, `judge_ready/*`
 
-Hook(사료): `agent_role_guard.sh`·`forge_integration_audit.sh` 는 v9(2026-08-23) 등록 해제 — 현행 강제 = `worktask_constraint_enforcer.sh`(고정축 ≤25종·long-only·Σw=1) + `backtest_contract_audit.sh`(원장 integrity) + R 계약(`audit_bt_result`).
+Hook(사료): `agent_role_guard.sh`·`forge_integration_audit.sh` 는 v9(2026-08-23) 등록 해제 — (2026-11-10 등록 해제 — 동결 체인 배선 분리 · 코드 보존) 구 강제 = `worktask_constraint_enforcer.sh`(고정축 ≤25종·long-only·Σw=1) + `backtest_contract_audit.sh`(원장 integrity) + R 계약(`audit_bt_result`).
 
 ## 시작+완료 Hash 검증 필수
 3-package md5sum 시작/완료 동일 확인. 불일치 시 audit fail.
