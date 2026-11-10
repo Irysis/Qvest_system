@@ -4,6 +4,8 @@
 ##   ⑤ ack → 재발 시 재개방 ⑥ 잘림(크기 < 오프셋) ⑦ 같은 로그를 두 구성요소가 따로 본다 ⑧ 정의 검증(위반 주입) ⑨ 부팅 꼬리 · 깨진 상태 '?(…)'
 ##   ⑩ 세션 재개 Resume 줄 배선 ⑪ 운영 정의(06_Registry/superfan_components.json) 검증 통과 ⑫ 양성 대조 — 사건 시각 필터를 끈 사본은 옛 사건을 센다
 ##   ⑬ 무인 알림(스텁 발신기) ⑭ 양성 대조 — 정본 발신기 건식(이상 1건 · 2건) · 수리 전 판 빨강(10-17 T1 C-036)
+##   ⑮ v10.2 구성요소 4종(11-10) — 상설 판(사건 나이 · 판 승계 · 해시 사슬 + 양성 대조) · 강화 사슬(열린 걸음 · 닫힌 사슬) · 판 표식(원장 누락 · 접두어 id) ·
+##      판단 원장(그 뒤 커밋 · git 실패 · 커밋 0) · 새 종류 정의 검증(문턱 근거 · 어휘 · 필수 필드)
 ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot"); setwd(ROOT)
 PASS <- 0L; FAIL <- 0L
 chk <- function(name, ok, detail = "") {
@@ -239,6 +241,154 @@ OLDN <- file.path(TMP, "superfan_notify_old.R")
 okold <- tryCatch(identical(system2("git", c("-C", shQuote(ROOT), "show", "b234afb11:02_Infrastructure/programs/superfan_notify.R"), stdout = OLDN, stderr = FALSE), 0L), error = function(e) FALSE)
 o0 <- if (isTRUE(okold)) noti(OLDN, pay(1L)) else character(0)
 chk("⑭ 수리 전 판(b234afb11) 빨강 — 이상 1건 payload = 'SFN alpha fail'", isTRUE(okold) && any(o0 == "SFN\talpha\tfail"), paste(o0, collapse = " | "))
+
+## ⑮ v10.2 구성요소 4종(2026-11-10) — 새 규칙 종류 jsonl_ledger(chain · event_age · pending) · ledger_covers · ledger_activity
+##    규칙마다 양방향: 위반 주입 → 발화 · 정상 → 무음 · 대상 없음 → 무음. 임시 등록부 · 임시 상태 · 임시 원장만(운영 무접촉 · 발신기 미호출)
+REG2 <- file.path(TMP, "components_v102.json"); WST2 <- file.path(TMP, "watch_v102.json"); V <- file.path(TMP, "v102")
+dir.create(V)
+Sys.setenv(QVEST_SUPERFAN_REGISTRY_PATH = REG2, QVEST_SUPERFAN_WATCH_PATH = WST2, QVEST_SUPERFAN_NOW = "2026-10-16 12:00")
+SRC <- "근거 문구(시험)"
+JLF <- file.path(V, "jl.json"); VLF <- file.path(V, "vintage.json")
+reg2 <- list(schema = "superfan_components_v1", default_max_event_age_h = 48, components = list(
+  list(id = "sb", name = "상설", dossier = "d.md", rules = list(
+    list(id = "scan_stale", kind = "jsonl_ledger", check = "event_age", files = list(file.path(V, "sa/programs/*/*/standing_ledger.jsonl")),
+         events = list("scan", "measure"), edition_field = "edition", max_age_h = 26, max_age_h_source = SRC, severity = "warn"),
+    list(id = "ledger_chain", kind = "jsonl_ledger", check = "chain", files = list(file.path(V, "sa/programs/*/*/standing_ledger.jsonl")),
+         schema = "rc_standing_ledger_v1", severity = "fail"))),
+  list(id = "rc", name = "사슬", dossier = "d.md", rules = list(
+    list(id = "step_stalled", kind = "jsonl_ledger", check = "pending", files = list(file.path(V, "progs/*/*/chain_steps.jsonl")),
+         open_event = "step_open", close_event = "step_result", match_field = "k", terminal_event = "chain_closed",
+         max_age_h = 6, max_age_h_source = SRC, severity = "warn"))),
+  list(id = "fv", name = "판 표식", dossier = "d.md", rules = list(
+    list(id = "unrecorded_repair", kind = "ledger_covers", summaries = list(file.path(V, "logs/factor_subset_repair_*.json")), exclude = list("\\.prev_"),
+         ok_field = "result", ok_values = list("성공"), id_field = "decision",
+         time_from = list(stamp_field = "stamp", stamp_format = "%Y%m%d_%H%M%S", plus_seconds_field = "seconds"),
+         ledger = VLF, ledger_list = "entries", ledger_time_field = "completed_at", ledger_id_fields = list("id", "decision"), severity = "warn"))),
+  list(id = "jl", name = "판단 원장", dossier = "d.md", rules = list(
+    list(id = "ledger_stale", kind = "ledger_activity", file = JLF, git_repo = ROOT, max_age_h = 26, max_age_h_source = SRC, severity = "warn")))))
+wreg2 <- function(x = reg2) writeLines(jsonlite::toJSON(x, auto_unbox = TRUE, pretty = TRUE), REG2)
+wreg2()
+md5s <- function(s) { f <- tempfile(); con <- file(f, "wb"); writeBin(charToRaw(enc2utf8(s)), con); close(con); h <- unname(tools::md5sum(f)); unlink(f); h }
+wjl <- function(path, recs, schema) {   # round_core 원장과 같은 줄 형식(공통 머리 + 앞 줄 md5 사슬 · LF · UTF-8)
+  dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE); prev <- "genesis"; L <- character(0)
+  for (r in recs) { s <- as.character(jsonlite::toJSON(c(list(schema = schema, prev = prev), r), auto_unbox = TRUE)); L <- c(L, s); prev <- md5s(s) }
+  con <- file(path, "wb"); writeBin(charToRaw(enc2utf8(paste0(paste(L, collapse = "\n"), "\n"))), con); close(con)
+}
+st2 <- function() { p <- Sys.getenv("QVEST_SUPERFAN_WATCH_PATH"); if (file.exists(p)) jsonlite::fromJSON(p, simplifyVector = FALSE) else list(anomalies = list()) }
+opn <- function(comp, rule = NULL) Filter(function(a) identical(a$status, "open") && identical(a$component, comp) && (is.null(rule) || identical(a$rule, rule)), st2()$anomalies)
+sc2 <- function(...) invisible(run("scan", ...))
+
+## 대상 없음 → 네 구성요소 모두 무음
+r0 <- sc2()
+chk("⑮ 대상 없음(원장 · 요약 · 판단 원장 파일 0) → rc 0 · 네 구성요소 무음", r0$rc == 0L && !length(opn("sb")) && !length(opn("rc")) && !length(opn("fv")) && !length(opn("jl")),
+    paste(r0$out, collapse = " | "))
+
+## 상설 판 — event_age(판 승계) · chain
+SB <- "rc_standing_ledger_v1"
+S01 <- file.path(V, "sa/programs/P1_RETURN/P1S01_x/standing_ledger.jsonl"); S02 <- file.path(V, "sa/programs/P1_RETURN/P1S02_x/standing_ledger.jsonl")
+wjl(S01, list(list(at = "2026-10-01T09:00:00+0900", edition = 1L, event = "scan")), SB)          # 옛 판 — 오래됐지만 새 판이 있으니 보지 않는다
+wjl(S02, list(list(at = "2026-10-15T08:00:00+0900", edition = 2L, event = "enqueue", code = "a"),
+              list(at = "2026-10-16T10:00:00+0900", edition = 2L, event = "scan")), SB)
+sc2()
+chk("⑮ 상설 정상(새 판 2시간 전 스캔 · 옛 판은 승계로 제외) → 무음 · 사슬 정상", !length(opn("sb")), paste(vapply(opn("sb"), `[[`, "", "text"), collapse = " | "))
+wjl(S02, list(list(at = "2026-10-13T08:00:00+0900", edition = 2L, event = "enqueue", code = "a"),
+              list(at = "2026-10-14T08:00:00+0900", edition = 2L, event = "scan"),
+              list(at = "2026-10-15T08:00:00+0900", edition = 2L, event = "reported", kind = "daily_summary")), SB)
+sc2()
+o <- opn("sb", "scan_stale")
+chk("⑮ 상설 위반 — 마지막 scan · measure 52시간 전(보고 사건은 세지 않음) → 경고 1 · 새 판 파일", length(o) == 1L && grepl("P1S02", o[[1]]$text) && identical(o[[1]]$severity, "warn"),
+    paste(vapply(o, `[[`, "", "text"), collapse = " | "))
+L2 <- readLines(S02, encoding = "UTF-8")
+wjl(S02, c(lapply(L2, function(s) { x <- jsonlite::fromJSON(s, simplifyVector = FALSE); x$schema <- NULL; x$prev <- NULL; x }),
+           list(list(at = "2026-10-16T11:00:00+0900", edition = 2L, event = "measure", code = "a"))), SB)
+sc2()
+chk("⑮ 상설 측정이 돌면(1시간 전 measure) → 자동 해소", !length(opn("sb", "scan_stale")) &&
+      all(vapply(Filter(function(a) identical(a$rule, "scan_stale"), st2()$anomalies), function(a) identical(a$status, "resolved"), TRUE)))
+chk("⑮ 사슬 정상 원장(4줄) → 해시 사슬 이상 없음", !length(opn("sb", "ledger_chain")))
+L3 <- readLines(S02, encoding = "UTF-8"); L3[2] <- sub("\"scan\"", "\"scan_edited\"", L3[2], fixed = TRUE)
+con <- file(S02, "wb"); writeBin(charToRaw(enc2utf8(paste0(paste(L3, collapse = "\n"), "\n"))), con); close(con)
+sc2()
+oc <- opn("sb", "ledger_chain")
+chk("⑮ 상설 원장 중간 줄 변조 → 해시 사슬 끊김(실패 · 줄 3)", length(oc) == 1L && identical(oc[[1]]$severity, "fail") && grepl("줄 3", oc[[1]]$text, fixed = TRUE),
+    paste(vapply(oc, `[[`, "", "text"), collapse = " | "))
+## 양성 대조 — prev 대조를 끈 감시기 사본(소스 텍스트 치환)은 같은 변조를 놓친다
+src_c <- readLines(TOOL, warn = FALSE, encoding = "UTF-8")
+tgt_c <- '                if x is None or x.get("prev") != prev or (r.get("schema") and x.get("schema") != r["schema"]):'
+hit_c <- which(src_c == tgt_c); mut_c <- src_c; if (length(hit_c) == 1L) mut_c[hit_c] <- "                if x is None:"
+MTC <- file.path(TMP, "superfan_watch_mut_chain.py"); writeLines(mut_c, MTC, useBytes = TRUE)
+WSTM <- file.path(TMP, "watch_mut.json"); Sys.setenv(QVEST_SUPERFAN_WATCH_PATH = WSTM)
+invisible(run("scan", tool = MTC)); om <- opn("sb", "ledger_chain")
+Sys.setenv(QVEST_SUPERFAN_WATCH_PATH = WST2)
+chk("⑮ 양성 대조 — 치환 성사(1곳) · prev 대조를 끈 사본은 변조를 놓친다(원본은 잡음)", length(hit_c) == 1L && !length(om) && length(oc) == 1L, sprintf("hit=%d mut_open=%d", length(hit_c), length(om)))
+
+## 강화 사슬 — pending(열린 걸음 정체) · 닫힌 사슬 = 무음
+CS <- file.path(V, "progs/P4_ASSEMBLY/P4C01_x/chain_steps.jsonl"); SC <- "rc_p4_chain_steps_v1"
+base <- list(list(at = "2026-10-15T09:00:00+0900", event = "chain_registered", chain_id = "P4C01_x"))
+wjl(CS, c(base, list(list(at = "2026-10-16T03:00:00+0900", event = "step_open", k = 1L))), SC)
+sc2()
+o <- opn("rc", "step_stalled")
+chk("⑮ 사슬 위반 — 걸음 k=1 이 판정 없이 9시간(문턱 6) → 경고", length(o) == 1L && grepl("k=1", o[[1]]$text, fixed = TRUE), paste(vapply(o, `[[`, "", "text"), collapse = " | "))
+wjl(CS, c(base, list(list(at = "2026-10-16T03:00:00+0900", event = "step_open", k = 1L), list(at = "2026-10-16T09:00:00+0900", event = "step_result", k = 1L, decision = "reject"),
+                     list(at = "2026-10-16T11:00:00+0900", event = "step_open", k = 2L))), SC)
+sc2()
+chk("⑮ 사슬 정상 — k=1 판정됨 · k=2 는 1시간 전 열림 → 무음(해소)", !length(opn("rc", "step_stalled")))
+wjl(CS, c(base, list(list(at = "2026-10-15T01:00:00+0900", event = "step_open", k = 1L), list(at = "2026-10-15T20:00:00+0900", event = "chain_closed"))), SC)
+sc2()
+chk("⑮ 닫힌 사슬(chain_closed)의 열린 걸음 → 무음", !length(opn("rc", "step_stalled")))
+
+## 팩터 DB 판 표식 — ledger_covers
+LG <- file.path(V, "logs"); dir.create(LG)
+vled <- function(entries) jsonlite::write_json(list(schema = "factor_db_vintage_v1", entries = entries), VLF, auto_unbox = TRUE)
+summ <- function(name, stamp, result, decision = NULL, seconds = 600) {
+  x <- list(schema = "factor_subset_repair/v1", stamp = stamp, result = result, seconds = seconds); if (!is.null(decision)) x$decision <- decision
+  jsonlite::write_json(x, file.path(LG, name), auto_unbox = TRUE) }
+vled(list(list(id = "REPAIR-A", completed_at = "2026-10-15T10:00:00+0900", scope = "all", decision = "REPAIR-A · 도훈")))
+summ("factor_subset_repair_20261014_090000.json", "20261014_090000", "성공", "REPAIR-OLD")      # 원장 마지막 완료보다 앞 — 무음
+summ("factor_subset_repair_20261016_080000.json", "20261016_080000", "실패", "REPAIR-FAILED")   # 실패 — 무음
+sc2()
+chk("⑮ 판 표식 정상 — 원장보다 새 '성공' 요약 없음(옛 요약 · 실패 요약만) → 무음", !length(opn("fv")))
+summ("factor_subset_repair_20261016_090000.json", "20261016_090000", "성공", "REPAIR-B")
+summ("factor_subset_repair_20261016_090000.prev_20261016_100000.json", "20261016_090000", "성공", "REPAIR-B")   # 이전 판 사본 — 제외
+sc2()
+o <- opn("fv")
+chk("⑮ 판 표식 위반 — 원장보다 새 수리 '성공' · 원장에 결정 id 없음 → 경고 1(이전 판 사본 제외)", length(o) == 1L && grepl("REPAIR-B", o[[1]]$text, fixed = TRUE),
+    paste(vapply(o, `[[`, "", "text"), collapse = " | "))
+vled(list(list(id = "REPAIR-A", completed_at = "2026-10-15T10:00:00+0900", scope = "all", decision = "REPAIR-A"),
+          list(id = "REPAIR-B-ENTRY", completed_at = "2026-10-16T08:30:00+0900", scope = "all", decision = "REPAIR-B · FACTOR-X")))   # 요약(09:10)보다 앞 — 시각이 아니라 id 로 해소
+sc2()
+chk("⑮ 원장에 한 줄(결정 id = decision 칸) 넣으면 → 해소", !length(opn("fv")))
+vled(list(list(id = "REPAIR-A", completed_at = "2026-10-15T10:00:00+0900", scope = "all", decision = "REPAIR-A"),
+          list(id = "REPAIR-BB", completed_at = "2026-10-14T09:10:00+0900", scope = "all", decision = "REPAIR-BB")))   # 접두어만 같은 id — 일치로 치지 않는다
+sc2()
+chk("⑮ 접두어만 같은 id(REPAIR-BB)는 일치가 아니다 → 다시 경고", length(opn("fv")) == 1L)
+unlink(file.path(LG, "factor_subset_repair_20261016_090000.json")); summ("factor_subset_repair_20261016_093000.json", "20261016_093000", "성공", NULL)
+sc2()
+o <- opn("fv")
+chk("⑮ 결정 id 없는 '성공' 요약(원장보다 새) → 경고 · 앞 이상은 해소", length(o) == 1L && grepl("결정 id", o[[1]]$text, fixed = TRUE), paste(vapply(o, `[[`, "", "text"), collapse = " | "))
+
+## 판단 원장 — ledger_activity(그 뒤 커밋 · git 실패 = 무음)
+jl <- function(at) jsonlite::write_json(list(schema = "q_judgment_ledger_v1", judgments = list(list(id = "J-1", at = "2026-09-01T09:00:00+0900")),
+                                             reviews = list(), challenges = list(list(id = "C-1", at = "2026-09-02T09:00:00+0900", responses = list(list(at = at))))),
+                                        JLF, auto_unbox = TRUE)
+jl("2026-10-01T09:00:00+0900"); sc2(); o <- opn("jl")
+chk("⑮ 판단 원장 위반 — 마지막 기록(중첩 응답 시각까지) 15일 전 · 그 뒤 실제 저장소 커밋 있음 → 경고", length(o) == 1L && grepl("2026-10-01T09:00", o[[1]]$text, fixed = TRUE) &&
+      grepl("커밋 [0-9]+건", o[[1]]$text), paste(vapply(o, `[[`, "", "text"), collapse = " | "))
+jl("2026-10-16T11:00:00+0900"); sc2()
+chk("⑮ 판단 원장 정상(1시간 전 기록) → 무음 · 해소", !length(opn("jl")))
+jl("2026-10-01T09:00:00+0900"); bad2 <- reg2; bad2$components[[4]]$rules[[1]]$git_repo <- file.path(TMP, "no_such_repo"); wreg2(bad2); sc2()
+chk("⑮ git 실패(저장소 없음) → 무음", !length(opn("jl")))
+wreg2(); jl("2027-01-01T09:00:00+0900"); Sys.setenv(QVEST_SUPERFAN_NOW = "2027-01-05 12:00"); sc2()
+chk("⑮ 오래됐지만 그 뒤 커밋 0 → 무음(쉰 것)", !length(opn("jl")))
+Sys.setenv(QVEST_SUPERFAN_NOW = "2026-10-16 12:00")
+
+## 정의 검증 — 새 종류의 위반 주입
+bad3 <- reg2; bad3$components[[1]]$rules[[1]]$max_age_h_source <- NULL; wreg2(bad3)
+chk("⑮ 문턱 근거(max_age_h_source) 없음 → validate 실패", run("validate")$rc != 0L)
+bad3 <- reg2; bad3$components[[1]]$rules[[1]]$check <- "magic"; wreg2(bad3)
+chk("⑮ jsonl_ledger check 어휘 밖 → validate 실패", run("validate")$rc != 0L)
+bad3 <- reg2; bad3$components[[2]]$rules[[1]]$match_field <- NULL; wreg2(bad3)
+chk("⑮ pending 필수 필드 없음 → validate 실패", run("validate")$rc != 0L)
+wreg2()
 
 Sys.unsetenv(c("QVEST_SUPERFAN_REGISTRY_PATH", "QVEST_SUPERFAN_WATCH_PATH", "QVEST_SUPERFAN_NOW", "QVEST_SESSION_RESUME_PATH", "QVEST_JUDGMENT_LEDGER_PATH"))
 unlink(TMP, recursive = TRUE)

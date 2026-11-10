@@ -10,6 +10,14 @@
   freshness     — 파일 갱신 나이 > max_age_h 면 이상(파일 없음도 이상)
   expect_today  — 평일(선택) after 시각이 지났는데 오늘 날짜가 든 완료 표식 줄이 없으면 이상
   json_field    — JSON 상태 파일의 필드 값이 bad_values 중 하나면 이상
+  (v10.2 · 2026-11-10 — 아래 셋은 기존 넷으로 못 잰다: 줄 단위 원장의 내용 · 두 파일 대조 · git 이력이 필요하다. 대상 파일이 없으면 무음)
+  jsonl_ledger  — 추가 전용 JSONL 원장(round_core 상설 판 standing_ledger.jsonl · 강화 사슬 chain_steps.jsonl). check =
+                  chain(줄마다 prev = 앞 줄 UTF-8 바이트 md5 · 첫 줄 'genesis' — 가벼운 재검사이지 rc_p4_steps_verify 의 재구현이 아니다) |
+                  event_age(events 의 마지막 'at' 이 max_age_h 보다 오래됨 · edition_field 가 있으면 프로그램 폴더마다 가장 높은 판만) |
+                  pending(open_event 뒤 같은 match_field 의 close_event 가 max_age_h 넘게 없음 · terminal_event 가 있으면 닫힌 원장 = 무음)
+  ledger_covers — 완료 요약(summaries · ok_field ∈ ok_values)이 원장(ledger)의 마지막 완료 시각보다 새로운데 원장에 그 결정 id 가 없음
+  ledger_activity — JSON 원장의 마지막 기록 시각이 max_age_h 보다 오래됐는데 그 뒤 git 커밋이 있음(git 실패 = 무음)
+  새 세 종류는 숫자 문턱마다 max_age_h_source(근거 문구)를 요구한다.
 이상은 (구성요소 · 규칙 · 정규화 문구)로 묶는다(숫자 → # · 공백 압축) — 같은 증상이 반복되면 count 만 오른다.
 확인(ack)한 이상이 **새 줄에서 다시 나오면 재개방**한다(재발 = 아직 고장).
 
@@ -23,7 +31,8 @@ import argparse, datetime as dt, glob, hashlib, io, json, os, re, sys, tempfile
 
 SCHEMA_REG = "superfan_components_v1"
 SCHEMA_WATCH = "superfan_watch_v1"
-RULE_KINDS = ("log_patterns", "freshness", "expect_today", "json_field")
+RULE_KINDS = ("log_patterns", "freshness", "expect_today", "json_field", "jsonl_ledger", "ledger_covers", "ledger_activity")
+JSONL_CHECKS = ("chain", "event_age", "pending")
 SEVERITIES = ("fail", "warn")
 FIRST_SCAN_BYTES = 2_000_000        # 처음 보는 로그는 끝 2MB 부터(과거 전부를 이상으로 쏟지 않게 · 최근 이력은 잡는다)
 MAX_SCAN_BYTES = 20_000_000         # 한 번에 읽는 새 바이트 상한(거대 로그 보호 — 넘으면 끝 부분만 · 건너뜀을 기록)
@@ -100,6 +109,16 @@ def _expand(root, pattern, now):
     return seen
 
 
+def _need_age(r, cid, rid):
+    """v10.2 새 규칙 종류의 숫자 문턱 = 근거 문구와 함께만(근거 없는 숫자 거부 — round_core rules.R 의 basis/value_ref 원칙과 같은 뜻)."""
+    e = []
+    if not isinstance(r.get("max_age_h"), (int, float)) or isinstance(r.get("max_age_h"), bool) or r["max_age_h"] <= 0:
+        e.append("%s/%s: max_age_h(양수) 필수" % (cid, rid))
+    if not str(r.get("max_age_h_source") or "").strip():
+        e.append("%s/%s: max_age_h_source(문턱 근거 문구) 필수" % (cid, rid))
+    return e
+
+
 def validate_registry(reg):
     e = []
     if not isinstance(reg, dict) or reg.get("schema") != SCHEMA_REG:
@@ -151,6 +170,28 @@ def validate_registry(reg):
             elif k == "json_field":
                 if not r.get("file") or not r.get("path") or not isinstance(r.get("bad_values"), list):
                     e.append("%s/%s: file · path · bad_values 필수" % (cid, rid))
+            elif k == "jsonl_ledger":
+                ck = r.get("check")
+                if not r.get("files") or ck not in JSONL_CHECKS:
+                    e.append("%s/%s: files · check(%s) 필수" % (cid, rid, "|".join(JSONL_CHECKS)))
+                if ck == "event_age" and not (isinstance(r.get("events"), list) and r["events"]):
+                    e.append("%s/%s: event_age 는 events 목록 필수" % (cid, rid))
+                if ck == "pending" and not all(r.get(x) for x in ("open_event", "close_event", "match_field")):
+                    e.append("%s/%s: pending 은 open_event · close_event · match_field 필수" % (cid, rid))
+                if ck in ("event_age", "pending"):
+                    e += _need_age(r, cid, rid)
+            elif k == "ledger_covers":
+                if not r.get("summaries") or not r.get("ledger") or not r.get("ok_field") or not isinstance(r.get("ok_values"), list) or not r.get("id_field"):
+                    e.append("%s/%s: summaries · ledger · ok_field · ok_values · id_field 필수" % (cid, rid))
+                for x in r.get("exclude", []):
+                    try:
+                        re.compile(x)
+                    except re.error as ex:
+                        e.append("%s/%s: exclude 정규식 오류 %s" % (cid, rid, ex))
+            elif k == "ledger_activity":
+                if not r.get("file"):
+                    e.append("%s/%s: file 필수" % (cid, rid))
+                e += _need_age(r, cid, rid)
             if k != "log_patterns" and r.get("severity") not in SEVERITIES:
                 e.append("%s/%s: 심각도 어휘 밖 %r" % (cid, rid, r.get("severity")))
     dup = sorted({x for x in ids if ids.count(x) > 1})
@@ -377,6 +418,217 @@ def _scan_json_field(root, W, cid, r, now, events):
     _flag(W, events, cid, r["id"], r["severity"], msg, {"file": r["file"]}, now)
 
 
+# ── v10.2 규칙 종류(2026-11-10) — 상설 판 · 강화 사슬 원장 · 팩터 DB 판 표식 · 판단 원장 ─────────────────────────────
+def _settle(W, cid, rid, now, keep):
+    """여러 대상(파일)을 보는 상태형 규칙 — 이번 스캔에 다시 잡히지 않은 이상만 해소한다(한 파일이 정상이 됐다고 다른 파일의 이상을 닫지 않는다)."""
+    for a in W.get("anomalies", {}).values():
+        if a["component"] == cid and a["rule"] == rid and a["status"] in ("open", "acked") and a["key"] not in keep:
+            a["status"] = "resolved"; a["resolved_at"] = _iso(now)
+
+
+def _flag_all(W, events, cid, r, now, bad):
+    keep = set()
+    for text, ev in bad:
+        _flag(W, events, cid, r["id"], r["severity"], text, ev, now)
+        keep.add(_key(cid, r["id"], text))
+    _settle(W, cid, r["id"], now, keep)
+
+
+def _parse_at(s, tz):
+    if not isinstance(s, str) or not s.strip():
+        return None
+    s = s.strip()
+    for f in ("%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M%z"):
+        try:
+            return dt.datetime.strptime(s, f)
+        except ValueError:
+            pass
+    try:
+        t = dt.datetime.fromisoformat(s)
+        return t if t.tzinfo else t.replace(tzinfo=tz)
+    except ValueError:
+        return None
+
+
+def _jsonl(path):
+    """줄 원문 바이트(빈 줄 제외 · 끝 CR 제거 — R readLines + nzchar 와 같은 줄) · 파싱 결과(실패 = None)."""
+    with io.open(path, "rb") as f:
+        raw = f.read()
+    lines = [b.rstrip(b"\r") for b in raw.split(b"\n")]
+    lines = [b for b in lines if b]
+    recs = []
+    for b in lines:
+        try:
+            x = json.loads(b.decode("utf-8"))
+            recs.append(x if isinstance(x, dict) else None)
+        except Exception:
+            recs.append(None)
+    return lines, recs
+
+
+def _scan_jsonl_ledger(root, W, cid, r, now, events):
+    ck = r["check"]
+    files = [p for p in _paths(root, r["files"], now) if os.path.exists(p)]
+    data = {p: _jsonl(p) for p in files}
+    if ck == "event_age" and r.get("edition_field"):
+        # 판 승계 — 같은 프로그램 폴더(원장의 두 단계 위)에서 가장 높은 판만 본다(옛 판은 새 항목을 받지 않는 게 정상)
+        best = {}
+        for p in files:
+            ed = max([x.get(r["edition_field"]) for x in data[p][1] if x and isinstance(x.get(r["edition_field"]), (int, float))] or [-1])
+            g = os.path.dirname(os.path.dirname(p))
+            if g not in best or ed > best[g][0]:
+                best[g] = (ed, p)
+        files = [v[1] for v in best.values()]
+    bad = []
+    lim = dt.timedelta(hours=float(r.get("max_age_h", 0) or 0))
+    for p in files:
+        rel = _rel(root, p)
+        lines, recs = data[p]
+        if ck == "chain":
+            prev, brk = "genesis", []
+            for i, b in enumerate(lines):
+                x = recs[i]
+                if x is None or x.get("prev") != prev or (r.get("schema") and x.get("schema") != r["schema"]):
+                    brk.append(i + 1)
+                prev = hashlib.md5(b).hexdigest()
+            if brk:
+                bad.append(("원장 해시 사슬 끊김(줄 %s%s · 전 %d줄) — 추가 전용 위반 · 이 원장은 더 쓰이지 않는다: %s"
+                            % (",".join(map(str, brk[:5])), " …" if len(brk) > 5 else "", len(lines), rel), {"file": rel}))
+        elif ck == "event_age":
+            ts = [_parse_at(x.get("at"), now.tzinfo) for x in recs if x and x.get("event") in r["events"]]
+            ts = [t for t in ts if t is not None]
+            what = "/".join(r["events"])
+            if not ts:                                                     # 원장은 있는데 그 사건이 한 번도 없다 — 원장 첫 기록부터 잰다
+                ts0 = [t for t in (_parse_at(x.get("at"), now.tzinfo) for x in recs if x) if t is not None]
+                if not ts0:
+                    bad.append(("원장 시각 판독 불가: %s" % rel, {"file": rel})); continue
+                last, what = min(ts0), what + " 없음 · 원장 첫 기록"
+            else:
+                last = max(ts)
+            if now - last > lim:
+                bad.append(("마지막 %s %.0f시간 전(문턱 %s시간): %s" % (what, (now - last).total_seconds() / 3600.0, r["max_age_h"], rel), {"file": rel}))
+        elif ck == "pending":
+            if r.get("terminal_event") and any(x and x.get("event") == r["terminal_event"] for x in recs):
+                continue                                                   # 닫힌 원장
+            opened, closed = {}, set()
+            for x in recs:
+                if not x:
+                    continue
+                m = str(x.get(r["match_field"]))
+                if x.get("event") == r["open_event"]:
+                    opened[m] = _parse_at(x.get("at"), now.tzinfo)
+                elif x.get("event") == r["close_event"]:
+                    closed.add(m)
+            for m, t in sorted(opened.items()):
+                if m in closed:
+                    continue
+                if t is None:
+                    bad.append(("열린 %s %s=%s 시각 판독 불가: %s" % (r["open_event"], r["match_field"], m, rel), {"file": rel}))
+                elif now - t > lim:
+                    bad.append(("%s %s=%s 가 %s 없이 %.0f시간(문턱 %s시간): %s" % (r["open_event"], r["match_field"], m, r["close_event"],
+                                                                          (now - t).total_seconds() / 3600.0, r["max_age_h"], rel), {"file": rel}))
+    _flag_all(W, events, cid, r, now, bad)
+
+
+_ID_TOKEN = re.compile(r"[A-Za-z0-9][A-Za-z0-9_\-]*")
+
+
+def _summary_time(path, s, r, tz):
+    """요약의 완료 시각 = 시작 표지(stamp) + 소요(seconds) — 없으면 파일 수정 시각."""
+    tf = r.get("time_from") or {}
+    try:
+        t = dt.datetime.strptime(str(s.get(tf["stamp_field"])), tf["stamp_format"]).replace(tzinfo=tz)
+        if tf.get("plus_seconds_field") and isinstance(s.get(tf["plus_seconds_field"]), (int, float)):
+            t += dt.timedelta(seconds=float(s[tf["plus_seconds_field"]]))
+        return t
+    except Exception:
+        return dt.datetime.fromtimestamp(os.path.getmtime(path)).astimezone(tz)
+
+
+def _scan_ledger_covers(root, W, cid, r, now, events):
+    lp = _abs(root, r["ledger"])
+    L = _read_json(lp, default={}) if os.path.exists(lp) else None
+    entries = (L or {}).get(r.get("ledger_list", "entries"), []) if L is not None else []
+    tfield = r.get("ledger_time_field", "completed_at")
+    done = [t for t in (_parse_at(e.get(tfield), now.tzinfo) for e in entries if isinstance(e, dict)) if t is not None]
+    last = max(done) if done else None
+    ids = set()
+    for e in entries:
+        if isinstance(e, dict):
+            for f in r.get("ledger_id_fields", ["id", "decision"]):
+                ids.update(_ID_TOKEN.findall(str(e.get(f) or "")))
+    excl = [re.compile(x) for x in r.get("exclude", [])]
+    bad = []
+    for p in _paths(root, r["summaries"], now):
+        if not os.path.exists(p) or any(x.search(os.path.basename(p)) for x in excl):
+            continue
+        try:
+            s = _read_json(p)
+        except Exception:
+            continue                                                       # 쓰는 중 · 깨진 요약은 판정하지 않는다(다음 스캔)
+        if not isinstance(s, dict) or str(s.get(r["ok_field"])) not in [str(v) for v in r["ok_values"]]:
+            continue
+        t = _summary_time(p, s, r, now.tzinfo)
+        if last is not None and t <= last:
+            continue
+        sid = str(s.get(r["id_field"]) or "").strip()
+        rel = _rel(root, p)
+        if L is None:
+            bad.append(("판 표식 원장 없음 — 완료된 수리 요약이 있다: %s" % rel, {"file": rel}))
+        elif not sid:
+            bad.append(("완료된 수리 요약에 결정 id(%s) 없음 — 판 표식 원장에 못 잇는다: %s" % (r["id_field"], rel), {"file": rel}))
+        elif sid not in ids:
+            bad.append(("수리 '%s' 완료(%s)가 판 표식 원장의 마지막 완료(%s)보다 새로운데 원장에 그 결정 id 가 없다 — 원장 한 줄 누락: %s"
+                        % (sid, _iso(t)[:16], _iso(last)[:16] if last else "없음", rel), {"file": rel, "ledger": r["ledger"]}))
+    _flag_all(W, events, cid, r, now, bad)
+
+
+def _git_commits_since(repo, since):
+    import subprocess
+    try:
+        p = subprocess.run(["git", "-C", repo, "log", "--since=%s" % since.strftime("%Y-%m-%dT%H:%M:%S%z"), "--format=%h"],
+                           capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=60)
+        if p.returncode != 0:
+            return None
+        return sum(1 for ln in p.stdout.splitlines() if ln.strip())
+    except Exception:
+        return None
+
+
+def _all_times(obj, keys, tz, out):
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            if k in keys and isinstance(v, str):
+                t = _parse_at(v, tz)
+                if t is not None:
+                    out.append(t)
+            else:
+                _all_times(v, keys, tz, out)
+    elif isinstance(obj, list):
+        for v in obj:
+            _all_times(v, keys, tz, out)
+
+
+def _scan_ledger_activity(root, W, cid, r, now, events):
+    path = _abs(root, r["file"])
+    if not os.path.exists(path):
+        _clear(W, cid, r["id"], now); return                              # 원장이 없으면 무음
+    d = _read_json(path)
+    ts = []
+    _all_times({k: d.get(k) for k in r.get("collections", ["judgments", "reviews", "challenges"])}, set(r.get("time_keys", ["at", "outcome_at"])), now.tzinfo, ts)
+    if not ts:
+        _clear(W, cid, r["id"], now); return
+    last = max(ts)
+    age_h = (now - last).total_seconds() / 3600.0
+    if age_h <= float(r["max_age_h"]):
+        _clear(W, cid, r["id"], now); return
+    n = _git_commits_since(_abs(root, r.get("git_repo") or "."), last)
+    if not n:                                                              # 커밋 0 = 쉰 것 · git 실패 = 모름(무음)
+        _clear(W, cid, r["id"], now); return
+    msg = "%s 마지막 기록 %s(%.0f시간 전 · 문턱 %s시간) — 그 뒤 저장소 커밋 %d건: 판단 기록 누락 의심" % (r["file"], _iso(last)[:16], age_h, r["max_age_h"], n)
+    _flag(W, events, cid, r["id"], r["severity"], msg, {"file": r["file"], "commits_since": n}, now)
+
+
 def scan(root=None, only=None):
     root = root or _root()
     reg = _read_json(registry_path(root))
@@ -388,7 +640,8 @@ def scan(root=None, only=None):
         _die("감시 상태 schema 불일치")
     now = _now(); events = []
     dflt = float(reg.get("default_max_event_age_h", 48))
-    fn = {"log_patterns": _scan_log_rule, "freshness": _scan_freshness, "expect_today": _scan_expect_today, "json_field": _scan_json_field}
+    fn = {"log_patterns": _scan_log_rule, "freshness": _scan_freshness, "expect_today": _scan_expect_today, "json_field": _scan_json_field,
+          "jsonl_ledger": _scan_jsonl_ledger, "ledger_covers": _scan_ledger_covers, "ledger_activity": _scan_ledger_activity}
     for c in reg["components"]:
         if only and c["id"] != only:
             continue

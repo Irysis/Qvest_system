@@ -1,7 +1,7 @@
 {
  "schema": "superfan_components_v1",
  "default_max_event_age_h": 48,
- "doc": "구성요소 Superfan 정의(2026-10-16 도훈 지시 '1개 컴포넌트 - 1개 에이전트 매칭') — 구성요소마다 전담 Superfan 1명(.claude/agents/superfan-component.md)이 이 정의의 로그 · 에러 · 상태 규칙과 자기 dossier 로 그 구성요소만 추적한다. 감시 = 02_Infrastructure/programs/superfan_watch.py(결정론 · LLM 0) · 상태 = .cache/superfan_watch.json(운영 캐시 · OneDrive 미동기화) · 규약 = 00_Lawbook/specs/superfan_protocol.md §10. 규칙 종류: log_patterns(새 줄 정규식) · freshness(갱신 나이) · expect_today(오늘 완료 표식) · json_field(상태 필드). 경로: 저장소 상대 · ~ 확장 · {YYYYMMDD}(오늘 · 어제) · 와일드카드.",
+ "doc": "구성요소 Superfan 정의(2026-10-16 도훈 지시 '1개 컴포넌트 - 1개 에이전트 매칭') — 구성요소마다 전담 Superfan 1명(.claude/agents/superfan-component.md)이 이 정의의 로그 · 에러 · 상태 규칙과 자기 dossier 로 그 구성요소만 추적한다. 감시 = 02_Infrastructure/programs/superfan_watch.py(결정론 · LLM 0) · 상태 = .cache/superfan_watch.json(운영 캐시 · OneDrive 미동기화) · 규약 = 00_Lawbook/specs/superfan_protocol.md §10. 규칙 종류: log_patterns(새 줄 정규식) · freshness(갱신 나이) · expect_today(오늘 완료 표식) · json_field(상태 필드) · (v10.2 2026-11-10) jsonl_ledger(추가 전용 원장 — 해시 사슬 · 사건 나이 · 열린 걸음) · ledger_covers(완료 요약 ↔ 원장 결정 id) · ledger_activity(원장 마지막 기록 ↔ 그 뒤 git 커밋). 새 세 종류의 숫자 문턱은 max_age_h_source(근거 문구) 필수. 경로: 저장소 상대 · ~ 확장 · {YYYYMMDD}(오늘 · 어제) · 와일드카드.",
  "components": [
   {
    "id": "daily_refresh",
@@ -144,6 +144,76 @@
      "patterns": [
       {"severity": "fail", "regex": "신규실패 [1-9]", "label": "새 실패"},
       {"severity": "warn", "regex": "★정체:", "label": "정체 작업"}]}
+   ]
+  },
+  {
+   "id": "standing_board",
+   "name": "상설 판(round_core v1/standing.R · 규칙 한 번 등록 · 후보는 흐른다 — P1S01 …)",
+   "fan": "상설 판 전담 Superfan",
+   "dossier": "04_Research/programs/_supervision/superfan/components/standing_board/dossier.md",
+   "schedule": "세션이 부른다(아침 체인 · 레인 틱 뒤 scan → standing-measure → standing-report — 예약 연결은 도훈 권한 · P1S01 DESIGN.md §4)",
+   "code": ["04_Research/programs/_lib/round_core/v1/standing.R", "04_Research/programs/_lib/round_core/round.sh"],
+   "knowledge": [],
+   "v10_2": "2026-11-10 추가 — 등록된 판이 없으면(원장 standing_ledger.jsonl 없음) 무음. 원장은 첫 scan 때 생기므로 '등록됐지만 한 번도 스캔하지 않은 판'은 이 규칙이 못 본다(standing-status 가 본다).",
+   "rules": [
+    {"id": "scan_stale", "kind": "jsonl_ledger", "check": "event_age",
+     "files": ["stage_artifacts/programs/*/*/standing_ledger.jsonl"], "events": ["scan", "measure"], "edition_field": "edition",
+     "max_age_h": 26, "severity": "warn",
+     "max_age_h_source": "스캔 주기 = 아침 체인 · 레인 틱 뒤 하루 1회(04_Research/programs/P1_RETURN/P1S01_standing_qualification/DESIGN.md §4) — 일 단위 문턱은 기존 daily_refresh.log_fresh 26시간(24h + 여유 2h)과 같은 성격으로 맞춤"},
+    {"id": "ledger_chain", "kind": "jsonl_ledger", "check": "chain",
+     "files": ["stage_artifacts/programs/*/*/standing_ledger.jsonl"], "schema": "rc_standing_ledger_v1", "severity": "fail"}
+   ]
+  },
+  {
+   "id": "reinforce_chain",
+   "name": "강화 사슬(round_core v1/p4.R · 사슬 판 → 걸음 → 닫기 · 걸음 원장 chain_steps.jsonl)",
+   "fan": "강화 사슬 전담 Superfan",
+   "dossier": "04_Research/programs/_supervision/superfan/components/reinforce_chain/dossier.md",
+   "schedule": "세션이 부른다(round.sh <사슬> p4-step-open → 정본 셀 워커 측정 → p4-step-decide)",
+   "code": ["04_Research/programs/_lib/round_core/v1/p4.R", "04_Research/programs/_lib/round_core/round.sh"],
+   "knowledge": [],
+   "v10_2": "2026-11-10 추가 — 사슬 원장이 없으면 무음 · 닫힌 사슬(chain_closed)의 열린 걸음은 보지 않는다. 해시 사슬 검사는 줄마다 prev 대조뿐이다(정본 판정 = rc_p4_steps_verify).",
+   "rules": [
+    {"id": "step_stalled", "kind": "jsonl_ledger", "check": "pending",
+     "files": ["04_Research/programs/*/*/chain_steps.jsonl"], "open_event": "step_open", "close_event": "step_result", "match_field": "k",
+     "terminal_event": "chain_closed", "max_age_h": 6, "severity": "warn",
+     "max_age_h_source": "칸 1개 측정의 생존 회수 나이 = 06_Registry/reinforce_auto_config.json::claim_stale_hours(6) — 같은 성격(셀 측정이 판정까지 가지 않은 채 머무름) · 충실구현 claim_live_long 처럼 경고만(계산 시간 상한 없음 10-17)"},
+    {"id": "ledger_chain", "kind": "jsonl_ledger", "check": "chain",
+     "files": ["04_Research/programs/*/*/chain_steps.jsonl"], "schema": "rc_p4_chain_steps_v1", "severity": "fail"}
+   ]
+  },
+  {
+   "id": "factor_db_vintage",
+   "name": "팩터 DB 판 표식(06_Registry/factor_db_vintage.json · contracts/factor_db_vintage.R) — 수리 원장의 양성 대조",
+   "fan": "팩터 DB 판 표식 전담 Superfan",
+   "dossier": "04_Research/programs/_supervision/superfan/components/factor_db_vintage/dossier.md",
+   "schedule": "팩터 DB 부분 재계산 진행기가 끝날 때(.cache/scheduler_logs/factor_subset_repair_*.json) · 수리 뒤 원장에 한 줄(설계 README §4 '상시')",
+   "code": ["02_Infrastructure/contracts/factor_db_vintage.R", "06_Registry/factor_db_vintage.json"],
+   "knowledge": ["memory:project-factor-direction-storage-repair-20261109.md"],
+   "v10_2": "2026-11-10 추가 — 누가 팩터 DB 를 고치고 판 표식 원장에 한 줄을 안 넣으면, 수리 전 측정이 '낡음' 표식 없이 A 자격 관문 · 기저 풀을 지난다. 이 규칙이 그 원장의 양성 대조다.",
+   "rules": [
+    {"id": "unrecorded_repair", "kind": "ledger_covers",
+     "summaries": [".cache/scheduler_logs/factor_subset_repair_*.json"], "exclude": ["\\.prev_"],
+     "ok_field": "result", "ok_values": ["성공"], "id_field": "decision",
+     "time_from": {"stamp_field": "stamp", "stamp_format": "%Y%m%d_%H%M%S", "plus_seconds_field": "seconds"},
+     "ledger": "06_Registry/factor_db_vintage.json", "ledger_list": "entries", "ledger_time_field": "completed_at", "ledger_id_fields": ["id", "decision"],
+     "severity": "warn"}
+   ]
+  },
+  {
+   "id": "judgment_ledger",
+   "name": "판단 원장(06_Registry/q_judgment_ledger.json · writer q_judgment_ledger.py)",
+   "fan": "판단 원장 전담 Superfan",
+   "dossier": "04_Research/programs/_supervision/superfan/components/judgment_ledger/dossier.md",
+   "schedule": "Q 가 판단마다 record(규약 §8) · T3 스폰 전 그날 커밋 ↔ 원장 대조",
+   "code": ["02_Infrastructure/programs/q_judgment_ledger.py"],
+   "knowledge": [],
+   "v10_2": "2026-11-10 추가 — 전수점검이 원장이 11-06 뒤로 멈춘 것을 찾았다(그 사이 등급 v3.3 · v3.4 · 재무 v2 · v10.2 재편). 커밋 수는 git log --since 로 세고 실패하면 무음.",
+   "rules": [
+    {"id": "ledger_stale", "kind": "ledger_activity", "file": "06_Registry/q_judgment_ledger.json",
+     "collections": ["judgments", "reviews", "challenges"], "time_keys": ["at", "outcome_at"],
+     "max_age_h": 26, "severity": "warn",
+     "max_age_h_source": "규약 §8 T3 스폰 전 자체 점검 = '그날 커밋(git log --since) ↔ 판단 원장' 일 단위 대조(T3 C-20261017-004) — 일 단위 문턱은 기존 daily_refresh.log_fresh 26시간(24h + 여유 2h)과 같은 성격으로 맞춤"}
    ]
   }
  ]
