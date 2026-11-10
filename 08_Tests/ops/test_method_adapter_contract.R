@@ -118,13 +118,27 @@ if (survived >= 3) ok(sprintf("돌연변이 판별력 %d/3", survived)) else bad
 
 # ── 실물 어댑터: 레지스트리에 등재된 것이 실제로 로드·동작하는가 ──
 cat("\n[3] 실물 레지스트리 — implemented 어댑터가 로드되고 계약을 지키는가\n")
+# ★2026-11-10 픽스처 수리(시험 정비): 위험 기반 어댑터 3종(HRPLdP2016 · NCOLdP2019 · ERCMRT2010)은
+#   2026-10-16(98884bf292)부터 ctx$Sigma 를 우선 소비한다. 구 픽스처 Σ = 단위행렬(분산 동일 · 상관 0)에서는
+#   HRP(역분산) · ERC(위험 기여 균등) · NCO 가 **수학적으로 정확히 EW** 다(폴백 아님 — 래퍼 폴백 로그 없음 ·
+#   같은 어댑터에 이질 Σ 를 주면 max|w−1/25| = 0.11/0.12/0.04 로 구별됨, 2026-11-10 실측).
+#   그래서 이 절의 "EW 와 구별되는가" 단언은 단위 Σ 에서 판별력이 없었다 — 검사가 재는 대상이 바뀐 게 아니라
+#   픽스처가 그 대상을 못 건드렸다. ⇒ 실물 절만 **이질 분산 · 표본 상관** Σ(같은 창의 표본 공분산 · 엔진 규약)로
+#   준다. 판별 단언(EW 동일 = 빨강)은 그대로이고, 폴백 로그 호명 단언을 하나 더 건다(조용한 EW 폴백 검거 보강).
+ctx3 <- local({
+  set.seed(11)
+  R3 <- matrix(rnorm(250 * 25, 0, 0.02) * rep(seq(0.5, 2, length.out = 25), each = 250), 250, 25,
+               dimnames = list(NULL, A))
+  modifyList(ctx, list(R = R3, Sigma = stats::cov(R3)))
+})
 utils::capture.output(ads <- load_method_adapters(route = "optimizer", ub = UB))
 if (!length(ads)) {
   bad("레지스트리 로드", "implemented 어댑터 0건 — (b)안이 배선되지 않은 상태")
 } else {
   ok(sprintf("로드 %d건: %s", length(ads), paste(names(ads), collapse = ", ")))
   for (id in names(ads)) {
-    utils::capture.output(w <- ads[[id]](ctx))
+    lg3 <- utils::capture.output(w <- ads[[id]](ctx3))
+    if (any(grepl("EW 폴백", lg3, fixed = TRUE))) bad(sprintf("실물 %s 폴백", id), "래퍼가 EW 폴백을 호명함 — 어댑터가 실제로 안 돎")
     viol <- names(chk)[!vapply(names(chk), function(nm) isTRUE(chk[[nm]](w)), logical(1))]
     if (length(viol)) bad(sprintf("실물 %s", id), paste(viol, collapse = ", "))
     else ok(sprintf("실물 %s → 유효 (max=%.3f, sum=%.6f, n>0=%d)", id, max(w), sum(w), sum(w > 1e-8)))

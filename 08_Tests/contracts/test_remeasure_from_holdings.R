@@ -6,7 +6,7 @@
 #                   비유한 · 월 첫 거래일 아닌 exec · close_t1 첫 집행일 1건 허용/2건 거부)
 # C 골든 양성 대조 : stage_artifacts/replication/20260921_100007_6876
 #                   legacy@현 빈티지 = 저장 bt_result 비트 일치(ret_net·nav·metrics·benchmark) + essence = 저장 auth(3자리)
-#                   close_t1 = B · PT 3.777 · Calmar .433 (P0-04 골든 close_t1 판 — test_replication_exec_golden.R 머리 실측)
+#                   close_t1 = C · PT 3.772 · Calmar .432 (2026-11-10 재핀 — 구 B · 3.777 · .433 · 사유 08_Tests/fixtures/replication_exec_golden/README.md)
 #                   쓰기 = out_dir 아래 2디렉터리뿐(계약 산출 CSV·스펙·bt·JSON) · 원본 md5 불변 · 재개(cached)·force·빈티지 불일치 재측정
 #                   위반 주입: 골든 사본 보유 1개월 삭제 → stop · 돌연변이 M1(달력 대조 제거 → 조용히 통과) ·
 #                   M2(END 절단 제거 → 비트 일치 깨짐 = 양성 대조가 잡는다)
@@ -135,33 +135,61 @@ mk <- NULL
 if (!have_gold) { sk("C 재료 부재(골든·RAWDATA 캐시)") } else {
   t0 <- Sys.time(); mk <- qd(rfh_load_market(root)); tl <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
   md5_0 <- tools::md5sum(list.files(GOLD, full.names = TRUE, recursive = TRUE))
+  ent_0 <- sort(list.files(GOLD, all.files = TRUE, no.. = TRUE))   # 산출물 최상위 항목(운영 재측정 판 포함) — 시험이 늘리지 않아야 한다
   OUT <- file.path(TMP, "o")
   t0 <- Sys.time(); L <- qd(rfh_remeasure(GOLD, "close_d_legacy", raw = mk, out_dir = OUT, root = root))
   tL <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
   v <- L$vs_stored
-  chk(isTRUE(v$same_regime) && isTRUE(v$ret_net_identical) && isTRUE(v$nav_net_identical) && isTRUE(v$metrics_identical) &&
-        isTRUE(v$benchmark_identical) && identical(v$max_abs_dret_common_days, 0),
-      sprintf("C1 legacy@현 빈티지 = 저장 bt 비트 일치(ret_net·nav·metrics·benchmark · %d일 · 적재 %.0fs · 계약 %.0fs)",
+  # ★재핀 2026-11-10(시험 정비 · 근거 = 08_Tests/fixtures/replication_exec_golden/README.md):
+  #   C1 비트 기준 = 재핀 참조(같은 보유 · 현 데이터 2026-09-18 절단 · 5337일). 저장 bt(09-21 · 5336일)와의 차이는 전부
+  #   ① 2024-12-30 거래일 복원(커밋 48b3d3bfd · 경계 앞 · 축 +1일) ② 10-17 OHLCVS 재수출(경계 2026-03-30 뒤)로 재도출됐다 —
+  #   복원 전 백업 데이터로 이 계약을 돌리면 경계 앞 차이 0 · 차이 첫 날 2026-07-01. 팩터 DB 수리와 무관(비중 = 저장 보유).
+  #   vs_stored(계약이 저장 bt 와 잰 값)는 그대로 기록되지만 판정은 재핀 참조와의 비트 대조로 한다.
+  REFO <- readRDS(file.path(root, "08_Tests/fixtures/replication_exec_golden/ref_legacy_20261110.rds")); btR <- REFO$bt
+  same_ref <- function(bt) {
+    if (is.null(bt)) return(c(ret_net = FALSE, nav_net = FALSE, metrics = FALSE, benchmark = FALSE))
+    a <- as.data.table(bt$period_returns); b <- as.data.table(btR$period_returns)
+    ma <- as.data.table(bt$metrics); mb <- as.data.table(btR$metrics)
+    c(ret_net   = identical(a$ret_net, b$ret_net) && identical(as.Date(a$date), as.Date(b$date)),
+      nav_net   = identical(bt$nav$nav_net, btR$nav$nav_net),
+      metrics   = identical(ma$metric_name, mb$metric_name) && identical(ma$metric_value, mb$metric_value),
+      benchmark = identical(bt$benchmark_returns$benchmark_ret, btR$benchmark_returns$benchmark_ret))
+  }
+  sr1 <- same_ref(L$bt)
+  chk(isTRUE(v$same_regime) && all(sr1),
+      sprintf("C1 legacy@현 빈티지 = 재핀 참조 비트 일치(ret_net·nav·metrics·benchmark · %d일 · 적재 %.0fs · 계약 %.0fs)",
               v$n_days_new, tl, tL),
-      sprintf("C1 비트 불일치 — %s", paste(names(v), unlist(v), sep = "=", collapse = " ")))
+      sprintf("C1 비트 불일치(재핀 참조 대비) — %s · same_regime=%s · 저장 대비 %s", paste(names(sr1), sr1, sep = "=", collapse = " "),
+              v$same_regime, paste(names(v), unlist(v), sep = "=", collapse = " ")))
   au <- fromJSON(file.path(GOLD, "authoritative_remeasure.json"), simplifyVector = TRUE)
   ks <- c("cagr", "net_sharpe", "mdd", "calmar", "portfolio_alpha_t_nw_lag3", "oos_retention", "net_ir")
-  v1 <- unlist(L$auth$essence[ks]); va <- unlist(au$essence[ks])
-  chk(identical(L$auth$essence_grade, au$essence_grade) && all(abs(round(v1, 3) - va) < 1e-9),
-      sprintf("C1 essence = 저장 authoritative(3자리): %s · PT %.3f · Calmar %.3f", au$essence_grade, va[5], va[4]))
+  esR <- qd(.RFH$essence_score(btR, n_trials_cumulative = 1L, selection_type = "chain", sidecar_log = FALSE))   # 재핀 참조를 현 채점기로
+  v1 <- unlist(L$auth$essence[ks]); va <- unlist(esR$essence[ks])
+  chk(identical(L$auth$essence_grade, esR$grade) && identical(L$auth$essence_grade, au$essence_grade) && all(abs(round(v1, 3) - round(va, 3)) < 1e-9),
+      sprintf("C1 essence = 재핀 참조 재채점(3자리) · 등급 = 저장 authoritative 등급: %s · PT %.3f · Calmar %.3f", esR$grade, va[5], va[4]),
+      sprintf("C1 essence 불일치 — 재현 %s/%s vs 참조 %s/%s · 저장 등급 %s", L$auth$essence_grade, paste(round(v1, 3), collapse = "/"),
+              esR$grade, paste(round(va, 3), collapse = "/"), au$essence_grade))
+  # ★재핀 2026-11-10: close_t1 상수 B · 3.777 · .433(09-24 · 등급 v921 · 구 데이터) → C · 3.772 · .432.
+  #   등급 B → C = 등급 v3 승격(10-13 GRADE-V3-PROMOTE · 위기 복원력 약함 노치 −1 — 운영 판 remeasure_close_t1_5562284e 도
+  #   10-13 부터 C) · 수치 = 위 ① ② 데이터 변경(백업 데이터 3.771/.432 → 현행 3.772/.432). 허용 오차(5e-4)는 그대로.
+  T1_GRADE <- "C"; T1_PT <- 3.772; T1_CALMAR <- 0.432
   T1 <- qd(rfh_remeasure(GOLD, "close_t1", raw = mk, out_dir = OUT, root = root))
   e <- T1$auth$essence
-  chk(identical(T1$auth$essence_grade, "B") && abs(e$portfolio_alpha_t_nw_lag3 - 3.777) < 5e-4 && abs(e$calmar - 0.433) < 5e-4 &&
+  chk(identical(T1$auth$essence_grade, T1_GRADE) && abs(e$portfolio_alpha_t_nw_lag3 - T1_PT) < 5e-4 && abs(e$calmar - T1_CALMAR) < 5e-4 &&
         T1$vs_stored$n_days_new == v$n_days_new - 1L && !isTRUE(T1$vs_stored$same_regime),
-      sprintf("C2 close_t1 = B · PT %.3f · Calmar %.3f (P0-04 골든 3.777/.433) · 관측 %d일 = legacy − 1",
-              e$portfolio_alpha_t_nw_lag3, e$calmar, T1$vs_stored$n_days_new),
+      sprintf("C2 close_t1 = %s · PT %.3f · Calmar %.3f (재핀 11-10 %.3f/%.3f) · 관측 %d일 = legacy − 1",
+              T1_GRADE, e$portfolio_alpha_t_nw_lag3, e$calmar, T1_PT, T1_CALMAR, T1$vs_stored$n_days_new),
       sprintf("C2 close_t1 불일치 — %s PT %s Calmar %s", T1$auth$essence_grade, e$portfolio_alpha_t_nw_lag3, e$calmar))
   fs <- sort(list.files(OUT, recursive = TRUE))
   dirs2 <- file.path("20260921_100007_6876", paste0("remeasure_", c(rgl$key, rg1$key)))
   need <- c("authoritative_remeasure.json", "bt_result.rds", "01_strategy_spec.json", "03_period_returns.csv", "04_holdings.csv")
   md5_1 <- tools::md5sum(list.files(GOLD, full.names = TRUE, recursive = TRUE))
+  # ★2026-11-10 시험 정비: 구 단언 `!any(grepl("^remeasure_", list.files(GOLD)))` 는 운영 상태(09-25 close_t1 rebase 가 이 산출물에
+  #   remeasure_close_d_legacy_dc0a53ba · remeasure_close_t1_5562284e 를 제자리 기록)에 기대어 그날부터 빨강이었다. 의도 =
+  #   '이 시험이 원본 산출물에 쓰지 않는다' — 재귀 md5 불변 + 최상위 항목이 시험 전후 같다(새 remeasure_ 0)로 같은 것을 잰다.
+  ent_1 <- sort(list.files(GOLD, all.files = TRUE, no.. = TRUE))
   chk(all(dirname(fs) %in% dirs2) && all(file.path(rep(dirs2, each = length(need)), need) %in% fs) &&
-        identical(md5_0, md5_1) && !any(grepl("^remeasure_", list.files(GOLD))),
+        identical(md5_0, md5_1) && identical(ent_0, ent_1),
       sprintf("C3 쓰기 = out_dir 아래 2디렉터리뿐(각 %d파일 — 계약 산출 CSV·스펙 포함) · 원본 %d파일 md5 불변 · 산출물 안 remeasure_ 0",
               sum(dirname(fs) == dirs2[2]), length(md5_1)),
       sprintf("C3 쓰기 범위 이탈 — %s", paste(fs, collapse = ",")))
@@ -169,7 +197,9 @@ if (!have_gold) { sk("C 재료 부재(골든·RAWDATA 캐시)") } else {
   chk(identical(aj$measurement_regime$key, rg1$key) && identical(aj$measurement_regime$exec_price, "close_t1") &&
         identical(aj$measurement_regime$regime, rg1$key) && grepl("^[0-9a-f]{32}$", aj$measurement_regime$scoring_md5 %||% "") &&
         identical(aj$measurement_regime$harness_md5, rg1$harness_md5) && identical(aj$remeasure$n_signals_restored, 260L) &&
-        identical(aj$remeasure$n_rebal_sim, 260L) && identical(aj$remeasure$stored$essence_grade, "B") &&
+        identical(aj$remeasure$n_rebal_sim, 260L) &&
+        # ★2026-11-10: 승계값 = 원 산출물 authoritative 의 현재 등급(재도출). 구 리터럴 "B" 는 등급 v3.3 재채점(11-10 · B → A)으로 낡았다.
+        identical(aj$remeasure$stored$essence_grade, au$essence_grade) &&
         identical(aj$kind, "remeasure_from_holdings") && !is.null(aj$remeasure$pit_screen),
       "C3 JSON 필드: regime{regime=key·key·exec_price·harness_md5·scoring_md5} · 복원 260 = 하네스 260 · 저장값 승계 · kind 표지 · PIT 판정 기록")
   # 적대검증 입력(I2) — 형제 판 03/04 가 그 규약의 창을 담는다(close_t1: 첫 수익일 > 첫 집행일 · legacy: 같다)
@@ -189,13 +219,13 @@ if (!have_gold) { sk("C 재료 부재(골든·RAWDATA 캐시)") } else {
   chk(isTRUE(Lc$cached) && tc < 5 && is.null(cj_alt) && !is.null(cj_same) && is.null(cj_key),
       sprintf("C4 재개: 같은 regime·빈티지 = 캐시(%.2fs) · 빈티지 지문 불일치·regime 키 불일치 = 캐시 불채택(다시 잰다)", tc))
   Lf <- qd(rfh_remeasure(GOLD, "close_t1", raw = mk, out_dir = OUT, root = root, force = TRUE))
-  chk(!isTRUE(Lf$cached) && abs(Lf$auth$essence$portfolio_alpha_t_nw_lag3 - 3.777) < 5e-4,
+  chk(!isTRUE(Lf$cached) && abs(Lf$auth$essence$portfolio_alpha_t_nw_lag3 - T1_PT) < 5e-4,
       "C4 force=TRUE → 캐시 무시 재측정(같은 값 재현 — 결정론)")
   # ── C6 ★R① 재개 캐시 = 채점 인자까지 대조 (적대검증 재현: 기본 채점 뒤 (sweep, 500) 호출이 cached=TRUE · chain · N 1 을 받았다) ──
   Ls <- qd(rfh_remeasure(GOLD, "close_t1", raw = mk, out_dir = OUT, root = root, selection_type = "sweep", n_trials_cumulative = 500L))
   chk(!isTRUE(Ls$cached) && identical(Ls$auth$selection_type, "sweep") && identical(as.integer(Ls$auth$n_trials_cumulative), 500L) &&
         isTRUE(Ls$auth$dsr_gate_applied) && identical(Ls$auth$measurement_regime$n_trials_basis, "argument") &&
-        abs(Ls$auth$essence$portfolio_alpha_t_nw_lag3 - 3.777) < 5e-4,
+        abs(Ls$auth$essence$portfolio_alpha_t_nw_lag3 - T1_PT) < 5e-4,
       sprintf("C6a (sweep, 500) 호출 → 캐시(chain/1) 불채택 · 다시 채점: %s/%s · dsr_gate %s · PT 불변 %.3f",
               Ls$auth$selection_type, Ls$auth$n_trials_cumulative, Ls$auth$dsr_gate_applied, Ls$auth$essence$portfolio_alpha_t_nw_lag3),
       sprintf("C6a 옛 채점 판을 돌려줌 — cached=%s %s/%s", Ls$cached, Ls$auth$selection_type, Ls$auth$n_trials_cumulative))
@@ -244,9 +274,11 @@ if (!have_gold) { sk("C 재료 부재(골든·RAWDATA 캐시)") } else {
     .orig <- .rfh_subset_raw; assign(".rfh_subset_raw", m2, envir = environment(rfh_remeasure))
     Lm <- tryCatch(qd(rfh_remeasure(GOLD, "close_d_legacy", raw = mk, root = root, write = FALSE)), error = function(e) NULL)
     assign(".rfh_subset_raw", .orig, envir = environment(rfh_remeasure))
-    chk(!is.null(Lm) && !isTRUE(Lm$vs_stored$ret_net_identical),
-        sprintf("M2 돌연변이(END 절단 제거) → 비트 일치 깨짐(%d일 vs 저장 %d일) = C1 양성 대조가 잡는다",
-                .rfh_or(Lm$vs_stored$n_days_new, NA), .rfh_or(Lm$vs_stored$n_days_stored, NA)),
+    # ★2026-11-10: C1 판정이 재핀 참조 대비로 바뀌었으므로 돌연변이도 같은 판정기(same_ref)로 잰다 — 저장 대비(vs_stored)는
+    #   재핀 뒤 원판도 FALSE 라 그것으로 재면 공허하다(돌연변이가 아니어도 빨강).
+    chk(!is.null(Lm) && all(sr1) && !all(same_ref(Lm$bt)),
+        sprintf("M2 돌연변이(END 절단 제거) → 재핀 참조 비트 일치 깨짐(%d일 vs 참조 %d일) = C1 양성 대조가 잡는다",
+                .rfh_or(Lm$vs_stored$n_days_new, NA), nrow(btR$period_returns)),
         "M2 돌연변이가 비트 일치를 유지 — END 절단이 검사되지 않는다")
   }
 }
@@ -400,8 +432,16 @@ if (!have_gold) sk("F4~F5 재료 부재") else {
   mf4 <- fromJSON(rF4$manifest, simplifyVector = TRUE)
   chk(identical(rF4$status, "done") && nrow(rF4$rows) == 1L && isTRUE(rF4$rows$leg_cached) && isTRUE(rF4$rows$t1_cached) &&
         nrow(rF4$skipped) == 2L && setequal(rF4$skipped$reason, c("artifact_incomplete", "pit_c11(test)")) &&
-        identical(mf4$n_cached, 1L) && isTRUE(rF4$rows$leg_bit_identical) && isTRUE(rF4$rows$leg_ret_identical) &&
-        isTRUE(rF4$rows$leg_bench_identical) && !isTRUE(rF4$rows$t1_ret_identical) && abs(rF4$rows$d_conv_pt - (3.777 - 4.349)) < 1e-9,
+        identical(mf4$n_cached, 1L) &&
+        # ★2026-11-10 재핀: 배치 행의 저장 대비 표식(leg_*_identical)은 직접 호출(C1 의 vs_stored)과 같아야 한다 — 구판은 둘 다 TRUE
+        #   (저장 bt 와 비트 일치)였고, 재핀 뒤엔 저장 bt 가 09-21 빈티지라 둘 다 FALSE 다. 비트 일치 자체는 C1(재핀 참조)이 잰다.
+        identical(isTRUE(rF4$rows$leg_ret_identical), isTRUE(v$ret_net_identical) && isTRUE(v$nav_net_identical)) &&
+        identical(isTRUE(rF4$rows$leg_bench_identical), isTRUE(v$benchmark_identical)) &&
+        identical(isTRUE(rF4$rows$leg_bit_identical), isTRUE(v$ret_net_identical) && isTRUE(v$nav_net_identical) &&
+                    isTRUE(v$benchmark_identical) && isTRUE(v$metrics_identical)) &&
+        !isTRUE(rF4$rows$t1_ret_identical) &&
+        abs(rF4$rows$d_conv_pt - (T1$auth$essence$portfolio_alpha_t_nw_lag3 - L$auth$essence$portfolio_alpha_t_nw_lag3)) < 1e-9 &&
+        abs(rF4$rows$d_conv_pt - (T1_PT - REFO$pin$essence$portfolio_alpha_t_nw_lag3)) < 1e-9,
       sprintf("F4 skip 목록 통과(불완전·C11) · 골든 캐시 재개 · 3판 행 d_conv_pt %.3f · manifest n_cached=1", rF4$rows$d_conv_pt),
       sprintf("F4 %s · rows %d · skipped %d", rF4$status, nrow(rF4$rows), nrow(rF4$skipped)))
   t0 <- Sys.time()

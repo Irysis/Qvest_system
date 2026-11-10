@@ -50,7 +50,19 @@ CI_SRC <- "02_Infrastructure/factor_db/compute_investor.R"
 TOL_RAW  <- 1e-8
 TOL_BETA <- 1e-12
 TOL_SAME <- 1e-12
-REF_BETA <- c(`202606` = -0.595292416327731, `202607` = -0.597112707606409)
+# ★재핀 2026-11-10(시험 정비 · 원인 재도출 — 상세 = 아래 두 단계를 각각 1e-16 으로 재현):
+#   구 참조 202606 = -0.595292416327731 · 202607 = -0.597112707606409 (2026-09-24 · 구 달력 · 구 투자자 패널)
+#   ① 2026-10-17 커밋 48b3d3bfd "2024-12-30 거래일 복원"(도훈 '하루 복원해') — 빌더 달력(RAWDATA Date)의 202412 월말이
+#      12-27 → 12-30 으로 바뀌어 그 달 증분이 달라졌다: 202606 −0.595292416327731 → −0.594876161286015(Δ +4.16e-4).
+#      (구 패널 + 12-30 뺀 달력으로 재계산 = 구 참조와 Δ 1.1e-16 — 이 단계만으로 구 참조 완전 재현)
+#   ② 2026-11-10 00:16 일일 리프레시 [incr_investor] — 퀀티 수집 체계 v2(04_Research/01_reports/quantiwise_data_expansion_20261106/
+#      BUILD_20261108.md: Investor_Act DATA_Key 3,668 → 3,767 끝 붙이기 99종 + -FromOverride 2023-05-17 보충)로 투자자 패널에
+#      99종목의 2023-05-17~ 이력이 들어왔다(행 7,060,494 → 7,124,398): −0.594876161286015 → −0.595046943514193(202606).
+#   팩터 DB 수리(재무 v2 · 방향 · 총부채)는 INV13 입력(investor_wide · 빌더 달력)에 닿지 않는다 — 무관.
+#   ★A1(저장 factor_db_202606 재현)은 이 재핀으로 초록이 되지 않는다: 저장 INV13 은 11-09 전체 재빌드 때 ②이전 패널로
+#     만들어졌다(②의 99종 제외 패널로 단독 빌드 = 저장값과 비트 동일 · 종목 3394/3373/3358 일치). 팩터 DB 의 INV 계열
+#     재계산(202306~ 달) 전까지 A1 · B2 는 '데이터 변경 신호'로 빨강이 맞다.
+REF_BETA <- c(`202606` = -0.595046943514193, `202607` = -0.596902445542001)
 REF_N    <- c(`202606` = 316L, `202607` = 317L)
 P_F <- c("INV13_Foreign_Resid_Individual_21d", "INV13_Foreign_Resid_Individual_63d",
          "INV13_Foreign_Resid_Individual_126d")
@@ -253,11 +265,17 @@ if (is.character(e1) && grepl("달력", e1, fixed = TRUE)) {
 } else {
   bad("D1_no_calendar_stops", "달력 없이도 값을 냄 — 투자자 달력 대체 의심")
 }
-inv_cal <- CI$.inv13_beta_asof(INV_ALL[Date < SIG06], SIG06, sort(unique(INV_ALL$Date)), use_cache = FALSE)
-if (is.finite(inv_cal$beta) && abs(inv_cal$beta - REF_BETA[["202606"]]) > 1e-6) {
-  ok("D2_calendar_is_load_bearing", sprintf("투자자 달력이면 Δβ=%.3g — A2 가 달력 차이를 잡는다", inv_cal$beta - REF_BETA[["202606"]]))
+# ★2026-11-10 픽스처 수리: 구판 D2 는 '투자자 패널 달력'을 대조 달력으로 썼다 — 그 달력이 빌더 달력과 갈린 유일한 월말이
+#   202412(빌더 12-27 / 투자자 12-30)였는데, 2026-10-17 커밋 48b3d3bfd 가 RAWDATA 에 2024-12-30 을 복원해 두 달력의
+#   월말이 같아졌다(재핀 뒤 투자자 달력 Δβ = 0 → 대조 공허). 대조의 목적(월말 하나가 바뀌면 A2 가 잡는다)은 그대로 두고,
+#   달력을 **복원 전 빌더 달력(2024-12-30 제외)** 으로 바꾼다 — 실제로 있었던 월말 차이다(실측 Δβ ≈ −4.2e-4).
+alt_cal <- TD[TD != as.Date("2024-12-30")]
+inv_cal <- CI$.inv13_beta_asof(INV_ALL[Date < SIG06], SIG06, alt_cal, use_cache = FALSE)
+if (length(alt_cal) == length(TD) - 1L && is.finite(inv_cal$beta) && abs(inv_cal$beta - REF_BETA[["202606"]]) > 1e-6) {
+  ok("D2_calendar_is_load_bearing", sprintf("202412 월말 12-27(복원 전 달력)이면 Δβ=%.3g — A2 가 달력 차이를 잡는다", inv_cal$beta - REF_BETA[["202606"]]))
 } else {
-  bad("D2_calendar_is_load_bearing", "투자자 달력과 빌더 달력이 같은 beta — 달력 대조가 공허")
+  bad("D2_calendar_is_load_bearing", sprintf("월말 하나 바뀐 달력과 빌더 달력이 같은 beta(또는 대조 달력 구성 실패 %d/%d) — 달력 대조가 공허",
+                                             length(alt_cal), length(TD)))
 }
 if (identical(CI$.inv13_trading_dates(), TD)) {
   ok("D3_reads_builder_calendar", sprintf(".fdb_env$trading_dates %d일 사용", length(TD)))

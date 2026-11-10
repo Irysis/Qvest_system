@@ -36,11 +36,49 @@ if (nzchar(fl)) ok(sprintf("① grade_floor 메타 기록 = %s", fl)) else
   ng("① grade_floor 메타 부재 — 구판 산출물(재생성 필요) 또는 기록 누락")
 
 # ② 재도출: floor ∈ {A,B} 이면 수록 전건 대조
+#   ★2026-11-10 재조준(시험 정비): 2026-10-06 도훈 결정 "2계층 풀 구성 전환"(커밋 f0930f5532 ·
+#     06_Registry/strategy_role.json pool.mode = "role") 이후 풀은 **역할 대표** 경로(admission_route = role_rep)로
+#     들어온다. 그 경로의 자격 축은 essence 등급이 아니라 **역할 등급 B+**(strategy_roles.json card.roles.<역할>.grade)다
+#     (strategy_role.json pool.basis "역할 B+ 하나 이상 = 2계층 풀 편입 경로 · essence 등급 floor 경로와 병렬").
+#     구판 단언은 role_rep 모듈의 essence 등급(C · F)을 essence floor 에 대조해 10-07 부터 빨강이었다 — 낡은 축.
+#     ⇒ 경로별로 **각자의 축에서** 재도출한다(느슨하게 하지 않는다: role_rep 은 역할 등급 B+ 를 등록부에서 다시 찾아
+#        대조하고, 찾지 못하거나 B 미만이면 빨강 · 그 밖 경로는 종전 그대로 essence floor).
 if (fl %in% c("A", "B")) {
   allowed <- if (identical(fl, "A")) "A" else c("A", "B")
-  grades <- vapply(mp$modules, function(m) toupper(as.character(m$grade %||% "")), character(1))
+  routes <- vapply(mp$modules, function(m) as.character(m$admission_route %||% ""), character(1))
+  is_role <- routes == "role_rep"
+  # 역할 대표 경로 — 빌더 .ROLE_REPS/.role_of 와 같은 조회(빈 pool_rep_roles 행 제외 → id 우선 → run id)
+  if (any(is_role)) {
+    sr_cfg <- tryCatch(fromJSON("06_Registry/strategy_role.json", simplifyVector = FALSE), error = function(e) NULL)
+    pmode <- tolower(as.character(sr_cfg$pool$mode %||% "legacy"))
+    if (!identical(pmode, "role"))
+      ng(sprintf("② role_rep 경로 모듈 %d건인데 풀 모드 = %s — role 모드가 아니면 이 경로는 없어야 한다", sum(is_role), pmode))
+    rr <- tryCatch(fromJSON("06_Registry/strategy_roles.json", simplifyVector = FALSE)$entries, error = function(e) NULL)
+    rr <- Filter(function(e) length(unlist(e$pool_rep_roles)) > 0L, rr %||% list())
+    cat_mods <- tryCatch(fromJSON("06_Registry/module_catalog.json", simplifyVector = FALSE)$modules, error = function(e) list())
+    .runid <- function(x) { m <- regmatches(x, regexpr("[0-9]{8}_[0-9]{6}_[0-9]+", x)); if (length(m)) m else NA_character_ }
+    role_bad <- character(0)
+    for (id in names(mp$modules)[is_role]) {
+      e <- rr[[id]]
+      if (is.null(e)) {
+        rec <- cat_mods[[id]]
+        k <- .runid(paste(id, rec$meta$artifacts_dir %||% "", rec$bt_result_path %||% ""))
+        if (!is.na(k)) e <- rr[[k]]
+      }
+      if (is.null(e)) { role_bad <- c(role_bad, sprintf("%s(역할 등록 없음)", id)); next }
+      reps <- unlist(e$pool_rep_roles)
+      claimed <- strsplit(as.character(mp$modules[[id]]$role %||% ""), ";", fixed = TRUE)[[1]]
+      if (!setequal(claimed, reps)) role_bad <- c(role_bad, sprintf("%s(역할 %s ≠ 등록 %s)", id,
+                                                                   paste(claimed, collapse = ";"), paste(reps, collapse = ";")))
+      g <- vapply(reps, function(r) toupper(as.character(e$card$roles[[r]]$grade %||% "")), character(1))
+      if (!all(g %in% c("A", "B"))) role_bad <- c(role_bad, sprintf("%s(역할 등급 %s)", id, paste(g, collapse = ",")))
+    }
+    if (!length(role_bad)) ok(sprintf("② role_rep %d건 전건 역할 등급 B+ (strategy_roles.json 재도출 일치)", sum(is_role))) else
+      ng(sprintf("② role_rep 역할 B+ 재도출 불일치 %d건: %s", length(role_bad), paste(head(role_bad, 8), collapse = " · ")))
+  }
+  grades <- vapply(mp$modules[!is_role], function(m) toupper(as.character(m$grade %||% "")), character(1))
   bad <- grades[!grades %in% allowed]
-  if (!length(bad)) ok(sprintf("② 수록 %d건 전건 grade ∈ {%s} (재도출 일치)",
+  if (!length(bad)) ok(sprintf("② 비역할 경로 %d건 전건 essence grade ∈ {%s} (재도출 일치)",
                                length(grades), paste(allowed, collapse = ","))) else
     ng(sprintf("② floor=%s 인데 위반 등급 수록: %s", fl, paste(unique(bad), collapse = ",")))
   if (as.integer(mp$n_floor_excluded %||% -1L) >= 0L)

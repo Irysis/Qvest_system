@@ -191,6 +191,14 @@ oe_of <- function(r, held) {
 }
 scal_of <- function(r, held) oe_of(r, held)[, .(oe = oe[1]), by = .(Date, t)][order(t)]
 same_port <- function(a, b) !is.null(a) && !is.null(b) && identical(a$Date, b$Date) && identical(a$Ticker, b$Ticker) && identical(a$Weight, b$Weight)
+# ★전액 현금 신호일(2026-11-10 시험 정비 · 엔진 수리 b234afb11 2026-10-17 "오버레이 전액 현금 달 침묵 실패 수리"를 반영):
+#   기준본(d63d5d1f0)은 노출 0 달의 신호일을 지웠고(하네스가 직전 보유를 이월 = 결함) 신판은 표현 하한(Σw ≤ 1e-8)으로 남긴다.
+#   자매 스위트 test_rf_engine_overlay_stack.R 회귀 8 이 같은 커밋에서 이 대조로 갱신됐는데 이 스위트 A4 는 빠졌다(dd_brake 1920 vs 1860행).
+#   늘어난 날짜가 **전부** 표현 하한 현금일이고 나머지 날짜가 비트 동일일 때만 통과 — 그 밖의 차이는 그대로 빨강.
+cash_extra <- function(a, b) { x <- setdiff(unique(a$Date), unique(b$Date)); if (!length(x)) return(0L)
+                               s <- a[Date %in% x, .(s = sum(Weight)), by = Date]$s; if (all(s > 0 & s <= 1e-8)) length(x) else NA_integer_ }
+same_port_cash <- function(a, b) { if (is.null(a) || is.null(b)) return(FALSE); k <- cash_extra(a, b)
+                                   !is.na(k) && k > 0L && same_port(a[Date %in% unique(b$Date)], b) }
 
 writeLines("=== 0. 기저 ===")
 r0 <- run_cell(base_spec())
@@ -260,6 +268,8 @@ if (HAVE_OLD_E) {
     if (!is.null(a$fac) && is.null(a$port)) {
       if (!is.null(b$fac) && identical(a$fac, b$fac)) ok(sprintf("A4 %s — FACTORS %d행 비트 동일", g$nm, nrow(a$fac))) else ng(sprintf("A4 %s FACTORS 상이", g$nm))
     } else if (same_port(a$port, b$port)) { n_port <- n_port + 1L; ok(sprintf("A4 %s — PORTFOLIO %d행 비트 동일", g$nm, nrow(a$port))) } else
+    if (same_port_cash(a$port, b$port)) { n_port <- n_port + 1L
+      ok(sprintf("A4 %s — 구판 날짜 PORTFOLIO 비트 동일 + 현금 집행 %d신호일(구판이 지우던 노출 0 달)", g$nm, cash_extra(a$port, b$port))) } else
       ng(sprintf("A4 %s PORTFOLIO 상이", g$nm), sprintf("신 %d행 / 구 %d행", nrow(a$port %||% data.table()), nrow(b$port %||% data.table())))
   }
   if (n_port >= 6L) ok(sprintf("A4 전제 — 오버레이 산출 %d종이 실제로 PORTFOLIO 를 냈다(정지끼리 같다는 약한 비교만으로 통과하지 않는다)", n_port)) else

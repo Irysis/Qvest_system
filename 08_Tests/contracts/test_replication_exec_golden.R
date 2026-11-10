@@ -1,4 +1,5 @@
 # test_replication_exec_golden.R — 골든 픽스처 재현 (2026-09-24 · 플랜 P0-04 검증 ③④ · P0-03)
+#   ★2026-11-10 재핀: 비트 · essence 기준 = 08_Tests/fixtures/replication_exec_golden/ref_legacy_20261110.rds(사유 · 재생성 절차 = 곁의 README.md)
 #   픽스처 = stage_artifacts/replication/20260921_100007_6876 (22632 promo3 B1_3 liq_price_delay · 2026-09-21 측정 · legacy 규약)
 #
 # ③ legacy 비트 재현 — 저장된 factors_panel.parquet(측정에 들어간 바로 그 패널) → .rp_build_weights(러너 정의 parse)
@@ -73,6 +74,17 @@ for (nm in c(".rp_build_weights", ".rp_abs_path", ".rp_strategy_spec")) .def(rpx
 auth <- fromJSON(file.path(GOLD, "authoritative_remeasure.json"), simplifyVector = TRUE)
 spec0 <- fromJSON(file.path(GOLD, "01_strategy_spec.json"), simplifyVector = TRUE)
 bt0 <- readRDS(file.path(GOLD, "bt_result.rds"))
+# ★재핀 2026-11-10(시험 정비 · 근거 = 08_Tests/fixtures/replication_exec_golden/README.md):
+#   비트 · essence 대조의 기준을 저장 bt_result.rds(09-21 빈티지 · 5336일)에서 재핀 참조(같은 보유 · 같은 하네스 · 현 데이터
+#   2026-09-18 절단 · 5337일)로 옮긴다. 저장본과의 차이는 전부 문서화된 데이터 변경으로 재도출됐다 — ① 2026-10-17 커밋
+#   48b3d3bfd '2024-12-30 거래일 복원'(경계 앞 · 축 +1일 · 2025-01-02 Ret 은 두 날 복리와 2.2e-16 일치) ② 10-17 퀀티 OHLCVS
+#   재수출(경계 2026-03-30 뒤 · 아래 VINTAGE 판정의 원 사례). 복원 전 백업(.cache/backup_cal20241230_20261017_175419)으로
+#   이 스크립트를 돌리면 경계 앞 5217일 ret_net 비트 동일(③p PASS · 차이 첫 날 2026-07-01) — 코드 경로 불변 실증.
+#   팩터 DB 수리(재무 v2 · 방향 · 총부채)는 무관하다(비중 = 저장 factors_panel → 저장 보유와 비트 일치 · 아래 '재현 입력').
+#   저장 bt0 는 '재현 입력'(보유) · ③u(구 단위 낙폭 지속) · P0-03 첫 행(저장 0)에만 남긴다 — 셋 다 저장본 고유 성질이다.
+REFP <- "08_Tests/fixtures/replication_exec_golden/ref_legacy_20261110.rds"
+if (!file.exists(REFP)) { ng(sprintf("재핀 참조 부재: %s", REFP)); finish() }
+REFO <- readRDS(REFP); btR <- REFO$bt
 END <- max(as.Date(bt0$nav$date))
 FAC <- as.data.table(read_parquet(file.path(GOLD, "factors_panel.parquet")))
 pspec <- list(construction = spec0$construction, n_long = auth$replication$n_max, n_max = auth$replication$n_max,
@@ -112,17 +124,18 @@ quiet <- function(expr) { out <- NULL; capture.output(out <- suppressWarnings(su
 t1 <- Sys.time(); L <- quiet(run_all("close_d_legacy")); tL <- as.numeric(difftime(Sys.time(), t1, units = "secs"))
 
 # ── ③ legacy 비트 재현 ──
-pr1 <- L$bt$period_returns; pr0 <- as.data.table(bt0$period_returns)
+pr1 <- L$bt$period_returns; pr0 <- as.data.table(btR$period_returns)   # ★기준 = 재핀 참조(위 REFP)
 ## 10-17 단위 수리(계약 backtest_result_contract.R — 낙폭 지속 · 회복이 기간 수(일간 = 거래일)를 months 로 적던 것 → 달력 개월) — 두 지표만 비트 대조에서 빼고 아래 ③u 로 잰다
+##   (재핀 참조는 신 단위로 만들어졌으므로 비트 대조에서 빼는 것은 구판과의 호환일 뿐 — ③u 는 저장 bt0(구 단위)로 잰다)
 DD_UNIT <- c("Max_DD_Duration_Months", "Average_Recovery_Months")
-m1 <- as.data.table(L$bt$metrics); m0 <- as.data.table(bt0$metrics)
+m1 <- as.data.table(L$bt$metrics); m0 <- as.data.table(btR$metrics); m0s <- as.data.table(bt0$metrics)
 bit <- c(
   ret_net   = identical(pr1$ret_net, pr0$ret_net) && identical(pr1$date, pr0$date),
-  nav_net   = identical(L$bt$nav$nav_net, bt0$nav$nav_net),
+  nav_net   = identical(L$bt$nav$nav_net, btR$nav$nav_net),
   metrics   = identical(m1[!metric_name %in% DD_UNIT]$metric_value, m0[!metric_name %in% DD_UNIT]$metric_value) &&
               identical(m1$metric_name, m0$metric_name),
-  benchmark = identical(L$bt$benchmark_returns$benchmark_ret, bt0$benchmark_returns$benchmark_ret),
-  bench_cmp = identical(L$bt$benchmark_compare$strategy_value, bt0$benchmark_compare$strategy_value))
+  benchmark = identical(L$bt$benchmark_returns$benchmark_ret, btR$benchmark_returns$benchmark_ret),
+  bench_cmp = identical(L$bt$benchmark_compare$strategy_value, btR$benchmark_compare$strategy_value))
 dmx <- if (nrow(pr1) == nrow(pr0)) max(abs(pr1$ret_net - pr0$ret_net)) else NA_real_
 .same_axis <- nrow(pr1) == nrow(pr0) && identical(as.Date(pr1$date), as.Date(pr0$date))
 .dv <- if (.same_axis) which(pr1$ret_net != pr0$ret_net) else integer(0)
@@ -141,28 +154,36 @@ if (all(bit)) ok(sprintf("③ legacy 비트 재현: ret_net·nav_net·metrics·b
 } else
   ng(sprintf("③ 비트 불일치 — %s · ret_net max|Δ| %s · 차이 첫 날 %s · 개정 가능 경계 %s(경계 앞 차이 = 코드 회귀)",
              paste(names(bit)[!bit], collapse = ","), format(dmx), format(.first_div), format(REV0)))
-dd1 <- m1[metric_name == "Max_DD_Duration_Months"]$metric_value; dd0 <- m0[metric_name == "Max_DD_Duration_Months"]$metric_value
+dd1 <- m1[metric_name == "Max_DD_Duration_Months"]$metric_value; dd0 <- m0s[metric_name == "Max_DD_Duration_Months"]$metric_value
 span_m <- as.numeric(difftime(max(pr1$date), min(pr1$date), units = "days")) / (365.25 / 12)
 if (length(dd1) == 1L && length(dd0) == 1L && is.finite(dd1) && dd1 > 0 && dd1 <= span_m + 1 && abs(dd1 - dd0 / 21) <= max(3, 0.15 * dd1))
   ok(sprintf("③u 낙폭 지속 = 달력 개월 %.1f(구판 기간 수 %s ≈ 거래일 ÷ 21 · 전체 %.0f개월 이하) — 10-17 단위 수리", dd1, format(dd0), span_m)) else
   ng(sprintf("③u 낙폭 지속 단위 — 신 %s · 구 %s · 전체 %.0f개월", format(dd1), format(dd0), span_m))
-es0 <- quiet(essence_score(bt0, n_trials_cumulative = 1L, selection_type = "chain", sidecar_log = FALSE))
+es0 <- quiet(essence_score(btR, n_trials_cumulative = 1L, selection_type = "chain", sidecar_log = FALSE))   # 재핀 참조를 현 채점기로 재채점(채점 규칙 변경에 면역 — 구판과 같은 구조)
 keys <- c("cagr", "net_sharpe", "mdd", "calmar", "portfolio_alpha_t_nw_lag3", "oos_retention", "net_ir")
 v1 <- unlist(L$es$essence[keys]); v0 <- unlist(es0$essence[keys]); va <- unlist(auth$essence[keys])
 if (identical(v1, v0) && identical(L$es$grade, es0$grade))
   ok(sprintf("③ essence 전정밀도 = 저장 bt 재채점 (grade %s · CAGR %.4f · SR %.4f · MDD %.4f · Calmar %.4f · PT %.4f)",
              L$es$grade, v1["cagr"], v1["net_sharpe"], v1["mdd"], v1["calmar"], v1["portfolio_alpha_t_nw_lag3"])) else
   ng_v(sprintf("③ essence 불일치 — 재현 %s vs 저장 재채점 %s", paste(signif(v1, 6), collapse = "/"), paste(signif(v0, 6), collapse = "/")))
-if (identical(L$es$grade, auth$essence_grade) && all(abs(round(v1, 3) - va) < 1e-9))
+if (identical(L$es$grade, auth$essence_grade) && all(abs(round(v1, 3) - va) < 1e-9)) {
   ok(sprintf("③ 저장 authoritative_remeasure.json 과 일치(3자리): grade %s · CAGR %.3f · SR %.3f · MDD %.3f · Calmar %.3f · PT %.3f",
-             auth$essence_grade, va["cagr"], va["net_sharpe"], va["mdd"], va["calmar"], va["portfolio_alpha_t_nw_lag3"])) else
+             auth$essence_grade, va["cagr"], va["net_sharpe"], va["mdd"], va["calmar"], va["portfolio_alpha_t_nw_lag3"]))
+} else if (!VINTAGE && all(bit) && identical(L$es$grade, auth$essence_grade) &&
+           nrow(btR$period_returns) == nrow(bt0$period_returns) + 1L) {
+  ## ★재핀 뒤: 저장 authoritative 는 09-21 빈티지(2024-12-30 복원 전 · 5336일) 측정 기록이다. 재핀 참조와 비트 동일한 재현이
+  ##   그 기록과 3자리에서 다른 것은 위 재핀 사유(달력 복원 + 경계 뒤 재수출)의 귀결 — 운영 기록 재측정 전엔 대조 불가 = 미측정(PASS 아님).
+  ##   등급은 여전히 같아야 한다(다르면 FAIL). 축이 '저장 + 복원 1일'이 아니면(새 데이터 변경) 이 길로 오지 않는다.
+  sk(sprintf("③ authoritative(09-21 빈티지) 3자리 대조 미측정 — 재현 %s vs 저장 %s · 등급 %s 동일 · 재핀 사유 08_Tests/fixtures/replication_exec_golden/README.md",
+             paste(round(v1, 3), collapse = "/"), paste(va, collapse = "/"), auth$essence_grade))
+} else
   ng_v(sprintf("③ authoritative 불일치 — %s vs %s", paste(round(v1, 3), collapse = "/"), paste(va, collapse = "/")))
 
 # ── P0-03 (legacy 산출에서) ──
-g1 <- pr1$ret_gross; g0 <- pr0$ret_gross
-if (abs(g1[1] - (pr1$ret_net[1] + 0.0015)) < 1e-15 && abs(pr1$cost_ret[1] - 0.0015) < 1e-15 && g0[1] == 0)
+g1 <- pr1$ret_gross; g0 <- pr0$ret_gross; pr0s <- as.data.table(bt0$period_returns)   # 첫 행 '저장 0' 은 저장본(bt0) 고유 성질
+if (abs(g1[1] - (pr1$ret_net[1] + 0.0015)) < 1e-15 && abs(pr1$cost_ret[1] - 0.0015) < 1e-15 && pr0s$ret_gross[1] == 0)
   ok(sprintf("P0-03 첫 행 복원: ret_gross %.7f(저장 0) · cost_ret %.4f = Σ|w|×15bps(저장 %.7f = −ret_net)",
-             g1[1], pr1$cost_ret[1], pr0$cost_ret[1])) else
+             g1[1], pr1$cost_ret[1], pr0s$cost_ret[1])) else
   ng(sprintf("P0-03 첫 행 — ret_gross %s cost_ret %s", g1[1], pr1$cost_ret[1]))
 dg <- max(abs(g1[-1] - g0[-1]))
 if (dg < 1e-12) ok(sprintf("P0-03 2행 이후 ret_gross = 저장값(되짚기 경로) 부동소수 수준 max|Δ| %.1e — 등급 입력(ret_net) 불변", dg)) else
