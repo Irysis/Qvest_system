@@ -125,7 +125,20 @@ def _alpha_pending_out():
         __import__("sys").path[:]=sys_path_saved
     return _buf.getvalue().strip()
 import io
-_r=S(_alpha_pending_out) if os.environ.get("QVEST_BOOT_INPROC","1")!="0" else S(lambda: subprocess.run([PY,R("02_Infrastructure","ops","research_pool_predicates.py"),"alpha-pending",R("stage_artifacts","paper_recharge")],capture_output=True,text=True,timeout=90).stdout.strip())
+# (11-10 검토 2차) 시간 상한 복구 — 구 자식 프로세스 경로의 90초 상한이 같은 프로세스 전환으로 사라져, 파일 읽기 하나가 막히면
+#   (OneDrive 주문형 자리표시 · 동기화 잠금) 부팅 전체가 출력 0 으로 멈췄다. 데몬 스레드로 돌리고 상한(기본 90초 = 구 상한 그대로 ·
+#   QVEST_BOOT_QUEUE_TIMEOUT_S)을 넘으면 UNREPORTED 로 접고 나머지 줄을 낸다. 멈춘 스레드가 잡아 둔 표준 출력은 되돌린다.
+def _alpha_pending_guarded():
+    import threading as _th, sys as _sys
+    _orig=_sys.stdout; _box=[""]
+    def _run(): _box[0]=_alpha_pending_out()
+    _t=_th.Thread(target=_run,daemon=True); _t.start()
+    _t.join(float(os.environ.get("QVEST_BOOT_QUEUE_TIMEOUT_S","90") or 90))
+    if _t.is_alive():
+        _sys.stdout=_orig
+        return ""
+    return _box[0] or ""
+_r=S(_alpha_pending_guarded) if os.environ.get("QVEST_BOOT_INPROC","1")!="0" else S(lambda: subprocess.run([PY,R("02_Infrastructure","ops","research_pool_predicates.py"),"alpha-pending",R("stage_artifacts","paper_recharge")],capture_output=True,text=True,timeout=90).stdout.strip())
 q=_r if (_r or "").isdigit() else "UNREPORTED"; fq=[]
 for e in ((J("06_Registry/alpha_frontier_queue.json") or {}).get("entries") or []):
     st=str(e.get("status") or ""); ow=str(e.get("owner") or "")

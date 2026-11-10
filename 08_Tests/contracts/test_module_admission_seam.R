@@ -211,6 +211,9 @@ if (is.null(GATE) || is.null(REG_DEF) || any(vapply(HELP_DEFS, is.null, logical(
     eval(REG_DEF$expr[[1]], envir = sb)
     for (hd in HELP_DEFS) eval(hd$expr[[1]], envir = sb)
     sb$URL <- "http://fixture"; sb$.aud_suspect <- isTRUE(suspect)
+    ## (2026-11-10) 검증기는 10-17 부터 구현 의심 = 감사 의심 ∨ 보유 대조 불일치(.impl_suspect · .p4_suspect)를 블록 밖에서 정한다 —
+    ##   추출한 관문 블록이 그 두 변수를 읽으므로 샌드박스가 같은 식으로 채운다(구판 시험은 .aud_suspect 만 줘서 B6 · B7 이 블록 중간에 멈췄다).
+    sb$.p4_suspect <- FALSE; sb$.impl_suspect <- isTRUE(sb$.aud_suspect) || isTRUE(sb$.p4_suspect)
     sb$.aud <- list(verdict = if (isTRUE(suspect)) "misdeclared" else "adapted")
     sb$AR <- list(replication = list(has_short = isTRUE(fix$has_short)))
     sb$.V1001_PROG_NAME <- c(P1_RETURN = "수익 엔진", P2_DEFENSE = "방어 엔진", P3_CONSTRUCTION = "구성")
@@ -220,6 +223,8 @@ if (is.null(GATE) || is.null(REG_DEF) || any(vapply(HELP_DEFS, is.null, logical(
     sb$.v1001_charts <- function(...) NULL
     sb$.v1001_grade_extra <- function(...) NULL
     sb$.v1001_factor_section <- function(...) NULL   # 사후 분석 = 별도 Rscript(부작용) — 가린다(10-16 보고 1통의 섹션)
+    sb$.v1001_variants_req <- function(...) NULL     # 변형 측정 요약(10-17 · 이 검사의 축 아님 — 없으면 NULL = 요청 · 보고에 안 실린다)
+    sb$.v1001_variants_extra <- function(...) NULL
     sb$.tg_target_label <- function(t, k, ...) t
     err <- NULL
     tryCatch(eval(ex[[1]], envir = sb),
@@ -428,4 +433,6 @@ chk(!length(Sys.glob(file.path(ROOT, "04_Research/strategies/RP_FIX_*"))),
 Sys.unsetenv("QVEST_MODULE_CATALOG"); Sys.unsetenv("QVEST_MODULE_QUARANTINE")
 unlink(TD, recursive = TRUE, force = TRUE)
 cat(sprintf("\n=== test_module_admission_seam: PASS %d / FAIL %d ===\n", PASS, FAIL))
+## 러너 집계용 요약 줄(2026-11-10) — 구판은 이 줄이 없어 실패해도 '미측정 1건'으로만 계상됐다(10-17 부터 B7 3건 실패가 가려졌다)
+cat(sprintf('{"test":"module_admission_seam","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))
 quit(status = if (FAIL > 0L) 1L else 0L)

@@ -106,6 +106,18 @@ inval schema 'import sys,os,pyarrow as pa,pyarrow.parquet as pq; pq.write_table(
 cp "$T/i_ref_schema.txt" "$T/ref.txt"
 inval bench 'import sys,os,datetime as dt,pyarrow as pa,pyarrow.parquet as pq; t=dt.date.today(); pq.write_table(pa.table({"Date":pa.array([t-dt.timedelta(days=20)],pa.date32())}),os.path.join(sys.argv[1],".cache","benchmark.parquet"))'
 
+echo "=== Q. 큐 줄 시간 상한(11-10 검토 2차) ==="
+# 논문 큐 모듈이 가져오기에서 멈추면(파일 읽기 정지 모사 = 60초 sleep) 상한 뒤 UNREPORTED 로 접고 나머지 줄을 전부 낸다
+cp "$T/proj/02_Infrastructure/ops/research_pool_predicates.py" "$T/rpp.keep"
+printf 'import time\ntime.sleep(60)\n' > "$T/proj/02_Infrastructure/ops/research_pool_predicates.py"
+_q0=$(date +%s); run "$T/qhang.txt" QVEST_BOOT_QUEUE_TIMEOUT_S=3; _q1=$(date +%s)
+grep -q '^Queue: alpha-pending UNREPORTED' "$T/qhang.txt" && grep -q '^Data: ' "$T/qhang.txt" && [ "$(grep -c '' "$T/qhang.txt")" = "$(grep -c '' "$T/ref.txt")" ] && [ $(( _q1 - _q0 )) -lt 45 ] \
+  && ok "Q1 큐 모듈 정지 → 상한(3초) 뒤 UNREPORTED · 줄 수 = 기준과 같음($(grep -c '' "$T/qhang.txt")줄) · $(( _q1 - _q0 ))초 안에 끝남" \
+  || bad "Q1" "$(( _q1 - _q0 ))초 · $(grep '^Queue' "$T/qhang.txt" | head -c 120) · 줄 $(grep -c '' "$T/qhang.txt")/$(grep -c '' "$T/ref.txt")"
+cp "$T/rpp.keep" "$T/proj/02_Infrastructure/ops/research_pool_predicates.py"
+run "$T/qref.txt" "${REF[@]}"; run "$T/qback.txt"   # 기준은 지금 상태로 새로 잰다(앞 절들이 합성 루트를 바꿨다)
+cmp -s "$T/qref.txt" "$T/qback.txt" && ok "Q2 [대조] 모듈 복구 뒤 출력 = 지금 상태의 기준(메모 끔 · 자식 프로세스)" || bad "Q2" "$(diff "$T/qref.txt" "$T/qback.txt" | head -3 | tr '\n' '|')"
+
 echo "=== N. 실패 결과는 메모하지 않는다 ==="
 rm -f "$MEMO" "$T/proj/.cache/benchmark.parquet"; run "$T/na.txt"
 "$PY" -X utf8 -c 'import json,sys; d=json.load(open(sys.argv[1],encoding="utf-8")); print("has" if any(k.startswith("bench_currency") for k in d) else "none")' "$MEMO" > "$T/na.flag" 2>/dev/null

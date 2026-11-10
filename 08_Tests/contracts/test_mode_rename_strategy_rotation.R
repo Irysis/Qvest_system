@@ -80,7 +80,9 @@ if (!loaded) sk("A_enum", "schema 미로드", SCH) else {
 # ══ B. prefix 맵 3종 정합 ═══════════════════════════════════════════════════
 cat("\n── B. prefix 맵 3종 ────────────────────────────────────────\n")
 .txt <- function(p) if (file.exists(p)) paste(readLines(p, warn = FALSE), collapse = "\n") else NA_character_
-maps <- list(lcode_emit = .txt(EMI), promote = .txt(PRO), cluster_extractor = .txt(CLU))
+## (2026-11-10) Axiom 승격 기계(promote.R · cluster_extractor.py)는 v10.2 처분으로 보관됐다(커밋 9788030e4 · 99_Archive/axiom_engine_v10_2_20261110) —
+##   없는 파일을 매 실행 '건너뜀'으로 세지 않도록 살아 있는 맵(L-code 발행기)만 본다.
+maps <- list(lcode_emit = .txt(EMI))
 
 for (nm in names(maps)) {
   j <- maps[[nm]]
