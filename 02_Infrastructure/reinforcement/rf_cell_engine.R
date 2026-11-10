@@ -553,6 +553,7 @@ if (identical(.wt$kind, "ew")) {
       if (!is.null(.wt$allow_cash) && !(is.logical(.wt$allow_cash) && length(.wt$allow_cash) == 1L && !is.na(.wt$allow_cash)))
         stop("[rf_cell_engine] weighting.allow_cash 는 true | false 한 값")
       .CASH <- isTRUE(.wt$allow_cash)
+      .NUR <- if (is.null(.wt$cdar_nu_rule)) NULL else as.character(.wt$cdar_nu_rule)[1]; if (!is.null(.NUR) && !(.NUR %in% c("ew", "bench"))) stop("[rf_cell_engine] weighting.cdar_nu_rule 어휘 밖: ", .NUR, " (ew | bench)"); .BMB <- if (identical(.NUR, "bench")) { if (!exists("BM_DT") || is.null(BM_DT)) stop("[rf_cell_engine] cdar_nu_rule = bench — BM_DT(공표 KOSPI200 일별) 없음(fail-closed)"); as.data.table(BM_DT)[is.finite(BM_Ret), .(Date = as.Date(Date), r = as.numeric(BM_Ret))] } else NULL   # 낙폭 예산 ν 규칙(선택 시만)
       if (!(identical(.SP, "sample") || grepl("^factor:ts:(base|downside|dd_state)$", .SP)))
         stop("[rf_cell_engine] weighting.sigma_provider 어휘 밖: ", .SP, " (sample | factor:ts:base | factor:ts:downside | factor:ts:dd_state)")
       if (!(.LND %in% c("native", "cell"))) stop("[rf_cell_engine] weighting.lean_n_days 어휘 밖: ", .LND, " (native | cell)")
@@ -596,6 +597,7 @@ if (identical(.wt$kind, "ew")) {
                     Sigma = .Sg, ub = 1, lookback_days = nrow(R),
                     decision_date = d, eval_date = d)
         if (identical(.LND, "cell")) ctx$n_days <- nrow(R)   # P-3(선택 시만 · 기본 ctx 모양 그대로)
+        if (!is.null(.NUR)) { ctx$cdar_nu_rule <- .NUR; if (!is.null(.BMB)) { ctx$R_dates <- M$Date; ctx$bench_ret <- .BMB[Date < d] } }   # ν 규칙 · 벤치는 Date < d 만(선택 시만 · 기본 ctx 모양 그대로)
         if (.CASH) ctx$allow_cash <- TRUE                     # P-2b(선택 시만) — 판 표식(budget = "le") arm 의 합 ≤ 1 정규형이 이 표식을 본다(method_registry.R wrap_adapter)
         w <- tryCatch(as.numeric(.afn(ctx)), error = function(e) NULL)
         if (is.null(w) || length(w) != length(keep) || !all(is.finite(w)) || sum(w) <= 0) return(NULL)

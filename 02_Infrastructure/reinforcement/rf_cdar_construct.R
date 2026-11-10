@@ -139,8 +139,9 @@ rcd_solve <- function(R, cfg, mode = "min_cdar", mu = NULL, nu = NULL, budget = 
 }
 
 #' 구성 = 후보 선별 → 풀이 → 25종 가지치기 → (필요 시) 재풀이. 반환 비중은 R 의 전 열(제외 = 0).
-rcd_construct <- function(R, cfg, mu = NULL, mode = NULL, budget = "eq", nu = NULL, w_prev = NULL, bench = NULL) {
+rcd_construct <- function(R, cfg, mu = NULL, mode = NULL, budget = "eq", nu = NULL, w_prev = NULL, bench = NULL, nu_rule = NULL) {
   R <- as.matrix(R); a <- colnames(R)
+  if (!is.null(nu_rule)) cfg$nu_rule <- rcd_nu_rule(nu_rule)   # 칸 선택지(기본 = 설정값 · 비트 동일)
   mode <- mode %||% (if (is.null(mu)) "min_cdar" else cfg$adapter_mode)
   if (!is.null(mu)) mu <- stats::setNames(as.numeric(mu[a]), a)
   cand <- a
@@ -178,6 +179,32 @@ rcd_construct <- function(R, cfg, mu = NULL, mode = NULL, budget = "eq", nu = NU
   list(w = w, cash = max(0, 1 - sum(w)), cdar = s$cdar, lp_cdar = s$lp_cdar, nu = nu, mode = mode,
        budget = budget, n_active = sum(w > 0), effn = if (sum(w) > 0) sum(w)^2 / sum(w^2) else 0,
        rounds = rounds, sec = secs, fallback = fb, nnz = s$nnz)
+}
+
+#' ν 규칙 어휘 — "ew"(= "ew_candidates" · 기본) | "bench"(같은 창 벤치 CDaR × κ). 그 밖은 멈춘다.
+rcd_nu_rule <- function(x) {
+  x <- as.character(x)[1]
+  if (identical(x, "ew")) return("ew_candidates")
+  if (!x %in% c("ew_candidates", "bench")) stop("[rcd] nu_rule 어휘 밖: ", x, " (ew | bench)")
+  x
+}
+
+#' 벤치 낙폭 예산용 정렬(2026-11-10 · nu_rule = bench) — 후보 수익 창(R · R_dates)과 벤치 일별 수익(Date, r)을 날짜 교집합으로 맞춘다.
+#'   PIT: 벤치는 Date < decision_date 만(넘겨받은 표에 그 뒤 행이 있어도 여기서 자른다). 시나리오도 교집합 날짜로 줄인다
+#'   (ν 와 후보 CDaR 이 같은 날짜 위에서 재여야 비교가 성립한다).
+#'   최소 관측 = ceiling(1 / (1 − α)) — CDaR_α 꼬리에 표본이 하나 이상 들어가는 최소 크기(설정 alpha 에서 유도 · 새 숫자 아님). 미달이면 멈춘다.
+rcd_bench_align <- function(R, R_dates, bench, decision_date, alpha) {
+  if (is.null(bench) || !NROW(bench)) stop("[rcd] nu_rule = bench 인데 벤치 수익이 없다(ew 로 조용히 내려가지 않는다)")
+  if (is.null(R_dates) || length(R_dates) != nrow(R)) stop("[rcd] nu_rule = bench 는 R 행 날짜(R_dates)가 필요하다")
+  B <- as.data.table(bench)
+  if (!all(c("Date", "r") %in% names(B))) stop("[rcd] 벤치 표는 (Date, r) 열")
+  B <- B[as.Date(Date) < as.Date(decision_date) & is.finite(r), .(Date = as.Date(Date), r = as.numeric(r))]
+  if (anyDuplicated(B$Date)) stop("[rcd] 벤치 날짜 겹침")
+  rd <- as.Date(R_dates)
+  keep <- rd %in% B$Date & rd < as.Date(decision_date)
+  n_min <- as.integer(ceiling(1 / (1 - alpha)))
+  if (sum(keep) < n_min) stop(sprintf("[rcd] 벤치 · 후보 창 교집합 %d일 < 최소 %d(= ceiling(1/(1−α)))", sum(keep), n_min))
+  list(R = R[keep, , drop = FALSE], b = B$r[match(rd[keep], B$Date)], n = sum(keep), dropped = sum(!keep))
 }
 
 #' 날짜가 있는 진입점 — Date < decision_date 로 자른 뒤 창 lookback 행만 시나리오로 쓴다.

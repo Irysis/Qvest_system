@@ -28,10 +28,21 @@ method_weights <- function(ctx) {
   R <- as.matrix(ctx$R)[, a, drop = FALSE]
   mu <- if (is.null(ctx$mu)) NULL else { v <- suppressWarnings(as.numeric(ctx$mu[a])); v[!is.finite(v)] <- 0; stats::setNames(v, a) }
   # μ 없음 = 최소 CDaR 끝점 — Σw ≤ 1 이면 w = 0 으로 퇴화하므로 그 경우는 항상 eq
-  o <- rcd_construct(R, .CUZ_CFG, mu = mu, budget = if (isTRUE(ctx$allow_cash) && !is.null(mu)) "le" else "eq")
+  bud <- if (isTRUE(ctx$allow_cash) && !is.null(mu)) "le" else "eq"
+  # ν 규칙(2026-11-10) — 칸이 ctx$cdar_nu_rule 를 싣지 않으면 설정값(ew_candidates · 종전과 비트 동일).
+  #   "bench" = 같은 창 공표 KOSPI200 일별 수익(ctx$bench_ret · Date < 결정일)의 CDaR × κ(1) — 등급 CR '강함'(전략 MDD ≤ 같은 창 벤치 MDD)과 같은 기준.
+  #   벤치 부재 · 날짜 교집합 부족 = 멈춤(ew 로 조용히 내려가지 않는다).
+  nr <- if (is.null(ctx$cdar_nu_rule)) NULL else rcd_nu_rule(ctx$cdar_nu_rule)
+  if (identical(nr, "bench")) {
+    al <- rcd_bench_align(R, ctx$R_dates, ctx$bench_ret, ctx$decision_date, .CUZ_CFG$alpha)
+    o <- rcd_construct(al$R, .CUZ_CFG, mu = mu, budget = bud, bench = al$b, nu_rule = "bench")
+  } else {
+    o <- if (is.null(nr)) rcd_construct(R, .CUZ_CFG, mu = mu, budget = bud)
+         else rcd_construct(R, .CUZ_CFG, mu = mu, budget = bud, nu_rule = nr)
+  }
   dd <- if (is.null(ctx$decision_date)) "NA" else format(ctx$decision_date)
-  cat(sprintf("[cdar_cuz] d=%s n=%d T=%d mode=%s budget=%s cash=%.4f nu=%.6f cdar=%.6f active=%d maxw=%.4f effn=%.2f sec=%.3f fb=%s\n",
-              dd, length(a), nrow(R), o$mode, o$budget, o$cash, o$nu %||% NA_real_, o$cdar, o$n_active, max(o$w), o$effn, o$sec,
+  cat(sprintf("[cdar_cuz] d=%s n=%d T=%d nu_rule=%s mode=%s budget=%s cash=%.4f nu=%.6f cdar=%.6f active=%d maxw=%.4f effn=%.2f sec=%.3f fb=%s\n",
+              dd, length(a), nrow(R), nr %||% .CUZ_CFG$nu_rule, o$mode, o$budget, o$cash, o$nu %||% NA_real_, o$cdar, o$n_active, max(o$w), o$effn, o$sec,
               ifelse(is.na(o$fallback), "none", o$fallback)))
   o$w
 }
