@@ -26,7 +26,7 @@ description: "PIT 규칙 적용 — C1~C15, pit_engine_v3 blocking_gate(수동 �
 
 ⚠️ **구 문구 "`forge_code_guard.sh`가 Rscript 실행 직전 자동 차단"은 사실이 아니다.**
 - `forge_code_guard.sh`는 **2026-05-16 DEPRECATED** (`_archive_v55/` Tier 1 cleanup 삭제 — `00_Lawbook/DEPRECATION.md(10-14 정리로 보관소행 · 99_Archive/reorg_20261014 · 태그 pre-reorg-20261014)`, `02_Infrastructure/docs/rules/harness.md` Hook 정합 audit). `.claude/settings.json`에 미등록 (doc 주석에만 잔존).
-- `pit_v3_daemon.sh`는 FS retain이나 호출자(forge_code_guard)가 사라져 **배선 끊김** (harness.md: "헬퍼/비-hook" 분류).
+- `pit_v3_daemon.sh`는 호출자(forge_code_guard)가 사라져 **배선 끊김** → 2026-11-10 삭제(복원 = 태그 `pre-v10.2-prune-20261110`) (harness.md: "헬퍼/비-hook" 분류).
 - 따라서 **PIT Engine v3 blocking_gate는 현재 수동 호출로만 작동한다.** 백테 실행 전 forge/Q-Lead가 아래 수동 호출을 직접 실행할 의무.
 
 **실제 자동 방어선 (settings.json 등록 hook — v10 2026-09-03 실측)**:
@@ -36,7 +36,7 @@ description: "PIT 규칙 적용 — C1~C15, pit_engine_v3 blocking_gate(수동 �
 | `backtest_contract_audit.sh` | PreToolUse[Write] | 원장 등재 integrity — `audit_status=FAIL` 차단 (2026-08-24 재등록) |
 
 ★v9(2026-08-23) 감산으로 **등록 해제**된 구 방어선: `factor_rotation_pit_guard.sh` · `axiom_enforcement_hook.sh` ·
-`rationalization_detector.sh` · `answer_principles_grep.sh`(파일은 존치 — 재등록 레시피 = `02_Infrastructure/hooks/_archive_v8_enforcement/MANIFEST.md`).
+`rationalization_detector.sh` · `answer_principles_grep.sh`(파일은 2026-11-10 삭제 — 복원 = 태그 `pre-v10.2-prune-20261110` · 구 등록 목록 = `02_Infrastructure/hooks/_archive_v8_enforcement/MANIFEST.md`).
 `selection_contamination_detector.sh` 는 v10 lockbox 폐지로 ★RETIRED.
 
 위 hook들은 **run_all.R의 lookahead 코드 자체를 실행 직전에 스캔하지 않는다** — 정적 스캔(detect_lookahead / pit_engine_v3 / pit_ast_scanner)은 수동 실행이 유일한 경로.
