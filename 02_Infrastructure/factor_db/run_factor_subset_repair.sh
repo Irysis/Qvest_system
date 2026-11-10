@@ -86,12 +86,15 @@ res <- tryCatch(tg_agent_brief(
   agent = "Q-Lead", title = "[데이터] 팩터 DB 결함 수리 재계산 $1 — ${N_FAC:+영향 ${N_FAC}팩터 · }${RFS_TITLE}${RESUME:+ (재개)}",
   relaxed = TRUE, force = TRUE, mute = $mute, lock_scope = "factor_subset_repair_$STAMP",
   sections = list(
-    list(type = "summary", body = "$2"),
+    list(type = "summary", body = "팩터 DB 결함 수리 재계산 $1 — ${RFS_TITLE}"),
+    list(type = "text", heading = "결과", body = "$2"),
     list(type = "kv", heading = "단계", kv = list(
       "재계산" = "작업자 $NW · 달 ${N_MONTHS:-0} · 다시 한 회차 ${ROUNDS:-0} · 남은 달 ${REDO_LEFT:-없음}",
       "IC" = "rc ${IC_RC:-skip}", "대응표" = "rc ${PAR_RC:-skip}", "결합용 뷰" = "rc ${FC_RC:-skip}",
       "요약" = "$(printf '%s' "$SUMMARY" | tr '\\' '/')"))
-  )), error = function(e) { cat("tg fail:", conditionMessage(e), "\n"); NULL })
+  )), error = function(e) { cat("tg fail:", conditionMessage(e), "\n"); quit(save = "no", status = 1L) })
+# 2026-11-10: 요약 줄(summary · 20~100자)에 긴 결과 문장을 넣어 11-10 09:01 실행의 알림이 102자로 거부됐다(tg fail 만 남고 rc 0 이라
+#   아래 '발송 실패' 줄도 안 떴다) — 요약 = 짧은 제목 · 결과 문장 = text 섹션 · 발송 실패 = rc 1.
 RS
   "$RS" --no-save "$rfile" >> "$LOG" 2>&1 || say "텔레그램 발송 실패(요약 파일은 남음)"
 }
