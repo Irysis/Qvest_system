@@ -16,6 +16,11 @@
 #     B/M(BE t−1 / ME t−1 12월) · OP((영업이익 − 이자비용)/BE) · INV(TA t−1 / TA t−2 − 1) — 특성 30/70 = Big 분위
 #   월 1회 월말 구성: Size × 직전 t−12 ~ t−2 수익(모멘텀)
 #   PIT: 재무 값은 Factor_Date ≤ 구성일 · 구성일 종가로 정렬 · 다음 거래일부터 보유 · RF = 전 거래일 CD91
+#   ★v1.1(2026-11-10 · GRADE-V33-NOTCH-ASOF-AND-RULE-CHANGE-PROCEDURE-20261110): v2 1단계 표는 정정 의심 기업-연도를
+#     다음 해 사업보고서 뒤로 미룬다(build_fundamental_v2.py:211-224). 그 날짜로 거르면 '나중에 정정될 회사'가 정렬에서
+#     빠진다(정정 의심 표지 = 다음 해 보고서를 봐야 생기는 정보 → 표본 선택 미래참조 · 2016~ 정렬 비율 0.66~0.75).
+#     v1.1 = 그 기업-연도는 DART 당시 보고서 기록(접수 다음 거래일)을 쓴다(.krf_pick · 병합 표 RS 와 같은 규칙).
+#     기록 표(RS)가 없으면 빌드하지 않는다(조용히 v1.0 규칙으로 돌아가지 않는다).
 #   수익 = 일간 상한 가치가중(전날 시총을 직전 월말 Big 시총 80 분위에서 자른다 · Jensen-Kelly-Pedersen 2023 · 설정 weighting)
 #     → 월간 = 포트폴리오 일간 수익을 달 안에서 복리 → 요인 = 포트폴리오 수익의 조합 · 시장(MKT) = 상한 없는 가치가중
 #
@@ -26,7 +31,7 @@
 suppressPackageStartupMessages({ library(data.table); library(arrow); library(jsonlite) })
 
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
-KRF_BUILDER <- "build_kr_factor_returns.R v1.0"
+KRF_BUILDER <- "build_kr_factor_returns.R v1.1"
 
 krf_root <- function() {
   # 순서 = CLAUDE_PROJECT_DIR → QM_ROOT (r-portability 금칙 ④ — ~/.Renviron 의 QM_ROOT 는 export 로 못 덮는다)
@@ -83,10 +88,22 @@ KRF_FUND_ITEMS <- c("EquityParent", "TotalEquity", "NonControllingInt", "Preferr
   data.table(Ticker = Ticker, port = paste0(ifelse(big, "B", "S"), g), bp_lo = q[1], bp_hi = q[2])
 }
 
+# 그 날(at) 공개돼 있던 값: 퀀티 v2 값(공개일 d ≤ at) → 아니면 정정 의심 연도의 DART 당시 기록(접수 다음 거래일 dr ≤ at) → 결측
+#   (v1.1 · 정정 의심 표지로 표본을 거르지 않는다 — 날짜는 늦추기만 하고 앞당기지 않는다)
+.krf_pick <- function(v, d, vr, dr, at) {
+  fifelse(!is.na(d) & d <= at, v, fifelse(!is.na(dr) & dr <= at & is.finite(vr), vr, NA_real_))
+}
+
 ## ── 재무: 연간(달력연도) 값 + 그 값을 쓸 수 있는 날 ─────────────────────────
 #' FUND: data.table(Ticker, Period(YYYYMM 문자), Item, Value, Factor_Date(Date)) — v2 1단계 표의 열
-#' @return data.table(Ticker, fy, BE, BE_d, TA, TA_d, OPN, OPN_d)
-krf_annual_fund <- function(FUND) {
+#' RS: 정정 의심 기업-연도의 DART 당시 기록 data.table(Ticker, fy, BE_r, TA_r, OPN_r, R_d) — krf_restated_record() 산출 ·
+#'   정정 의심이 없는 자료면 0행 표를 준다(NULL 은 거부 — 기록 없이 v1.0 규칙으로 돌아가지 않는다)
+#' @return data.table(Ticker, fy, BE, BE_d, TA, TA_d, OPN, OPN_d, BE_r, TA_r, OPN_r, R_d)
+krf_annual_fund <- function(FUND, RS) {
+  if (missing(RS) || is.null(RS)) stop("[krf] 정정 의심 연도 DART 기록(RS)이 없다 — v1.0 규칙(정정 의심 기업을 정렬에서 뺌 · 표본 선택 미래참조)으로 돌아가지 않는다")
+  need_rs <- c("Ticker", "fy", "BE_r", "TA_r", "OPN_r", "R_d")
+  if (length(setdiff(need_rs, names(RS)))) stop("[krf] RS 열 없음: ", paste(setdiff(need_rs, names(RS)), collapse = ","))
+  if (anyDuplicated(RS, by = c("Ticker", "fy"))) stop("[krf] RS (Ticker, fy) 겹침 — 기업-연도마다 기록 하나")
   F <- FUND[Item %in% KRF_FUND_ITEMS & is.finite(Value) & !is.na(Factor_Date),
             .(Ticker, Period = as.character(Period), Item, Value = as.numeric(Value), Factor_Date = as.Date(Factor_Date))]
   F[, `:=`(fy = as.integer(substr(Period, 1, 4)), mo = substr(Period, 5, 6))]
@@ -110,7 +127,56 @@ krf_annual_fund <- function(FUND) {
   A[, BE_d := pmax(BE0_d, PreferredCapital_d, na.rm = TRUE)]
   A[, OPN := OP4 - fcoalesce(IE, 0)]
   A[, OPN_d := fifelse(is.finite(OP4), pmax(OP4_d, IE_d, na.rm = TRUE), as.Date(NA))]
-  A[, .(Ticker, fy, BE, BE_d, TA = TotalAssets, TA_d = TotalAssets_d, OPN, OPN_d)]
+  out <- A[, .(Ticker, fy, BE, BE_d, TA = TotalAssets, TA_d = TotalAssets_d, OPN, OPN_d)]
+  R <- as.data.table(RS)[, .(Ticker = as.character(Ticker), fy = as.integer(fy), BE_r = as.numeric(BE_r), TA_r = as.numeric(TA_r),
+                             OPN_r = as.numeric(OPN_r), R_d = as.Date(R_d))]
+  merge(out, R, by = c("Ticker", "fy"), all.x = TRUE)
+}
+
+#' 정정 의심 기업-연도의 DART 당시 보고서 기록(v1.1) — 순수 함수(시험이 합성 자료로 부른다)
+#'   REST: data.table(Ticker, fy) — v2 1단계 표 Check == "restated" 기업-연도
+#'   CK:   data.table(Ticker, FY, DART_Date, DART_Factor_Date) — fund_v2_annual_check(접수일 · 접수 다음 거래일)
+#'   FD:   data.table(Ticker, bsns_year, TotalAssets, TotalEquity, OperatingProfit, InterestExp) — fundamental_dart(병합 표 DART_RESTATED 원천)
+#'   RAWB: data.table(Ticker, bsns_year, rcept_no, fs_div, account_id, thstrm_amount) — dart_raw_financials 재무상태표 행
+#'   BE_r = 보유 판(접수번호 최대 · 회계연도 말 뒤 접수 · 그 판의 접수일 = CK DART_Date) CFS 우선 지배주주지분
+#'          (없으면 자본총계 − 비지배지분) − 우선주자본금(없으면 0) · 그 판이 없으면 fundamental_dart 자본총계 − 우선주 0
+#'   OPN_r = 영업이익 − 이자비용(없으면 0 · DART 이자비용은 퀀티와 정의가 다르다 — 병합 표와 같은 한계) · R_d = DART_Factor_Date
+#' @return list(RS = data.table(Ticker, fy, BE_r, TA_r, OPN_r, R_d), diag = list(...))
+krf_restated_record <- function(REST, CK, FD, RAWB) {
+  REST <- unique(as.data.table(REST)[, .(Ticker = as.character(Ticker), fy = as.integer(fy))])
+  ck <- unique(as.data.table(CK)[!is.na(DART_Factor_Date), .(Ticker = as.character(Ticker), fy = as.integer(FY),
+                                                              D_date = as.Date(DART_Date), R_d = as.Date(DART_Factor_Date))])
+  if (anyDuplicated(ck, by = c("Ticker", "fy"))) stop("[krf] DART 접수 날짜가 기업-연도마다 하나가 아니다(fund_v2_annual_check) — 중단")
+  fd <- as.data.table(FD)[, .(Ticker = as.character(Ticker), fy = as.integer(bsns_year), TA_r = as.numeric(TotalAssets),
+                              TE_r = as.numeric(TotalEquity), OP_r = as.numeric(OperatingProfit), IE_r = as.numeric(InterestExp))]
+  if (anyDuplicated(fd, by = c("Ticker", "fy"))) stop("[krf] fundamental_dart (Ticker, bsns_year) 겹침 — 중단")
+  AID <- c(parent = "EquityAttributableToOwnersOfParent", equity = "Equity", nci = "NoncontrollingInterests",
+           pref = "dart_IssuedCapitalOfPreferredStock")                         # 계정 id(ifrs · ifrs-full 접두 제거 뒤)
+  rw <- as.data.table(RAWB)[, .(Ticker = as.character(Ticker), fy = as.integer(bsns_year), rcept_no = as.character(rcept_no),
+                                fs_div = as.character(fs_div), acc = sub("^ifrs(-full)?_", "", as.character(account_id)),
+                                v = suppressWarnings(as.numeric(gsub(",", "", as.character(thstrm_amount)))))]
+  rw <- rw[acc %in% AID & is.finite(v)]
+  rw[, rd := as.Date(substr(rcept_no, 1L, 8L), format = "%Y%m%d")]
+  rw <- rw[!is.na(rd) & rd > as.Date(sprintf("%d-12-31", fy))]                  # 다른 해 보고서 응답 배제(build_fundamental_v2.py:162-164 와 같은 규칙)
+  rw <- rw[rw[, .I[rcept_no == max(rcept_no)], by = .(Ticker, fy)]$V1]           # 보유 판
+  rw[, fsr := fifelse(fs_div == "CFS", 1L, 2L)]
+  rw <- rw[rw[, .I[fsr == min(fsr)], by = .(Ticker, fy)]$V1]
+  bw <- rw[, .(parent = v[acc == AID[["parent"]]][1L], equity = v[acc == AID[["equity"]]][1L], nci = v[acc == AID[["nci"]]][1L],
+               pref = v[acc == AID[["pref"]]][1L], rd = rd[1L]), by = .(Ticker, fy)]
+  bw[, BEP_r := fifelse(is.finite(parent), parent, equity - fcoalesce(nci, 0))]
+  X <- merge(REST, ck, by = c("Ticker", "fy"))
+  X <- merge(X, fd, by = c("Ticker", "fy"), all.x = TRUE)
+  X <- merge(X, bw[, .(Ticker, fy, BEP_r, PREF_r = pref, rd)], by = c("Ticker", "fy"), all.x = TRUE)
+  n_ver_mismatch <- X[is.finite(BEP_r) & !is.na(D_date) & rd != D_date, .N]
+  X[is.finite(BEP_r) & !is.na(D_date) & rd != D_date, `:=`(BEP_r = NA_real_, PREF_r = NA_real_)]   # 날짜와 다른 판의 값은 쓰지 않는다
+  X[, BE_r := fcoalesce(BEP_r, TE_r) - fcoalesce(PREF_r, 0)]
+  X[, OPN_r := OP_r - fcoalesce(IE_r, 0)]
+  RS <- X[, .(Ticker, fy, BE_r, TA_r, OPN_r, R_d)]
+  setorder(RS, Ticker, fy)
+  list(RS = RS, diag = list(restated_company_years = nrow(REST), with_dart_date = nrow(RS),
+                            without_dart_date = nrow(REST) - nrow(RS), with_be = RS[is.finite(BE_r), .N],
+                            with_ta = RS[is.finite(TA_r), .N], with_opn = RS[is.finite(OPN_r), .N],
+                            be_from_raw_parent = X[is.finite(BEP_r), .N], raw_version_date_mismatch = n_ver_mismatch))
 }
 
 ## ── 달력 · 월말 표본 ────────────────────────────────────────────────────────
@@ -138,13 +204,15 @@ krf_annual_labels <- function(SNAP, AF, years, cfg) {
     if (nrow(J) < mb) next
     fdate <- J$fdate[1L]
     J <- merge(J, SNAP[ym == d_ym & is.finite(ME) & ME > 0, .(Ticker, ME_dec = ME)], by = "Ticker", all.x = TRUE)
-    J <- merge(J, AF[fy == t - 1L, .(Ticker, BE, BE_d, TA1 = TA, TA1_d = TA_d, OPN, OPN_d)], by = "Ticker", all.x = TRUE)
-    J <- merge(J, AF[fy == t - 2L, .(Ticker, TA2 = TA, TA2_d = TA_d)], by = "Ticker", all.x = TRUE)
-    # ★PIT — 구성일까지 쓸 수 없던 값은 없는 것으로 친다(Factor_Date > 구성일 · 결측 날짜)
-    J[is.na(BE_d) | BE_d > fdate, BE := NA_real_]
-    J[is.na(OPN_d) | OPN_d > fdate, OPN := NA_real_]
-    J[is.na(TA1_d) | TA1_d > fdate, TA1 := NA_real_]
-    J[is.na(TA2_d) | TA2_d > fdate, TA2 := NA_real_]
+    J <- merge(J, AF[fy == t - 1L, .(Ticker, BE, BE_d, TA1 = TA, TA1_d = TA_d, OPN, OPN_d, BE_r, OPN_r, TA1_r = TA_r, R1_d = R_d)],
+               by = "Ticker", all.x = TRUE)
+    J <- merge(J, AF[fy == t - 2L, .(Ticker, TA2 = TA, TA2_d = TA_d, TA2_r = TA_r, R2_d = R_d)], by = "Ticker", all.x = TRUE)
+    # ★PIT — 구성일에 공개돼 있던 값만 쓴다(퀀티 공개일 ≤ 구성일 → 아니면 정정 의심 연도의 DART 당시 기록 → 아니면 결측).
+    #   v1.0 은 정정 의심 연도를 결측으로 빼서 '나중에 정정될 회사'를 정렬에서 걸렀다(v1.1 수리 · 머리말)
+    J[, BE  := .krf_pick(BE,  BE_d,  BE_r,  R1_d, fdate)]
+    J[, OPN := .krf_pick(OPN, OPN_d, OPN_r, R1_d, fdate)]
+    J[, TA1 := .krf_pick(TA1, TA1_d, TA1_r, R1_d, fdate)]
+    J[, TA2 := .krf_pick(TA2, TA2_d, TA2_r, R2_d, fdate)]
     J[, big := .krf_size_split(ME_f, share)]
     sorts <- list(
       BM  = list(J[is.finite(ME_dec) & is.finite(BE) & BE > 0, .(Ticker, big, x = BE / ME_dec)], "L", "N", "H"),
@@ -250,20 +318,22 @@ krf_chars <- function(SNAP, AF, cfg, from_ym) {
   C <- SNAP[ym >= from_ym & is.finite(ME) & ME > 0, .(Ticker, ym, Date = me_date, member, ME)]
   C <- merge(C, PR[, .(Ticker, ym, mom_2_12 = mom)], by = c("Ticker", "ym"), all.x = TRUE)
   # 그 월말까지 쓸 수 있던 가장 최근 회계연도(BE 공개일 기준 — 늦게 정정된 옛 연도가 새 연도를 밀어내지 않게 누적 최대)
-  ev <- AF[!is.na(BE_d), .(Ticker, d = BE_d, fy)]
+  #   v1.1: 공개일 = 퀀티 공개일과 정정 의심 연도 DART 기록 접수 다음 거래일 가운데 이른 날(그날 어느 판이든 공개돼 있었다)
+  ev <- AF[!is.na(BE_d) | (is.finite(BE_r) & !is.na(R_d)),
+           .(Ticker, d = pmin(BE_d, fifelse(is.finite(BE_r), R_d, as.Date(NA)), na.rm = TRUE), fy)][!is.na(d)]
   setorder(ev, Ticker, d, fy)
   ev[, fy_best := cummax(fy), by = Ticker]
   ev <- ev[, .(fy_best = max(fy_best)), by = .(Ticker, d)]
   setkey(ev, Ticker, d)
   C[, fy_used := ev[data.table(Ticker = C$Ticker, d = C$Date), x.fy_best, on = .(Ticker, d), roll = TRUE]]
   C[!is.na(fy_used) & fy_used < as.integer(ym %/% 100L) - age, fy_used := NA_integer_]
-  a <- AF[, .(Ticker, fy_used = fy, BE, BE_d, OPN, OPN_d, TA1 = TA, TA1_d = TA_d)]
+  a <- AF[, .(Ticker, fy_used = fy, BE, BE_d, OPN, OPN_d, TA1 = TA, TA1_d = TA_d, BE_r, OPN_r, TA1_r = TA_r, R1_d = R_d)]
   C <- merge(C, a, by = c("Ticker", "fy_used"), all.x = TRUE)
-  C <- merge(C, AF[, .(Ticker, fy_used = fy + 1L, TA2 = TA, TA2_d = TA_d)], by = c("Ticker", "fy_used"), all.x = TRUE)
-  C[is.na(BE_d) | BE_d > Date, BE := NA_real_]
-  C[is.na(OPN_d) | OPN_d > Date, OPN := NA_real_]
-  C[is.na(TA1_d) | TA1_d > Date, TA1 := NA_real_]
-  C[is.na(TA2_d) | TA2_d > Date, TA2 := NA_real_]
+  C <- merge(C, AF[, .(Ticker, fy_used = fy + 1L, TA2 = TA, TA2_d = TA_d, TA2_r = TA_r, R2_d = R_d)], by = c("Ticker", "fy_used"), all.x = TRUE)
+  C[, BE  := .krf_pick(BE,  BE_d,  BE_r,  R1_d, Date)]
+  C[, OPN := .krf_pick(OPN, OPN_d, OPN_r, R1_d, Date)]
+  C[, TA1 := .krf_pick(TA1, TA1_d, TA1_r, R1_d, Date)]
+  C[, TA2 := .krf_pick(TA2, TA2_d, TA2_r, R2_d, Date)]
   C[, `:=`(log_me = log(ME),
            bm  = ifelse(is.finite(BE) & BE > 0, BE / ME, NA_real_),
            op  = ifelse(is.finite(BE) & BE > 0 & is.finite(OPN), OPN / BE, NA_real_),
@@ -274,8 +344,9 @@ krf_chars <- function(SNAP, AF, cfg, from_ym) {
 
 ## ── 조립(순수 함수 — 시험이 합성 자료로 부른다) ─────────────────────────────
 #' RAW: data.table(Date, Ticker, Close, Size, Ret, member) — member = 측정 축 멤버(논리)
-#' FUND: v2 1단계 표 행 · RFY: data.table(Date, y = 연 %)
-krf_build <- function(RAW, FUND, RFY, cfg, to = NULL) {
+#' FUND: v2 1단계 표 행 · RFY: data.table(Date, y = 연 %) · RS: krf_restated_record()$RS(정정 의심이 없으면 0행 표 · NULL 거부)
+krf_build <- function(RAW, FUND, RFY, cfg, to = NULL, RS = NULL) {
+  if (is.null(RS)) stop("[krf] krf_build: RS(정정 의심 연도 DART 기록) 없음 — v1.0 규칙으로 돌아가지 않는다")
   st <- as.Date(cfg$start_date)
   if (anyDuplicated(RAW, by = c("Date", "Ticker"))) stop("[krf] RAWDATA (Date, Ticker) 겹침 — 중단")
   setorder(RAW, Ticker, Date)
@@ -284,7 +355,7 @@ krf_build <- function(RAW, FUND, RFY, cfg, to = NULL) {
   K <- krf_calendar(RAW, as.integer(cfg$guards$trading_day_min_rows))
   RAW <- RAW[Date %in% K$cal$Date]
   SNAP <- krf_snap(RAW, K$me)
-  AF <- krf_annual_fund(FUND)
+  AF <- krf_annual_fund(FUND, RS)
   last <- max(K$cal$Date)
   yrs <- seq(as.integer(format(st, "%Y")) - 1L, as.integer(format(last, "%Y")))
   ANN <- krf_annual_labels(SNAP, AF, yrs, cfg)
@@ -366,12 +437,32 @@ krf_load_inputs <- function(root, cfg) {
   items <- KRF_FUND_ITEMS
   FUND <- as.data.table(open_dataset(fp) |> dplyr::filter(Item %in% items) |>
                           dplyr::select(dplyr::all_of(c("Ticker", "Period", "Item", "Value", "Factor_Date"))) |> dplyr::collect())
+  # v1.1 정정 의심 연도 DART 당시 기록 — 설정 · 세 파일 가운데 하나라도 없으면 빌드하지 않는다(fail-closed · 옛 요인 파일 유지)
+  rr <- cfg$fundamentals$restated_record
+  rr_keys <- c("check_table", "dart_annual", "dart_raw")
+  if (is.null(rr) || length(setdiff(rr_keys, names(rr))))
+    stop("[krf] 설정 fundamentals.restated_record 의 ", paste(setdiff(rr_keys, names(rr)), collapse = ","), " 없음 — v1.0 규칙으로 돌아가지 않는다")
+  rp <- vapply(rr_keys, function(k) file.path(root, rr[[k]]), character(1))
+  if (any(!file.exists(rp))) stop("[krf] 정정 의심 연도 DART 기록 입력 없음: ", paste(rp[!file.exists(rp)], collapse = " | "),
+                                  " — 빌드 중단(정정 의심 기업을 정렬에서 빼는 v1.0 규칙으로 돌아가지 않는다)")
+  REST <- as.data.table(open_dataset(fp) |> dplyr::filter(Check == "restated") |> dplyr::distinct(Ticker, Period) |> dplyr::collect())
+  REST <- unique(REST[, .(Ticker, fy = as.integer(substr(as.character(Period), 1L, 4L)))])
+  CK <- as.data.table(read_parquet(rp[["check_table"]], col_select = c("Ticker", "FY", "DART_Date", "DART_Factor_Date")))
+  FD <- as.data.table(read_parquet(rp[["dart_annual"]], col_select = c("Ticker", "bsns_year", "TotalAssets", "TotalEquity", "OperatingProfit", "InterestExp")))
+  ids <- c(as.vector(outer(c("ifrs_", "ifrs-full_"), c("EquityAttributableToOwnersOfParent", "Equity", "NoncontrollingInterests"), paste0)),
+           "dart_IssuedCapitalOfPreferredStock")
+  RAWB <- as.data.table(open_dataset(rp[["dart_raw"]]) |> dplyr::filter(sj_div == "BS" & account_id %in% ids) |>
+                          dplyr::select(dplyr::all_of(c("Ticker", "bsns_year", "rcept_no", "fs_div", "account_id", "thstrm_amount"))) |>
+                          dplyr::collect())
+  RR <- krf_restated_record(REST, CK, FD, RAWB)
   bp <- file.path(root, cfg$rf$bond_path)
   RFY <- as.data.table(read_parquet(bp))[Series == cfg$rf$series, .(Date = as.Date(Date), y = as.numeric(Value))]
   if (!nrow(RFY)) stop("[krf] RF 계열 없음: ", cfg$rf$series)
   fi <- function(p) { x <- file.info(p); list(path = .krf_rel(p, root), size = unname(x$size), mtime = format(x$mtime, "%Y-%m-%dT%H:%M:%S")) }
-  list(RAW = RAW, FUND = FUND, RFY = RFY, epoch = ep,
+  list(RAW = RAW, FUND = FUND, RFY = RFY, epoch = ep, RS = RR$RS, rs_diag = RR$diag,
        inputs = list(rawdata = fi(file.path(root, ".cache", "rawdata.parquet")), fundamentals = fi(fp), rf = fi(bp),
+                     restated_check = fi(rp[["check_table"]]), restated_dart_annual = fi(rp[["dart_annual"]]),
+                     restated_dart_raw = fi(rp[["dart_raw"]]),
                      fundamental_source_active = src$active))
 }
 
@@ -407,7 +498,7 @@ krf_summary <- function(FM) {
   }))
 }
 
-krf_write <- function(res, out, cfg, inputs, epoch, vintage = TRUE) {
+krf_write <- function(res, out, cfg, inputs, epoch, vintage = TRUE, rs_diag = NULL) {
   dir.create(out, recursive = TRUE, showWarnings = FALSE)
   o <- cfg$outputs
   .krf_atomic_parquet(res$daily, file.path(out, o$daily))
@@ -436,6 +527,9 @@ krf_write <- function(res, out, cfg, inputs, epoch, vintage = TRUE) {
                    vintage_file = if (is.null(vint)) NULL else .krf_rel(vint, out)),
     summary_monthly = krf_summary(res$monthly),
     annual_sorts = ad[, .(fy, sort, fdate = format(fdate), n_universe, n_sort, n_big, ok)],
+    restated_record = c(list(rule = "quantiwise_if_public_else_dart_record",
+                             doc = "정정 의심 기업-연도는 DART 당시 보고서 기록(접수 다음 거래일)을 쓴다 — 정정 의심 표지로 표본을 거르지 않는다(v1.1)"),
+                        rs_diag %||% list()),
     momentum_sort_n = list(median = stats::median(res$diag$mom$n_sort), min = min(res$diag$mom$n_sort)),
     ret_abs_gt50_by_year = res$diag$ret_abs_gt50_by_year,
     columns = list(MKT = "시장 초과수익 = MKT_TOTAL − RF", RF = "CD91 전 거래일 금리의 일간 환산 복리(월간 = 그 달 복리)",
@@ -460,8 +554,11 @@ krf_main <- function(args = commandArgs(trailingOnly = TRUE)) {
   cat(sprintf("[krf] 입력: RAWDATA %s행 · 재무 %s행 · RF %s일 · epoch %s (%.0fs)\n", format(nrow(I$RAW), big.mark = ","),
               format(nrow(I$FUND), big.mark = ","), format(nrow(I$RFY), big.mark = ","), I$epoch$id,
               as.numeric(difftime(Sys.time(), t0, units = "secs"))))
-  res <- krf_build(I$RAW, I$FUND, I$RFY, cfg, to = to)
-  meta <- krf_write(res, out, cfg, I$inputs, I$epoch, vintage = !("--no-vintage" %in% args))
+  cat(sprintf("[krf] 정정 의심 기업-연도 %d · DART 기록 %d(BE %d · TA %d · OPN %d · 판 날짜 불일치로 BE 원장 값 버림 %d)\n",
+              I$rs_diag$restated_company_years, I$rs_diag$with_dart_date, I$rs_diag$with_be, I$rs_diag$with_ta,
+              I$rs_diag$with_opn, I$rs_diag$raw_version_date_mismatch))
+  res <- krf_build(I$RAW, I$FUND, I$RFY, cfg, to = to, RS = I$RS)
+  meta <- krf_write(res, out, cfg, I$inputs, I$epoch, vintage = !("--no-vintage" %in% args), rs_diag = I$rs_diag)
   cat(sprintf("[krf] 일간 %d행(%s~%s) · 월간 %d행(%s~%s) · 특성 %d행 · 월간 내용 md5 %s (%.0fs)\n",
               meta$daily$rows, meta$daily$first, meta$daily$last, meta$monthly$rows, meta$monthly$first, meta$monthly$last,
               nrow(res$chars), substr(meta$monthly$content_md5, 1, 12), as.numeric(difftime(Sys.time(), t0, units = "secs"))))

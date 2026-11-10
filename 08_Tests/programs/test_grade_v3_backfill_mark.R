@@ -37,6 +37,8 @@ load_mark <- function(lines) {
   e <- new.env(parent = globalenv()); assign("%||%", `%||%`, envir = e)
   hit <- 0L
   for (x in ex) if (is.call(x) && identical(as.character(x[[1]]), "<-") && identical(as.character(x[[2]]), "gv3b_benefit_mark")) { eval(x, e); hit <- hit + 1L }
+  # 요인 표 변경 판정(gv3b_fa_stale)도 같은 방식으로 꺼낸다(있으면)
+  for (x in ex) if (is.call(x) && identical(as.character(x[[1]]), "<-") && identical(as.character(x[[2]]), "gv3b_fa_stale")) eval(x, e)
   list(env = e, n = hit)
 }
 L <- load_mark(txt)
@@ -64,8 +66,23 @@ chk(identical(a6$benefit, FALSE), "A6 처음 재채점에서 변화 없음 = 수
 a7 <- mk(list(), "A", "Z", "v3.2", "v3.3")
 chk(identical(a7$benefit, FALSE), "A7 알 수 없는 등급 글자 = 수혜로 찍지 않는다(예외 없이 FALSE)")
 
+cat("=== F. 요인 표가 바뀐 기록은 규칙 판이 같아도 다시 채점한다 ===\n")
+fs <- L$env$gv3b_fa_stale
+rec <- function(md5) list(grade_v3 = list(rules_version = "v3.4", fa = if (is.null(md5)) list(status = "not_run") else list(factor_md5 = md5)))
+chk(is.function(fs) && isTRUE(fs(rec("old111"), "new222")), "F1 저장 fa 블록의 factor_md5 ≠ 현행 요인 md5 → 낡음(다시 채점 대상)")
+chk(is.function(fs) && identical(fs(rec("same"), "same"), FALSE), "F2 같은 md5 → 낡지 않음(건너뜀 유지)")
+chk(is.function(fs) && identical(fs(rec(NULL), "new222"), FALSE), "F3 fa 블록에 md5 가 없는 기록(다른 축 · 노치 평가 안 탐) → 대상 아님")
+chk(is.function(fs) && identical(fs(rec("old111"), NA_character_), FALSE) && identical(fs(rec("old111"), NULL), FALSE),
+    "F4 현행 요인 md5 를 모르면(요인 문맥 미가동) 낡음으로 보지 않는다(전 건 재채점 폭주 방지)")
+
 cat("=== W. 배선(정적 · 주석 제외) ===\n")
 code <- sub("#.*$", "", txt)
+chk(sum(grepl("fa_stale <- rescore && gv3b_fa_stale(A, FA_MD5)", code, fixed = TRUE)) == 1L &&
+      sum(grepl("if (rescore && !fa_stale && (identical(old_rv, RULES_VER) || old_rv %in% RULES_COMPAT))", code, fixed = TRUE)) == 1L,
+    "W0 건너뜀 규칙이 요인 표 변경을 먼저 본다(같은 규칙 판이어도 낡은 fa 블록은 통과시키지 않는다)")
+chk(any(grepl("FA_MD5 <- as.character(CTX$fa$md5", code, fixed = TRUE)) &&
+      any(grepl("clusterExport", code, fixed = TRUE) & grepl("\"gv3b_fa_stale\"", code, fixed = TRUE)),
+    "W0b 현행 요인 md5 를 워커가 문맥에서 읽고, 판정 함수를 워커로 내보낸다")
 chk(sum(grepl("A$rule_change_benefit <- gv3b_benefit_mark(A, new, old, old_rv, RULES_VER)", code, fixed = TRUE)) == 1L,
     "W1 채점 함수가 재채점 기록에 표식을 쓴다(본문 1곳)")
 chk(any(grepl("clusterExport", code, fixed = TRUE) & grepl("\"gv3b_benefit_mark\"", code, fixed = TRUE)),

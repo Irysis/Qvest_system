@@ -1,7 +1,11 @@
 {
   "schema": "kr_factor_returns_cfg_v1",
   "_doc": "한국 Fama-French 팩터 수익(일간 · 월간) + 파마-맥베스 통제 특성(월간) 빌더 설정 정본 — 02_Infrastructure/data/build_kr_factor_returns.R 이 읽는다. 2026-11-09 도훈 '재빌드 뒤 갱신해주고 팩터조정알파 및 파마-맥베스 분석에 쓰이는 기초데이터도 데일리로 최신화'. 모든 값에 출처를 단다(하드코딩 금지). 구판(.cache/kr_factor_returns_v2.parquet · 99_Archive/reorg_20261014/04_Research/worktask_scratch/WT-D20260425_009/step0_kr_ff5_backfill.R)은 HML · RMW · CMA 를 월말 하루 수익(RAWDATA Ret = 일간)으로 만들었고 RF = 0 이었다 — 이 설정이 그것을 대체한다.",
-  "version": "krff_v1.0",
+  "version": "krff_v1.1",
+  "version_history": [
+    {"version": "krff_v1.0", "at": "2026-11-09", "why": "새 빌더(상한 가치가중 · CD91 · 실제 공시일)"},
+    {"version": "krff_v1.1", "at": "2026-11-10", "why": "정정 의심 기업-연도 표본 거르기 미래참조 수리 — 그 해는 DART 당시 기록을 접수 다음 거래일부터 쓴다(fundamentals.restated_record) · 도훈 결정 GRADE-V33-NOTCH-ASOF-AND-RULE-CHANGE-PROCEDURE-20261110(재검 뒤 노치 유지)"}
+  ],
   "start_date": "2000-01-01",
   "start_date_source": "측정 축 epoch 시작(constraint_defaults.json::measurement_axis · D15 · 2000-01-01~)과 같게 둔다",
   "lookback_start": "1998-11-01",
@@ -14,6 +18,13 @@
     "table": ".cache/fundamental_v2/fund_v2_quarterly.parquet",
     "requires_active_source": "v2",
     "registry": "06_Registry/fundamental_source.json",
+    "restated_record": {
+      "check_table": ".cache/fundamental_v2/fund_v2_annual_check.parquet",
+      "dart_annual": ".cache/fundamental_dart.parquet",
+      "dart_raw": ".cache/dart/dart_raw_financials.parquet",
+      "rule": "구성일 τ 의 값 = 퀀티 v2 값(Factor_Date ≤ τ) → 아니면 정정 의심(Check = restated) 기업-연도의 DART 당시 보고서 기록(DART_Factor_Date = 보유 판 접수 다음 거래일 ≤ τ) → 아니면 결측",
+      "_source": "v2 1단계 표(build_fundamental_v2.py:211-224)는 정정 의심 기업-연도를 다음 회계연도 사업보고서 뒤로 미루고, 같은 파일 머리말(22-24행)이 '이 표를 표본 거르기에 쓰지 말 것'이라 경고한다 — 정정 의심 표지는 다음 해 보고서를 봐야 생기는 정보라 그 날짜로 거르면 나중에 정정될 회사가 정렬에서 빠진다(pit.md C1 · C6 · 11-10 재검: 2016~ 구성 정렬 비율 0.66~0.75 · 빠진 종목의 58~84% 가 정정 의심). 규칙은 병합 표(build_fundamental_merged_v2.R RS · fundamentals_v2/README.md §8 '정정 의심 기업-연도는 DART 당시 보고서 기록을 DART 접수 다음 거래일부터 쓴다')와 같다. BE = 보유 판 CFS 지배주주지분(없으면 자본총계 − 비지배지분) − 우선주자본금 · TA · 영업이익 · 이자비용 = fundamental_dart(병합 표 DART_RESTATED 원천). 남는 한계: 보유 판이 구성일 뒤 기재정정본이면 최초 제출 값이 원천에 없어 결측으로 남는다(재검 보고서 §5 · 원천 확보 = data_pipeline_queue)."
+    },
     "_source": "퀀티 재무 DB v2 1단계 표 — 분기 이산 값 + Factor_Date(그 값을 쓸 수 있는 날 · 날짜 순서 계약). 병합 표는 2015 전후로 분기/연간 행이 갈려 정의가 이어지지 않는다(2000~2014 = Q 행 · 2015~ = A 행)"
   },
   "rf": {

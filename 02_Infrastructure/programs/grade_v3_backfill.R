@@ -27,6 +27,13 @@ gv3b_benefit_mark <- function(A, new, old, old_rv, rules_ver, at = format(Sys.ti
   list(benefit = isTRUE(unname(rank[new] > rank[m0])), measured_grade = m0, rules_version = rules_ver, prior_rules_version = old_rv,
        prior_essence_grade = old, at = at)
 }
+#' 저장된 팩터 조정 알파 블록이 낡았는가 — 요인 표(내용 md5)가 바뀌면 규칙 판이 같아도 그 기록은 다시 채점해야 한다
+#'   (2026-11-10 요인 빌더 v1.1 — 표본 거르기 미래참조 수리로 2016-07 이후 요인이 바뀐다). 대상 = 저장 fa 블록에 factor_md5 가 있는
+#'   기록(= 요인 epoch 와 같은 축에서 노치 평가를 탄 것)이고 그 값이 현행 요인 md5 와 다른 것. 현행 md5 를 모르면(요인 문맥 미가동) 낡음으로 보지 않는다.
+gv3b_fa_stale <- function(A, fa_md5_now) {
+  now <- as.character(fa_md5_now %||% NA_character_)[1]; old <- as.character(A$grade_v3$fa$factor_md5 %||% NA_character_)[1]
+  !is.na(now) && nzchar(now) && !is.na(old) && nzchar(old) && !identical(old, now)
+}
 args <- commandArgs(trailingOnly = TRUE)
 argv <- function(k, d = NULL) { i <- match(k, args); if (is.na(i) || i == length(args)) d else args[i + 1L] }
 WRITE <- "--write" %in% args
@@ -64,7 +71,9 @@ one <- function(p) tryCatch({
   old_rv <- if (rescore) as.character(A$grade_v3$rules_version %||% "v3.0") else NA_character_
   ## (v3.4 · 11-10) 채점이 같은 판(grade_v3.json::rules_version_compatible)의 저장분도 건너뛴다 — v3.4 는 선택 점검을 제출한 측정의
   ##   관문만 바꾸므로 v3.3 저장분을 다시 채점할 이유가 없다(소급 승격 없음 · 도훈 11-10).
-  if (rescore && (identical(old_rv, RULES_VER) || old_rv %in% RULES_COMPAT)) return(c(base, status = "already", new_grade = old))
+  ## (11-10) 요인 표가 바뀐 기록은 규칙 판이 같아도 다시 채점한다(저장 fa 블록의 factor_md5 ≠ 현행) — gv3b_fa_stale
+  fa_stale <- rescore && gv3b_fa_stale(A, FA_MD5)
+  if (rescore && !fa_stale && (identical(old_rv, RULES_VER) || old_rv %in% RULES_COMPAT)) return(c(base, status = "already", new_grade = old))
   if (is.na(old)) return(c(base, status = "no_contract", new_grade = NA_character_))
   hf <- isTRUE(A$hard_fail)
   gates <- NULL
@@ -99,6 +108,8 @@ one <- function(p) tryCatch({
                               decision = if (rescore) paste0("decision_register ", .gv3_rv_decision(RULES_VER), "(규칙 판 재채점 ", old_rv, " → ", RULES_VER, ")")
                                          else "decision_register GRADE-V3-PROMOTE",
                               rules_version = RULES_VER, prior_rules_version = old_rv,
+                              trigger = if (fa_stale) "factor_md5_changed" else if (rescore) "rules_version" else "scheme_promote",
+                              prior_factor_md5 = if (fa_stale) as.character(A$grade_v3$fa$factor_md5)[1] else NULL,
                               prior_essence_grade = old, prior_md5 = base$old_md5,
                               history = c(A$grade_v3_backfill$history %||% list(),
                                           if (rescore) list(list(rules_version = old_rv, essence_grade = old)) else list()))
@@ -119,13 +130,14 @@ init_worker <- quote({
   DSR_MIN <- .e$.graduation_params(refresh = TRUE, root = ROOT)$dsr_min
   RULES_VER <- as.character(CTX$cfg$rules_version %||% "v3.0")      # 현행 규칙 판(grade_v3.json) — 다른 판의 v3 기록은 다시 채점
   RULES_COMPAT <- as.character(unlist(CTX$cfg$rules_version_compatible %||% character(0)))   # 채점이 같은 앞선 판(건너뜀)
+  FA_MD5 <- as.character(CTX$fa$md5 %||% NA_character_)[1]          # 현행 요인 표 내용 md5(팩터 조정 알파 문맥 · 미가동이면 NA)
   NULL })
 t0 <- Sys.time()
 res <- if (WORKERS > 1L) {
   source(file.path(ROOT, "02_Infrastructure/ops/qv_psock.R"))   # 포트 예약 회피(금칙 ⑧ · 11-09)
   cl <- qv_psock_cluster(WORKERS)
   tryCatch({
-    clusterExport(cl, c("ROOT", "%||%", "init_worker", "gv3b_benefit_mark"))
+    clusterExport(cl, c("ROOT", "%||%", "init_worker", "gv3b_benefit_mark", "gv3b_fa_stale"))
     invisible(clusterEvalQ(cl, eval(init_worker)))
     parLapplyLB(cl, todo, one)
   }, finally = stopCluster(cl))

@@ -6,6 +6,8 @@
 #   ① PIT: 구성일 뒤 공개된 BE 는 그해 정렬에 없다 ② 비멤버는 정렬에 없다 ③ 일간 HML = 오라클
 #   ④ 월간 HML = 포트폴리오 월간 복리의 조합 ⑤ 자료 없는 정렬은 NA(지어내지 않는다) ⑥ RF = 전 거래일 금리
 #   ⑦ 완결 월만 월간 파일에 ⑧ MKT = MKT_TOTAL − RF ⑨ SMB5 = 세 SMB 평균 ⑩ 같은 입력 → 같은 내용 해시
+#   v1.1(11-10): (a) 정정 의심 연도 = DART 당시 기록으로 정렬 편입 (b) 기록 날짜 > 구성일이면 결측 (c) 퀀티 값이 공개된 해는 v1.0 과 같다
+#   (e) RS 없으면 멈춤 (f) krf_restated_record 계산 · (d) 돌연변이 M5~M7(v1.0 규칙 복귀 · 우선순위 뒤집기 · 날짜 검사 삭제)
 #==============================================================================
 suppressPackageStartupMessages({ library(data.table); library(jsonlite) })
 root <- gsub("\\\\", "/", Sys.getenv("QM_ROOT", Sys.getenv("CLAUDE_PROJECT_DIR", "")))
@@ -108,12 +110,15 @@ cfg$start_date <- "2010-01-01"
 cfg$guards$min_big_for_breakpoints <- 3L
 cfg$guards$trading_day_min_rows <- 1L                 # 합성 30종목 — 실자료 문턱(100)은 거래일 판정용
 RAW0 <- mk_raw(); FUND <- mk_fund(); RFY <- mk_rf(RAW0)
-run <- function(env, to = NULL) env$krf_build(copy(RAW0), FUND, RFY, cfg, to = to)
+RS0 <- data.table(Ticker = character(0), fy = integer(0), BE_r = numeric(0), TA_r = numeric(0), OPN_r = numeric(0), R_d = as.Date(character(0)))
+run <- function(env, to = NULL, F = FUND, RS = RS0) env$krf_build(copy(RAW0), F, RFY, cfg, to = to, RS = RS)
 res <- run(E)
+labs_of <- function(env, F, RS, yr = 2011L)
+  env$krf_annual_labels(env$krf_snap(copy(RAW0)[, ME_l1 := NA_real_], env$krf_calendar(RAW0, 1L)$me), env$krf_annual_fund(F, RS), yr, cfg)$labels
 
 cat("[test_kr_factor_returns] 합성 30종목 · ", format(min(RAW0$Date)), "~", format(max(RAW0$Date)), "\n", sep = "")
 LA <- res$diag$annual
-lab <- E$krf_annual_labels(E$krf_snap(copy(RAW0)[, ME_l1 := NA_real_], E$krf_calendar(RAW0, 1L)$me), E$krf_annual_fund(FUND), 2011L, cfg)$labels
+lab <- labs_of(E, FUND, RS0)
 ok(!("T25" %in% lab[sort == "BM"]$Ticker) && !("T25" %in% lab[sort == "OP"]$Ticker), "① PIT — 구성일(2011-06-30) 뒤 공개(2011-07-20) BE 의 T25 는 2011 B/M · OP 정렬에 없다")
 ok("T25" %in% lab[sort == "INV"]$Ticker, "① 대조 — T25 는 TA 가 공개돼 있어 INV 정렬에는 있다")
 ok(!("T05" %in% lab$Ticker), "② 구성일 비멤버 T05 는 2011 정렬 어디에도 없다")
@@ -149,24 +154,80 @@ ok(nrow(s5) > 0L && isTRUE(max(abs(s5$SMB5 - (s5$SMB_BM + s5$SMB_OP + s5$SMB_INV
 cols <- c("Date", "MKT", "SMB", "HML", "WML", "RMW", "CMA", "RF", "SMB5")
 ok(identical(E$.krf_content_md5(res$monthly, cols), E$.krf_content_md5(run(E)$monthly, cols)), "⑩ 같은 입력 → 같은 월간 내용 해시")
 
+## ── v1.1 정정 의심 연도 DART 기록(GRADE-V33-NOTCH-ASOF-AND-RULE-CHANGE-PROCEDURE-20261110) ──────────────
+#   T12 · T18 = 정정 의심 FY2010: 퀀티 값은 다음 해 보고서 뒤(2012-03-15)로 미뤄져 있다(v2 1단계 표의 규칙)
+#   T12 의 DART 당시 기록 = 2011-03-16 부터(구성일 앞) · T18 = 2011-07-20 부터(구성일 뒤 — 나중 기재정정본)
+cat("[test_kr_factor_returns] v1.1 정정 의심 연도\n")
+RST <- c("T12", "T18")
+FUND2 <- copy(FUND)[Ticker %in% RST & substr(Period, 1, 4) == "2010", Factor_Date := as.Date("2012-03-15")]
+q12 <- FUND[Ticker == "T12" & substr(Period, 1, 4) == "2010"]
+be12 <- q12[Item == "EquityParent", Value]; ta12 <- q12[Item == "TotalAssets", Value]
+opn12 <- q12[Item == "OperatingProfit", sum(Value)] - q12[Item == "InterestExp", sum(Value)]
+RS2 <- data.table(Ticker = RST, fy = 2010L, BE_r = c(be12 * 0.9, 1e12), TA_r = c(ta12 * 0.95, 1e12), OPN_r = c(opn12 * 0.9, 1e10),
+                  R_d = as.Date(c("2011-03-16", "2011-07-20")))
+la <- labs_of(E, FUND2, RS2)
+ch <- E$krf_build(copy(RAW0), FUND2, RFY, cfg, RS = RS2)$chars
+me12 <- RAW0[Ticker == "T12" & Date == as.Date("2011-06-30"), Size]
+ok(all(c("BM", "OP", "INV") %in% la[Ticker == "T12", sort]) &&
+     isTRUE(abs(ch[Ticker == "T12" & ym == 201106L, bm] - be12 * 0.9 / me12) < 1e-12 * be12 / me12),
+   "(a) 정정 의심 T12 는 DART 당시 기록(구성일 앞 공개)으로 2011 B/M · OP · INV 정렬에 들어가고 값 = DART 기록(특성 bm = BE_r / ME)")
+ok(!("T12" %in% labs_of(E, FUND2, RS0)[sort == "BM", Ticker]), "(a) 대조 — 기록이 없으면(0행) T12 는 정렬에 없다(미룬 날짜 2012-03-15)")
+ok(!any(c("BM", "OP", "INV") %in% la[Ticker == "T18", sort]), "(b) DART 기록 날짜(2011-07-20)가 구성일 뒤인 T18 은 정렬에 없다(앞당기지 않는다)")
+RS3 <- copy(RS2)[Ticker == "T12", `:=`(BE_r = be12 * 0.02, OPN_r = opn12 * 5)]   # 값을 크게 바꾼 기록(T12 = SH · SW → 우선순위가 뒤집히면 SL · SR 로 바뀐다)
+rc <- run(E, RS = RS3)                                                    # 퀀티 값이 이미 공개된 해에 기록이 있어도
+ok(identical(E$.krf_content_md5(rc$monthly, cols), E$.krf_content_md5(res$monthly, cols)) &&
+     identical(labs_of(E, FUND, RS3)[order(sort, Ticker)], lab[order(sort, Ticker)]),
+   "(c) 퀀티 값이 구성일 앞에 공개된 해는 기록이 있어도 v1.0 과 같다(정렬 · 월간 내용 해시) — 퀀티 우선")
+e_null <- tryCatch({ E$krf_build(copy(RAW0), FUND, RFY, cfg); "no_error" }, error = function(e) conditionMessage(e))
+e_fund <- tryCatch({ E$krf_annual_fund(FUND); "no_error" }, error = function(e) conditionMessage(e))
+ok(grepl("RS", e_null) && grepl("RS", e_fund), "(e) RS 를 주지 않으면 krf_build · krf_annual_fund 가 멈춘다(v1.0 규칙으로 조용히 돌아가지 않는다)")
+# krf_restated_record — 보유 판 · CFS 우선 · 다른 해 응답 배제 · 우선주 차감 · 날짜 겹침 중단
+REST <- data.table(Ticker = c("A1", "A2", "A3"), fy = 2019L)
+CK <- data.table(Ticker = c("A1", "A2", "A3"), FY = 2019L, DART_Date = as.Date(c("2020-03-30", "2020-03-31", "2020-03-30")),
+                 DART_Factor_Date = as.Date(c("2020-03-31", "2020-04-01", "2020-03-31")))
+FD <- data.table(Ticker = c("A1", "A2", "A3"), bsns_year = 2019L, TotalAssets = c(100, 200, 300), TotalEquity = c(50, 80, 90),
+                 OperatingProfit = c(10, 20, 30), InterestExp = c(1, NA, 3))
+RAWB <- data.table(Ticker = c("A1", "A1", "A1", "A1", "A2", "A2", "A2"), bsns_year = 2019L,
+                   rcept_no = c("20200330000001", "20200330000001", "20200330000001", "20190601000009", "20200331000002", "20200331000002", "20200331000002"),
+                   fs_div = c("CFS", "OFS", "CFS", "CFS", "OFS", "OFS", "OFS"),
+                   account_id = c("ifrs-full_EquityAttributableToOwnersOfParent", "ifrs-full_Equity", "dart_IssuedCapitalOfPreferredStock",
+                                  "ifrs-full_EquityAttributableToOwnersOfParent", "ifrs_Equity", "ifrs_NoncontrollingInterests", "ifrs_Equity"),
+                   thstrm_amount = c("45", "60", "2", "999", "70", "5", "71"))
+RR <- E$krf_restated_record(REST, CK, FD, RAWB)$RS
+ok(isTRUE(all.equal(RR[order(Ticker), BE_r], c(43, 65, 90))) && isTRUE(all.equal(RR[order(Ticker), OPN_r], c(9, 20, 27))) &&
+     identical(RR[order(Ticker), R_d], CK$DART_Factor_Date),
+   "(f) 기록 = CFS 지배주주지분 − 우선주(A1 45 − 2 · 다른 해 응답 999 배제) · 자본총계 − 비지배(A2 70 − 5) · 원장 없음 → fundamental_dart 자본총계(A3) · OPN = 영업이익 − 이자비용(없음 = 0) · 날짜 = 접수 다음 거래일")
+e_dup <- tryCatch({ E$krf_restated_record(REST, rbind(CK, CK[1][, DART_Factor_Date := as.Date("2020-04-02")]), FD, RAWB); "no_error" },
+                  error = function(e) conditionMessage(e))
+ok(grepl("하나가 아니다", e_dup), "(f) DART 접수 날짜가 기업-연도마다 둘이면 멈춘다")
+
 ## ── 위반 주입(검사가 살아 있나) ─────────────────────────────────────────────
 cat("[test_kr_factor_returns] 위반 주입\n")
-M1 <- mutant("    J[is.na(BE_d) | BE_d > fdate, BE := NA_real_]\n", "")
-l1 <- M1$krf_annual_labels(M1$krf_snap(copy(RAW0)[, ME_l1 := NA_real_], M1$krf_calendar(RAW0, 1L)$me), M1$krf_annual_fund(FUND), 2011L, cfg)$labels
-ok("T25" %in% l1[sort == "BM"]$Ticker, "M1 BE 의 PIT 거름을 지우면 T25 가 정렬에 들어온다(① 이 잡는다)")
+M1 <- mutant("    J[, BE  := .krf_pick(BE,  BE_d,  BE_r,  R1_d, fdate)]\n", "")
+l1 <- labs_of(M1, FUND, RS0)
+ok("T25" %in% l1[sort == "BM"]$Ticker, "M1 BE 의 PIT 고르기를 지우면 T25 가 정렬에 들어온다(① 이 잡는다)")
 M2 <- mutant("prev = c(as.Date(NA), head(dates, -1L))", "prev = dates")
-rf2 <- M2$krf_build(copy(RAW0), FUND, RFY, cfg)$daily[Date == as.Date("2011-07-15")]$rf_yield_pct
+rf2 <- M2$krf_build(copy(RAW0), FUND, RFY, cfg, RS = RS0)$daily[Date == as.Date("2011-07-15")]$rf_yield_pct
 ok(identical(rf2, 4), "M2 RF 를 그날 금리로 바꾸면 07-15 이 4% 가 된다(⑥ 이 잡는다)")
 M3 <- mutant("RAW[, ME_l1 := shift(Size, 1L), by = Ticker]", "RAW[, ME_l1 := Size]")
-h3 <- M3$krf_build(copy(RAW0), FUND, RFY, cfg)$daily[Date == d1]$HML
+h3 <- M3$krf_build(copy(RAW0), FUND, RFY, cfg, RS = RS0)$daily[Date == d1]$HML
 ok(isTRUE(abs(h3 - or_hml(v)) > 1e-9), "M3 가중을 그날 시총으로 바꾸면 일간 HML 이 오라클과 달라진다(③ 이 잡는다)")
 M4 <- mutant("RD[, W := fifelse(is.finite(cap), pmin(ME_l1, cap), NA_real_)]", "RD[, W := ME_l1]")
-h4 <- M4$krf_build(copy(RAW0), FUND, RFY, cfg)$daily[Date == d1]$HML
+h4 <- M4$krf_build(copy(RAW0), FUND, RFY, cfg, RS = RS0)$daily[Date == d1]$HML
 ok(isTRUE(abs(h4 - or_hml(v)) > 1e-9), "M4 가중 상한을 지우면 일간 HML 이 오라클(상한 가치가중)과 달라진다(③ 이 잡는다)")
 mk_mkt <- function(r) r$daily[Date == d1]$MKT_TOTAL
 x_mkt <- merge(RAW0[Date == d1, .(Ticker, Ret)], RAW0[Date == as.Date("2011-07-04"), .(Ticker, ME = Size)], by = "Ticker")
 x_mkt <- x_mkt[Ticker %in% RAW0[Date == as.Date("2011-06-30") & member == TRUE]$Ticker]
 ok(isTRUE(abs(mk_mkt(res) - x_mkt[, sum(ME * Ret) / sum(ME)]) < 1e-12), "⑧ 대조 — 시장(MKT_TOTAL)은 상한 없는 가치가중(직전 월말 멤버)")
+PICK <- "fifelse(!is.na(d) & d <= at, v, fifelse(!is.na(dr) & dr <= at & is.finite(vr), vr, NA_real_))"
+M5 <- mutant(PICK, "fifelse(!is.na(d) & d <= at, v, NA_real_)")              # (d) v1.0 규칙(정정 의심 기업을 뺀다)으로 되돌림
+ok(!("T12" %in% labs_of(M5, FUND2, RS2)[sort == "BM", Ticker]), "M5(d) 고르기를 v1.0 규칙으로 되돌리면 T12 가 정렬에서 빠진다((a) 가 잡는다)")
+M6 <- mutant(PICK, "fifelse(!is.na(dr) & dr <= at & is.finite(vr), vr, fifelse(!is.na(d) & d <= at, v, NA_real_))")   # DART 기록을 먼저
+ok(!identical(labs_of(M6, FUND, RS3)[order(sort, Ticker)], lab[order(sort, Ticker)]) ||
+     !identical(M6$.krf_content_md5(M6$krf_build(copy(RAW0), FUND, RFY, cfg, RS = RS3)$monthly, cols), E$.krf_content_md5(res$monthly, cols)),
+   "M6 퀀티 우선을 DART 기록 우선으로 바꾸면 (c) 가 잡는다(정렬 또는 월간 해시가 달라진다)")
+M7 <- mutant("dr <= at & is.finite(vr)", "is.finite(vr)")                    # 기록 날짜 검사를 지움
+ok("T18" %in% labs_of(M7, FUND2, RS2)[sort == "BM", Ticker], "M7 기록 날짜 검사를 지우면 T18(구성일 뒤 기록)이 들어온다((b) 가 잡는다)")
 
 cat(sprintf("[test_kr_factor_returns] %d PASS / %d FAIL\n", pass, fail))
 cat(toJSON(list(test = "kr_factor_returns", pass = pass, fail = fail, total = pass + fail), auto_unbox = TRUE), "\n")  # 배터리 요약 줄 — 키 test 필수(run_all_hooks.sh)
