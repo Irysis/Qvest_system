@@ -615,7 +615,9 @@ essence_diagnostics <- function(bt_result, oos_stat_version = "v2", root = NULL)
 ##     · 받지 않았으면 종전 DSR 관문(gates$dsr_sweep) 그대로다 — 저장분 · 구 호출자의 경과 규정(소급 승격 없음).
 ##   결과물 확인(형식 · 설정 판 · 후보 t = 이 전략의 PORT_t)에 실패하면 통과가 아니다(fail-closed · 사유 기록).
 .ESS_SRC <- new.env(parent = emptyenv())
-.essence_selection_gate <- function(selection_check, port_t, is_sweep, dsr_ok) {
+##   ★시행 집합(G1 · 11-10): 기대 시행 수 = n_trials_cumulative(등록 시행 수). 점검의 시행 수(빠진 칸 포함)가 그보다 적거나,
+##     기대 수를 모르면(NULL · 비유한) 관문은 통과가 아니다 — 판정은 src_gate(expected = ...)가 낸다.
+.essence_selection_gate <- function(selection_check, port_t, is_sweep, dsr_ok, n_trials_expected = NULL) {
   if (!isTRUE(is_sweep)) return(list(mode = "none", gates = NULL, ok = NA, reason = NA_character_, record = NULL))
   if (is.null(selection_check))
     return(list(mode = "dsr_legacy", gates = c(dsr_sweep = isTRUE(dsr_ok)), ok = isTRUE(dsr_ok),
@@ -631,7 +633,8 @@ essence_diagnostics <- function(bt_result, oos_stat_version = "v2", root = NULL)
       invisible(utils::capture.output(suppressMessages(sys.source(p, envir = e, keep.source = FALSE))))
       .ESS_SRC$e <- e; .ESS_SRC$root <- root; .ESS_SRC$cfg <- e$src_cfg(root)
     }
-    .ESS_SRC$e$src_gate(selection_check, port_t, .ESS_SRC$cfg)
+    ex <- suppressWarnings(as.numeric(if (is.null(n_trials_expected) || !length(n_trials_expected)) NA else n_trials_expected[[1]]))
+    .ESS_SRC$e$src_gate(selection_check, port_t, .ESS_SRC$cfg, expected = list(n_trials = ex))
   }, error = function(err) list(ok = FALSE, reason = paste0("선택 점검 판독 실패: ", conditionMessage(err))))
   n1 <- function(x) { v <- suppressWarnings(as.numeric(if (is.null(x) || !length(x)) NA else x[[1]])); if (length(v) && is.finite(v)) v else NA_real_ }
   pb <- if (is.list(selection_check$pbo)) selection_check$pbo else list()
@@ -641,7 +644,9 @@ essence_diagnostics <- function(bt_result, oos_stat_version = "v2", root = NULL)
               alpha = n1(selection_check$alpha), required_t = n1(selection_check$required_t),
               effective_independent_trials = n1(selection_check$effective_independent_trials),
               pbo = n1(pb$pbo), pbo_role = as.character(if (is.null(pb$role)) NA else pb$role), pbo_flagged = isTRUE(pb$flagged),
-              set_hash = as.character(if (is.null(selection_check$set_hash)) NA else selection_check$set_hash))
+              set_hash = as.character(if (is.null(selection_check$set_hash)) NA else selection_check$set_hash),
+              expected_n_trials = n1(n_trials_expected),
+              n_dropped_zero_variance = length(unlist(selection_check$dropped_zero_variance)))
   list(mode = "reality_check", gates = c(selection_rc = isTRUE(g$ok)), ok = isTRUE(g$ok), reason = as.character(g$reason), record = rec)
 }
 
@@ -791,7 +796,7 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
   # DSR 게이트: sweep형 selection에서만 요구. chain/1논문/1알파에선 부적용(통과 간주).
   dsr_ok <- if (is_sweep) (is.finite(dsr) && dsr >= .gp$dsr_min) else TRUE
   ## (v3.4) 권위 등급(v3)의 스윕 관문 — 선택 점검을 받았으면 그것, 아니면 종전 DSR(위 dsr_ok). 아래 v921 진단 판정은 dsr_ok 그대로 쓴다.
-  .sel <- .essence_selection_gate(selection_check, port_t, is_sweep, dsr_ok)
+  .sel <- .essence_selection_gate(selection_check, port_t, is_sweep, dsr_ok, n_trials_expected = n_trials_cumulative)
   ## ★MDD 직접 조건은 **의도적으로 없다** (도훈 확인 2026-08-24 — 되살리지 말 것).
   ##   제2목표의 `MDD < 25%` 는 Calmar 로 **비율**로 걸려 있다:
   ##     min_calmar 0.64 = 16% / 25% = 제2목표 CAGR / 제2목표 MDD

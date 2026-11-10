@@ -200,7 +200,7 @@ src_check <- function(A, candidate, cfg, dates = NULL, fill_frac = NULL, sensiti
     date_from = if (is.null(dates)) NA_character_ else as.character(min(dates)),
     date_to = if (is.null(dates)) NA_character_ else as.character(max(dates)),
     fill = if (is.null(fill_frac)) NULL else list(trials_filled = sum(fill_frac > 0), max_fill_frac = max(fill_frac)),
-    set_hash = digest_md5(paste(c(ids, n, if (is.null(dates)) "" else as.character(range(dates))), collapse = "|")),
+    set_hash = .src_set_hash(ids, n, if (is.null(dates)) NULL else as.character(range(dates))),
     computed_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"))
   if (isTRUE(sensitivity)) {
     hb <- max(cfg$nw_lag + 1L, ceiling(mean_block / 2)); db <- 2L * mean_block
@@ -208,6 +208,12 @@ src_check <- function(A, candidate, cfg, dates = NULL, fill_frac = NULL, sensiti
                                   double = list(mean_block = db, p_adj_candidate = unname(run(db)$p_adj[candidate])))
   }
   out
+}
+
+#' 시행 집합 지문 — 정렬한 시행 id(분산 0 으로 빠진 칸 포함) · 관측 수 · 표본 첫날 · 끝날. src_check 와 src_gate(재계산)의 단일 출처.
+.src_set_hash <- function(ids, n, date_range = NULL) {
+  d <- if (is.null(date_range) || !length(date_range) || anyNA(date_range)) "" else as.character(date_range)
+  digest_md5(paste(c(sort(as.character(ids)), as.character(as.integer(n)), d), collapse = "|"))
 }
 
 #' 문자열 md5(임시 파일 없이) — 시행 집합 지문용
@@ -257,13 +263,36 @@ src_check_dirs <- function(dirs, candidate_dir, root = NULL, cfg = NULL, ids = N
 
 #' 관문 판독 — essence_score 가 부른다. 결과물의 형식 · 판 · 후보 일치(후보 t = 이 전략의 PORT_t)를 확인하고 통과 여부를 낸다.
 #'   확인에 실패하면 통과가 아니다(fail-closed) — 사유를 함께 돌려준다.
-#' @param port_t 이 전략의 계약 PORT_t(benchmark_compare 의 Portfolio_Alpha_t_NW_lag3)
-src_gate <- function(check, port_t, cfg, tol = 1e-6) {
+#'   ★시행 집합 확인(G1 · 2026-11-10): 점검은 '그 선택에 영향을 줄 수 있었던 모든 칸'으로 했을 때만 의미가 있다 — 집합을 줄이면 보정이 통째로 사라진다
+#'   (후보 1칸 점검 = 보정 없음). 그래서 호출자가 기대 시행 집합(expected)을 넘겨야 하고, 모르면 통과가 아니다(fail-closed):
+#'     · 점검 시행 수(분산 0 으로 빠진 칸 포함) ≥ expected$n_trials(등록 시행 수 · essence 의 n_trials_cumulative)
+#'     · expected$ids ⊆ 점검 시행 id · 지문(set_hash) 재계산 일치(id 목록 · 관측 수 · 표본 창을 손댄 결과물 거부)
+#'     · 분산 0 으로 빠진 칸 · 후보와 날짜가 하나도 안 겹치는 칸(채움 100% = 활성 수익 전부 0)이 있으면 거부 — 그런 칸은 보정에 들어가지 않았다
+#' @param port_t   이 전략의 계약 PORT_t(benchmark_compare 의 Portfolio_Alpha_t_NW_lag3)
+#' @param expected list(n_trials = 등록 시행 수, ids = 등록 시행 id) — 둘 중 하나 이상. NULL · 빈 것 = 기대 집합 미지정 = 통과 아님
+src_gate <- function(check, port_t, cfg, tol = 1e-6, expected = NULL) {
   no <- function(why) list(ok = FALSE, reason = why)
   if (!is.list(check) || !identical(check$schema, SRC_SCHEMA)) return(no("형식 불일치"))
   if (!identical(check$method, SRC_METHOD)) return(no("방법 불일치"))
   if (!identical(as.character(check$version), cfg$version)) return(no(paste0("설정 판 불일치(", check$version, " ≠ ", cfg$version, ")")))
   num <- function(x) suppressWarnings(as.numeric(.src_or(x, NA_real_))[1])
+  ## 시행 집합(G1) — 기대 집합 미지정 · 빠진 칸 · 겹침 없는 칸 · 수 · id · 지문
+  ex_n <- if (is.list(expected)) num(expected$n_trials) else NA_real_
+  ex_ids <- if (is.list(expected)) unique(as.character(unlist(expected$ids))) else character(0)
+  ex_ids <- ex_ids[!is.na(ex_ids) & nzchar(ex_ids)]
+  if (!is.finite(ex_n) && !length(ex_ids)) return(no("기대 시행 집합 미지정(등록 시행 수 · 시행 id) — 집합 크기를 모르는 점검은 통과시키지 않는다"))
+  ids <- as.character(unlist(check$trial_ids)); drp <- as.character(unlist(check$dropped_zero_variance))
+  if (length(drp)) return(no(paste0("분산 0 으로 빠진 칸이 있다(", paste(drp, collapse = ","), ") — 보정에 들어가지 않은 시행")))
+  if (is.list(check$fill) && is.finite(num(check$fill$max_fill_frac)) && num(check$fill$max_fill_frac) >= 1)
+    return(no("후보와 날짜가 하나도 안 겹치는 칸이 있다(채움 100%)"))
+  nt <- num(check$n_trials)
+  if (!is.finite(nt) || !length(ids) || anyDuplicated(ids) || nt != length(ids) || !(as.character(.src_or(check$candidate, "")) %in% ids))
+    return(no("시행 수 · 시행 id 목록이 서로 맞지 않는다"))
+  if (is.finite(ex_n) && nt < ex_n) return(no(sprintf("점검 시행 %d < 등록 시행 %d — 선택에 영향을 준 칸을 다 담지 않았다", as.integer(nt), as.integer(ex_n))))
+  if (length(ex_ids) && !all(ex_ids %in% ids)) return(no(paste0("등록 시행 id 누락: ", paste(utils::head(setdiff(ex_ids, ids), 5L), collapse = ","))))
+  dr <- c(as.character(.src_or(check$date_from, NA_character_))[1], as.character(.src_or(check$date_to, NA_character_))[1])
+  if (!identical(as.character(.src_or(check$set_hash, ""))[1], .src_set_hash(c(ids, drp), num(check$n_obs), dr)))
+    return(no("시행 집합 지문(set_hash) 재계산 불일치 — id 목록 · 관측 수 · 표본 창이 점검 뒤 바뀌었다"))
   if (!isTRUE(all.equal(num(check$alpha), cfg$alpha, tolerance = 1e-12))) return(no("alpha 가 설정과 다르다"))
   if (!is.finite(num(check$resamples)) || num(check$resamples) < cfg$resamples) return(no("재표집 수 부족"))
   if (!identical(as.integer(num(check$nw_lag)), cfg$nw_lag)) return(no("NW lag 불일치"))
@@ -299,5 +328,5 @@ if (sys.nframe() == 0L) {
                 chk$candidate, chk$candidate_t, chk$p_adj_candidate, chk$alpha, if (chk$pass) "통과" else "미달",
                 chk$n_trials, chk$required_t, chk$effective_independent_trials,
                 if (identical(chk$pbo$status, "ok")) sprintf("%.3f", chk$pbo$pbo) else chk$pbo$status))
-  } else cat("[selection_rc] Loaded — src_check_dirs(dirs, candidate_dir) · src_check(A, candidate, cfg) · src_gate(check, port_t, cfg).\n")
+  } else cat("[selection_rc] Loaded — src_check_dirs(dirs, candidate_dir) · src_check(A, candidate, cfg) · src_gate(check, port_t, cfg, expected = list(n_trials, ids)).\n")
 }

@@ -14,7 +14,8 @@
 #   채점식은 계약 그대로다(gv3_score_dir · 관문만 selection_rc). 후보가 아닌 칸에는 쓰지 않는다 — 호출자(라운드 닫기)가 최종 후보만 넘긴다.
 #   ★수혜 표식: 규칙이 바뀌기 전에 이미 측정돼 있던 기록이 이 재채점으로 등급이 오르면 benefits_from_rule_change = TRUE 로 남긴다
 #     (규칙 변경 뒤 이미 본 결과가 득을 본 사실을 숨기지 않는다 — 설계 README §8-3 ④).
-# 사용: Rscript 02_Infrastructure/programs/selection_regrade.R <후보 폴더> <시행 폴더 1> [<시행 폴더 2> ...] [--write]
+# 사용: Rscript 02_Infrastructure/programs/selection_regrade.R <후보 폴더> <시행 폴더 1> [<시행 폴더 2> ...] --expect-n <등록 시행 수> [--expect-ids a,b] [--write]
+#   ★기대 시행 집합(G1 · 11-10): 관문은 등록 시행 수 · id 와 점검 집합을 대조한다 — 기대를 주지 않으면 관문 미통과(fail-closed).
 #==============================================================================
 suppressPackageStartupMessages({ library(data.table); library(jsonlite) })
 
@@ -33,8 +34,11 @@ suppressPackageStartupMessages({ library(data.table); library(jsonlite) })
 #' @param candidate_dir 후보 산출 폴더(authoritative_remeasure.json + 계약 CSV)
 #' @param trial_dirs    시행 집합의 산출 폴더(후보 포함 여부 무관 — 자동 포함)
 #' @param write         TRUE 일 때만 파일을 쓴다
+#' @param expected      기대 시행 집합 list(n_trials = 등록 시행 수, ids = 등록 시행 id(산출 폴더 basename)) — 호출자(라운드 닫기)가
+#'                      등록부 · 사슬 원장에서 낸다(G1 · 11-10). NULL = 기대 집합 미지정 = 관문 미통과(fail-closed · 사유 기록).
+#'                      trial_dirs 로 기대를 대신하지 않는다(넘긴 집합으로 넘긴 집합을 검증하는 셈이 된다).
 #' @return list(status, grade_before, grade_after, gate_ok, reason, check, written)
-sr_regrade <- function(candidate_dir, trial_dirs, root = NULL, write = FALSE, cfg = NULL, ctx = NULL) {
+sr_regrade <- function(candidate_dir, trial_dirs, root = NULL, write = FALSE, cfg = NULL, ctx = NULL, expected = NULL) {
   root <- .sr_root(root)
   candidate_dir <- gsub("\\\\", "/", as.character(candidate_dir)[1])
   ap <- file.path(candidate_dir, "authoritative_remeasure.json")
@@ -59,7 +63,7 @@ sr_regrade <- function(candidate_dir, trial_dirs, root = NULL, write = FALSE, cf
   bc <- fread(file.path(candidate_dir, "07_benchmark_compare.csv"), showProgress = FALSE)
   nc <- intersect(c("metric_name", "name"), names(bc))[1]; vc <- intersect(c("active_value", "value", "metric_value"), names(bc))[1]
   port_t <- suppressWarnings(as.numeric(bc[get(nc) == "Portfolio_Alpha_t_NW_lag3"][[vc]][1]))
-  g <- SE$src_gate(chk, port_t, cfg)
+  g <- SE$src_gate(chk, port_t, cfg, expected = expected)
   v3 <- GE$gv3_score_dir(candidate_dir, root, ctx, gates = c(selection_rc = isTRUE(g$ok)))
   new <- as.character(v3$grade_v3)
   if (length(new) != 1L || is.na(new)) stop("[selection_regrade] 등급 v3 산출 실패(NA)", call. = FALSE)
@@ -71,7 +75,9 @@ sr_regrade <- function(candidate_dir, trial_dirs, root = NULL, write = FALSE, cf
   srec <- list(version = chk$version, n_trials = n1(chk$n_trials), n_obs = n1(chk$n_obs), candidate_t = n1(chk$candidate_t),
                p_adj_candidate = n1(chk$p_adj_candidate), alpha = n1(chk$alpha), required_t = n1(chk$required_t),
                effective_independent_trials = n1(chk$effective_independent_trials), pbo = n1(pb$pbo),
-               pbo_role = as.character(.sr_or(pb$role, NA)), pbo_flagged = isTRUE(pb$flagged), set_hash = chk$set_hash)
+               pbo_role = as.character(.sr_or(pb$role, NA)), pbo_flagged = isTRUE(pb$flagged), set_hash = chk$set_hash,
+               expected_n_trials = n1(expected$n_trials), expected_n_ids = length(unlist(expected$ids)),
+               n_dropped_zero_variance = length(unlist(chk$dropped_zero_variance)))
   measured <- as.character(.sr_or(A$measured_at, .sr_or(A$remeasured_at, .sr_or(A$generated_at, NA_character_))))
   eff <- as.character(fromJSON(cfg$path, simplifyVector = FALSE)$selection_bias$effective_from)
   seen_before <- !is.na(measured) && nzchar(measured) && substr(measured, 1L, 10L) < eff
@@ -114,10 +120,15 @@ sr_regrade <- function(candidate_dir, trial_dirs, root = NULL, write = FALSE, cf
 if (sys.nframe() == 0L) {
   a <- commandArgs(trailingOnly = TRUE)
   W <- "--write" %in% a; a <- setdiff(a, "--write")
+  ## 기대 시행 집합(G1) — --expect-n <등록 시행 수> · --expect-ids <id1,id2,...> (둘 다 없으면 관문 미통과)
+  take <- function(k) { i <- match(k, a); if (is.na(i) || i == length(a)) return(NULL); v <- a[i + 1L]; a <<- a[-c(i, i + 1L)]; v }
+  en <- take("--expect-n"); ei <- take("--expect-ids")
+  ex <- if (is.null(en) && is.null(ei)) NULL else
+    list(n_trials = if (is.null(en)) NULL else as.integer(en), ids = if (is.null(ei)) NULL else strsplit(ei, ",", fixed = TRUE)[[1]])
   if (length(a) >= 2L) {
-    r <- sr_regrade(a[1L], a[-1L], write = W)
+    r <- sr_regrade(a[1L], a[-1L], write = W, expected = ex)
     cat(sprintf("[selection_regrade] %s · 등급 %s → %s · 관문 %s · %s%s%s\n", r$status, r$grade_before, r$grade_after,
                 if (isTRUE(r$gate_ok)) "통과" else if (is.na(r$gate_ok)) "해당 없음" else "미통과", r$reason,
                 if (isTRUE(r$benefits_from_rule_change)) " · ★규칙 변경 수혜 기록" else "", if (W) " · 기록함" else " · 드라이런"))
-  } else cat("[selection_regrade] 사용: selection_regrade.R <후보 폴더> <시행 폴더 ...> [--write]\n")
+  } else cat("[selection_regrade] 사용: selection_regrade.R <후보 폴더> <시행 폴더 ...> --expect-n <등록 시행 수> [--expect-ids a,b,...] [--write]\n")
 }

@@ -142,6 +142,21 @@ local({
       length(calls) == 1L && identical(basename(calls[[1]]$cand), "E1_D1") && calls[[1]]$n == 5L && identical(calls[[1]]$sid, "S_E1_D1") &&
         identical(calls[[1]]$spec, SPF) && identical(calls[[1]]$write, FALSE) && grepl("E1_D1: regrade ok", f1$status) &&
         grepl("E2_D1: skip 스윕 아님(chain)", f1$status, fixed = TRUE) && !grepl("E1_D1x|E1_RX0", f1$status) && identical(f1$coarse, "done"), f1$status)
+  ## (11-10) 기대 시행 집합 전달 — expected 를 받는 마감 함수에는 사전등록 칸 수(6 · 측정 실패 칸 포함)와 잰 칸 5개의 산출 폴더 이름을 넘긴다
+  exs <- list()
+  fnx <- function(candidate_dir, trial_dirs, strategy_id, spec_path, root, write, expected = NULL) { exs[[length(exs) + 1L]] <<- expected; list(status = "regrade ok") }
+  fx <- rc_close_finalize(sp2, list(selected = list(list(device = "D1")), verdict = "supported"), PP, write = FALSE, fn = fnx)
+  chk("C7o2 마감 함수에 기대 시행 집합 전달 — n_trials = 사전등록 칸 6(측정 실패 칸 포함 → 관문이 '점검 < 등록'으로 막는다) · ids = 잰 칸 5",
+      length(exs) == 1L && identical(as.integer(exs[[1]]$n_trials), 6L) && setequal(exs[[1]]$ids, c("E1_D1", "E2_D1", "E1_D1x", "E1_RX0", "E1_D2")), fx$status)
+  local({   # 돌연변이 — 호출부에서 expected 전달을 떼면 마감 함수가 NULL 을 받는다(= 선택 관문 미통과 경로)
+    src <- readLines(file.path(ROOT, "04_Research/programs/_lib/round_core/v1/register.R"), warn = FALSE, encoding = "UTF-8")
+    i <- grep("write = write, expected = K$expected)", src, fixed = TRUE)
+    m <- src; m[i] <- sub(", expected = K$expected)", ")", m[i], fixed = TRUE)
+    e <- new.env(parent = globalenv()); ok <- tryCatch({ eval(parse(text = m, encoding = "UTF-8"), envir = e); TRUE }, error = function(z) FALSE)
+    got <- "unset"; fny <- function(candidate_dir, trial_dirs, strategy_id, spec_path, root, write, expected = NULL) { got <<- expected; list(status = "x") }
+    if (ok) invisible(tryCatch(e$rc_close_finalize(sp2, list(selected = list(list(device = "D1")), verdict = "supported"), PP, write = FALSE, fn = fny), error = function(z) NULL))
+    chk("C7o3 [돌연변이] expected 전달을 뗀 사본(치환 1곳) → 마감 함수가 NULL 을 받는다", length(i) == 1L && ok && is.null(got), paste(length(i), ok))
+  })
   f2 <- rc_close_finalize(sp2, list(selected = list(), verdict = "falsified"), PP, fn = fn)
   f3 <- rc_close_finalize(sp2, list(selected = list(list(device = "D2"))), PP, fn = fn)
   f4 <- rc_close_finalize(sp2, list(selected = list(list(device = "D1"))), PP, fn = function(...) stop("재채점 실패"))

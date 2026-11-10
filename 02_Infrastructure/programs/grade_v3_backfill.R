@@ -30,14 +30,45 @@ gv3b_benefit_mark <- function(A, new, old, old_rv, rules_ver, at = format(Sys.ti
 #' 저장된 팩터 조정 알파 블록이 낡았는가 — 요인 표(내용 md5)가 바뀌면 규칙 판이 같아도 그 기록은 다시 채점해야 한다
 #'   (2026-11-10 요인 빌더 v1.1 — 표본 거르기 미래참조 수리로 2016-07 이후 요인이 바뀐다). 대상 = 저장 fa 블록에 factor_md5 가 있는
 #'   기록(= 요인 epoch 와 같은 축에서 노치 평가를 탄 것)이고 그 값이 현행 요인 md5 와 다른 것. 현행 md5 를 모르면(요인 문맥 미가동) 낡음으로 보지 않는다.
-gv3b_fa_stale <- function(A, fa_md5_now) {
+#'   (G1 · 11-10) 요인 문맥이 없던 때 채점된 기록 — 요인 파일 다중 쓰기 창 · [5c] 중도 실패 밤에는 gv3_fa_ctx 가 factor_unavailable 을 내고
+#'   그 기록의 fa 블록에는 md5 · epoch 가 없다(노치 없이 굳는다). 저장 fa$status = factor_unavailable · md5 없음이고, 지금 요인 문맥이 있으며
+#'   (md5 · epoch 를 안다) 기록의 측정 축(measurement_axis.epoch)이 현행 요인 epoch 와 같을 때만 다시 채점한다 — 다른 축 · 축을 모르는 기록은
+#'   노치 자격이 없으므로 건드리지 않는다(전 기록 재채점 폭주 방지). fa_epoch_now 를 모르면 이 가지는 쓰지 않는다.
+gv3b_fa_stale <- function(A, fa_md5_now, fa_epoch_now = NULL) {
   fa <- A$grade_v3$fa
   now <- as.character(fa_md5_now %||% NA_character_)[1]; old <- as.character(fa$factor_md5 %||% NA_character_)[1]
+  st <- as.character(fa$status %||% NA_character_)[1]
+  if (identical(st, "factor_unavailable") && (is.na(old) || !nzchar(old))) {
+    ra <- tryCatch(as.character(A[["measurement_axis"]][["epoch"]] %||% NA_character_)[1], error = function(e) NA_character_); fe0 <- as.character(fa_epoch_now %||% NA_character_)[1]
+    return(!is.na(now) && nzchar(now) && !is.na(fe0) && nzchar(fe0) && !is.na(ra) && nzchar(ra) && identical(ra, fe0))
+  }
   ## 요인 표는 한 측정 축(epoch)의 것이다 — 기록의 축이 요인 축과 같을 때만 팩터 조정 알파가 등급에 닿는다(다른 축은 노치 자격이 없다).
   ##   다른 축 기록에도 factor_md5 는 참고로 적히므로, 축을 보지 않으면 요인 표가 바뀔 때마다 전 기록(수천 건)을 다시 채점하게 된다.
   re <- as.character(fa$record_epoch %||% NA_character_)[1]; fe <- as.character(fa$factor_epoch %||% NA_character_)[1]
   same_axis <- !is.na(re) && nzchar(re) && !is.na(fe) && nzchar(fe) && identical(re, fe)
   same_axis && !is.na(now) && nzchar(now) && !is.na(old) && nzchar(old) && !identical(old, now)
+}
+#' 선택 현실 점검이 관문이던 기록(selection_gate$mode = reality_check)의 관문 재판정 (G1 · 11-10)
+#'   저장 ok 를 그대로 쓰지 않는다 — 저장된 점검 요약(selection_check)을 현행 설정(grade_v3.json::selection_bias · src_cfg())으로 다시 본다:
+#'   저장 판정 통과(재계산할 수 없는 시행 집합 검사 · 후보 일치 등을 담는다) ∧ 설정 판 같음 ∧ 조정 p ≤ 현행 alpha ∧ (PBO 가 관문이면 현행 문턱 이하).
+#'   설정을 못 읽거나 값이 없으면 통과가 아니다(fail-closed). 조정 p 는 alpha 와 무관하게 계산되므로 현행 alpha 로 다시 재는 것이 정확하다.
+#' @param scfg src_cfg() 결과(NULL = 판독 실패)
+gv3b_selection_gate <- function(A, scfg) {
+  no <- function(why) list(ok = FALSE, reason = why)
+  sc <- A$selection_check; sg <- A$selection_gate
+  num <- function(x) { v <- suppressWarnings(as.numeric(x %||% NA_real_)[1]); if (length(v) && is.finite(v)) v else NA_real_ }
+  if (!is.list(scfg) || is.null(scfg$version) || !is.finite(num(scfg$alpha))) return(no("선택 점검 설정 판독 불가"))
+  if (!isTRUE(sg$ok)) return(no(paste0("저장 판정 미통과: ", as.character(sg$reason %||% "")[1])))
+  if (!is.list(sc)) return(no("저장 점검 요약 없음"))
+  if (!identical(as.character(sc$version %||% NA_character_)[1], as.character(scfg$version)[1]))
+    return(no(paste0("설정 판 불일치(", as.character(sc$version %||% "NA")[1], " ≠ ", scfg$version, ") — 새 판으로 다시 점검해야 한다")))
+  p <- num(sc$p_adj_candidate)
+  if (!(is.finite(p) && p <= scfg$alpha)) return(no(sprintf("조정 p %s > 현행 alpha %.4f", format(p), scfg$alpha)))
+  if (identical(as.character(scfg$pbo_role %||% "")[1], "gate")) {
+    pv <- num(sc$pbo)
+    if (!is.finite(pv) || !is.finite(num(scfg$pbo_flag_above)) || pv > scfg$pbo_flag_above) return(no("PBO 관문 미통과(현행 문턱)"))
+  }
+  list(ok = TRUE, reason = sprintf("조정 p %.4f <= 현행 alpha %.4f(%s)", p, scfg$alpha, scfg$version))
 }
 args <- commandArgs(trailingOnly = TRUE)
 argv <- function(k, d = NULL) { i <- match(k, args); if (is.na(i) || i == length(args)) d else args[i + 1L] }
@@ -77,13 +108,22 @@ one <- function(p) tryCatch({
   ## (v3.4 · 11-10) 채점이 같은 판(grade_v3.json::rules_version_compatible)의 저장분도 건너뛴다 — v3.4 는 선택 점검을 제출한 측정의
   ##   관문만 바꾸므로 v3.3 저장분을 다시 채점할 이유가 없다(소급 승격 없음 · 도훈 11-10).
   ## (11-10) 요인 표가 바뀐 기록은 규칙 판이 같아도 다시 채점한다(저장 fa 블록의 factor_md5 ≠ 현행) — gv3b_fa_stale
-  fa_stale <- rescore && gv3b_fa_stale(A, FA_MD5)
-  if (rescore && !fa_stale && (identical(old_rv, RULES_VER) || old_rv %in% RULES_COMPAT)) return(c(base, status = "already", new_grade = old))
+  ## (G1 · 11-10) 요인 문맥이 없던 때(factor_unavailable · md5 없음) 채점된 같은 축 기록도 문맥이 돌아오면 다시 채점한다(FA_EPOCH)
+  fa_stale <- rescore && gv3b_fa_stale(A, FA_MD5, FA_EPOCH)
+  old_fa_md5 <- as.character(A$grade_v3$fa$factor_md5 %||% NA_character_)[1]   # 재채점 전 값(아래에서 grade_v3 블록을 새로 쓴다)
+  ## (G1 · 11-10) 선택 현실 점검 기록 — 현행 설정으로 다시 본 관문이 저장 판정과 다르면(alpha · 판 재보정) 규칙 판이 같아도 다시 채점한다
+  is_rc <- identical(as.character(A$selection_gate$mode %||% ""), "reality_check")
+  SG <- if (is_rc) gv3b_selection_gate(A, SRC_CFG) else NULL
+  sel_stale <- rescore && is_rc && !identical(isTRUE(SG$ok), isTRUE(A$selection_gate$ok))
+  if (rescore && !fa_stale && !sel_stale && (identical(old_rv, RULES_VER) || old_rv %in% RULES_COMPAT)) return(c(base, status = "already", new_grade = old))
   if (is.na(old)) return(c(base, status = "no_contract", new_grade = NA_character_))
   hf <- isTRUE(A$hard_fail)
   gates <- NULL
-  if (identical(as.character(A$selection_gate$mode %||% ""), "reality_check")) {
-    gates <- c(selection_rc = isTRUE(A$selection_gate$ok))            # v3.4: 선택 현실 점검이 관문이던 기록 — 저장된 판정 그대로
+  if (is_rc) {
+    gates <- c(selection_rc = isTRUE(SG$ok))                          # v3.4: 선택 현실 점검이 관문이던 기록 — 저장 판정 ∧ 현행 설정 재판정(G1)
+    A$selection_gate$rejudged <- list(at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), ok = isTRUE(SG$ok), reason = as.character(SG$reason),
+                                      cfg_version = as.character(SRC_CFG$version %||% NA_character_)[1], prior_ok = isTRUE(A$selection_gate$ok))
+    A$selection_gate$ok <- isTRUE(SG$ok)
   } else if (isTRUE(A$dsr_gate_applied)) {
     dv <- suppressWarnings(as.numeric(A$dsr %||% NA)[1])
     gates <- c(dsr_sweep = isTRUE(is.finite(dv) && dv >= DSR_MIN))
@@ -113,8 +153,9 @@ one <- function(p) tryCatch({
                               decision = if (rescore) paste0("decision_register ", .gv3_rv_decision(RULES_VER), "(규칙 판 재채점 ", old_rv, " → ", RULES_VER, ")")
                                          else "decision_register GRADE-V3-PROMOTE",
                               rules_version = RULES_VER, prior_rules_version = old_rv,
-                              trigger = if (fa_stale) "factor_md5_changed" else if (rescore) "rules_version" else "scheme_promote",
-                              prior_factor_md5 = if (fa_stale) as.character(A$grade_v3$fa$factor_md5)[1] else NULL,
+                              trigger = if (fa_stale && is.na(old_fa_md5)) "factor_ctx_restored" else if (fa_stale) "factor_md5_changed"
+                                        else if (sel_stale) "selection_cfg_changed" else if (rescore) "rules_version" else "scheme_promote",
+                              prior_factor_md5 = if (fa_stale && !is.na(old_fa_md5)) old_fa_md5 else NULL,   # 재채점 전 md5(G1 · 종전엔 새 블록의 md5 를 읽었다)
                               prior_essence_grade = old, prior_md5 = base$old_md5,
                               history = c(A$grade_v3_backfill$history %||% list(),
                                           if (rescore) list(list(rules_version = old_rv, essence_grade = old)) else list()))
@@ -136,13 +177,18 @@ init_worker <- quote({
   RULES_VER <- as.character(CTX$cfg$rules_version %||% "v3.0")      # 현행 규칙 판(grade_v3.json) — 다른 판의 v3 기록은 다시 채점
   RULES_COMPAT <- as.character(unlist(CTX$cfg$rules_version_compatible %||% character(0)))   # 채점이 같은 앞선 판(건너뜀)
   FA_MD5 <- as.character(CTX$fa$md5 %||% NA_character_)[1]          # 현행 요인 표 내용 md5(팩터 조정 알파 문맥 · 미가동이면 NA)
+  FA_EPOCH <- as.character(CTX$fa$epoch %||% NA_character_)[1]      # 현행 요인 epoch(미가동이면 NA — 요인 문맥 복구 가지를 끈다)
+  ## 선택 현실 점검 설정(현행) — 판독 실패면 NULL(그 기록들의 선택 관문은 미통과 · fail-closed)
+  .se <- new.env(parent = globalenv())
+  SRC_CFG <- tryCatch({ sys.source(file.path(ROOT, "02_Infrastructure/contracts/selection_reality_check.R"), envir = .se, keep.source = FALSE)
+                        .se$src_cfg(ROOT) }, error = function(e) NULL)
   NULL })
 t0 <- Sys.time()
 res <- if (WORKERS > 1L) {
   source(file.path(ROOT, "02_Infrastructure/ops/qv_psock.R"))   # 포트 예약 회피(금칙 ⑧ · 11-09)
   cl <- qv_psock_cluster(WORKERS)
   tryCatch({
-    clusterExport(cl, c("ROOT", "%||%", "init_worker", "gv3b_benefit_mark", "gv3b_fa_stale"))
+    clusterExport(cl, c("ROOT", "%||%", "init_worker", "gv3b_benefit_mark", "gv3b_fa_stale", "gv3b_selection_gate"))
     invisible(clusterEvalQ(cl, eval(init_worker)))
     parLapplyLB(cl, todo, one)
   }, finally = stopCluster(cl))

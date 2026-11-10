@@ -190,7 +190,10 @@ rc_close_candidates <- function(spec, V, P, root = rc_root()) {
   cand <- if (is.na(unit)) list() else Filter(Negate(is.null), lapply(seq_along(cells), function(i) { c <- cells[[i]]
     if (!identical(c[["component"]], unit) || (c[["role"]] %||% "") %in% c("diagnostic", "reference")) return(NULL)
     list(code = c[["code"]], engine = c[["engine"]], spec = if (!is.null(c[["spec"]])) rc_abs(c[["spec"]], root) else NULL, artifacts = arts[i]) }))
-  list(unit = unit, candidates = cand, trials = unique(arts[!is.na(arts)]))
+  ## 기대 시행 집합(11-10 · 선택 현실 점검 관문이 요구) — 사전등록 칸 전부 = 등록 시행(진단 · 기준 칸 포함: 이 라운드가 재기로 한 모든 칸).
+  ##   측정 실패 칸(산출 없음)은 n_trials 에 남는다 → 관문이 '점검 시행 < 등록 시행'으로 막는다(fail-closed — 빠진 칸이 최고였을 수 있다).
+  list(unit = unit, candidates = cand, trials = unique(arts[!is.na(arts)]),
+       expected = list(n_trials = length(cells), ids = unique(basename(arts[!is.na(arts)]))))
 }
 
 ## 마감 훅 본체 — 반환 list(status = 등록부용 한 줄(칸별) · coarse = 결과 원장용(done | skip | error))
@@ -210,8 +213,12 @@ rc_close_finalize <- function(spec, V, P, root = rc_root(), write = TRUE, fn = N
     au <- tryCatch(rc_json_read(file.path(c$artifacts, "authoritative_remeasure.json")), error = function(e) NULL)
     if (is.null(au)) return(sprintf("%s: skip 권위 기록 판독 불가", c$code))
     if (!identical(as.character(au$selection_type %||% "")[1], "sweep")) return(sprintf("%s: skip 스윕 아님(%s)", c$code, as.character(au$selection_type %||% "없음")[1]))
-    r <- tryCatch(fn(c$artifacts, K$trials, strategy_id = as.character(au$strategy_id %||% paste(spec[["round_id"]], c$code, sep = ":"))[1],
-                     spec_path = c$spec, root = root, write = write),
+    sid <- as.character(au$strategy_id %||% paste(spec[["round_id"]], c$code, sep = ":"))[1]
+    ## 기대 시행 집합을 넘긴다 — 안 넘기면 선택 관문이 '기대 시행 집합 미지정'으로 늘 미통과(스윕 최종 후보가 A 에 닿지 못한다 · 11-10 수리).
+    ##   expected 를 모르는 옛 대역(시험 주입)은 종전 인자로 부른다.
+    r <- tryCatch(if (any(c("expected", "...") %in% names(formals(fn))))
+                    fn(c$artifacts, K$trials, strategy_id = sid, spec_path = c$spec, root = root, write = write, expected = K$expected)
+                  else fn(c$artifacts, K$trials, strategy_id = sid, spec_path = c$spec, root = root, write = write),
                   error = function(e) list(status = paste0("error: ", conditionMessage(e))))
     sprintf("%s: %s", c$code, as.character(r$status %||% "?")[1])
   }, character(1))

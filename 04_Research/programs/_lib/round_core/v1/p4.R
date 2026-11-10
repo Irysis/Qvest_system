@@ -1110,6 +1110,17 @@ rc_p4_generator_workdir <- function(chain_dir, out_dir, root = rc_root(), pool =
 }
 
 ## ── ⑥ 닫기 ──────────────────────────────────────────────────────────────────
+## 기대 시행 집합(G1 · 11-10) — 닫기의 sr_regrade 에 넘긴다. 사슬 원장에서 시행 목록과 따로 센다: 기준 칸 1 + 판정한 걸음 중 포기하지 않은 것
+##   (산출이 있어야 할 칸) · id = 각 산출 폴더 이름(basename). 시행 목록이 중복 · 결측 제거로 줄면 관문이 '점검 시행 < 등록 시행'으로 막는다(fail-closed).
+##   자기 완결(다른 내부 함수 무의존) — 시험(test_selection_regrade.R)이 이 정의만 구문 트리로 꺼내 단정한다.
+rc_p4_expected_trials <- function(base_artifacts, results) {
+  one <- function(x) { v <- unlist(x); if (!length(v)) return(NA_character_); v <- as.character(v[1])
+    if (is.na(v) || !nzchar(v)) NA_character_ else basename(gsub("\\\\", "/", sub("[/\\\\]+$", "", v))) }
+  kept <- Filter(function(r) !isTRUE(r$abandoned), if (is.null(results)) list() else results)
+  ids <- vapply(c(list(base_artifacts), lapply(kept, function(r) r$artifacts)), one, "")
+  list(n_trials = 1L + length(kept), ids = unique(ids[!is.na(ids)]))
+}
+
 #' 닫기 — 최종 후보 = 마지막 채택 걸음(없으면 '개선 없음') · 결과 원장(rc_outcome_record → rc_outcome_append_round) · 마감 훅 · 원장 chain_closed
 #'   마감 훅: 02_Infrastructure/programs/selection_regrade.R::sr_regrade(후보, 시행 = 기저 + 모든 걸음 칸)가 있으면 부른다 — 결과(전기간 · 사람 쪽)는
 #'   finalize.json 에만 쓰고 원장 · 결과 원장에는 상태 · 파일 md5 만 싣는다(결과 원장 = 다음 설계 입력 · 보는 창 규율). 없으면 finalize = "pending".
@@ -1162,9 +1173,12 @@ rc_p4_close <- function(chain_dir, note, probes = character(0), lessons = charac
     ## 시행 집합 = 기준 칸 + 판정한 모든 걸음 칸(채택 · 기각 모두) · 포기한 걸음(산출 없음)은 수익 집합에 못 들어간다(수만 finalize.json 에)
     trials <- unique(na.omit(c(.rcp4_abs(.rcs_str(st$base_meas$artifacts), root), vapply(st$results, function(r) .rcp4_abs(.rcs_str(r$artifacts), root), ""))))
     n_abandoned <- sum(vapply(st$results, function(r) isTRUE(r$abandoned), TRUE))
+    ## 기대 시행 집합(G1 · 11-10) — 사슬 원장에서 따로 센다: 기준 칸 1 + 판정한 걸음 중 포기하지 않은 것(산출이 있어야 할 칸) · id = 각 산출 폴더 이름.
+    ##   위 trials 가 중복 제거 · 결측 제거로 줄면 관문이 '점검 시행 < 등록 시행'으로 막는다(fail-closed).
+    expected <- rc_p4_expected_trials(st$base_meas$artifacts, st$results)
     e <- new.env(parent = globalenv())
     res <- tryCatch({ invisible(utils::capture.output(suppressMessages(sys.source(srf, envir = e, keep.source = FALSE))))
-                      e$sr_regrade(.rcp4_abs(fin$artifacts, root), trials, root = root, write = isTRUE(regrade_write)) },
+                      e$sr_regrade(.rcp4_abs(fin$artifacts, root), trials, root = root, write = isTRUE(regrade_write), expected = expected) },
                     error = function(z) structure(list(error = conditionMessage(z)), class = "rcp4_err"))
     ## 후보 관문 — 새 등급 A 일 때만 부른다(관문 파일이 있을 때) · 칸 사양 = 그 걸음의 측정 사본(있으면) · 없으면 열린 사양
     cg <- list(status = cg_state)

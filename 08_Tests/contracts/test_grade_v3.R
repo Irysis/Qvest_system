@@ -285,14 +285,15 @@ if (!all(file.exists(file.path(DIR, c(need, "bt_result.rds"))))) {
   pt <- as.numeric(as.data.table(bt$benchmark_compare)[metric_name == "Portfolio_Alpha_t_NW_lag3", active_value][1])
   chk("E4a 선택 점검의 후보 t = 이 전략의 계약 PORT_t(폴더 적재가 계약과 같은 계열을 만든다)", abs(ck$candidate_t - pt) < 1e-6 * max(1, abs(pt)),
       sprintf("(점검 %.6f vs 계약 %.6f)", ck$candidate_t, pt))
-  rR <- EE$essence_score(bt, n_trials_cumulative = 1e6, selection_type = "sweep", selection_check = ck, sidecar_log = FALSE)
+  ## 등록 시행 수 = 점검 집합 크기(후보 + 변형 3 = 4) — 관문은 그 수를 n_trials_cumulative 로 받는다(G1 · 11-10)
+  rR <- EE$essence_score(bt, n_trials_cumulative = 4L, selection_type = "sweep", selection_check = ck, sidecar_log = FALSE)
   bR <- unlist(rR$grade_v3$blocked_by)
   chk("E4b 선택 점검을 제출한 스윕 — 관문 = selection_rc · DSR 은 진단(관문 아님 · 수치는 기록)",
       identical(rR$selection_gate$mode, "reality_check") && !isTRUE(rR$dsr_gate_applied) && !("gate:dsr_sweep" %in% bR) &&
         (("gate:selection_rc" %in% bR) == !isTRUE(ck$pass)) && is.finite(rR$essence$dsr) && identical(rR$selection_check$version, scfg$version),
       sprintf("(점검 통과 %s · 조정 p %.4f · 사유 %s)", isTRUE(ck$pass), ck$p_adj_candidate, paste(bR, collapse = ",")))
   ck2 <- ck; ck2$candidate_t <- ck$candidate_t + 1; ck2$p_adj_candidate <- 0.001
-  rF <- EE$essence_score(bt, n_trials_cumulative = 1e6, selection_type = "sweep", selection_check = ck2, sidecar_log = FALSE)
+  rF <- EE$essence_score(bt, n_trials_cumulative = 4L, selection_type = "sweep", selection_check = ck2, sidecar_log = FALSE)
   chk("E4c [위반 주입] 다른 전략의 점검 결과(후보 t 불일치) → 관문 미통과(fail-closed) · 사유 기록",
       "gate:selection_rc" %in% unlist(rF$grade_v3$blocked_by) && identical(rF$selection_gate$ok, FALSE) && grepl("PORT_t", rF$selection_gate$reason, fixed = TRUE),
       as.character(rF$selection_gate$reason))
@@ -301,6 +302,18 @@ if (!all(file.exists(file.path(DIR, c(need, "bt_result.rds"))))) {
         !any(grepl("^gate:", unlist(rC$grade_v3$blocked_by))) && !isTRUE(rC$dsr_gate_applied))
   chk("E4e 점검을 제출하지 않은 스윕은 종전 DSR 관문 그대로(경과 규정)", identical(rS$selection_gate$mode, "dsr_legacy") && isTRUE(rS$dsr_gate_applied) &&
         is.null(rS$selection_check))
+  ## (G1 · 11-10) 시행 집합 크기 — 등록 시행 수보다 작은 집합으로 낸 점검 · 등록 시행 수를 모르는 점검은 관문이 아니다(fail-closed)
+  ckp <- ck; ckp$p_adj_candidate <- 0.001      # p 는 통과로 위조 — 집합 크기 검사만으로 막혀야 한다
+  rN <- EE$essence_score(bt, n_trials_cumulative = 60L, selection_type = "sweep", selection_check = ckp, sidecar_log = FALSE)
+  chk("E4f [위반 주입] 등록 시행 60 · 점검 집합 4 → 관문 미통과 · 사유에 등록 시행 · 기록에 기대 시행 수",
+      identical(rN$selection_gate$ok, FALSE) && grepl("< 등록 시행 60", rN$selection_gate$reason, fixed = TRUE) && "gate:selection_rc" %in% unlist(rN$grade_v3$blocked_by) &&
+        identical(as.numeric(rN$selection_check$expected_n_trials), 60), as.character(rN$selection_gate$reason))
+  rU <- EE$essence_score(bt, n_trials_cumulative = NULL, selection_type = "sweep", selection_check = ckp, sidecar_log = FALSE)
+  chk("E4g [위반 주입] 등록 시행 수를 모르는 스윕(n_trials_cumulative = NULL) + 점검 → 관문 미통과(기대 집합 미지정)",
+      identical(rU$selection_gate$ok, FALSE) && grepl("기대 시행", rU$selection_gate$reason), as.character(rU$selection_gate$reason))
+  rP <- EE$essence_score(bt, n_trials_cumulative = 4L, selection_type = "sweep", selection_check = ckp, sidecar_log = FALSE)
+  chk("E4h 대조: 같은 위조 p 라도 집합이 등록 수와 맞으면 구조 검사는 지난다(사유가 집합이 아니라 p 판정 문장)",
+      grepl("^조정 p", rP$selection_gate$reason), as.character(rP$selection_gate$reason))
   # [위반 주입] 등급 v3 계약이 없는 루트 — 구 판정으로 조용히 떨어지면 안 된다(NA = 미측정)
   SB2 <- file.path(tempdir(), sprintf("gv3_ess_%d", Sys.getpid()))
   dir.create(file.path(SB2, "06_Registry"), recursive = TRUE, showWarnings = FALSE)

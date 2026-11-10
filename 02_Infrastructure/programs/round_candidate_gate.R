@@ -200,17 +200,20 @@ rcg_withdraw <- function(candidate_dir, grade = NA_character_, write = FALSE, no
 #' 마감 — ① 선택 현실 점검 재채점 ② 재채점 뒤 A 면 관문 · A 가 아니면 앞서 나간 요청을 거둔다
 #' @param regrade_fn 시험용 주입점(기본 = root 의 selection_regrade.R::sr_regrade) — function(candidate_dir, trial_dirs, root, write)
 #' @return list(regrade = sr_regrade 결과(또는 error), route = rcg_route 결과(또는 NULL), status = 한 줄 상태)
+#' @param expected   기대 시행 집합 list(n_trials = 등록 시행 수, ids = 등록 시행 id) — sr_regrade 의 관문이 점검 집합과 대조한다(G1 · 11-10).
+#'                   NULL = 기대 집합 미지정 → 관문 미통과(fail-closed). 주입 대역이 expected(또는 ...)를 받으면 그대로 넘긴다.
 rcg_finalize <- function(candidate_dir, trial_dirs, strategy_id, spec_path = NULL, root = NULL, write = FALSE,
-                         now = .rcg_now(), regrade_fn = NULL, gate_loader = NULL) {
+                         now = .rcg_now(), regrade_fn = NULL, gate_loader = NULL, expected = NULL) {
   root <- .rcg_root(root)
   fn <- regrade_fn
   if (!is.function(fn)) {
     f <- file.path(root, "02_Infrastructure", "programs", "selection_regrade.R")
     if (!file.exists(f)) stop("[round_candidate_gate] 재채점 도구 없음: ", f, call. = FALSE)
     e <- new.env(parent = globalenv()); sys.source(f, envir = e, keep.source = FALSE)
-    fn <- function(candidate_dir, trial_dirs, root, write) e$sr_regrade(candidate_dir, trial_dirs, root = root, write = write)
+    fn <- function(candidate_dir, trial_dirs, root, write, expected = NULL) e$sr_regrade(candidate_dir, trial_dirs, root = root, write = write, expected = expected)
   }
-  rg <- fn(candidate_dir, trial_dirs, root, write)
+  fa <- names(formals(fn))
+  rg <- if (any(c("expected", "...") %in% fa)) fn(candidate_dir, trial_dirs, root, write, expected = expected) else fn(candidate_dir, trial_dirs, root, write)
   # 드라이런(write = FALSE)이면 디스크 권위 기록은 그대로다 — 관문은 재채점 결과 등급으로만 가른다(드라이런 관문은 파일을 쓰지 않는다)
   after <- as.character(.rcg_or(rg$grade_after, NA_character_))[1]
   #   재채점이 대상 밖(not_grade_v3 · hard_fail · no_contract)이면 관문에 태우지 않는다 — 선택 관문을 거치지 않은 등급으로 발행하지 않는다
@@ -220,10 +223,14 @@ rcg_finalize <- function(candidate_dir, trial_dirs, strategy_id, spec_path = NUL
   # 재채점 뒤 A 가 아니면, 측정 시점에 나간 요청이 남아 있을 수 있다 — 거둔다(쓰기 모드에서만)
   wd <- NULL
   if (rg$status %in% c("ok", "not_sweep") && !identical(after, "A")) wd <- rcg_withdraw(candidate_dir, after, write = write, now = now)
-  st <- sprintf("regrade %s(%s→%s) · gate %s%s%s", as.character(.rcg_or(rg$status, "?")), as.character(.rcg_or(rg$grade_before, "NA")),
+  st <- sprintf("regrade %s(%s→%s) · gate %s%s%s%s",as.character(.rcg_or(rg$status, "?")), as.character(.rcg_or(rg$grade_before, "NA")),
                 as.character(.rcg_or(after, "NA")), if (is.null(rt)) "skip" else rt$action,
                 if (!is.null(rt) && length(rt$codes)) paste0(":", paste(rt$codes, collapse = "+")) else "",
-                if (isTRUE(wd$withdrawn)) " · 앞선 요청 거둠" else "")
+                if (isTRUE(wd$withdrawn)) " · 앞선 요청 거둠" else "",
+                ## (G1 재수리) 기대 집합 없이 부른 마감은 스윕 후보가 늘 관문 미통과다 — 관문이 그 사유로 막았으면 재채점 결과 안에만 묻히지 않게
+                ##   상태 줄(등록부 · finalize.json)에도 싣는다. 관문이 다른 사유로 갈렸거나 스윕이 아니면 붙이지 않는다.
+                if ((!is.list(expected) || !length(expected)) && grepl("기대 시행 집합 미지정", paste(as.character(unlist(rg$reason)), collapse = " "), fixed = TRUE))
+                  " · 기대 시행 집합 미지정(선택 관문 미통과 · 호출부가 expected 를 넘겨야 한다)" else "")
   list(regrade = rg, route = rt, withdraw = wd, status = st)
 }
 
