@@ -60,7 +60,7 @@ fi
 
 # Use env var to pass COMMAND (heredoc + pipe stdin collision fix)
 DECISION=$(TG_GUARD_CMD="$COMMAND" "$QVEST_PY_BIN" <<'PYEOF'
-import re, sys, json, os
+import re, sys, json, os, shlex
 
 cmd = os.environ.get("TG_GUARD_CMD", "")
 
@@ -71,6 +71,69 @@ pattern_sq = re.compile(r"Rscript\s+(?:--vanilla\s+)?-e\s+'((?:\\.|[^'\\])*)'", 
 payloads = []
 payloads.extend(pattern_dq.findall(cmd))
 payloads.extend(pattern_sq.findall(cmd))
+
+# (2026-11-10 전수점검) 위 두 정규식은 'Rscript' 바로 뒤가 공백이고 -e 가 첫 인자일 때만 본다 — 실제 호출 꼴 대부분이 통과했다
+#   (전체 경로 Rscript.exe · --no-save 같은 다른 플래그 · 둘째 -e · R -e · 변수에 담긴 실행기 "$R" -e · timeout 같은 래퍼 · heredoc).
+#   종전 정규식은 그대로 두고(막던 것은 계속 막는다), 명령을 따옴표를 지키며 단순 명령으로 가른 뒤 R 실행기로 보이는 명령의
+#   -e 인자 전부와 R 로 흘려 넣는 heredoc 본문을 더한다. 빠른 길의 증명은 그대로다(차단에는 여전히 'tg_send' 가 필요하다).
+#   남는 한계: 파일에 쓴 뒤 `Rscript 파일.R` 로 돌리는 꼴은 이 훅이 볼 수 없다. 검사: 08_Tests/hooks/test_telegram_guard_forms.sh
+def _segments(s):
+    out, cur, q, i, n = [], [], None, 0, len(s)
+    while i < n:
+        c = s[i]
+        if q:
+            cur.append(c)
+            if c == "\\" and q == '"' and i + 1 < n:
+                cur.append(s[i + 1]); i += 2; continue
+            if c == q: q = None
+        elif c in "\"'":
+            q = c; cur.append(c)
+        elif c == "\\" and i + 1 < n:
+            cur.append(c); cur.append(s[i + 1]); i += 2; continue
+        elif c in ";|&\n()":
+            out.append("".join(cur)); cur = []
+        else:
+            cur.append(c)
+        i += 1
+    out.append("".join(cur))
+    return [x for x in out if x.strip()]
+
+_R_NAME = re.compile(r"^(rscript|r)(\.exe)?$", re.I)
+_ASSIGN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
+def _r_like(tokens):
+    for t in tokens:
+        if t == "-e": break
+        if _R_NAME.match(re.split(r"[\\/]", t)[-1]): return True
+    # 실행기가 변수에 담긴 꼴("$R" -e …)은 풀 수 없다 — -e 를 받는 변수 실행기는 R 로 본다
+    first = next((t for t in tokens if not _ASSIGN.match(t)), "")
+    return first.startswith("$")
+
+def _tokens(seg):          # 단순 명령 → 낱말(따옴표 해석). 따옴표가 안 닫혔으면 None(그 조각은 종전 정규식만 본다)
+    try:
+        lx = shlex.shlex(seg, posix=True); lx.whitespace_split = True; lx.commenters = ""
+        return list(lx)
+    except ValueError:
+        return None
+
+for _seg in _segments(cmd):
+    _toks = _tokens(_seg)
+    if not _toks or "-e" not in _toks or not _r_like(_toks): continue
+    payloads.extend(_toks[_i + 1] for _i, _t in enumerate(_toks[:-1]) if _t == "-e")
+
+# R 로 흘려 넣는 heredoc(Rscript - <<'EOF' … EOF) — 여는 줄에서 heredoc 을 받는 단순 명령(마지막 조각)이 R 실행기일 때만
+#   (파일을 만드는 cat > x.R <<EOF 는 호출이 아니다). 실행기 판정은 위와 같은 _r_like 하나다.
+_HEREDOC = re.compile(r"<<-?\s*['\"]?([A-Za-z_][A-Za-z0-9_]*)['\"]?")
+_lines = cmd.split("\n")
+for _k, _ln in enumerate(_lines):
+    _m = _HEREDOC.search(_ln)
+    _head = _segments(_ln[:_m.start()]) if _m else []
+    _toks = _tokens(_head[-1]) if _head else None
+    if not _toks or not _r_like(_toks): continue
+    _body = []
+    for _b in _lines[_k + 1:]:
+        if _b.strip() == _m.group(1): break
+        _body.append(_b)
+    if _body: payloads.append("\n".join(_body))
 
 if not payloads:
     print(json.dumps({}))

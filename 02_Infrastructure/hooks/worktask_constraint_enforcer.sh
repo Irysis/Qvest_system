@@ -45,6 +45,11 @@ fi
 FILE_PATH=$(echo "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; sys.stdout.reconfigure(encoding="utf-8",errors="replace"); d=json.loads(sys.stdin.buffer.read().decode("utf-8","replace")); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
 CONTENT=$(echo "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; sys.stdout.reconfigure(encoding="utf-8",errors="replace"); d=json.loads(sys.stdin.buffer.read().decode("utf-8","replace")); print(d.get("tool_input",{}).get("content",""))' 2>/dev/null || echo "")
 
+# (2026-11-10 전수점검) 구분자 정규화 — 윈도우 도구 호출은 경로를 역슬래시로 준다(G:\…\optimization_package.json). 아래 가지는 '/' 패턴이라
+#   역슬래시 경로가 조용히 통과했다(26종 패키지: 정슬래시 block · 역슬래시 allow 실측). 빠른 길의 증명은 그대로다(낱말 'optimization_package'
+#   는 구분자와 무관). 검사: 08_Tests/hooks/test_hook_backslash_paths.sh
+FILE_PATH="${FILE_PATH//\\//}"
+
 case "$FILE_PATH" in
   */optimization_package.json)
     # (v8.1.2) content/fp는 env 경유 + heredoc 인용 — 소스 보간('''$CONTENT''')은 triple-quote/

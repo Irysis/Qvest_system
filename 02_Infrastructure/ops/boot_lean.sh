@@ -104,6 +104,18 @@ def RF(l):
         e.get("attempts_used") if e.get("attempts_used") is not None else "?",
         mx if mx else "∞"," ·승격d%d"%dep if dep else "")
 dp=S(lambda: str(sum(1 for e in ((J("06_Registry/data_pipeline_queue.json") or {}).get("entries") or []) if (e.get("status") if isinstance(e,dict) else None)=="open")),"?")
+# ★레인 틱 나이 (2026-11-10 전수점검) — 디스패처가 멈추면 _status.json 은 마지막 값 그대로 남는다. 11-07~11-10 레인이 71시간 멈춘
+#   동안 부팅은 '레인 슬롯 0/3' 만 보였다(정상처럼 읽힌다). 틱 시각(at · 못 읽으면 파일 mtime)이 문턱보다 오래되면 '★틱 N 전(레인 정지?)' 를 붙인다.
+#   문턱 = 구성요소 감시 정의의 replication_lane/lane_alive.max_age_h(06_Registry/superfan_components.json) — 숫자를 여기 따로 두지 않는다.
+#   문턱이나 시각을 못 읽으면 '틱 ?' — 조용히 정상으로 접지 않는다. 검사: 08_Tests/ops/test_boot_lean_lane_tick.R (블록 추출 · 픽스처 · 돌연변이)
+def LANE_TICK(ss,now=None):
+    th=S(lambda: [float(r["max_age_h"]) for c in ((J("06_Registry/superfan_components.json") or {}).get("components") or [])
+                  if c.get("id")=="replication_lane" for r in (c.get("rules") or []) if r.get("id")=="lane_alive"][0])
+    t=S(lambda: dt.datetime.strptime(str(ss.get("at")),"%Y-%m-%dT%H:%M:%S%z").timestamp())
+    if t is None: t=S(lambda: os.path.getmtime(R("06_Registry","replication_slots","_status.json")))
+    if th is None or t is None: return " · 틱 ?"
+    ah=((time.time() if now is None else now)-t)/3600.0
+    return (" · ★틱 %s 전(레인 정지?)"%HH(ah)) if ah>th else ""
 # ★무인 러너 핸드오프 노출 (2026-08-30) — cleaner 선례: 기계가 남긴 대기 상태를 부팅이 보여야
 #   세션이 소비한다. 텔레그램만 쓰면 놓쳤을 때 어디서도 안 보인다. 0 이면 표기하지 않는다(소음 방지).
 def PEND():
@@ -116,8 +128,8 @@ def PEND():
     if ss and isinstance(ss.get("slots"),list):
         bz=sum(1 for x in ss["slots"] if isinstance(x,dict) and x.get("status") in ("pending","in_progress","failed_needs_session"))
         at=ss.get("attention") or []
-        z.append("레인 슬롯 %d/%d%s%s"%(bz,len(ss["slots"]),(" · GPU 임대 "+str(ss.get("lease_holder") or "?")) if ss.get("lease")=="held" else "",
-                                     (" · ★확인 %d"%len(at)) if at else ""))
+        z.append("레인 슬롯 %d/%d%s%s%s"%(bz,len(ss["slots"]),(" · GPU 임대 "+str(ss.get("lease_holder") or "?")) if ss.get("lease")=="held" else "",
+                                     (" · ★확인 %d"%len(at)) if at else "",S(lambda: LANE_TICK(ss)," · 틱 ?")))
     aq=J("06_Registry/grade_a_queue.json")
     na=sum(1 for e in ((aq or {}).get("entries") or []) if (e.get("status") if isinstance(e,dict) else None)=="awaiting_judge")
     if na: z.append("★A등급 대기 %d(Judge/BOOK confirm)"%na)
@@ -175,8 +187,13 @@ def hasp(f):
     return bool(mm and re.search(r"^paths\s*:",mm.group(1),re.M))
 rb=sum(os.path.getsize(f) for f in glob.glob(R(".claude","rules","*.md")) if not S(lambda: hasp(f),False))
 hk=S(lambda: len(set(re.findall(r"hooks/([A-Za-z0-9_.-]+\.sh)",open(R(".claude","settings.json"),encoding="utf-8").read()))))
-def CTX():
-    p=max(glob.glob(os.path.join(os.path.expanduser("~"),".claude","projects",re.sub(r"[^A-Za-z0-9]","-",P),"*.jsonl")),key=os.path.getmtime)
+# ★세션 전사 폴더의 이름은 '세션이 실제로 연 경로'에서 만들어진다(예: G--OneDrive-Quant-Module-Moltbot). 부팅의 P(정본 경로)로 이름을
+#   만들면 여는 경로가 다른 기계(메인 PC = G: 드라이브)에서 폴더를 못 찾아 게이지가 늘 '?' 였다(2026-11-10 전수점검).
+#   프로젝트 폴더명 꼬리로 끝나는 폴더들에서 가장 최근 전사를 고른다(워크트리 세션 폴더는 꼬리가 달라 빠진다).
+def CTX(base=None):
+    tail=re.sub(r"[^A-Za-z0-9]","-",os.path.basename(P.replace("\\","/").rstrip("/")))
+    base=base or os.path.join(os.path.expanduser("~"),".claude","projects")
+    p=max([f for d in glob.glob(os.path.join(base,"*"+tail)) for f in glob.glob(os.path.join(d,"*.jsonl"))],key=os.path.getmtime)
     for ln in open(p,encoding="utf-8",errors="replace"):
         j=json.loads(ln) if ln.strip()[:1]=="{" else {}
         if j.get("type")=="assistant":

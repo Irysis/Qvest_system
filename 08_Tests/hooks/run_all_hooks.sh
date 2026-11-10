@@ -602,6 +602,12 @@ SUITES=(
   #   (수리 = ref_check_ignore 로 '기록'과 '소비'를 가르고 n_refs_raw 를 매니페스트에 병기).
   #   ★격리는 QVEST_CD_ROOT — QM_ROOT 로는 자식 R 을 격리할 수 없다(~/.Renviron 이 이긴다).
   "08_Tests/ops/test_cleaner_distill.sh"
+  # 2026-11-10 추가(전수점검): 주간 증류 L-code 발행 왕복. 09-05 레인 도입 뒤 발행이 한 번도 디스크에 닿지 못했다
+  #   (접두 조회 오류 6주 14건 + '성공'으로 기록된 4건도 NULL 을 성공으로 읽은 것). 임시 루트 발행 · 돌연변이 2종.
+  "08_Tests/ops/test_cleaner_distill_lcode.R"
+  # 2026-11-10 추가(전수점검): 주간 클리너 스윕 · 무인 증류 보고의 요약 줄이 발송기 헤드라인 규격(SUMMARY_MAX)을 넘어 매주 발송 실패하던 것 —
+  #   발송기의 실제 규격 함수로 렌더(극단값) · 초과 시 자르는 안전망 · 수리 전 문장 거부(양성 대조).
+  "08_Tests/ops/test_cleaner_tg_headline.R"
   # 2026-08-02 추가: alpha_search_queue pending 산정 위반 주입 (키 불일치 2건 수리 고정).
   #   원 결함 = 양방향 오계수인데 **둘 다 오류 없이 조용히**, 그리고 **서로를 상쇄**했다 —
   #     ① route_20260727 의 id 는 "arxiv:2607.19497", done 원장은 bare → 접두 붙은 건이
@@ -1071,6 +1077,8 @@ SUITES=(
   #   ★temp root 는 native Windows 경로 필수 — MSYS 형(/tmp)을 쓰면 훅의 native python glob 이
   #    0건 매치 → CACHE_BODY regen 실패 → '{}' 조기종료라 **수리 실패로 오독**된다(초판 5 FAIL 의 정체).
   "08_Tests/hooks/test_frontier_axes_derive.sh"
+  # 2026-11-10 추가(전수점검): 정보 경계 대상 스폰(Superfan)에 전 기간 성과 줄을 넣지 않는다 — 양성 대조 + 돌연변이.
+  "08_Tests/hooks/test_axiom_inject_tau_d.sh"
   # 2026-08-17 추가: Step 0 조준기(gap_vector_steering) priority 의 CLAUDE.md 정본 파생.
   #   같은 낙후가 조준면에도 있었다 — v8.4(08-13)가 비-return 을 주력 해제했는데 표는
   #   priority 1L '주력' 을 38일 유지해 sleeve_needs → Gap-Directed Step 0 가 폐쇄 lane 을
@@ -1162,6 +1170,11 @@ SUITES=(
   # 2026-11-06: BOOK 러너가 다른 작업의 R 을 끄지 않는다(kill_own_r · taskkill 가로채기) — 양방향 + 뮤테이션 2(DryRun · 기록기만)
   "08_Tests/ops/test_book_runner_no_interference.sh"
   "08_Tests/regime/test_regime_signal_merge.R"
+  # 2026-11-10 추가(전수점검): 국면 일간 빌더 꼬리 가드 — 덜 온 입력으로 만든 행이 발행 원장에 동결되지 않게.
+  "08_Tests/regime/test_daily_tail_guard.R"
+  #   월간 판(2026-11-10): 달이 바뀐 뒤 첫 병합이 덜 온 입력으로 만든 지난달 행을 영구 동결하던 길 — 월말 거래일(자료와 독립 · 휴장일
+  #   등록부) · 생산자 표시 · 병합 보류 → 입력이 찬 뒤 맞는 값으로 동결 · 보류를 끈 대조(틀린 값이 굳고 맞는 값이 거부됨) · 돌연변이 2.
+  "08_Tests/regime/test_monthly_incomplete_hold.R"
   # 2026-08-30 신설: m4 BOCPD 팔 가드의 양방향 검증. 구판 가드
   #   `bocpd_expected_runlen_lag >= 12` 는 warm-up 주석을 달고 있었지만 실제로는
   #   run-length posterior 기대값이라 short_run_mass 와 구조적 음상관(rho=-0.5898) —
@@ -1849,6 +1862,9 @@ SUITES=(
   "08_Tests/programs/test_paper_atlas_run.sh"
   #   부팅 Programs 줄(구 Director·Rules 대체 · 블록 패턴 추출 · 부재/파손/schema ? · R 판독 재도출 · 돌연변이)
   "08_Tests/ops/test_boot_lean_programs_line.R"
+  # 2026-11-10 추가(전수점검): 부팅 줄 — 레인 디스패처 틱 나이(멈춘 레인이 '레인 슬롯 n/N' 으로 정상처럼 보이던 것 · 문턱 = 감시 정의) ·
+  #   컨텍스트 게이지 폴더 찾기(여는 경로가 다른 기계에서 늘 '?' 였던 것). 블록 추출 · 픽스처 · 돌연변이 3.
+  "08_Tests/ops/test_boot_lean_lane_tick.R"
   #   요청 종결 소유 대조(늦게 끝난 실행이 남의 요청을 닫지 않는다) — 구 test_reinforce_auto.sh §28b 가 안에서 돌리던 것을 독립 편입
   "08_Tests/ops/test_rf_request_guard.R"
   # <<< v10.01
@@ -1893,6 +1909,8 @@ SUITES=(
   # 처방 루프 v0 라운드 도구(2026-10-13 · S2) — 처방 delta 를 엔진 파서로 검증(위반 주입 10종) · 사양 컴파일 고정 축 보존 ·
   #   처방 입력 문서 검사(τ_D 뒤 날짜 · 등급 표기) · 도구 상자 custom 제외 · 오버레이 빌트인 = 엔진 정본 · R6 경로
   "08_Tests/programs/test_rx_round.R"
+  # 2026-11-10 추가(전수점검): 정보 경계 날짜 검사가 BMP 밖 문자 뒤 날짜도 잡는다(처방 입력 검사 · 보는 창 가림 · 누출 검사).
+  "08_Tests/programs/test_tau_d_date_nonbmp.R"
   # 공통 판정 코어 v1(2026-10-20 · 1계층 속도 계획 WP1 · L1-SPEED-PLAN-20261020) — 규칙 단일 출처(Kleene NA · 근거 없는 문턱 거부 ·
   #   경계 뮤테이션) · 사양 검사(이름 있는 칸 목록 = P1R01 결함 부류) · τ_D 가림 · P1R01 결과 동일(원래 evaluate.R 격리 사본 vs 코어 바이트 동일)
   "08_Tests/programs/test_round_core_v1.R"
@@ -1905,6 +1923,11 @@ SUITES=(
   #   코어 v1 짝 판정 P2 · P3(WP1-b) — 끝난 라운드 픽스처 3종을 코어 심으로(P2R04 52 · P2R03 33 · P3R03 48) · 코어 뮤테이션 15 · P2 규칙 종류 ·
   #   최소 사본 · 샤딩 병합 순서 · 메모 · τ_D 불변 · 사양 라운드 배선 · P2R05 범용분 = 원판 황금값 · 재판정 요약(무거운 재판정 heavy_round_core_v1_p2_rejudge.R 은 SUITES 밖)
   "08_Tests/programs/test_round_core_v1_p2.R"
+  # 2026-11-10 추가(전수점검): 감시 계열 3종이 배터리 밖에 있었다(통과하지만 아무도 돌리지 않음) — 구성요소 감시기(해소 뒤 재발 재개방 ·
+  #   양성 대조 3) · 판단 원장 writer · 세션 재개 줄. 전부 임시 경로 격리(운영 상태 무접촉).
+  "08_Tests/programs/test_superfan_watch.R"
+  "08_Tests/programs/test_q_judgment_ledger.R"
+  "08_Tests/programs/test_session_resume.R"
   # >>> 10-17 충실구현 레인 — 감사 선행 · 원문 축자본 · 계약 표기 · 모든 방법론(REPLICATION-ALL-METHODS-20261017)
   #   측정 전 PIT 사전 점검(1b 순서) · 측정 뒤 검증 실패의 Judge 트리거 보류(뮤테이션) · 원문 축자본 수집기(html · e-print · pdf · 레인 인터프리터) ·
   #   nav 순노출 = 보유 Σw(뮤테이션) · 변형 계획 · 측정 뒤 보유 대조(P4 · 양성 · 경계 · 뮤테이션 · 설정 문턱) · 보고 섹션 · 배선 · engine_vars
@@ -1926,6 +1949,12 @@ SUITES=(
   #   잘린 JSON · 무인 레인 기억 · 잘못된 UTF-8) · 양성 대조(켬 = 파이썬 0회) · 뮤테이션 13종(낱말 · \u · 줄 이음 · CR · 해독기 ·
   #   Rule 3 게이트 공유 · 패턴 파생 · 오버레이 추출 줄 경계)
   "08_Tests/hooks/test_hook_fastpath_equivalence.sh"
+  # 2026-11-10 추가(전수점검): 차단 훅 3종(종목 수 상한 · 졸업 관문 · 레거시 쓰기 차단)이 역슬래시 경로(윈도우 도구 호출 형태)를 조용히
+  #   통과시키던 것 — 정 · 역 · 섞인 구분자 차단 · 정상 입력 허용 · 정규화 줄을 뺀 사본(돌연변이 3) · 기존 2종 회귀 감시.
+  "08_Tests/hooks/test_hook_backslash_paths.sh"
+  #   텔레그램 직접 호출 가드 — 실제 호출 10형태(전체 경로 Rscript.exe · 다른 플래그 · 둘째 -e · R -e · 변수 실행기 · heredoc 등) 차단 ·
+  #   음성 8(grep/sed 의 -e · 파일 만들기 · 정본 진입) · 새 추출부를 끈 사본(돌연변이) · 한계 기록(파일로 돌리는 꼴).
+  "08_Tests/hooks/test_telegram_guard_forms.sh"
   #   SessionEnd 자동 커밋 세션 범위 — 교차 세션 · 인덱스 격리 · 전사 부재 무커밋 · subagents · 경로 형태 · 비밀 중단 실 인덱스 불변 ·
   #   격리 밸브 · 충돌 마커 · 삭제 · worktree · 위반 주입(all) · 뮤테이션 2종(전체 add · 동기화 제거)
   "08_Tests/hooks/test_auto_commit_session_scope.sh"

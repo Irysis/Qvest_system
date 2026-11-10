@@ -61,15 +61,18 @@ HOOK_SRC <- readLines(HOOK, warn = FALSE)
 #' 샌드박스 PROJECT 를 세우고 훅을 돌린다.
 #' @param integrity  NULL 이면 bt_result.rds 를 만들지 않는다
 #' @param hook_path  돌릴 훅(돌연변이 사본을 넘길 수 있다)
-run_hook <- function(payload, integrity = NULL, hook_path = HOOK) {
+#' @param backslash  TRUE 면 PROJECT 를 역슬래시 표기로 넘긴다(이 기계의 CLAUDE_PROJECT_DIR · QM_ROOT 실제 모양 — 2026-11-10)
+#' @param subdir     결과 파일을 전략 폴더의 하위 폴더(예 "output")에 둔다
+run_hook <- function(payload, integrity = NULL, hook_path = HOOK, backslash = FALSE, subdir = NULL) {
   sb <- normalizePath(tempfile("qv_bca_"), winslash = "/", mustWork = FALSE)
-  dir.create(file.path(sb, "04_Research", "strategies", "STR_FIXTURE"),
-             recursive = TRUE, showWarnings = FALSE)
+  sdir <- file.path(sb, "04_Research", "strategies", "STR_FIXTURE")
+  if (!is.null(subdir)) sdir <- file.path(sdir, subdir)
+  dir.create(sdir, recursive = TRUE, showWarnings = FALSE)
   dir.create(file.path(sb, "06_Registry"), recursive = TRUE, showWarnings = FALSE)
   if (!is.null(integrity)) {
-    saveRDS(list(manifest = list(integrity_status = integrity)),
-            file.path(sb, "04_Research", "strategies", "STR_FIXTURE", "bt_result.rds"))
+    saveRDS(list(manifest = list(integrity_status = integrity)), file.path(sdir, "bt_result.rds"))
   }
+  if (isTRUE(backslash)) sb <- gsub("/", "\\\\", sb)
   inf <- tempfile("qv_bca_in_"); writeLines(payload, inf)
   outf <- tempfile("qv_bca_out_")
   old <- Sys.getenv("CLAUDE_PROJECT_DIR", unset = NA)
@@ -161,6 +164,38 @@ if (length(i) != 1L) {
       ng("★돌연변이 통제 실패 — 구판에서도 안 막힌다. 축 C-1 은 무의미하다",
          substr(c2$out, 1, 160))
   }
+}
+
+# ── E. 역슬래시 PROJECT · 하위 폴더 결과 파일 (2026-11-10 전수점검) ──────────────────
+#   이 기계의 CLAUDE_PROJECT_DIR · QM_ROOT 는 역슬래시 표기다. 수리 전에는 그 값이 R 문자열에 끼어 Rscript 가 구문 오류로 죽고
+#   ERR trap 이 그것을 차단으로 바꿨다 — integrity=PASS 도 막혔고(오류 차단), FAIL 은 계약 근거 없이 '내부 오류'로 막혔다.
+cat("\n── E. 역슬래시 PROJECT · 하위 폴더 ─────────────────────────\n")
+e1 <- run_hook(pl(REG), integrity = "PASS", backslash = TRUE)
+if (!e1$blocked) ok("역슬래시 PROJECT + integrity=PASS → allow (오류 차단이 아니라 판정)") else
+  ng("★역슬래시 PROJECT 에서 정상 산출물을 막는다(오류 차단)", substr(e1$out, 1, 160))
+e2 <- run_hook(pl(REG), integrity = "FAIL", backslash = TRUE)
+if (e2$blocked && (grepl("integrity=FAIL", e2$out, fixed = TRUE) || grepl("§20", e2$out, fixed = TRUE)))
+  ok("역슬래시 PROJECT + integrity=FAIL → block · 사유 = 계약 근거(내부 오류 아님)") else
+  ng("★역슬래시 PROJECT 에서 판정 사유가 계약 근거가 아니다", substr(e2$out, 1, 160))
+e3 <- run_hook(pl(REG), integrity = "FAIL", subdir = "output")
+if (e3$blocked) ok("결과 파일이 전략 폴더의 하위 폴더(output/)에 있어도 찾는다 → block") else
+  ng("★하위 폴더의 결과 파일을 못 찾는다", substr(e3$out, 1, 160))
+# E-4 돌연변이 통제: 정규화 줄을 뺀 사본은 역슬래시 PROJECT + PASS 를 오류로 막는다 — e1 이 이것을 잡는다
+mutE <- tempfile("qv_bca_mutE_", fileext = ".sh")
+srcE <- HOOK_SRC
+iE <- which(srcE == 'PROJECT="${PROJECT//\\\\//}"')
+if (length(iE) != 1L) {
+  ng("★돌연변이 사본 생성 실패 — PROJECT 정규화 줄이 정확히 1곳이 아니다", sprintf("%d곳", length(iE)))
+} else {
+  # 수리 전 상태 = 정규화 없음 + 경로를 R 문자열에 끼움
+  srcE <- srcE[-iE]
+  jE <- grep("readRDS(Sys.getenv('BCA_RDS'))", srcE, fixed = TRUE)
+  if (length(jE) == 1L) srcE[jE] <- sub("readRDS(Sys.getenv('BCA_RDS'))", "readRDS('$LATEST_RDS')", srcE[jE], fixed = TRUE)
+  writeLines(srcE, mutE)
+  e4 <- run_hook(pl(REG), integrity = "PASS", hook_path = mutE, backslash = TRUE)
+  if (length(jE) == 1L && e4$blocked && grepl("내부 오류", e4$out, fixed = TRUE))
+    ok("돌연변이 통제: 수리 전 상태로 되돌리면 역슬래시 PROJECT + PASS 가 '내부 오류'로 막힌다 — 축 E 가 실제로 잰다") else
+    ng("★돌연변이 통제 실패 — 수리 전 상태에서도 안 막힌다(축 E 가 결함을 못 본다)", substr(e4$out, 1, 160))
 }
 
 # ── D. fail-closed 계약 (정적) ──────────────────────────────────────────────

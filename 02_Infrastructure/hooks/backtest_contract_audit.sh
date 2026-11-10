@@ -69,6 +69,10 @@ fi
 LOG="/tmp/backtest_contract_audit.log"
 TS="$(date '+%Y-%m-%d %H:%M:%S')"
 PROJECT="${CLAUDE_PROJECT_DIR:-${QM_ROOT:-/c/Users/99922/OneDrive/Quant_Module_Moltbot}}"
+# (2026-11-10 전수점검) 구분자 정규화 — CLAUDE_PROJECT_DIR · QM_ROOT 는 이 기계에서 역슬래시 표기다(C:\Users\…). 그 값이 아래 R 문자열에
+#   끼어 들어가면 '\U' 같은 구문 오류로 Rscript 가 죽고, ERR trap 이 그 죽음을 차단으로 바꿨다 — 판정이 아니라 오류 차단이었다.
+#   검사: 08_Tests/hooks/test_backtest_contract_audit_gate.R (역슬래시 PROJECT 칸)
+PROJECT="${PROJECT//\\//}"
 
 FILE_PATH=$(echo "$INPUT" | grep -oE '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"file_path"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/')
 
@@ -90,7 +94,9 @@ if ! echo "$FILE_PATH" | grep -qE "$TARGET_PATTERN"; then
 fi
 
 # 가장 최근 bt_result.rds 검색 — strategy_id 추정 (PROJECT는 상단 정의)
-LATEST_RDS=$(find "$PROJECT/04_Research/strategies" -name "bt_result.rds" -mmin -60 2>/dev/null | head -1)
+#   (2026-11-10) 전략 폴더(1,300여 개) 전체를 find 로 훑으면 45초를 넘겨 훅이 시간 초과로 빠졌다(= 판정 없이 통과). 결과 파일은
+#   전략 폴더 바로 아래 또는 한 단계 아래(output/ 등)에만 있다 → 그 두 깊이의 파일만 골라 나이를 본다(실측 2초).
+LATEST_RDS=$(find "$PROJECT"/04_Research/strategies/*/bt_result.rds "$PROJECT"/04_Research/strategies/*/*/bt_result.rds -maxdepth 0 -mmin -60 2>/dev/null | head -1)
 
 if [ -z "$LATEST_RDS" ]; then
   echo "[$TS] no recent bt_result.rds — allow $FILE_PATH" >> "$LOG"
@@ -108,7 +114,8 @@ fi
 #   ⇒ 한 줄로 고친다. 여러 개의 -e 로 나누는 것도 동작하나(실측), 한 줄이 더 짧다.
 #   같은 idiom 이 agent_stop_continuity_check.sh:87(미등록) 과
 #   ops/friday_alpha_snapshot.sh:170 에도 있다 — 별건 과제.
-INTEGRITY=$(Rscript -e "bt <- tryCatch(readRDS('$LATEST_RDS'), error = function(e) NULL); if (is.null(bt)) cat('UNKNOWN') else cat(as.character(bt\$manifest\$integrity_status[1]))" 2>/dev/null)
+#   (2026-11-10) 경로는 R 문자열에 끼우지 않고 환경 변수로 넘긴다 — 경로 표기(역슬래시 · 따옴표)가 R 구문을 깨지 못한다.
+INTEGRITY=$(BCA_RDS="$LATEST_RDS" Rscript -e "bt <- tryCatch(readRDS(Sys.getenv('BCA_RDS')), error = function(e) NULL); if (is.null(bt)) cat('UNKNOWN') else cat(as.character(bt\$manifest\$integrity_status[1]))" 2>/dev/null)
 
 INTEGRITY=${INTEGRITY:-UNKNOWN}
 

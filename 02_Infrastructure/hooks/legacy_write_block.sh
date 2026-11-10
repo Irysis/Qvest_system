@@ -24,6 +24,8 @@ LOG="/tmp/legacy_write_block.log"
 _gate_fail_closed() {
   local hay="${FILE_PATH:-}"
   [ -n "$hay" ] || hay="${INPUT:-}"
+  # (2026-11-10) 원문 JSON 은 역슬래시 구분자를 '\\' 두 글자로 싣는다 — 둘 다 '/' 로 접은 뒤 패턴을 본다(판별불능 경로에서도 같은 사각지대).
+  hay="${hay//\\\\//}"; hay="${hay//\\//}"
   if printf '%s' "$hay" | grep -qE '/_archive_v55/|/legacy/v55/|/_archive_4_6/'; then
     echo '{"decision":"block","reason":"LEGACY_WRITE_BLOCKED (fail-closed): hook 내부 오류/판별불능 — legacy read-only 경로 패턴 감지, 검증 불가 시 차단 (v7.0 Hardening 격리 정책)"}'
     echo "[$(date -Iseconds)] HOOK_ERR_TRAP fail-closed BLOCK (legacy pattern in payload)" >> "$LOG" 2>/dev/null || true
@@ -76,6 +78,11 @@ fi
 
 TOOL=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_name",""))' 2>/dev/null || echo "")
 FILE_PATH=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
+
+# (2026-11-10 전수점검) 구분자 정규화 — 윈도우 도구 호출은 경로를 역슬래시로 준다(G:\…\_archive_v55\…). 패턴은 '/' 구분이라 역슬래시 경로가
+#   조용히 통과했다(정슬래시 block · 역슬래시 allow 실측). 빠른 길은 마디(낱말)만 보므로 증명은 그대로다.
+#   검사: 08_Tests/hooks/test_hook_backslash_paths.sh
+FILE_PATH="${FILE_PATH//\\//}"
 
 # stdin 파싱 판별불능(TOOL·FILE_PATH 동시 공백 = python 파서 실패 —
 # PreToolUse[Write|Edit]는 tool_name 상시 존재) → fail-closed 판정

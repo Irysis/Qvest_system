@@ -72,6 +72,11 @@ fi
 FILE_PATH=$(echo "$INPUT" | "$PY" -c 'import json,sys; sys.stdout.reconfigure(encoding="utf-8",errors="replace"); d=json.loads(sys.stdin.buffer.read().decode("utf-8","replace")); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
 CONTENT=$(echo "$INPUT" | "$PY" -c 'import json,sys; sys.stdout.reconfigure(encoding="utf-8",errors="replace"); d=json.loads(sys.stdin.buffer.read().decode("utf-8","replace")); print(d.get("tool_input",{}).get("content",""))' 2>/dev/null || echo "")
 
+# (2026-11-10 전수점검) 구분자 정규화 — 윈도우 도구 호출은 경로를 역슬래시로 준다(G:\…\WT-P…\request.json). 아래 가지는 '/' 패턴이라
+#   역슬래시 경로가 조용히 통과했다(참조 없는 졸업 요청: 정슬래시 block · 역슬래시 allow 실측). 빠른 길 · fail-closed 는 낱말('WT-P' ·
+#   'request.json')만 보므로 그대로다. 검사: 08_Tests/hooks/test_hook_backslash_paths.sh
+FILE_PATH="${FILE_PATH//\\//}"
+
 # stdin 파싱 판별불능(FILE_PATH 공백 = python 파서 실패 — PreToolUse[Write]는
 # file_path 상시 존재) → fail-closed 판정 (v8.2.1 감사 HOOK-P2-1)
 [ -n "$FILE_PATH" ] || _gate_fail_closed
