@@ -25,12 +25,19 @@ LOG="$BASE/.cache/scheduler_logs/task_health.log"; mkdir -p "$(dirname "$LOG")"
 log(){ echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$LOG"; [ "$QUIET" = "1" ] || echo "[$(date '+%H:%M:%S')] $*"; }
 
 PS1BIN="$BASE/02_Infrastructure/ops/scheduler_task_health.ps1"
-[ -f "$PS1BIN" ] || { log "★ 수집기 없음: $PS1BIN"; exit 1; }
+[ -n "${QVEST_TH_COLLECTOR_CMD:-}" ] || [ -f "$PS1BIN" ] || { log "★ 수집기 없음: $PS1BIN"; exit 1; }
 
 # 1) 수집 (PowerShell). 실패를 0 으로 삼키지 않는다.
-powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass \
-  -File "$(cygpath -w "$PS1BIN" 2>/dev/null || echo "$PS1BIN")" \
-  -OutFile "$(cygpath -w "$OUT" 2>/dev/null || echo "$OUT")" >/dev/null 2>&1
+#    시험 이음새(2026-11-10 2차): QVEST_TH_COLLECTOR_CMD 가 있으면 PowerShell 대신 그 명령에 산출 경로를 넘긴다
+#    (시나리오 시험이 가짜 작업 목록으로 이 스크립트 전체를 끝까지 돌리게 — 운영 예약 작업은 이 변수를 쓰지 않는다).
+if [ -n "${QVEST_TH_COLLECTOR_CMD:-}" ]; then
+  # shellcheck disable=SC2086
+  ${QVEST_TH_COLLECTOR_CMD} "$OUT" >/dev/null 2>&1
+else
+  powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass \
+    -File "$(cygpath -w "$PS1BIN" 2>/dev/null || echo "$PS1BIN")" \
+    -OutFile "$(cygpath -w "$OUT" 2>/dev/null || echo "$OUT")" >/dev/null 2>&1
+fi
 rc=$?
 if [ $rc -ne 0 ] || [ ! -s "$OUT" ]; then
   log "★ 수집 실패 (powershell exit=$rc, 산출물 $( [ -s "$OUT" ] && echo 있음 || echo 없음 )) — 계측 사망. 0건으로 간주하지 않음."
@@ -44,6 +51,10 @@ PYBIN=""; command -v sched_resolve_python >/dev/null 2>&1 && PYBIN=$(sched_resol
 [ -n "$PYBIN" ] || PYBIN="python3"
 SEEN_LEDGER="$BASE/.cache/scheduler_alerts/reported_failures.json"
 mkdir -p "$(dirname "$SEEN_LEDGER")" 2>/dev/null
+# 기보고 원장의 이번 실행 직전 사본(2026-11-10 2차) — 경보 발송이 실패하면 아래 3) 이 이것으로 되돌린다
+#   (판정 블록은 발송 '전에' 신규 실패를 '보고함'으로 적는다 — 발송이 실패하면 그 실패는 다음 실행부터 기보고로 접혀 영영 안 나갔다).
+SEEN_PREV="$SEEN_LEDGER.prev_run"
+if [ -f "$SEEN_LEDGER" ]; then cp -f "$SEEN_LEDGER" "$SEEN_PREV" 2>/dev/null || true; else rm -f "$SEEN_PREV" 2>/dev/null; fi
 # ★v10.4 (2026-09-24) 세 번째 인자 = DailyRefresh 스케줄러 로그 — 자기보고 실패(완주 + [7] 발송 확인) 판독용.
 #   되돌리기: QVEST_TH_SELFREPORT_EXEMPT=0 (종전처럼 DR exit_1 도 신규 실패로 경보)
 DR_SELF_LOG="$BASE/.cache/scheduler_logs/daily_refresh.log"
@@ -300,6 +311,10 @@ for lbl, items in groups.items():
 #   08-02 실측: 부팅 4i 가 이 클러스터링을 모른 채 원시 rc 만 보고 5건을 개별 "★실패"로
 #   보고했다(권위 스크립트는 같은 데이터로 "실패 1 · 정지 1"). 렌더러가 둘이면 판정도 둘이다.
 d["cotermination"] = cotermination
+# ★측정 기계(2026-11-10 2차) — 06_Registry 는 두 기계가 OneDrive 로 공유한다. 소비자(Superfan '꺼진 작업' 판정 · alert_dedup resolve-healthy)는
+#   이 기계에서 잰 신선한 측정만 믿는다(노트북의 수동 실행이 '전부 꺼짐'을 써도 메인 감시를 끄지 않게). 이름 식 = alert_dedup.machine_name().
+import socket as _socket
+d["measured_on"] = os.environ.get("COMPUTERNAME") or _socket.gethostname() or "?"
 # 제3상태와 기보고 실패를 **원장에 남긴다** — 경보에서 접었다고 기록에서까지 지우면
 # "조용해진 것"과 "고쳐진 것"을 구분할 수 없다(침묵 실패 계통 그 자체).
 d["verdict"] = {
@@ -409,6 +424,11 @@ if { [ -n "$BAD" ] || [ -n "$STALE" ] || [ -n "$SHUTDOWN" ]; } && command -v sch
     sched_alert_emit "task_health" "scheduled_task_unhealthy" \
       "$det" "$keys ~task_health:digest" \
       "예약 작업 ${nfail}건 이상 — ${det%% · *}$( [ "$nfail" -gt 1 ] && echo " 외 $((nfail - 1))건" ). 상세 06_Registry/scheduler_task_health.json"
+    # 발송 실패 → 이번 실행이 '보고함'으로 적은 신규 실패를 되돌린다(다음 실행이 다시 신규로 보고 · 다시 보낸다).
+    if [ "${SCHED_ALERT_LAST_RESULT:-}" = "send_failed" ]; then
+      if [ -f "$SEEN_PREV" ]; then cp -f "$SEEN_PREV" "$SEEN_LEDGER" 2>/dev/null; else rm -f "$SEEN_LEDGER" 2>/dev/null; fi
+      log "  ★경보 발송 실패 — 기보고 원장 되돌림(다음 실행이 다시 보냄)"
+    fi
   fi
 fi
 exit 0

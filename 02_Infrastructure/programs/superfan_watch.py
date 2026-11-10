@@ -139,6 +139,11 @@ def validate_registry(reg):
         for r in c.get("rules", []):
             k = r.get("kind")
             rid = r.get("id", "")
+            if "cause" in r:                                                 # 원인 키 부류(2026-11-10 2차)
+                if r["cause"] not in CAUSE_CLASSES:
+                    e.append("%s/%s: cause 어휘 밖 %r(task_run|own)" % (cid, rid, r["cause"]))
+                elif r["cause"] == "task_run" and not c.get("sched_task"):
+                    e.append("%s/%s: cause=task_run 은 구성요소 sched_task 필요" % (cid, rid))
             if k not in RULE_KINDS:
                 e.append("%s: 규칙 종류 어휘 밖 %r" % (cid, k)); continue
             if not rid:
@@ -637,19 +642,45 @@ def _scan_ledger_activity(root, W, cid, r, now, events):
 # ── 경보 소음 정책(2026-11-10 감사 레인 B · SKILL qvest-telegram §0.4 '평상 무음 · 실패는 1회 · 같은 원인 반복 발송 금지' 집행) ──────
 #   ① 꺼진 것은 '낡음 · 정지'를 알리지 않는다 — 구성요소의 sched_task(예약 작업)가 task_health 산출(06_Registry/scheduler_task_health.json)에서
 #      enabled = false 면 신선도 · 완료 표식 규칙을 재지 않는다(실측: 꺼진 ReinforceAutoLoop 의 로그 '파일 없음' 35회 · 2통).
-#      판독 실패 · 작업 미수록 = 켜진 것으로 본다(경보 쪽 · fail-closed).
-#   ② 원인 하나 = 하루 한 통 — 원인 키를 ops/alert_dedup.py 저장소에 잡는다. sched_task 가 있으면 'task:<작업>'(task_health 경보와 같은 키) ·
-#      cause_key 가 있으면 그 키 · 없으면 'sf:<구성요소>:<이상 키>'. 이미 오늘 나간 원인은 보내지 않고 '알림 완료(중복)'로 표식.
+#      판독 실패 · 작업 미수록 · 다른 기계가 잰 측정 · 낡은 측정(TASK_HEALTH_MAX_AGE_H) = 켜진 것으로 본다(경보 쪽 · fail-closed · 2026-11-10 2차).
+#   ② 원인 하나 = 하루 한 통 — 원인 키를 ops/alert_dedup.py 저장소에 이상마다 잡는다(_anom_keys: 실행 실패 규칙(cause = task_run) = 'task:<작업>'
+#      (task_health 경보와 같은 키) · cause_key 가 있으면 그 키 · 그 밖 = 'sf:<구성요소>:<규칙>:<이상 키>'). 확정(발송 성사) 뒤에만 '오늘 보냄' ·
+#      못 잡은 이상은 '키 K 에 양보'로 적고 K 가 확정되지 않았으면 다음 실행에 다시 잡는다 · 발신 실패면 잡은 키를 완전히 놓는다.
 #   ③ notify = false 구성요소는 기록만(다른 발신처가 같은 사실을 보내는 경우).
 STALENESS_KINDS = ("freshness", "expect_today")
 
 
-def _task_states(root):
-    """{작업 이름: enabled(bool)} — task_health 산출에서. 판독 실패 = {}(= 모두 켜진 것으로)."""
+# task_health 측정을 '꺼짐' 판정에 믿는 최대 나이(시간). 근거 = task_health 실행 주기: Qvest_StrandedRepairs 12:00 · 20:00
+#   (scheduler/Qvest_StrandedRepairs.bat · bootstrap.sh 4i '수집 담체') + 아침 체인 [0.7](morning_run.sh · 07:10 · 주말 · 실패일엔 빠질 수 있다).
+#   가장 긴 정상 간격 = 20:00 → 다음 날 12:00 = 16시간(아침 체인이 빠진 날) · +1시간 여유(StrandedRepairs 앞 단계 · 수집 시간) = 17.
+#   그보다 오래된 측정은 '모름' — 꺼짐을 믿지 않고 규칙을 잰다(억제는 fail-open 금지).
+TASK_HEALTH_MAX_AGE_H = float(os.environ.get("QVEST_SUPERFAN_TASK_HEALTH_MAX_AGE_H", "17"))
+
+
+def _machine():
+    """측정 기계 이름 — scheduler_task_health.sh 의 measured_on 과 같은 식(alert_dedup.machine_name)."""
+    import socket
+    return os.environ.get("COMPUTERNAME") or socket.gethostname() or "?"
+
+
+def _task_states(root, now=None):
+    """{작업 이름: enabled(bool)} — task_health 산출에서. ★이 기계에서(measured_on) 최근에(measured_at ≤ TASK_HEALTH_MAX_AGE_H) 잰 것만 믿는다.
+    판독 실패 · 기계 표식 없음 · 다른 기계 · 낡음 · 미래 시각 = {}(= 모두 켜진 것으로 · 억제하지 않는다 · fail-closed)."""
     p = os.environ.get("QVEST_SUPERFAN_TASK_HEALTH_PATH") or os.path.join(root, "06_Registry", "scheduler_task_health.json")
     try:
-        with io.open(p, encoding="utf-8") as f:
-            return {t["task"]: (t.get("enabled") is not False) for t in (json.load(f).get("tasks") or []) if t.get("task")}
+        with io.open(p, encoding="utf-8-sig") as f:
+            h = json.load(f)
+        if h.get("measured_on") != _machine():
+            return {}
+        ma = dt.datetime.strptime(str(h.get("measured_at"))[:19], "%Y-%m-%dT%H:%M:%S")
+        nl = (now or _now()).replace(tzinfo=None)
+        age_h = (nl - ma).total_seconds() / 3600.0
+        if not (-0.25 <= age_h <= TASK_HEALTH_MAX_AGE_H):
+            return {}
+        tasks = h.get("tasks") or []
+        if isinstance(tasks, dict):
+            tasks = [tasks]
+        return {t["task"]: (t.get("enabled") is not False) for t in tasks if t.get("task")}
     except Exception:
         return {}
 
@@ -680,12 +711,36 @@ def _dedup():
         sys.path.pop(0)
 
 
-def _cause_keys(comp, anoms):
-    if comp.get("sched_task"):
+CAUSE_CLASSES = ("task_run", "own")
+
+
+def _rule_of(comp, rid):
+    return next((r for r in comp.get("rules", []) if r.get("id") == rid), {})
+
+
+def _anom_keys(comp, a):
+    """이상 하나의 원인 키(2026-11-10 2차) — '무엇이 실패했는가'까지 가른다.
+    ① 규칙 cause = "task_run"(그 예약 작업의 실행 자체를 재는 규칙 — 로그가 안 갱신됨 · 완료 표식 없음) 이고 구성요소에 sched_task 가 있으면
+       'task:<작업>' — task_health 의 실행 실패 경보와 같은 키(발신처 간에 접는 유일한 부류).
+    ② 구성요소 cause_key(예: scheduler = task_health:digest — task_health 요약 줄 자체를 보는 구성요소) 가 있으면 그 키.
+    ③ 그 밖(팩터 DB 빌드 게이트 · BOOK 시가평가 · 단계 실패 등 구성요소 고유 검사) = 'sf:<구성요소>:<규칙>:<이상 키>' — 같은 작업을 공유해도 자기 키.
+    1차판은 sched_task 가 있으면 구성요소 · 규칙과 무관하게 'task:<작업>' 하나라, 작업을 공유하는 구성요소의 다른 실패가 서로를 묻었다."""
+    r = _rule_of(comp, a.get("rule"))
+    if r.get("cause") == "task_run" and comp.get("sched_task"):
         return ["task:%s" % comp["sched_task"]]
     if comp.get("cause_key"):
         return [comp["cause_key"]]
-    return ["sf:%s:%s" % (comp["id"], a["key"]) for a in anoms]
+    return ["sf:%s:%s:%s" % (comp.get("id", a.get("component")), a.get("rule"), a["key"])]
+
+
+def _cause_keys(comp, anoms):
+    """여러 이상의 원인 키 합집합(순서 보존)."""
+    out = []
+    for a in anoms:
+        for k in _anom_keys(comp, a):
+            if k not in out:
+                out.append(k)
+    return out
 
 
 def _summary(a, reg_comp=None):
@@ -725,7 +780,7 @@ def scan(root=None, only=None):
     dflt = float(reg.get("default_max_event_age_h", 48))
     fn = {"log_patterns": _scan_log_rule, "freshness": _scan_freshness, "expect_today": _scan_expect_today, "json_field": _scan_json_field,
           "jsonl_ledger": _scan_jsonl_ledger, "ledger_covers": _scan_ledger_covers, "ledger_activity": _scan_ledger_activity}
-    states = _task_states(root)
+    states = _task_states(root, now)
     for c in reg["components"]:
         if only and c["id"] != only:
             continue
@@ -740,11 +795,13 @@ def scan(root=None, only=None):
             except Exception as ex:                                    # 규칙 하나의 실패가 감시 전체를 멈추지 않게 — 그 자체를 이상으로
                 _flag(W, events, c["id"], r.get("id", "?"), "warn", "감시 규칙 실행 실패 %s: %s" % (type(ex).__name__, ex), {}, now)
         W.setdefault("components", {})[c["id"]] = dict({"last_scan": _iso(now)}, **({"disabled_task": c["sched_task"]} if off else {}))
-        # ② 해소 — 예약 작업에 묶이지 않은 구성요소는 이상이 정상 복귀(resolved)하면 그 원인 키를 지운다(같은 날 재발도 다시 1통).
-        #    task:<작업> 키는 task_health 가 그 작업의 다음 정상 실행(rc 0)에서 지운다(scheduler_task_health.sh · resolve-healthy).
-        if not c.get("sched_task") and not c.get("cause_key"):
-            gone = ["sf:%s:%s" % (c["id"], a["key"]) for a in W.get("anomalies", {}).values()
-                    if a["component"] == c["id"] and a["status"] == "resolved" and a.get("resolved_at") == _iso(now)]
+        # ② 해소 — 구성요소 고유 키(sf:…)는 그 이상이 정상 복귀(resolved)하면 지운다(같은 날 재발도 다시 1통).
+        #    task:<작업> 키는 task_health 가 그 작업이 경보 뒤 건강하게 다시 돌았을 때 지운다(scheduler_task_health.sh · resolve-healthy) ·
+        #    구성요소 cause_key 는 그 발신처 몫이라 여기서 안 지운다.
+        if not c.get("cause_key"):
+            gone = [k for a in W.get("anomalies", {}).values()
+                    if a["component"] == c["id"] and a["status"] == "resolved" and a.get("resolved_at") == _iso(now)
+                    for k in _anom_keys(c, a) if k.startswith("sf:")]
             dd = _dedup() if gone else None
             if dd:
                 try:
@@ -818,40 +875,59 @@ def _send(root, payload):
 def notify(root, W, now, baseline=False):
     """보낼 이상을 구성요소별로 묶어 발신 · 보낸 것만 표식. baseline = 지금 열린 것을 보내지 않고 '알린 것'으로 표식(처음 켤 때 옛 이상 소음 방지)."""
     pend = pending_notify(W)
-    if not pend:
-        return []
     if baseline:
+        if not pend:
+            return []
         for a in pend:
             a["notified"] = {"at": _iso(now), "reopened": int(a.get("reopened", 0)), "baseline": True}
         return [("baseline", len(pend), None)]
-    reg = _read_json(registry_path(root))
+    reg = _read_json(registry_path(root)) or {}
     comps = {c["id"]: c for c in reg.get("components", [])}
     names = {c["id"]: c.get("name", c["id"]) for c in reg.get("components", [])}
+    dd = _dedup(); sent = []; claimed = {}
+    # ★양보 재시도는 '새로 보낼 것'이 없는 실행에서도 본다(2026-11-10 2차 · 시나리오 S4d) — 양보한 이상은 이미 표식(notified)이 있어
+    #   pending_notify 에 다시 나오지 않는다. 여기서 '보낼 것 없음'으로 먼저 돌아가면, 양보 상대가 발송에 실패하고 놓은 원인을
+    #   아무도 다시 잡지 않는다(그 원인은 그날 0통 — 억제의 fail-open).
+    pend = pend + _yield_retry(W, comps, dd, root, pend)
+    if not pend:
+        return []
     groups = {}
     for a in pend:
         groups.setdefault(a["component"], []).append(a)
     mute = now.hour >= QUIET_HOURS[0] or now.hour < QUIET_HOURS[1]
-    # ③ notify = false · ② 같은 원인 오늘 이미 나감 → 보내지 않고 표식만(다음 시간에 다시 시도하지 않게)
-    dd = _dedup(); sent = []; claimed = {}
+    # ③ notify = false → 보내지 않고 표식만(다른 발신처가 같은 사실을 보낸다 · 다시 시도하지 않는다).
+    # ② 원인 키는 이상마다 잡는다(2026-11-10 2차) — 새로 잡은 키가 있는 이상만 보내고, 못 잡은 이상은 '키 K 에 양보'로만 적는다
+    #    (알림 완료로 굳히지 않는다: 다음 실행에 K 가 그 날 이후 확정돼 있지 않으면 다시 잡는다 — _yield_retry).
     for cid in sorted(groups):
         c = comps.get(cid, {"id": cid}); L = groups[cid]
-        why = None
         if c.get("notify") is False:
-            why = "notify_off"
-        elif dd is not None:
-            try:
-                keys = _cause_keys(c, L)
-                new = dd.claim(keys, source="superfan:%s" % cid, summary=_summary(L[0], c), path=_dedup_path(root))
-                if new:
-                    claimed[cid] = new
-                else:
-                    why = "dedup"
-            except Exception:
-                pass                                                   # 저장소 실패 = 보낸다(경보를 놓치지 않는 쪽)
-        if why:
             for a in L:
-                a["notified"] = {"at": _iso(now), "reopened": int(a.get("reopened", 0)), "suppressed": why}
-            sent.append((cid, len(L), why))
+                a["notified"] = {"at": _iso(now), "reopened": int(a.get("reopened", 0)), "suppressed": "notify_off"}
+            sent.append((cid, len(L), "notify_off"))
+            del groups[cid]
+            continue
+        if dd is None:
+            continue                                                   # 저장소 모듈 없음 = 보낸다(경보를 놓치지 않는 쪽)
+        keep, yielded = [], []
+        for a in L:
+            keys = _anom_keys(c, a)
+            try:
+                r = dd.claim_ex(keys, source="superfan:%s" % cid, summary=_summary(a, c), path=_dedup_path(root))
+            except Exception:
+                keep.append(a); continue                               # 저장소 실패 = 보낸다
+            if r["new"]:
+                keep.append(a)
+                claimed.setdefault(cid, [])
+                claimed[cid] += [k for k in keys if not k.startswith("~") and k not in claimed[cid]]
+            else:
+                yielded.append(a)
+                a["notified"] = {"at": _iso(now), "reopened": int(a.get("reopened", 0)), "suppressed": "dedup",
+                                 "yield_keys": [k for k in keys if not k.startswith("~")], "yield_date": now.strftime("%Y-%m-%d")}
+        if yielded:
+            sent.append((cid, len(yielded), "dedup"))
+        if keep:
+            groups[cid] = keep
+        else:
             del groups[cid]
     if not groups:
         return sent
@@ -868,13 +944,43 @@ def notify(root, W, now, baseline=False):
         if res.get(cid):
             for a in L:
                 a["notified"] = {"at": _iso(now), "reopened": int(a.get("reopened", 0)), "mute": mute}
+            if dd is not None and claimed.get(cid):
+                try:
+                    dd.confirm(claimed[cid], source="superfan:%s" % cid, path=_dedup_path(root))   # 발송 성사 → 확정(이것만 '오늘 보냄')
+                except Exception:
+                    pass
         elif dd is not None and claimed.get(cid):
-            try:
-                dd.release(claimed[cid], path=_dedup_path(root))     # 발신 실패 — 다음 시간에 다시 보낼 수 있게 원인 키를 되돌린다
+            try:   # 발신 실패 — 내가 잡은 미확정 키를 완전히 놓는다(다른 발신처 · 다음 시간 실행이 다시 보낼 수 있게)
+                dd.release(claimed[cid], path=_dedup_path(root), source="superfan:%s" % cid)
             except Exception:
                 pass
         sent.append((cid, len(L), bool(res.get(cid))))
     return sent
+
+
+def _yield_retry(W, comps, dd, root, pend):
+    """'키 K 에 양보'한 이상 중 K 가 양보한 날 이후 확정된 적이 없는 것 — 다시 잡을 후보(양보 상대가 발송에 실패했거나 죽었다).
+    양보 표식 없는 1차판 'dedup' 표식은 지금 계산한 키 · 표식 날짜로 본다(1차판에선 아무도 안 보낸 원인이 이 표식 뒤에 묻혔을 수 있다)."""
+    if dd is None:
+        return []
+    have = {id(a) for a in pend}; out = []
+    for a in W.get("anomalies", {}).values():
+        n = a.get("notified") or {}
+        if (id(a) in have or a["status"] != "open" or a["severity"] not in NOTIFY_SEV or n.get("suppressed") != "dedup"
+                or int(n.get("reopened", 0)) < int(a.get("reopened", 0))):
+            continue
+        c = comps.get(a["component"], {"id": a["component"]})
+        if c.get("notify") is False:
+            continue
+        keys = n.get("yield_keys") or [k for k in _anom_keys(c, a) if not k.startswith("~")]
+        since = n.get("yield_date") or str(n.get("at") or "")[:10]
+        try:
+            if dd.settled(keys, since, path=_dedup_path(root)):
+                continue
+        except Exception:
+            pass                                                       # 판독 실패 = 다시 시도하는 쪽
+        out.append(a)
+    return out
 
 
 def boot_fragment(root=None):
@@ -938,7 +1044,7 @@ def ack(W, key, kind, note):
         if dd is not None:
             try:
                 comps = {c["id"]: c for c in (_read_json(registry_path()) or {}).get("components", [])}
-                dd.resolve(_cause_keys(comps.get(a["component"], {"id": a["component"]}), [a]), path=_dedup_path(_root()))
+                dd.resolve(_anom_keys(comps.get(a["component"], {"id": a["component"]}), a), path=_dedup_path(_root()))
             except Exception:
                 pass
 

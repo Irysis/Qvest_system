@@ -20,7 +20,7 @@
       {"severity": "fail", "regex": "^Error in |Execution halted", "label": "R 오류"},
       {"severity": "warn", "regex": "\\[0c\\] ★적재 미달", "label": "적재 신선도 미달"},
       {"severity": "warn", "regex": "^\\[warn\\] \\[8\\.1r\\]", "label": "역할 재분류 실패"}]},
-    {"id": "log_fresh", "kind": "freshness", "file": ".cache/scheduler_logs/daily_refresh.log", "max_age_h": 26, "severity": "fail"}
+    {"id": "log_fresh", "kind": "freshness", "file": ".cache/scheduler_logs/daily_refresh.log", "max_age_h": 26, "severity": "fail", "cause": "task_run"}
    ]
   },
   {
@@ -57,7 +57,7 @@
       {"severity": "fail", "regex": "재시도 상한 도달 \\([0-9]+/[1-9]", "label": "재시도 소진"},
       {"severity": "warn", "regex": "★재시도 진입", "label": "재시도"},
       {"severity": "fail", "regex": "^Error in |Execution halted", "label": "R 오류"}]},
-    {"id": "done_today", "kind": "expect_today", "file": ".cache/scheduler_logs/morning_run.log", "after": "11:00", "weekdays_only": true,
+    {"id": "done_today", "kind": "expect_today", "file": ".cache/scheduler_logs/morning_run.log", "after": "11:00", "weekdays_only": true, "cause": "task_run",
      "pattern": "morning_run done @ {dow} {mon} {dd2}", "severity": "fail"}
    ]
   },
@@ -79,7 +79,7 @@
       {"severity": "warn", "regex": "audit_conflict", "label": "감사 상충"},
       {"severity": "warn", "regex": "refresh_lock_stale", "label": "리프레시 잠금 stale"},
       {"severity": "warn", "regex": "\\[rp_auto\\] claim_live_long", "label": "장시간 실행 — 생존 claim 이 claim_stale_hours 초과(계산 시간 상한 없음 · 10-17 — 멈춘 실행인지 세션이 확인)"}]},
-    {"id": "lane_alive", "kind": "freshness", "file": ".cache/scheduler_logs/reinforce_auto_{YYYYMMDD}.log", "max_age_h": 8, "severity": "fail"},
+    {"id": "lane_alive", "kind": "freshness", "file": ".cache/scheduler_logs/reinforce_auto_{YYYYMMDD}.log", "max_age_h": 8, "severity": "fail", "cause": "task_run"},
     {"id": "request_state", "kind": "json_field", "file": "06_Registry/replication_request.json", "path": "status",
      "bad_values": ["failed_needs_session", "failed"], "severity": "fail"},
     {"id": "slots_state", "kind": "json_field", "file": "06_Registry/replication_slots/_status.json", "path": "worst_status",

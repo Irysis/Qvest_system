@@ -414,31 +414,46 @@ sched_alert_emit() {
   local marker="$adir/${comp}_${reason}_${today}.alert"
   # 같은 (comp,reason) 1일 1회 스로틀. 단 원인 키(인자 4)를 주고 공유 저장소를 쓸 수 있으면 그 저장소가 스로틀이다 —
   #   마커는 해소를 모르므로, 원인이 풀린(다음 정상 실행) 뒤 같은 날 재발한 실패를 영영 막았다(2026-11-10).
+  # ★발송 결과는 SCHED_ALERT_LAST_RESULT 로 호출자에게 남긴다(2026-11-10 2차) — sent | dup | marker_only | send_failed | throttled.
+  #   호출자(scheduler_task_health.sh)는 send_failed 면 '보고함' 기록(seen 원장)을 되돌린다. 반환 코드는 종전대로 늘 0.
+  SCHED_ALERT_LAST_RESULT="throttled"
   local _dd_ok=0
   if [ -n "${4:-}" ] && [ -f "$base/02_Infrastructure/ops/alert_dedup.py" ] && sched_resolve_python >/dev/null 2>&1; then _dd_ok=1; fi
-  [ -f "$marker" ] && [ "$_dd_ok" = "0" ] && return 0
+  # 마커 스로틀 — 단 발송 실패가 적힌 마커(send_failed=)는 스로틀이 아니다(아무것도 안 나간 원인을 '오늘 보냄'으로 막지 않는다).
+  [ -f "$marker" ] && [ "$_dd_ok" = "0" ] && ! grep -q '^send_failed=' "$marker" 2>/dev/null && return 0
   {
     echo "ts=$(date -Iseconds)"; echo "component=$comp"; echo "reason=$reason"
     echo "detail=$detail";      echo "log=${LOG:-}"
   } > "$marker"
+  SCHED_ALERT_LAST_RESULT="marker_only"
   sched_alert_should_send || return 0    # 수동 실행 = 마커만, 텔레그램 생략
   # ── (2026-11-10 감사 레인 B · SKILL §0.4 '같은 원인 반복 발송 금지' 집행) 인자 4 = 원인 키(공백 구분 · '~' = 보조 키) · 인자 5 = 요약 한 문장.
   #   원인 키를 주면 공유 저장소(ops/alert_dedup.py · .cache/alert_dedup.json)에 잡는다 — 다른 발신처(Superfan 감시)가 오늘 이미
   #   같은 원인을 보냈으면 건수만 올리고 보내지 않는다. 판독 실패(파이썬 없음 · 빈 출력) = 보낸다(경보를 놓치지 않는 쪽).
-  local ckeys="${4:-}" summary="${5:-}"
+  #   ★두 단계(2026-11-10 2차): claim 이 NEW 면 그 키는 '미확정'이다 — 발송이 성사되면 confirm, 실패하면 release(내가 잡은 키를 완전히 놓는다).
+  #     1차판은 발송 결과를 안 봐서(생성 R 이 늘 rc 0) 실패한 경보의 키가 남아 같은 날 Superfan 의 같은 원인 경보까지 막았다.
+  local ckeys="${4:-}" summary="${5:-}" _claimed=0 py=""
   if [ -n "$ckeys" ] && [ "$_dd_ok" = "1" ]; then
-    local py _cl; py="$(sched_resolve_python 2>/dev/null || true)"
+    local _cl; py="$(sched_resolve_python 2>/dev/null || true)"
     if [ -n "$py" ]; then
       # shellcheck disable=SC2086
       _cl=$("$py" "$base/02_Infrastructure/ops/alert_dedup.py" claim --source "sched:$comp" --summary "${summary:-$reason}" $ckeys 2>/dev/null | tr -d '\r' | tail -1)
       if [ "$_cl" = "DUP" ]; then
-        echo "$(date -Iseconds) [sched_alert_emit] $comp/$reason — 같은 원인을 오늘 이미 보냄(키 $ckeys) · 발송 생략" >> "$adir/_tg_alert_send.log"
+        echo "$(date -Iseconds) [sched_alert_emit] $comp/$reason — 같은 원인을 오늘 이미 보냈거나 다른 발신처가 보내는 중(키 $ckeys) · 발송 생략" >> "$adir/_tg_alert_send.log"
+        SCHED_ALERT_LAST_RESULT="dup"
         return 0
       fi
+      case "$_cl" in NEW*) _claimed=1 ;; esac
     fi
   fi
   local rs; rs="$(command -v Rscript || true)"
-  [ -x "$rs" ] || return 0              # Rscript 없으면 마커만 보존(fail-soft)
+  if [ ! -x "$rs" ] && [ -z "${QVEST_SCHED_ALERT_RSCRIPT:-}" ]; then   # Rscript 없으면 마커만 보존(fail-soft) — 잡은 키는 놓는다(안 보냈다)
+    # shellcheck disable=SC2086
+    [ "$_claimed" = "1" ] && "$py" "$base/02_Infrastructure/ops/alert_dedup.py" release --source "sched:$comp" $ckeys >/dev/null 2>&1
+    echo "send_failed=$(date -Iseconds) no_rscript" >> "$marker"
+    SCHED_ALERT_LAST_RESULT="send_failed"
+    return 0
+  fi
   local rfile="$adir/_tg_alert_${comp}_${today}.R"
   # ★값은 R 소스에 끼우지 않고 환경변수로 넘긴다(2026-11-10) — 구판은 detail 을 R 문자열 리터럴에 그대로 끼워 따옴표 · 백슬래시가
   #   든 내용이면 R 구문이 깨져 발송이 조용히 실패했고, 로그 원문 덤프가 그대로 실릴 수 있었다.
@@ -451,7 +466,7 @@ suppressWarnings(suppressMessages({
 .e <- function(k) Sys.getenv(k, "")
 .det <- substr(gsub("[\r\n]+", " ", .e("SA_DETAIL")), 1L, 400L)
 .sum <- if (nzchar(.e("SA_SUMMARY"))) .e("SA_SUMMARY") else sprintf("무인 구성요소 %s 에서 경보가 났습니다(사유 %s).", .e("SA_COMP"), .e("SA_REASON"))
-invisible(tryCatch(tg_agent_brief(
+.r <- tryCatch(tg_agent_brief(
   agent = "Q-Lead", title = sprintf("[무인] 스케줄러 경보 — %s", .e("SA_COMP")),
   relaxed = TRUE, force = TRUE, lock_scope = sprintf("sched_%s_%s_%s", .e("SA_COMP"), .e("SA_REASON"), .e("SA_TODAY")),
   sections = list(
@@ -459,12 +474,33 @@ invisible(tryCatch(tg_agent_brief(
     list(type = "kv", emoji = "\U0001F4CB", heading = "상세",
          kv = list("구성요소" = .e("SA_COMP"), "사유" = .e("SA_REASON"), "내용" = .det, "위치" = .e("SA_LOG")))
   )
-), error = function(e) NULL))
+), error = function(e) list(ok = FALSE, error = conditionMessage(e)))
+## ★발송 성사를 종료 코드로 알린다(2026-11-10 2차) — tg_agent_brief 는 HTTP 실패(429 · 네트워크)를 예외가 아니라 ok = FALSE 로 돌려준다.
+##   1차판은 그 값을 버려 늘 rc 0 이었고, 셸은 실패를 성공으로 읽어 원인 키를 잡은 채 두었다.
+if (!isTRUE(.r$ok)) {
+  cat(sprintf("SCHED_ALERT_SEND\tfail\t%s\n", substr(gsub("[\r\n]+", " ", as.character(.r$error %||% "?")), 1L, 300L)))
+  quit(save = "no", status = 3L)
+}
+cat("SCHED_ALERT_SEND\tok\n")
 RS
   # (v10 2026-09-02) stdout 은 사후 증거로 남기고(구판은 /dev/null — '무엇이 발송됐나' 의 유일 증거가 이 .R 파일이었다),
   #   발송 성공 시 생성 스크립트를 지운다(마커 디렉터리에 57개 누적). 실패 시 사후 분석용으로 보존.
-  if SA_COMP="$comp" SA_REASON="$reason" SA_DETAIL="$detail" SA_SUMMARY="$summary" SA_TODAY="$today" SA_LOG="${LOG:-$marker}" \
-     "${QVEST_SCHED_ALERT_RSCRIPT:-$rs}" "$rfile" >> "$adir/_tg_alert_send.log" 2>&1; then rm -f "$rfile"; fi
+  local _src=0
+  SA_COMP="$comp" SA_REASON="$reason" SA_DETAIL="$detail" SA_SUMMARY="$summary" SA_TODAY="$today" SA_LOG="${LOG:-$marker}" \
+     "${QVEST_SCHED_ALERT_RSCRIPT:-$rs}" "$rfile" >> "$adir/_tg_alert_send.log" 2>&1 || _src=$?
+  if [ "$_src" = "0" ]; then
+    rm -f "$rfile"
+    # shellcheck disable=SC2086
+    [ "$_claimed" = "1" ] && "$py" "$base/02_Infrastructure/ops/alert_dedup.py" confirm --source "sched:$comp" $ckeys >/dev/null 2>&1
+    SCHED_ALERT_LAST_RESULT="sent"
+  else
+    # 발송 실패 — 내가 잡은 원인 키를 완전히 놓고(다른 발신처 · 다음 실행이 다시 보낼 수 있게) 마커에 실패를 적는다(마커 스로틀이 막지 않게).
+    # shellcheck disable=SC2086
+    [ "$_claimed" = "1" ] && "$py" "$base/02_Infrastructure/ops/alert_dedup.py" release --source "sched:$comp" $ckeys >/dev/null 2>&1
+    echo "send_failed=$(date -Iseconds) rc=$_src" >> "$marker"
+    echo "$(date -Iseconds) [sched_alert_emit] $comp/$reason — 발송 실패(rc=$_src) · 원인 키 놓음 · 다음 실행이 다시 보냄" >> "$adir/_tg_alert_send.log"
+    SCHED_ALERT_LAST_RESULT="send_failed"
+  fi
   return 0
 }
 

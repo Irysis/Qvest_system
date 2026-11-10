@@ -18,6 +18,10 @@ import io, json, os, re, shutil, subprocess, sys, tempfile
 REAL = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 PY = sys.executable
 BASH = r"C:\Program Files\Git\bin\bash.exe" if os.name == "nt" else "bash"
+ME = os.environ.get("COMPUTERNAME") or __import__("socket").gethostname()
+# 경보 뒤 '건강하게 다시 돈' 작업 상태(2차 수리 — resolve-healthy 는 rc 0 만이 아니라 경보 뒤의 실행 · 정체 아님을 본다)
+HEALTHY_MB = {"task": "Qvest_MorningBrief", "enabled": True, "rc": 0, "rc_label": "ok", "last_run": "2026-11-10T13:00:00",
+              "age_days": 0.01, "max_stale_days": 2, "next_run": "2026-11-11T07:10:00", "time_scheduled": True}
 P = F = 0
 
 
@@ -50,7 +54,7 @@ def mk_root(mut=None):
     os.makedirs(os.path.join(T, ".cache/scheduler_alerts"), exist_ok=True)
     reg = {"schema": "superfan_components_v1", "default_max_event_age_h": 48, "doc": "test", "components": [
         {"id": "morning_chain", "name": "아침 체인", "dossier": "x", "sched_task": "Qvest_MorningBrief",
-         "rules": [{"id": "done_today", "kind": "expect_today", "file": "logs/morning_run.log", "after": "11:00",
+         "rules": [{"id": "done_today", "kind": "expect_today", "file": "logs/morning_run.log", "after": "11:00", "cause": "task_run",
                     "pattern": "morning_run done @ {dow} {mon} {dd2}", "severity": "fail"},
                    {"id": "run_alerts", "kind": "log_patterns", "files": "logs/morning_run.log",
                     "patterns": [{"severity": "fail", "regex": "Execution halted", "label": "R 오류"}]}]},
@@ -63,7 +67,9 @@ def mk_root(mut=None):
         {"id": "free", "name": "독립 구성요소", "dossier": "x",
          "rules": [{"id": "f", "kind": "json_field", "file": "state.json", "path": "status", "bad_values": ["failed"], "severity": "fail"}]}]}
     wr(os.path.join(T, "06_Registry/superfan_components.json"), json.dumps(reg, ensure_ascii=False))
-    health = {"tasks": [{"task": "Qvest_MorningBrief", "enabled": True, "rc": 267014, "rc_label": "terminated_by_user_or_limit"},
+    # ★2차 수리(11-10): '꺼짐'은 이 기계에서 최근에 잰 측정만 믿는다 — 측정 기계 · 시각을 싣는다(없으면 억제 안 함 = 축 S6 은 e2e 시험).
+    health = {"measured_on": ME, "measured_at": "2026-11-10T11:00:00",
+              "tasks": [{"task": "Qvest_MorningBrief", "enabled": True, "rc": 267014, "rc_label": "terminated_by_user_or_limit"},
                         {"task": "Qvest_ReinforceAutoLoop", "enabled": False, "rc": 0},
                         {"task": "Qvest_OnTask", "enabled": True, "rc": 0}]}
     wr(os.path.join(T, "06_Registry/scheduler_task_health.json"), json.dumps(health))
@@ -186,7 +192,7 @@ chk("P5 '정지했습니다' 일반 문구 제거(발신기 기본값 · 주석 
 
 # ── R 해소 뒤 재발 ──────────────────────────────────────────────────────────
 print("== R 원인 해소 뒤 재발 → 다시 1통 ==")
-wr(T + "/06_Registry/scheduler_task_health.json", json.dumps({"tasks": [{"task": "Qvest_MorningBrief", "enabled": True, "rc": 0}]}))
+wr(T + "/06_Registry/scheduler_task_health.json", json.dumps({"tasks": [HEALTHY_MB]}))
 subprocess.run([PY, T + "/02_Infrastructure/ops/alert_dedup.py", "resolve-healthy", "--health", T + "/06_Registry/scheduler_task_health.json"],
                env=env(T), capture_output=True, timeout=60)
 emit(T, "task:Qvest_MorningBrief", now="2026-11-10 18:00")
@@ -225,7 +231,7 @@ TM = mk_root({"02_Infrastructure/ops/scheduler_task_health.sh": ('이 실행 시
 chk("M4 사유 문구 제거 사본 → P1 축이 빨개짐", "강제 종료" not in phrase(TM, "Qvest_MorningBrief(terminated_by_user_or_limit)"), "")
 TM = mk_root({"02_Infrastructure/ops/alert_dedup.py": ('return resolve(ks, path) if ks else 0', 'return 0')})
 emit(TM, "task:Qvest_MorningBrief")
-wr(TM + "/06_Registry/scheduler_task_health.json", json.dumps({"tasks": [{"task": "Qvest_MorningBrief", "enabled": True, "rc": 0}]}))
+wr(TM + "/06_Registry/scheduler_task_health.json", json.dumps({"tasks": [HEALTHY_MB]}))
 subprocess.run([PY, TM + "/02_Infrastructure/ops/alert_dedup.py", "resolve-healthy", "--health", TM + "/06_Registry/scheduler_task_health.json"],
                env=env(TM), capture_output=True, timeout=60)
 emit(TM, "task:Qvest_MorningBrief", now="2026-11-10 18:00")
