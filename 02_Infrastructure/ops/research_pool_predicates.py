@@ -312,7 +312,9 @@ def alpha_pending(stage):
     #   뒤 실행이 not_relevant/skip/data_pipeline_required 로 고친 논문도 큐에 남았다(11-10 실측 큐 74 중 9).
     #   그래서 파일을 날짜순으로 훑으며 논문별 '마지막 결정 판정'을 기록하고, 그것이 testable 이 아니면 뺀다.
     #   결정 판정이 아닌 것 = prefilter 스텁(generated_by=prefilter) · verdict=redundant('이미 판정함'이지 재판정이 아님).
-    #   레코드(표시 · 순서)는 처음 본 testable 그대로 둔다 — 큐 순서는 바꾸지 않는다(lean-loop '재정렬 금지').
+    #   레코드(표시 · 순서)는 처음 본 testable 그대로 둔다 — 이 함수의 반환 순서는 처음 본 순서(FIFO) 그대로다.
+    #   (2026-11-10 PAPER-QUERY-AND-ORDER-REDESIGN-20261110) 선택 순서는 등록부 규칙 06_Registry/next_paper_order.json 을
+    #   아래 alpha_pending_ordered() 가 따로 적용한다 — 이 함수의 순서 · 서명은 바꾸지 않는다(개수 소비자 · 부팅 리더 불변).
     last_decisive = {}
     for f in sorted(glob.glob(os.path.join(stage, "alpha_search_route_*.json"))):
         r = _load_json(f)
@@ -352,6 +354,204 @@ def alpha_pending(stage):
                 if is_testable(o) and not is_resolved(o):
                     pend[k] = o
     return pend
+
+
+# ── 다음 논문 순서 (next_paper_order v1 · 도훈 결정 2026-11-10 PAPER-QUERY-AND-ORDER-REDESIGN-20261110) ──
+#   alpha_pending() 의 반환(처음 본 순서 · 서명)은 그대로 두고, 순서는 이 절의 새 함수가 따로 낸다.
+#   규칙 정본 = 06_Registry/next_paper_order.json(한 번 등록 · 판정 규칙 변경 = 새 판). 키(오름차순 사전식):
+#     construction_needs_base — 구성 논문인데 기저(return/defense) 소비가 min 미만이면 1
+#     engine_gap              — (0, 그 엔진의 L1 소비 논문 수) · 엔진 미상 = (1, 0)
+#     long_leg                — yes 0 · unknown 1 · no 2 (long_only = yes 도 yes)
+#     crisis_evidence         — reported 0 · 그 외 1
+#     꼬리                    — 처음 본 순서(FIFO 인덱스 · 고유값이라 동률이 남지 않는다)
+#   ★정보 경계(τ_D · PIT): 입력은 논문 메타 · 라우터 필드(아래 화이트리스트) · L1 paper_key 건수뿐이다.
+#     레코드는 _order_view 로 투영한 뒤에만 읽는다 — 등급 · 성과 수치 · 기저 자격 · 라우터 신뢰도를 읽을 경로가 없다.
+#     (시험 08_Tests/scenarios/test_scn_paper_order.py O12 가 그 필드를 바꿔도 순서 불변 + 이 절 소스 토큰을 정적 단정한다.)
+#   설정 부재 · 판독 실패 · schema 불일치 · disabled · 모르는 step · L1 판독 불가 → FIFO(종전 동작) + stderr 1줄.
+ORDER_SCHEMA = "next_paper_order_v1"
+ORDER_FIELDS = ("engine", "long_leg", "long_only", "crisis_evidence", "strategy_reported")
+ORDER_STEPS = ("construction_needs_base", "engine_gap", "long_leg", "crisis_evidence")
+ORDER_ENGINES = ("return", "defense", "construction")
+ORDER_FILE = "next_paper_order.json"
+L1_FILE = "reinforce_ledger_l1.json"
+
+
+def _order_view(o):
+    """레코드 → 순서 입력 화이트리스트 투영. 여기 없는 필드는 순서에 쓰일 수 없다."""
+    if not isinstance(o, dict):
+        return {}
+    return {k: o.get(k) for k in ORDER_FIELDS if k in o}
+
+
+def _norm_engine(v):
+    s = str(v if v is not None else "").strip().lower()
+    return s if s in ORDER_ENGINES else ""
+
+
+def _norm_yn(v):
+    if v is True:
+        return "yes"
+    if v is False:
+        return "no"
+    s = str(v if v is not None else "").strip().lower()
+    if s in ("yes", "y", "true"):
+        return "yes"
+    if s in ("no", "n", "false"):
+        return "no"
+    return "unknown"
+
+
+def _order_key_id(k):
+    """L1 · route 키 → 정규화 논문 id(axv: 접두 · arXiv 접두 · 판 번호 제거)."""
+    s = str(k or "").strip()
+    if s.lower().startswith("axv:"):
+        s = s[4:]
+    return nid(s)
+
+
+def route_order_meta(stage):
+    """논문별 순서 입력 = 마지막 비-prefilter · 유효 엔진 route 레코드의 투영(verdict 무관 — 엔진 분류만 쓴다)."""
+    meta = {}
+    for f in sorted(glob.glob(os.path.join(stage, "alpha_search_route_*.json"))):
+        r = _load_json(f)
+        if not isinstance(r, dict):
+            continue
+        if str(r.get("generated_by") or "").strip().lower() == "prefilter":
+            continue
+        for o in (r.get("papers") or []):
+            if not isinstance(o, dict) or not _norm_engine(o.get("engine")):
+                continue
+            p = pid_of(o, os.path.basename(f), warn=False) or _order_key_id(o.get("paper_key"))
+            if p:
+                meta[p] = _order_view(o)
+    return meta
+
+
+def l1_engine_counts(ledger_path, meta, exclude_prefixes=("combo:",)):
+    """L1 소비 원장 → ({엔진: 고유 논문 수}, 미매핑 수, 고유 논문 수). paper_key 만 읽는다(status · 그 밖의 필드 무시).
+    부재 = 아직 소비 0(정상). 존재하는데 판독 불가 = LedgerUnreadable(호출자가 FIFO 로 떨어진다)."""
+    d = _load_ledger(ledger_path)
+    ents = [] if d is None else (d.get("entries") if isinstance(d, dict) else None)
+    if not isinstance(ents, list):
+        raise LedgerUnreadable("%s: entries 목록 아님" % os.path.basename(ledger_path))
+    excl = tuple(str(x).lower() for x in (exclude_prefixes or ()))
+    ids = set()
+    for e in ents:
+        if not isinstance(e, dict):
+            continue
+        k = str(e.get("paper_key") or "").strip()
+        if not k or (excl and k.lower().startswith(excl)):
+            continue
+        p = _order_key_id(k)
+        if p:
+            ids.add(p)
+    counts = {e: 0 for e in ORDER_ENGINES}
+    unmapped = 0
+    for p in ids:
+        eng = _norm_engine((meta.get(p) or {}).get("engine"))
+        if eng:
+            counts[eng] += 1
+        else:
+            unmapped += 1
+    return counts, unmapped, len(ids)
+
+
+def load_order_rule(path):
+    """→ (rule | None, 사유). 사유 = ok | missing | unreadable | schema | disabled | unknown_step."""
+    if not os.path.exists(path):
+        return None, "missing"
+    try:
+        with open(path, encoding="utf-8-sig") as fh:
+            rule = json.load(fh)
+    except Exception:
+        return None, "unreadable"
+    if not isinstance(rule, dict) or rule.get("schema") != ORDER_SCHEMA:
+        return None, "schema"
+    if rule.get("enabled") is not True:
+        return None, "disabled"
+    steps = rule.get("steps")
+    if not isinstance(steps, list) or not all(isinstance(s, dict) and s.get("name") in ORDER_STEPS for s in steps):
+        return None, "unknown_step"
+    return rule, "ok"
+
+
+def order_pending(pairs, meta, counts, rule):
+    """순수 함수 — [(key, rec)](처음 본 순서) → [(key, rec, info)] 규칙 순서. info = {order_key, why}."""
+    steps = [s for s in rule.get("steps") or [] if s.get("enabled", True) is not False]
+    ver = str(rule.get("version") or "v1")
+    n_all = len(pairs)
+    rows = []
+    for idx, (key, rec) in enumerate(pairs):
+        view = dict(_order_view(rec))
+        mv = meta.get(_order_key_id(key)) or meta.get(pid_of(rec, warn=False) if isinstance(rec, dict) else "") or {}
+        view.update(mv)
+        eng = _norm_engine(view.get("engine"))
+        ll = _norm_yn(view.get("long_leg"))
+        ce = str(view.get("crisis_evidence") or "").strip().lower()
+        base_n = 0
+        key_t = []
+        for s in steps:
+            name = s.get("name")
+            if name == "construction_needs_base":
+                need = int(s.get("min_base_consumed", 1))
+                base_n = sum(counts.get(b, 0) for b in (s.get("base_engines") or ("return", "defense")))
+                key_t.append(1 if (eng == "construction" and base_n < need) else 0)
+            elif name == "engine_gap":
+                key_t.append((0, counts.get(eng, 0)) if eng else (1, 0))
+            elif name == "long_leg":
+                if any(_norm_yn(view.get(f)) == "yes" for f in (s.get("long_only_fields") or ("long_only",))):
+                    ll = "yes"
+                ll_rank = s.get("rank") or {"yes": 0, "unknown": 1, "no": 2}
+                ll_unknown = ll_rank.get("unknown", 1)
+                key_t.append(ll_rank.get(ll, ll_unknown))
+            elif name == "crisis_evidence":
+                ce_rank = s.get("rank") or {"reported": 0}
+                ce_default = s.get("default", 1)
+                key_t.append(ce_rank.get(ce, ce_default))
+        key_t.append(idx)
+        why = "next_paper_order %s · engine=%s(소비 %d · 기저 %d) · long_leg=%s · crisis=%s · fifo#%d/%d" % (
+            ver, eng or "unknown", counts.get(eng, 0) if eng else 0,
+            sum(counts.get(b, 0) for b in ("return", "defense")), ll, ce or "unknown", idx + 1, n_all)
+        rows.append((tuple(key_t), key, rec, why))
+    rows.sort(key=lambda t: t[0])
+    return [(k, r, {"order_key": [list(x) if isinstance(x, tuple) else x for x in kt], "why": w}) for kt, k, r, w in rows]
+
+
+def _fifo_pairs(pairs, reason):
+    sys.stderr.write("[next_paper_order] fallback=fifo reason=%s\n" % reason)
+    n = len(pairs)
+    return [(k, r, {"order_key": [i], "why": "fifo (next_paper_order %s) · fifo#%d/%d" % (reason, i + 1, n)})
+            for i, (k, r) in enumerate(pairs)]
+
+
+def alpha_pending_ordered(stage, registry_dir):
+    """alpha_pending() 결과를 등록부 순서 규칙으로 정렬 → ([(key, rec, info)], 상태 dict).
+    규칙 · L1 을 못 읽으면 FIFO(종전 순서) — 안전한 쪽. alpha_pending 자체의 원장 판독 실패는 종전대로 전파한다."""
+    items = alpha_pending(stage)
+    pairs = list(items.items()) if isinstance(items, dict) else [("", o) for o in (items or [])]
+    rule, reason = load_order_rule(os.path.join(registry_dir, ORDER_FILE))
+    if rule is None:
+        return _fifo_pairs(pairs, reason), {"status": "fifo", "reason": reason, "n": len(pairs)}
+    # (2026-11-10 재수리) 형이 틀린 단계 매개변수(예: min_base_consumed="one" · rank 가 사전 아님)는
+    #   load_order_rule 이 거르지 않는다 — 평가 예외가 선택을 멈추지 않도록 FIFO(안전한 쪽)로 떨어진다.
+    try:
+        meta = route_order_meta(stage)
+        excl = ("combo:",)
+        for s in rule.get("steps") or []:
+            if s.get("name") == "engine_gap" and isinstance(s.get("exclude_key_prefixes"), list):
+                excl = tuple(s["exclude_key_prefixes"])
+        try:
+            counts, unmapped, n_l1 = l1_engine_counts(os.path.join(registry_dir, L1_FILE), meta, excl)
+        except LedgerUnreadable:
+            return _fifo_pairs(pairs, "l1_unreadable"), {"status": "fifo", "reason": "l1_unreadable", "n": len(pairs)}
+        ordered = order_pending(pairs, meta, counts, rule)
+    except Exception as exc:
+        reason = "rule_eval_error:%s" % type(exc).__name__
+        return _fifo_pairs(pairs, reason), {"status": "fifo", "reason": reason, "n": len(pairs)}
+    return ordered, {"status": "ordered", "version": rule.get("version"),
+                     "counts": counts, "l1_unmapped": unmapped, "l1_papers": n_l1,
+                     "n": len(pairs)}
+# ── 다음 논문 순서 끝 ──
 
 
 # ── factor recheck(tier-2) 큐 ─────────────────────────────────────────────────
@@ -941,7 +1141,8 @@ _USAGE = ("usage: research_pool_predicates.py alpha-pending <stage_dir>\n"
           "       research_pool_predicates.py recheck-build <stage_dir> <out_json> [<today>]\n"
           "       research_pool_predicates.py mode-routes   <mode_queue_json>\n"
           "       research_pool_predicates.py mode-queue-pending <stage_dir> <root> [--json <out>]\n"
-          "       research_pool_predicates.py research-queue-pending <stage_dir> <root> [--lane a,b] [--json <out>]\n")
+          "       research_pool_predicates.py research-queue-pending <stage_dir> <root> [--lane a,b] [--json <out>]\n"
+          "       research_pool_predicates.py alpha-pending-ordered <stage_dir> [<registry_dir>]\n")
 
 
 def main(argv):
@@ -949,6 +1150,23 @@ def main(argv):
         sys.stderr.write(_USAGE)
         return 2
     cmd = argv[0]
+    if cmd == "alpha-pending-ordered":
+        # 진단 · 시험용 — 등록부 순서 규칙(next_paper_order.json)으로 정렬한 대기 목록을 JSON 1줄씩(key · why · order_key).
+        #   registry_dir 기본 = 이 파일 기준 06_Registry(선택기 rf_next_paper_pick.py 와 같은 기준).
+        if len(argv) < 2:
+            sys.stderr.write(_USAGE)
+            return 2
+        reg = argv[2] if len(argv) > 2 else os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "06_Registry")
+        try:
+            rows, st = alpha_pending_ordered(argv[1], reg)
+        except LedgerUnreadable as e:
+            sys.stderr.write("LEDGER_UNREADABLE %s\n" % e)
+            return 3
+        for k, _r, info in rows:
+            print(json.dumps({"key": k, "why": info["why"], "order_key": info["order_key"]}, ensure_ascii=False))
+        sys.stderr.write("[next_paper_order] %s\n" % json.dumps(st, ensure_ascii=False, sort_keys=True))
+        return 0
     if cmd == "alpha-pending":
         if len(argv) < 2:
             sys.stderr.write(_USAGE)

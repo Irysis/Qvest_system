@@ -9,17 +9,22 @@
 #   alpha_pending() 을 import 하고, **정렬·선택만** 한다.
 #
 # 출력: 큐 상단 1편을 JSON 1줄로 stdout. 없으면 {} 를 낸다(러너가 무동작 종료).
-# 정렬: alpha_pending() 이 준 순서를 그대로 따른다 — 재검색·재정렬 금지(lean-loop 규약).
+# 정렬: 등록부 순서 규칙(06_Registry/next_paper_order.json · 도훈 2026-11-10 PAPER-QUERY-AND-ORDER-REDESIGN-20261110 —
+#   빈 엔진 · 롱 레그 · 위기 보고 · 처음 본 순서)을 술어 모듈의 alpha_pending_ordered() 가 적용한 순서를 따른다.
+#   규칙이 없거나 못 읽으면 처음 본 순서(FIFO · 종전 동작). 재검색은 하지 않는다 · 규칙을 이 파일에 다시 적지 않는다.
 #   단 **원문 링크가 없는 항목은 건너뛴다** (v10: 근거 논문 없는 착수 금지 — 원장이 거부한다).
+#   거르기(건너뛰기 목록 · L1 소비 · 원문 링크 · --exclude · --only-key · --want)는 정렬 뒤에 순서를 바꾸지 않고 적용한다.
+#   출력 각 항목에 order_why(왜 이 논문인가 = 순서 키 값 한 줄) · order_key 를 싣는다.
 #==============================================================================
 import io, json, os, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 if HERE not in sys.path:
     sys.path.insert(0, HERE)
+REG_DIR = os.path.join(os.path.dirname(os.path.dirname(HERE)), "06_Registry")   # _consumed 와 같은 기준
 
 try:
-    from research_pool_predicates import alpha_pending, display_name, pid_of
+    from research_pool_predicates import alpha_pending, alpha_pending_ordered, display_name, pid_of
 except Exception as e:                                   # pragma: no cover
     print(json.dumps({"error": "predicate_import_failed: %s" % e}, ensure_ascii=False))
     sys.exit(0)
@@ -76,17 +81,18 @@ def probe_keys(o, key):
 
 
 def _pairs(stage):
-    """alpha_pending 결과 → [(key, item)] · 실패는 (None, 오류 dict)."""
+    """alpha_pending_ordered 결과 → [(key, item)] (item 에 _order = {order_key, why}) · 실패는 (None, 오류 dict).
+    순서 = 등록부 규칙(없으면 FIFO — 술어 모듈이 stderr 에 사유를 남긴다)."""
     try:
-        items = alpha_pending(stage)
+        rows, _st = alpha_pending_ordered(stage, REG_DIR)
     except Exception as e:
         return None, {"error": "alpha_pending_failed: %s" % e}
-    if isinstance(items, int):                            # 구현이 개수만 주는 경우
-        return None, {"error": "alpha_pending_returned_count_only", "n": items}
-    # ★dict(키=arxiv_id) 또는 list 둘 다 받는다. dict 는 삽입순서를 그대로 큐 순서로 쓴다.
-    if isinstance(items, dict):
-        return list(items.items()), None
-    return [("", o) for o in (items or [])], None
+    out = []
+    for key, rec, info in rows:
+        o = dict(rec) if isinstance(rec, dict) else {}
+        o["_order"] = info
+        out.append((key, o))
+    return out, None
 
 
 def iter_candidates(stage, _pairs_override=None):
@@ -134,6 +140,8 @@ def _iter(pairs, stats=None):
             "factor_name": str(fc.get("name") or ""),
             "factor_def": str(fc.get("def") or "")[:300],         # 후보 팩터 정의
             "kr_feasible": o.get("kr_feasible"),
+            "order_why": str((o.get("_order") or {}).get("why") or "fifo (order not computed)")[:300],
+            "order_key": (o.get("_order") or {}).get("order_key"),
             "skipped_no_url": skipped, "_probe_keys": sorted(pk_keys | {pk})}
 
 

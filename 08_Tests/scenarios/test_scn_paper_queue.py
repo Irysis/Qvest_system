@@ -11,7 +11,8 @@
 #   Q4 판 번호 · 접두 · URL 만 다른 중복은 한 편이다
 #   Q5 깨진 route 파일 1개 — 나머지는 계속 읽힌다
 #   Q6 두 슬롯 경합 — 한 슬롯이 쥔 논문(--exclude)은 다음 슬롯에 안 간다
-#   Q7 큐 순서 = 처음 본 날짜 순(FIFO · 우선순위 없음 — 특성 고정, 개선은 도훈 결정)
+#   Q7 alpha_pending() 반환 순서 = 처음 본 날짜 순(FIFO — 그 함수의 순서는 불변). 선택 순서는 11-10 도훈 결정
+#      (PAPER-QUERY-AND-ORDER-REDESIGN-20261110)의 등록부 규칙이 따로 정한다(동률이면 FIFO 꼬리) — 규칙 시험 = test_scn_paper_order.py
 #   M1 돌연변이: 수리(최신 판정 거부)를 소스 치환으로 끄면 Q1 이 깨진다(발화 실증)
 import io, json, os, re, shutil, subprocess, sys, tempfile, importlib.util
 

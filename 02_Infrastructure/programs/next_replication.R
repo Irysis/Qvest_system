@@ -8,8 +8,11 @@
 #   1) 요청이 pending · in_progress · failed_needs_session 이면 아무것도 안 한다(덮어쓰면 같은 논문이 두 번 뜬다)
 #   2) 재구현 대기열(reimplement_queue.json · reserved)이 있으면 그 항목을 먼저 발행한다(rf_reimplement_queue.R 정본)
 #   3) 큐(alpha-pending · research_pool_predicates.py 정본 CLI)가 비면 무동작
-#   4) 큐 상단 1편(rf_next_paper_pick.py · 재정렬 금지)을 06_Registry/replication_request.json 에 pending 으로 쓴다
-# ★논문을 고르지 않는다 — 큐 순서를 그대로 따른다. 텔레그램은 보내지 않는다(완료 보고는 검증기가 1통 — 발송 규칙 v10.01 §0.1).
+#   4) 큐 상단 1편(rf_next_paper_pick.py)을 06_Registry/replication_request.json 에 pending 으로 쓴다
+# ★이 파일은 순서를 정하지 않는다 — 순서 = 등록부 규칙 06_Registry/next_paper_order.json(도훈 2026-11-10
+#   PAPER-QUERY-AND-ORDER-REDESIGN-20261110 · 빈 엔진 · 롱 레그 · 위기 보고 · 처음 본 순서)을 술어 모듈이 적용한 선택기 순서다
+#   (규칙 없으면 FIFO). 요청 paper.order_why · 로그 replication_requested.order_why 에 '왜 이 논문인가'가 남는다.
+#   텔레그램은 보내지 않는다(완료 보고는 검증기가 1통 — 발송 규칙 v10.01 §0.1).
 # 사용: Rscript 02_Infrastructure/programs/next_replication.R --root <dir> [--req <요청 경로>] [--only-key <논문 키> --slot <슬롯>]
 # ★다중 슬롯(2026-10-20 · WP3 · L1-SPEED-LEVERS-20261020):
 #   · 슬롯 작업자 환경(RP_SLOT)에서 불리면(레인 셸 · 검증기의 '다음 논문' 호출) 직접 고르지 않고 슬롯 발행기(rf_replication_slots.py issue)에
@@ -90,7 +93,7 @@ main <- function() {
   tmp <- paste0(REQ_P, ".tmp"); writeLines(txt, tmp, useBytes = TRUE)
   if (!file.rename(tmp, REQ_P)) stop("요청 파일 교체 실패")
   jlog("replication_requested", paper_key = pick$paper_key %||% "", title = substr(pick$title %||% "", 1, 100),
-       slot = if (is.na(SLOT_ARG)) "" else SLOT_ARG, req = REQ_P)
+       slot = if (is.na(SLOT_ARG)) "" else SLOT_ARG, req = REQ_P, order_why = substr(as.character(pick$order_why %||% ""), 1, 300))
   0L
 }
 

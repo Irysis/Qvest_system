@@ -1,0 +1,53 @@
+{
+  "schema": "next_paper_order_v1",
+  "version": "v1",
+  "decision_id": "PAPER-QUERY-AND-ORDER-REDESIGN-20261110",
+  "registered_at": "2026-11-10",
+  "enabled": true,
+  "description": "충실구현 다음 논문 순서 규칙 — 소비자 = research_pool_predicates.alpha_pending_ordered(rf_next_paper_pick.py · 슬롯 발행기 · next_replication.R 이 그 경로로 고른다). 키는 아래 steps 순서대로 오름차순 사전식 비교, 마지막은 처음 본 순서(FIFO · 안정 정렬). 규칙은 결정론(같은 입력 → 같은 순서).",
+  "steps": [
+    {
+      "name": "construction_needs_base",
+      "enabled": true,
+      "base_engines": ["return", "defense"],
+      "min_base_consumed": 1,
+      "note": "구성(construction) 논문은 기저가 되는 return · defense 논문이 한 편도 소비되지 않았으면 뒤로(키 1). min_base_consumed = 1 은 결정문 '한 편도'의 직역이다."
+    },
+    {
+      "name": "engine_gap",
+      "enabled": true,
+      "engines": ["return", "defense", "construction"],
+      "count_source": "06_Registry/reinforce_ledger_l1.json entries[].paper_key 고유 논문 수(엔진은 route 기록에서 되찾는다 · status 무관)",
+      "exclude_key_prefixes": ["combo:"],
+      "unknown_engine": "last",
+      "note": "빈 엔진 우선 — 지금까지 충실구현으로 소비된 논문 수가 적은 엔진의 논문을 앞에(키 (0, 소비 수)). 엔진 결측 · 미상은 뒤(키 (1, 0)). 소비 수는 고를 때마다 다시 센다(가장 빈 엔진이 계속 앞으로 — 물 채우기)."
+    },
+    {
+      "name": "long_leg",
+      "enabled": true,
+      "rank": {"yes": 0, "unknown": 1, "no": 2},
+      "long_only_fields": ["long_only"],
+      "note": "롱온리 구성 가능 우선 — 라우터 필드 long_leg(롱 레그 · 롱온리 성과 분리 보고) yes > unknown > no. long_only = yes 표시도 yes. rank 는 서열값(크기 의미 없음)."
+    },
+    {
+      "name": "crisis_evidence",
+      "enabled": true,
+      "rank": {"reported": 0},
+      "default": 1,
+      "note": "위기 성과 보고(crisis_evidence = reported) 우선 · 그 외(결측 포함) 1. 서열값."
+    }
+  ],
+  "tail": "fifo",
+  "inputs_allowed": ["alpha_pending 대기 항목과 처음 본 순서", "route 기록의 engine · long_leg · long_only · crisis_evidence(마지막 비-prefilter · 유효 엔진 레코드)", "L1 소비 원장의 paper_key(건수만)"],
+  "inputs_logged_only": ["strategy_reported"],
+  "inputs_forbidden": ["권위 등급(essence_grade · base_grade · target_grade)", "성과 수치(Calmar · PORT_t · Sharpe · CAGR · MDD)", "기저 풀 자격", "라우터 confidence", "L1 status"],
+  "information_boundary": "입력은 논문 메타 · 라우터 필드 · 소비 건수뿐이다 — 성과 · 등급을 읽지 않으므로 τ_D = 2022-12-31 이후 성과가 순서에 들어올 경로가 없다(시험 08_Tests/scenarios/test_scn_paper_order.py O12 로 고정).",
+  "fallback": "이 파일이 없거나 · 못 읽거나 · schema 불일치 · enabled=false · 모르는 step 이거나 L1 원장을 못 읽으면 처음 본 순서(FIFO)로 고르고 stderr '[next_paper_order] fallback=fifo reason=<사유>' 와 order_why 'fifo (next_paper_order <사유>)' 를 남긴다. step 별 enabled=false 면 그 키만 뺀다.",
+  "constraints_kept": "건너뛰기 목록(replication_skiplist · revoked 는 재후보) · L1 소비 · 원문 링크 없음 · 슬롯 --exclude · --only-key · --want 는 정렬 뒤에 순서를 바꾸지 않고 적용한다. 재구현 대기열(reimplement_queue reserved)은 종전대로 맨 앞(공급기 소관).",
+  "basis": [
+    "도훈 결정 2026-11-10 PAPER-QUERY-AND-ORDER-REDESIGN-20261110(06_Registry/decision_register.json) — '큐는 빈 엔진 · 롱온리 구성 가능한 논문을 앞에 둔다'",
+    "감사 04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/arch_audit/lanes/audit_C_papers.md §5(큐 역학) · §9 P-C5(기저 풀 공백 가중 · 롱레그 return · defense 우선 · construction 은 기저가 있을 때 · 성과 수치 무사용)",
+    "투자철학 헌장 00_Lawbook/specs/investment_philosophy_charter.md — 남들 다 깨질 때 방어해 복리 극대화(위기 하락 포착↓ · 강세 참여 ≥ 55%) — defense 재료 · 위기 성과 보고 논문 우선의 근거",
+    "처방 · 조립 축 long-only(w≥0) — CLAUDE.md 축 표 · 롱 레그를 따로 보고한 논문이 롱온리 기저로 바로 쓰인다"
+  ]
+}

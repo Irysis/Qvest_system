@@ -397,9 +397,22 @@ register_existing_recharge_pdfs <- function(scan_root) {
 #   → 등록된 질의 전부가 errors 에 질의 이름으로 올라 있고 후보 0 이면 mcp_all_queries_failed(n=질의 수) 로 강등.
 #   마커 블록이 그대로 하루 1개 마커를 남긴다(며칠이 지나도 실패 = 실패). 일부만 실패 = 종전 그대로.
 #   mcp_suspect_empty 는 바꾸지 않는다(그 7일은 종전대로 텔레그램 예외 발송으로 드러난다).
+#   (2026-11-10 PAPER-QUERY-AND-ORDER-REDESIGN-20261110) 표적 질의는 relevance + date 두 번 돈다 — 질의 이름만 대조하면
+#   relevance 40 실패 · date 10 성공(0건)도 '전부 실패'로 강등된다. 보고서에 calls[](v2)가 있으면 호출 단위 키
+#   (query + 탭 + sort_by · 결측 sort_by = 보고서 기본 sort_by)로 대조한다. calls 없는 옛 보고서 = 종전 본문 그대로.
 pr_mcp_all_queries_failed <- function(obj) {
   st <- as.character(obj$status %||% "")
   if (!identical(st, "mcp_ok_no_candidates")) return(obj$status)
+  dflt_sb <- as.character(obj$sort_by %||% "")
+  ckey <- function(x) if (is.list(x) && !is.null(x$query)) paste0(as.character(x$query), "\t", as.character(x$sort_by %||% dflt_sb)) else NULL
+  cl <- obj$calls %||% list()
+  if (length(cl)) {
+    ck <- unique(unlist(lapply(cl, ckey)))
+    fk <- unique(unlist(lapply(obj$errors %||% list(), ckey)))
+    nq <- length(unique(vapply(strsplit(ck, "\t", fixed = TRUE), `[`, "", 1L)))
+    if (length(ck) && all(ck %in% fk)) return(sprintf("mcp_all_queries_failed(n=%d,calls=%d)", nq, length(ck)))
+    return(obj$status)
+  }
   qs <- unique(as.character(unlist(obj$queries %||% list())))
   qs <- qs[!is.na(qs) & nzchar(qs)]
   if (!length(qs)) return(obj$status)
@@ -472,12 +485,13 @@ run_mcp_probe <- function() {
     status = obj$status %||% sprintf("exit_%s", status),
     out = out,
     candidates = length(obj$candidates %||% list()),
+    n_calls = length(obj$calls %||% list()),
     py = py
   )
 }
 
 mcp <- run_mcp_probe()
-log_line("[paper-recharge] MCP probe: status=%s candidates=%s out=%s", mcp$status, mcp$candidates, relative_path(mcp$out))
+log_line("[paper-recharge] MCP probe: status=%s candidates=%s calls=%s out=%s", mcp$status, mcp$candidates, mcp$n_calls %||% 0L, relative_path(mcp$out))
 # (2026-11-10 감사 레인 C) arXiv 축 사망은 로그 한 줄뿐이었다 — read_failed · python_unavailable · stale_not_rewritten ·
 #   mcp_runtime_unavailable · mcp_error 등에서 후보 0 · 종료 코드 0 · 텔레그램 0 이라 '신규 없음'과 겉보기가 같았다
 #   (실측 read_failed 3회 · 09-13 exit=143 포함 · 경보 0). arXiv 는 유일한 동적 원천이라 그 사망 = 수집 정지다.

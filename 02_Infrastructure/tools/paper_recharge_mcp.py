@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import queue
 import shutil
 import subprocess
 import sys
@@ -98,6 +99,20 @@ class McpClient:
             encoding="utf-8",
             errors="replace",
         )
+        # (2026-11-10) 읽기 전담 스레드 — 종전 request() 는 stdout.readline() 에서 막혀 응답 없는 서버 앞에서
+        #   timeout_sec 를 한 번도 확인하지 못했다(시험 실측: 무응답 1질의가 실행을 무기한 정지). 줄을 큐로 받아
+        #   마감 시각까지 기다리고, EOF 는 표지(None)로 알린다.
+        self._q: queue.Queue = queue.Queue()
+
+        def _reader(stream: Any, q: queue.Queue) -> None:
+            try:
+                for ln in iter(stream.readline, ""):
+                    q.put(ln)
+            except Exception:
+                pass
+            q.put(None)
+
+        threading.Thread(target=_reader, args=(self.proc.stdout, self._q), daemon=True).start()
 
     def close(self) -> None:
         if self.proc is None:
@@ -121,15 +136,20 @@ class McpClient:
 
         deadline = time.time() + self.timeout_sec
         while time.time() < deadline:
-            line = self.proc.stdout.readline()
-            if not line:
-                if self.proc.poll() is not None:
-                    err = ""
+            try:
+                line = self._q.get(timeout=max(0.05, min(1.0, deadline - time.time())))
+            except queue.Empty:
+                continue
+            if line is None:
+                self._q.put(None)       # 다음 request 도 EOF 를 보게 표지를 되돌린다
+                err = ""
+                try:
+                    self.proc.wait(timeout=5)
                     if self.proc.stderr is not None:
                         err = self.proc.stderr.read()[:1200]
-                    raise RuntimeError(f"MCP process exited early: {err}")
-                time.sleep(0.1)
-                continue
+                except Exception:
+                    pass
+                raise RuntimeError(f"MCP process exited early: {err}")
             line = line.strip()
             if not line.startswith("{"):
                 continue
@@ -244,9 +264,11 @@ def _prev_prefilter(out_path: Path) -> tuple[int | None, str | None]:
 
 
 def _call_search_tool(client: McpClient, tool_name: str, query: str, categories: list[str], max_results: int,
-                      date_from: str | None = None, sort_by: str = "date") -> tuple[bool, Any]:
+                      date_from: str | None = None, sort_by: str = "date") -> tuple[bool, Any, int, dict]:
     # sort_by="date" + date_from(recency window) 으로 신규 논문 유입 (pool 포화 완화, 2026-06-18 Q).
     # 서버가 일부 인자를 거부하면 단계적으로 떨어뜨림(마지막은 결과측 _is_finance_relevant 가 정화).
+    # (2026-11-10) 반환 = (ok, result, 성공(또는 마지막) 시도 번호 1~6, 그 시도의 인자) — 호출 기록(calls)이
+    #   정렬 인자가 실제로 실렸는지(sort_sent)를 남기게. 마지막 두 단은 sort_by 를 뺀다(서버 기본 정렬).
     base = {"query": query, "max_results": max_results, "categories": categories, "sort_by": sort_by}
     if date_from:
         base["date_from"] = date_from
@@ -259,12 +281,58 @@ def _call_search_tool(client: McpClient, tool_name: str, query: str, categories:
         {"query": query, "max_results": max_results},
     ]
     last = None
-    for args in attempts:
+    for i, args in enumerate(attempts, 1):
         resp = client.request("tools/call", {"name": tool_name, "arguments": args})
         last = resp
         if "error" not in resp:
-            return True, resp.get("result")
-    return False, last
+            return True, resp.get("result"), i, args
+    return False, last, len(attempts), attempts[-1]
+
+
+# 질의별 정렬 (2026-11-10 도훈 결정 PAPER-QUERY-AND-ORDER-REDESIGN-20261110 — '질의 재편 + 순서 가중').
+#   설정 queries[] 는 문자열(종전) 또는 {q, theme, sorts} 객체. sorts 미지정 = 기본 sort_by 1회(기존 30개 — 08-29
+#   '최신성 불요' 취지 유지). 표적 질의는 sorts = [relevance, date] 로 두 번 돈다(관련도 상위 10건이 날마다 같아
+#   새 유입이 0 이던 고정점 해소). 정렬값은 서버가 받는 두 값(relevance | date)만 — 그 밖의 값은 버리고 기록한다.
+_VALID_SORTS = ("relevance", "date")
+
+
+def _query_specs(cfg: dict, default_sort: str, cap: int) -> tuple[list[dict[str, Any]], list[dict[str, Any]], int]:
+    specs: list[dict[str, Any]] = []
+    errs: list[dict[str, Any]] = []
+    for i, q in enumerate(list(cfg.get("queries") or [])):
+        if isinstance(q, str):
+            text, theme, sorts = q, "", None
+        elif isinstance(q, dict):
+            text, theme, sorts = q.get("q") or q.get("query"), q.get("theme") or "", q.get("sorts")
+        else:
+            errs.append({"index": i, "error": "bad_query_type", "value": repr(q)[:80]})
+            continue
+        text = str(text or "").strip()
+        if not text:
+            errs.append({"index": i, "error": "empty_query"})
+            continue
+        if sorts is None:
+            sorts = [default_sort]
+        elif isinstance(sorts, str):
+            sorts = [sorts]
+        clean: list[str] = []
+        for s in (sorts if isinstance(sorts, list) else [sorts]):
+            sv = str(s).strip().lower()
+            if sv in _VALID_SORTS:
+                if sv not in clean:
+                    clean.append(sv)
+            else:
+                errs.append({"index": i, "query": text, "error": "invalid_sort", "value": str(s)[:40]})
+        if not clean:
+            clean = [default_sort]
+        specs.append({"q": text, "theme": str(theme), "sorts": clean})
+    truncated = max(0, len(specs) - cap)
+    return specs[:cap], errs, truncated
+
+
+# 전송 사망(서버 조기 종료 · 응답 시한 초과)이 연속 이만큼이면 남은 호출은 보내지 않고 기록만 한다 —
+#   죽은 서버에 50회 × 시한을 쏟지 않게. 2 = '한 번은 우연, 연속 두 번은 상태'(일시 지연 1회는 다음 호출이 회복).
+_TRANSPORT_FAIL_STOP = 2
 
 
 def main() -> int:
@@ -291,7 +359,6 @@ def main() -> int:
         _qcap = 0
     if _qcap <= 0:
         _qcap = 40
-    queries = list((arxiv_cfg.get("queries") or [])[:_qcap])
     categories = list(arxiv_cfg.get("categories") or ["q-fin.PM", "q-fin.ST", "q-fin.RM", "q-fin.GN"])
 
     # config 의 recency_days / max_results_per_query 배선 (기존엔 무시되던 필드, 2026-06-18 Q).
@@ -313,12 +380,21 @@ def main() -> int:
     sort_by = str(arxiv_cfg.get("sort_by") or "relevance").strip().lower()
     if sort_by not in ("date", "relevance"):
         sort_by = "relevance"
+    # (2026-11-10) 질의 = 객체 {q, theme, sorts} 또는 문자열. queries(보고서) = 고유 질의 문자열 목록 그대로(종전 모양 —
+    #   R 쪽 전 질의 실패 판정이 이 문자열과 errors[].query 를 대조한다). 호출 단위는 calls[] 에 (query, sort_by) 로 남긴다.
+    specs, spec_errors, truncated = _query_specs(arxiv_cfg, sort_by, _qcap)
+    queries = list(dict.fromkeys(s["q"] for s in specs))
 
     report: dict[str, Any] = {
-        "schema_version": "paper_recharge_mcp_v1",
+        "schema_version": "paper_recharge_mcp_v2",
         "project_root": str(root),
         "mcp_config_present": bool(mcp_config.get("mcpServers")),
         "queries": queries,
+        "query_specs": specs,
+        "query_spec_errors": spec_errors,
+        "queries_truncated": truncated,
+        "calls": [],
+        "n_calls": 0,
         "categories": categories,
         "recency_days": recency_days,
         "date_from": date_from,
@@ -370,13 +446,51 @@ def main() -> int:
             return 0
 
         candidates: list[dict[str, Any]] = []
-        for query in queries:
-            ok, result = _call_search_tool(client, search_tool, query, categories, max_results,
-                                           date_from=date_from, sort_by=sort_by)
-            if ok:
-                candidates.extend(_normalize_arxiv_results(result, query, report["errors"]))
-            else:
-                report["errors"].append({"query": query, "response": result})
+        # (2026-11-10) 호출 단위 = 질의 × 정렬. 한 호출의 예외(시한 초과 · 서버 종료)는 그 호출의 실패로 기록하고 다음으로 —
+        #   종전엔 루프 안 예외 하나가 실행 전체를 mcp_error 로 만들어 나머지 질의를 잃었다. 그 호출에서 생긴 errors 에는
+        #   sort_by 를 붙인다(R 판정이 (query, sort_by) 쌍으로 대조). 전송 사망이 연속 _TRANSPORT_FAIL_STOP 회면 남은 호출은 skipped.
+        calls = report["calls"]
+        transport_fail = 0
+        dead = False
+        for spec in specs:
+            query, theme = spec["q"], spec["theme"]
+            for sb in spec["sorts"]:
+                rec: dict[str, Any] = {"query": query, "sort_by": sb, "theme": theme}
+                calls.append(rec)
+                if dead:
+                    rec.update(ok=False, skipped="skipped_after_transport_failure")
+                    report["errors"].append({"query": query, "sort_by": sb, "kind": "skipped_after_transport_failure"})
+                    continue
+                n_err0 = len(report["errors"])
+                rows: list[dict[str, Any]] = []
+                try:
+                    ok, result, attempt, sent = _call_search_tool(client, search_tool, query, categories, max_results,
+                                                                  date_from=date_from, sort_by=sb)
+                except (TimeoutError, RuntimeError, OSError, ValueError) as exc:
+                    transport_fail += 1
+                    rec.update(ok=False, exception=type(exc).__name__)
+                    report["errors"].append({"query": query, "sort_by": sb, "kind": "call_exception",
+                                             "error": f"{type(exc).__name__}: {str(exc)[:300]}"})
+                    if transport_fail >= _TRANSPORT_FAIL_STOP:
+                        dead = True
+                    continue
+                transport_fail = 0
+                if ok:
+                    rows = _normalize_arxiv_results(result, query, report["errors"])
+                    for row in rows:
+                        row["sort_by"] = sb
+                        row["theme"] = theme
+                    candidates.extend(rows)
+                else:
+                    report["errors"].append({"query": query, "sort_by": sb, "response": result})
+                for er in report["errors"][n_err0:]:
+                    if isinstance(er, dict):
+                        er.setdefault("sort_by", sb)
+                rec.update(ok=bool(ok), attempt=attempt, sort_sent=("sort_by" in sent), n_rows=len(rows))
+        report["n_calls"] = len(calls)
+        if calls and all(("exception" in c) or ("skipped" in c) for c in calls):
+            # 응답을 하나도 못 받았다 = 종전 '실행 전체 실패'(mcp_error)와 같은 사실 — 의미를 보존한다.
+            raise RuntimeError("all %d search calls failed in transport" % len(calls))
         # uniq 키 = paper_key 정본 (v10) — 구 키(arxiv_id|pdf_url|title)는 버전 접미(v2)를
         # 벗기지 않아 같은 논문의 개정판이 별개로 통과했다. 키 판별 불가 시에만 구 키 폴백.
         seen = set()
@@ -403,13 +517,20 @@ def main() -> int:
         report["candidates_dropped_out_of_scope"] = len(fin) - len(kept)
         report["candidates"] = kept
         report["status"] = "mcp_ok" if kept else "mcp_ok_no_candidates"
+        if dead:
+            # (2026-11-10 재수리) 도중 서버 사망 = 남은 호출을 잃었다. 앞의 성공분이 있어도 ^mcp_ok 로 두면
+            #   일일 R 의 마커 조건(^mcp_ok 제외)이 서지 않아 침묵 실패가 된다 — 별도 값으로 올린다.
+            #   거둔 후보는 그대로 싣는다(부분 수확은 버리지 않는다).
+            n_skip = sum(1 for c in calls if "skipped" in c)
+            report["n_calls_skipped"] = n_skip
+            report["status"] = "mcp_partial_transport_failure(skipped=%d/%d)" % (n_skip, len(calls))
         # 인입 붕괴 분리 라벨: 최근 lookback 내 prefilter>0 실행이 있는데 이번 run
         # prefilter=0 이면 '정상 완료(no_candidates)'가 아니라 상류 의심 상태로 기록
         # (전이일 + 지속 outage 공통 — fail-open 라벨링 해소. lookback 소진 시 자연 해제).
         prev_n, prev_name = _prev_prefilter(out_path)
         report["prev_prefilter"] = prev_n
         report["prev_report"] = prev_name
-        if len(uniq) == 0 and prev_n is not None and prev_n > 0:
+        if not dead and len(uniq) == 0 and prev_n is not None and prev_n > 0:
             report["status"] = "mcp_suspect_empty"
     except Exception as exc:
         report["status"] = "mcp_error"

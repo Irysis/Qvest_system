@@ -46,13 +46,22 @@ route = `replication` | `skip` 2값뿐 (testable → replication, 그 외 → sk
 메커니즘 · 입력이 명확하면 닫힌 수식이 없어도 **충실히 재구성**해 testable(재구성 ≠ 날조).
 논문이 기술하지 않은 신호를 **지어내면 금지**(batch_434) — skip + 사유.
 
+## 판정 3 — 전략 보고 (기록만 · testable 조건은 위 판정 2 그대로)
+논문 본문(초록만으로 모르면 unknown)에서 두 사실을 적는다. 다음 논문 순서 규칙(`06_Registry/next_paper_order.json` ·
+도훈 11-10 PAPER-QUERY-AND-ORDER-REDESIGN-20261110)이 `long_leg` 를 읽는다 — 성과 수치는 적지 않는다.
+- `strategy_reported` = `yes`(거래 가능한 포트폴리오의 실증 성과를 보고 — 수익률 · 샤프 · 낙폭 등) | `no`(신호 · IC · 회귀 계수만) | `unknown`.
+- `long_leg` = `yes`(롱 레그 또는 롱온리 포트폴리오 성과를 롱숏과 분리해 보고) | `no`(롱숏 스프레드만) | `unknown`.
+모르면 `unknown` 이다 — 지어내지 않는다. 이 두 필드는 verdict 를 바꾸지 않는다.
+
 ## 산출
 `alpha_search_route_${TODAY}.json` = `{date, schema_version:"paper_router_v5",
 counts_by_route:{replication,skip}, counts_by_engine:{return,defense,construction,not_relevant},
 n_factor_candidates,
 papers:[{title, id, paper_key, source, engine, engine_secondary:[…], engine_reason,
 route, verdict, factor_candidate:{name,def,novel,verdict,confidence}|null,
-crisis_evidence:"reported"|"not_reported"|"n/a", reason}]}`. curated → `curated_routed.json` append.
+crisis_evidence:"reported"|"not_reported"|"n/a",
+strategy_reported:"yes"|"no"|"unknown", long_leg:"yes"|"no"|"unknown", reason}]}`. curated → `curated_routed.json` append.
+(옛 route 파일 · prefilter 스텁에는 두 필드가 없다 — 읽는 쪽이 unknown 으로 받는다.)
 - 프로그램 큐(`06_Registry/research_programs.json`)는 **쓰지 않는다** — 다음 결정론 단계
   (`02_Infrastructure/programs/program_paper_sync.R`)가 이 산출을 읽어 엔진별 큐에 넣는다.
 - `mode_queue_${TODAY}.json` 은 생산하지 않는다.

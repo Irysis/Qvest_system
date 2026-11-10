@@ -23,6 +23,7 @@
 
 - 부팅 `Programs:` 줄 = `06_Registry/research_programs.json`(writer `programs/program_registry.R`). 재검색·재정렬로 고르지 않는다.
 - 순서: ① blocked 프로그램의 **선행 조건(측정 계약 MC1~MC8)** — 이것이 라운드를 여는 일이다(D7 제한적 예외 · 등록부 `pr_mc_set` 로 계상) ② ready/active 프로그램 라운드 ③ 재료 확보 = 큐 논문 충실구현(무인 레인 · 세션은 `/alpha-search`).
+- 큐에서 다음 논문을 고르는 순서 = `06_Registry/next_paper_order.json`(11-10 도훈 결정 PAPER-QUERY-AND-ORDER-REDESIGN-20261110): 구성 논문은 기저 엔진 소비가 있은 뒤 → 소비가 적은 엔진 → 롱 레그 성과를 따로 보고한 논문 → 위기 성과를 보고한 논문 → 처음 본 순서. 입력은 논문 메타 · 라우터 필드 · 소비 건수뿐이다(성과 · 등급은 읽지 않는다). 설정을 못 읽으면 처음 본 순서로 고른다.
 - ★`parked_reason = dohoon_decision` 항목은 세션 임의 착수 금지. 데이터가 없으면 `data_pipeline_queue.json` 적재 → 파이프라인(도훈 승인) → 재개.
 
 ## 축 — 등급은 같은 측정 축(epoch) 안에서만 비교한다
