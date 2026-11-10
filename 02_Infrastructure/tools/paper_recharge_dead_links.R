@@ -24,11 +24,27 @@ pr_dead_link_news <- function(dead, state_path, write = TRUE) {
   new_dead <- setdiff(dead, prev)
   # 되살아난 링크는 알린 집합에서 뺀다 — 다시 죽으면 새 소식이 된다
   alerted <- dead
-  if (isTRUE(write)) {
-    tmp <- paste0(state_path, ".tmp", Sys.getpid())
-    writeLines(jsonlite::toJSON(list(alerted = alerted, updated = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")),
-                                auto_unbox = TRUE, pretty = TRUE), tmp, useBytes = TRUE)
-    if (!file.rename(tmp, state_path)) { unlink(tmp); warning("dead-link 상태 교체 실패: ", state_path) }
-  }
-  list(news = length(new_dead) > 0L, new_dead = new_dead, alerted = alerted)
+  if (isTRUE(write)) .pr_dead_state_write(alerted, state_path)
+  list(news = length(new_dead) > 0L, new_dead = new_dead, alerted = alerted, dead = dead, prev = prev)
+}
+
+.pr_dead_state_write <- function(alerted, state_path) {
+  tmp <- paste0(state_path, ".tmp", Sys.getpid())
+  writeLines(jsonlite::toJSON(list(alerted = I(as.character(alerted)), updated = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")),
+                              auto_unbox = TRUE, pretty = TRUE), tmp, useBytes = TRUE)
+  if (!file.rename(tmp, state_path)) { unlink(tmp); warning("dead-link 상태 교체 실패: ", state_path) }
+  invisible(alerted)
+}
+
+#' 판정(write = FALSE) 뒤 발송 결과를 보고 알린 집합을 저장한다 (2026-11-10 감사 수리 G6).
+#'   왜: 판정 때 바로 저장하면 발송이 실패한 날(tryCatch 가 로그만 남김) · --no-telegram 수동 실행에서 새로 죽은
+#'   링크가 '알린 것'으로 흡수돼 다음 실행부터 소식이 아니게 됐다(사람은 한 번도 못 받는다).
+#'   delivered = TRUE(이번 실행의 발송이 실제로 성공) → 이번 죽은 집합 전체를 알린 것으로 저장.
+#'   delivered = FALSE → 새로 죽은 것은 더하지 않고, 되살아난 링크만 뺀다(지난 집합 ∩ 이번 죽은 집합) — 다시 죽으면 다시 소식.
+#' @param res pr_dead_link_news(..., write = FALSE) 의 반환
+#' @return 저장한 집합
+pr_dead_link_record <- function(res, state_path, delivered) {
+  keep <- if (isTRUE(delivered)) res$dead else intersect(res$prev, res$dead)
+  keep <- sort(unique(as.character(keep)))
+  .pr_dead_state_write(keep, state_path)
 }

@@ -3,6 +3,8 @@
 ##   C1 죽은 기관 링크 — 처음 1회만 소식 · 같은 집합 반복 = 무음 · 되살아나면 집합에서 빠지고 다시 죽으면 다시 소식
 ##   C2 돌연변이(새로 죽은 것 판정 → 전부)로 바꾸면 C1 반복 무음이 깨진다(발화 실증)
 ##   C3 program_paper_sync — 깨진 route 파일 · v4 파일이 섞여도 v5 항목만 모은다(조용한 0 아님)
+##   C6 arXiv 질의 전부 실패 — lookback 7 소진 뒤 Python 이 mcp_ok_no_candidates 를 내도 실패 상태로 강등 · 마커 1개
+##   C7 죽은 링크 알린 집합 — 발송 성공 뒤에만 저장(발송 실패 · --no-telegram 이면 다음 실행이 다시 알린다 · 모의 발송기)
 ##   C4 (특성 고정) 같은 논문이 뒤 실행에서 엔진이 바뀌어도 프로그램 큐 항목은 처음 판정 그대로 — 알려진 한계(패치 제안 P-C4)
 suppressPackageStartupMessages({ library(jsonlite) })
 .self <- function() { a <- commandArgs(trailingOnly = FALSE); f <- sub("^--file=", "", a[grepl("^--file=", a)]); if (length(f)) dirname(f[1]) else "." }
@@ -74,6 +76,131 @@ if (!is.null(blk)) {
   chk("C5d 돌연변이 치환 성사", !identical(mtxt, main_src))
   mblk <- parse(text = sub("^if \\(!grepl", "if (FALSE && !grepl", paste(deparse(blk), collapse = "\n")))[[1]]
   chk("C5e 돌연변이 블록에선 read_failed 에도 마커가 없다(검사가 수리를 잡는다)", length(run_c5(mblk, "read_failed(x)")) == 0L)
+}
+
+## C6 arXiv 질의 전부 실패 → 7일 lookback 이 소진돼 Python 이 mcp_ok_no_candidates 를 내도 실패로 표식
+##   run_mcp_probe 를 본 스크립트에서 떼어 임시 루트에서 돌린다. 가짜 paper_recharge_mcp.py 가 고정 보고서를 --out 에 쓴다.
+fn_expr <- function(txt, name) {
+  ex <- parse(text = txt, keep.source = FALSE)
+  hit <- Filter(function(e) is.call(e) && identical(e[[1]], as.name("<-")) && identical(e[[2]], as.name(name)), as.list(ex))
+  if (length(hit)) hit[[1]] else NULL
+}
+.py_real <- c(file.path(ROOT, ".venv_qvest_ml", "Scripts", "python.exe"), Sys.getenv("QVEST_PY", ""), Sys.which("python"))
+.py_real <- .py_real[nzchar(.py_real) & file.exists(.py_real)][1]
+fake_py <- c("import sys, shutil, os",
+             "a = sys.argv; out = a[a.index('--out') + 1]",
+             "shutil.copyfile(os.environ['QVEST_TEST_MCP_FIXTURE'], out)")
+run_c6 <- function(txt, report) {
+  pr <- tempfile("c6_"); dir.create(file.path(pr, "02_Infrastructure", "tools"), recursive = TRUE)
+  sr <- file.path(pr, "stage"); dir.create(sr)
+  writeLines(fake_py, file.path(pr, "02_Infrastructure", "tools", "paper_recharge_mcp.py"))
+  fx <- file.path(pr, "fixture.json"); writeLines(toJSON(report, auto_unbox = TRUE, null = "null"), fx, useBytes = TRUE)
+  old <- Sys.getenv(c("QVEST_PY", "QVEST_TEST_MCP_FIXTURE"), unset = NA)
+  Sys.setenv(QVEST_PY = .py_real, QVEST_TEST_MCP_FIXTURE = fx)
+  e <- new.env(parent = globalenv())
+  e$PROJECT_ROOT <- pr; e$stage_root <- sr; e$today <- "20261110"; e$dry_run <- FALSE
+  e$`%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
+  e$fromJSON <- jsonlite::fromJSON; e$toJSON <- jsonlite::toJSON
+  for (nm in c("pr_mcp_all_queries_failed")) { fe <- fn_expr(txt, nm); if (!is.null(fe)) eval(fe, e) }
+  eval(fn_expr(txt, "run_mcp_probe"), e)
+  r <- e$run_mcp_probe()
+  for (k in names(old)) if (is.na(old[[k]])) Sys.unsetenv(k) else do.call(Sys.setenv, setNames(list(old[[k]]), k))
+  r
+}
+qs <- c("cross-sectional momentum", "low volatility anomaly")
+rep_allfail <- list(status = "mcp_ok_no_candidates", queries = qs, candidates = list(), candidates_prefilter = 0L,
+                    prev_prefilter = 0L, errors = lapply(qs, function(q) list(query = q, response = list(error = "rate limited"))))
+rep_partfail <- rep_allfail; rep_partfail$errors <- rep_allfail$errors[1]
+rep_ok <- list(status = "mcp_ok", queries = qs, candidates = list(list(title = "t", arxiv_id = "2611.00001")),
+               candidates_prefilter = 1L, errors = list())
+chk("C6a 파이썬 실행기 확보", !is.na(.py_real), "venv · QVEST_PY · PATH 모두 없음")
+if (!is.na(.py_real)) {
+  s_all <- run_c6(main_src, rep_allfail)$status
+  chk("C6b 질의 전부 실패 + mcp_ok_no_candidates → 실패 상태로 강등(^mcp_ok 아님)", !grepl("^mcp_ok", s_all) && grepl("all_queries_failed", s_all), s_all)
+  if (!is.null(blk)) {
+    mk6 <- run_c5(blk, s_all)
+    chk("C6c 강등된 상태 → 마커 1개(하루 1개)", length(mk6) == 1L && grepl("^paper_recharge_arxiv_mcp_all_queries_failed_20261110", mk6[1]), paste(mk6, collapse = ","))
+  }
+  s_part <- run_c6(main_src, rep_partfail)$status
+  chk("C6d 질의 일부만 실패 = 정상 '신규 없음' 그대로(mcp_ok_no_candidates)", identical(s_part, "mcp_ok_no_candidates"), s_part)
+  s_ok <- run_c6(main_src, rep_ok)$status
+  chk("C6e 정상 후보 = mcp_ok 그대로", identical(s_ok, "mcp_ok"), s_ok)
+  mt6 <- sub("all(qs %in% failed_q)", "FALSE", main_src, fixed = TRUE)
+  chk("C6f 돌연변이 치환 성사(전 질의 실패 판정 끔)", !identical(mt6, main_src))
+  s_mut <- run_c6(mt6, rep_allfail)$status
+  chk("C6g 돌연변이 사본에선 전 질의 실패가 다시 mcp_ok_no_candidates 로 숨는다(검사가 수리를 잡는다)", identical(s_mut, "mcp_ok_no_candidates"), s_mut)
+}
+
+## C7 죽은 링크 '알린 집합'은 발송이 실제로 성공한 뒤에만 저장 — 모의 발송기(가짜 telegram_notify.R)로 발송 구간 전체를 돌린다
+send_region <- function(txt) {
+  ex <- as.list(parse(text = txt, keep.source = FALSE))
+  hd <- vapply(ex, function(e) paste(deparse(e, width.cutoff = 500L)[1], collapse = ""), "")
+  i0 <- which(startsWith(hd, ".n_new_dl <-"))[1]
+  i1 <- which(grepl('^log_line\\("\\[paper-recharge\\] done', hd))[1]
+  if (is.na(i0) || is.na(i1) || i1 <= i0) return(NULL)
+  ex[i0:(i1 - 1L)]
+}
+mock_tg <- c("tg_agent_brief <- function(...) {",
+             "  f <- Sys.getenv('QVEST_TEST_TG_CALLS'); cat('call\\n', file = f, append = TRUE)",
+             "  if (identical(Sys.getenv('QVEST_TEST_TG_OK'), '1')) invisible(list(ok = TRUE)) else invisible(list(ok = FALSE, error = 'mock http_error'))",
+             "}")
+new_c7_root <- function(dl_file) {
+  pr <- tempfile("c7_")
+  dir.create(file.path(pr, "02_Infrastructure", "tools"), recursive = TRUE)
+  dir.create(file.path(pr, "02_Infrastructure", "telegram"), recursive = TRUE)
+  dir.create(file.path(pr, "stage"))
+  file.copy(dl_file, file.path(pr, "02_Infrastructure", "tools", "paper_recharge_dead_links.R"))
+  writeLines(mock_tg, file.path(pr, "02_Infrastructure", "telegram", "telegram_notify.R"))
+  pr
+}
+run_day <- function(region, pr, dead, tg_ok = TRUE, no_tg = FALSE, dry_run = FALSE, all_files = c("WINTON.pdf", "AQR.pdf")) {
+  calls <- file.path(pr, "calls.txt"); if (file.exists(calls)) unlink(calls)
+  Sys.setenv(QVEST_TEST_TG_CALLS = calls, QVEST_TEST_TG_OK = if (tg_ok) "1" else "0")
+  e <- new.env(parent = globalenv())
+  e$PROJECT_ROOT <- pr; e$stage_root <- file.path(pr, "stage"); e$today <- "20261110"
+  e$no_tg <- no_tg; e$dry_run <- dry_run
+  e$`%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
+  e$log_line <- function(...) invisible(NULL)
+  e$paper_summary_ko <- function(title, ko = NULL) "요약"
+  e$summary_df <- data.frame(status = "already_present", title = "t", provider = "p", summary_ko = "", stringsAsFactors = FALSE)
+  e$success_rows <- e$summary_df; e$triage_df <- data.frame()
+  e$skip_count <- 0L; e$registry_added_total <- 0L
+  e$curated_health <- data.frame(file_name = all_files, ok = !(all_files %in% dead), stringsAsFactors = FALSE)
+  e$n_curated <- nrow(e$curated_health); e$n_curated_dead <- sum(!e$curated_health$ok)
+  e$mcp <- list(status = "mcp_ok", candidates = 0L, out = "x")
+  for (x in region) eval(x, e)
+  sp <- file.path(pr, "stage", "curated_dead_alerted.json")
+  list(sent = file.exists(calls) && length(readLines(calls)) > 0L,
+       alerted = if (file.exists(sp)) sort(as.character(unlist(jsonlite::fromJSON(sp)$alerted))) else NULL)
+}
+run_c7 <- function(txt, dl_file) {
+  reg <- send_region(txt); if (is.null(reg)) return(NULL)
+  out <- list()
+  p <- new_c7_root(dl_file)   # (a) 발송 실패 → 다음 날 다시 알린다
+  out$a1 <- run_day(reg, p, "WINTON.pdf", tg_ok = FALSE); out$a2 <- run_day(reg, p, "WINTON.pdf", tg_ok = TRUE)
+  out$a3 <- run_day(reg, p, "WINTON.pdf", tg_ok = TRUE)
+  p <- new_c7_root(dl_file)   # (b) --no-telegram 수동 실행은 흡수하지 않는다
+  out$b1 <- run_day(reg, p, "WINTON.pdf", no_tg = TRUE); out$b2 <- run_day(reg, p, "WINTON.pdf")
+  p <- new_c7_root(dl_file)   # (c) 되살아난 링크는 발송 없는 날에도 집합에서 빠진다 → 다시 죽으면 다시 소식
+  out$c1 <- run_day(reg, p, c("WINTON.pdf", "AQR.pdf")); out$c2 <- run_day(reg, p, "WINTON.pdf")
+  out$c3 <- run_day(reg, p, c("WINTON.pdf", "AQR.pdf"))
+  p <- new_c7_root(dl_file)   # (d) dry-run 은 상태를 안 쓴다
+  out$d1 <- run_day(reg, p, "WINTON.pdf", dry_run = TRUE)
+  out
+}
+c7 <- run_c7(main_src, dl_src)
+chk("C7a 발송 구간 추출", !is.null(c7))
+if (!is.null(c7)) {
+  chk("C7b 발송 실패한 날 = 시도는 했고 알린 집합에 안 들어감", isTRUE(c7$a1$sent) && length(c7$a1$alerted) == 0L, paste(c7$a1$alerted, collapse = ","))
+  chk("C7c 발송 실패 다음 날 = 같은 죽은 링크를 다시 알린다", isTRUE(c7$a2$sent) && identical(c7$a2$alerted, "WINTON.pdf"))
+  chk("C7d 발송 성공 뒤 같은 집합 = 무음(반복 억제 유지)", identical(c7$a3$sent, FALSE))
+  chk("C7e --no-telegram 실행은 알린 집합을 늘리지 않는다 → 다음 무인 실행이 알린다", identical(c7$b1$sent, FALSE) && length(c7$b1$alerted) == 0L && isTRUE(c7$b2$sent))
+  chk("C7f 되살아남(발송 없음) = 집합에서 빠지고 다시 죽으면 소식", identical(c7$c2$sent, FALSE) && identical(c7$c2$alerted, "WINTON.pdf") && isTRUE(c7$c3$sent))
+  chk("C7g dry-run = 상태 파일 없음 · 발송 없음", is.null(c7$d1$alerted) && identical(c7$d1$sent, FALSE))
+  mt7 <- sub("delivered = .tg_main_ok", "delivered = TRUE", main_src, fixed = TRUE)
+  chk("C7h 돌연변이 치환 성사(발송 성공 여부 무시)", !identical(mt7, main_src))
+  c7m <- run_c7(mt7, dl_src)
+  chk("C7i 돌연변이 사본에선 발송 실패 다음 날이 무음이 된다(검사가 수리를 잡는다)", !is.null(c7m) && identical(c7m$a2$sent, FALSE))
 }
 
 ## C3 / C4 program_paper_sync 순수 함수

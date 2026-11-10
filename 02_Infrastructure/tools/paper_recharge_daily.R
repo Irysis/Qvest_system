@@ -389,6 +389,25 @@ register_existing_recharge_pdfs <- function(scan_root) {
   list(added = nrow(new_reg), path = reg_path, ids = new_ids)
 }
 
+# (2026-11-10 감사 수리 G6) 검색 질의가 전부 실패한 실행을 '신규 없음'으로 두지 않는다.
+#   paper_recharge_mcp.py 는 search 호출 실패(ok=False) · 응답 파싱 실패를 errors 에만 쌓고 uniq=0 이면
+#   mcp_ok_no_candidates 를 낸다. 처음 7일은 직전 prefilter>0 이 있어 mcp_suspect_empty(텔레그램 예외)지만,
+#   그 7일분 리포트도 prefilter=0 을 남겨 lookback 을 채우므로 8일째부터 mcp_ok_no_candidates 로 돌아가
+#   마커 조건(^mcp_ok 제외)도 .tg_has_news 도 서지 않았다 — 수집 정지가 다시 '신규 없음'처럼 보였다.
+#   → 등록된 질의 전부가 errors 에 질의 이름으로 올라 있고 후보 0 이면 mcp_all_queries_failed(n=질의 수) 로 강등.
+#   마커 블록이 그대로 하루 1개 마커를 남긴다(며칠이 지나도 실패 = 실패). 일부만 실패 = 종전 그대로.
+#   mcp_suspect_empty 는 바꾸지 않는다(그 7일은 종전대로 텔레그램 예외 발송으로 드러난다).
+pr_mcp_all_queries_failed <- function(obj) {
+  st <- as.character(obj$status %||% "")
+  if (!identical(st, "mcp_ok_no_candidates")) return(obj$status)
+  qs <- unique(as.character(unlist(obj$queries %||% list())))
+  qs <- qs[!is.na(qs) & nzchar(qs)]
+  if (!length(qs)) return(obj$status)
+  failed_q <- unique(unlist(lapply(obj$errors %||% list(), function(er)
+    if (is.list(er) && !is.null(er$query)) as.character(er$query) else NULL)))
+  if (all(qs %in% failed_q)) sprintf("mcp_all_queries_failed(n=%d)", length(qs)) else obj$status
+}
+
 run_mcp_probe <- function() {
   out <- file.path(stage_root, sprintf("mcp_discovery_%s.json", today))
   # [수리 2026-08-02] bare Sys.which("python3") = Windows Store 스텁(WindowsApps
@@ -448,6 +467,7 @@ run_mcp_probe <- function() {
     obj$status <- sprintf("read_failed(py=%s,exit=%s,out_exists=%s)",
                           basename(py), status, file.exists(out))
   }
+  obj$status <- pr_mcp_all_queries_failed(obj)
   list(
     status = obj$status %||% sprintf("exit_%s", status),
     out = out,
@@ -903,11 +923,16 @@ if (!dry_run) {
 .n_new_dl <- sum(summary_df$status == "downloaded")
 # (2026-11-10) 죽은 링크는 '새로 죽은 것'이 있을 때만 소식이다 — 같은 2개(404)가 매 실행 1통을 만들었다(66일).
 #   판정 = paper_recharge_dead_links.R · 상태 = stage_artifacts/paper_recharge/curated_dead_alerted.json · 로그 줄은 그대로.
+#   (감사 수리 G6) 판정은 상태를 쓰지 않는다(write = FALSE) — 알린 집합은 발송이 실제로 성공한 뒤에만 저장한다(아래 기록 블록).
+.dead_state_path <- file.path(stage_root, "curated_dead_alerted.json")
+.dead_res <- NULL
 .dead_news <- tryCatch({
   source(file.path(PROJECT_ROOT, "02_Infrastructure", "tools", "paper_recharge_dead_links.R"), local = TRUE)
   .dn <- if (n_curated > 0L) curated_health$file_name[!curated_health$ok] else character(0)
-  pr_dead_link_news(.dn, file.path(stage_root, "curated_dead_alerted.json"), write = !dry_run)$news
+  .dead_res <- pr_dead_link_news(.dn, .dead_state_path, write = FALSE)
+  .dead_res$news
 }, error = function(e) { log_line("[paper-recharge] dead-link 판정 오류(종전 규칙으로): %s", conditionMessage(e)); n_curated_dead > 0L })
+.tg_main_ok <- FALSE
 if (n_curated_dead > 0L && !isTRUE(.dead_news))
   log_line("[paper-recharge] 죽은 링크 %d개는 이미 알린 것 — 이것만으로는 발송하지 않는다", n_curated_dead)
 .tg_has_news <- (.n_new_dl > 0L) || (registry_added_total > 0L) || isTRUE(.dead_news) ||
@@ -1013,7 +1038,7 @@ if (send_tg) {
           if (nzchar(top_providers)) substr(top_providers, 1, 72) else "신규 없음"
         )
       )))
-      tg_agent_brief(
+      .tg_main_res <- tg_agent_brief(
         agent = "AlphaSearch",
         title = sprintf("[1계층] 논문 수집 — %s (신규 %d편)", format(Sys.Date(), "%Y-%m-%d"), .n_new_dl),  # §5.6b 계층 표제 (v10)
         as_of = format(Sys.Date(), "%Y-%m-%d"),
@@ -1024,6 +1049,9 @@ if (send_tg) {
         footer = "➡️ Alpha Search paper pool recharge complete",
         emoji_min = 3L
       )
+      # 본문(죽은 링크 '깨짐 N' 이 실리는 통)이 실제로 나갔는지 — tg_agent_brief 반환 계약 list(ok, ...) · ok=FALSE = 실패
+      .tg_main_ok <- is.list(.tg_main_res) && isTRUE(.tg_main_res$ok)
+      if (!.tg_main_ok) log_line("[paper-recharge] telegram 본문 발송 실패(ok=FALSE): %s", as.character(.tg_main_res$error %||% "?"))
       if (chunk_total > 1L) {
         for (chunk_idx in seq.int(2L, chunk_total)) {
           idx <- chunk_starts[chunk_idx]:min(length(paper_items_all), chunk_starts[chunk_idx] + chunk_size - 1L)
@@ -1059,6 +1087,14 @@ if (send_tg) {
       log_line("[paper-recharge] telegram failed: %s", conditionMessage(e))
     })
   }
+}
+
+# (감사 수리 G6) 죽은 링크 알린 집합 기록 — 발송이 실제로 성공한 실행만 새로 죽은 링크를 '알린 것'으로 남긴다.
+#   발송 실패 · --no-telegram · 소식 없음 = 새로 죽은 것은 더하지 않고 되살아난 링크만 뺀다(다음 실행이 다시 알릴 수 있게).
+#   dry-run 은 쓰지 않는다.
+if (!dry_run && !is.null(.dead_res)) {
+  tryCatch(pr_dead_link_record(.dead_res, .dead_state_path, delivered = .tg_main_ok),
+           error = function(e) log_line("[paper-recharge] dead-link 상태 기록 실패: %s", conditionMessage(e)))
 }
 
 log_line("[paper-recharge] done downloaded=%d present=%d failed=%d registry_added=%d",
