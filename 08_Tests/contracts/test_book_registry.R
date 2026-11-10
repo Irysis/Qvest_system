@@ -1,6 +1,7 @@
 # test_book_registry.R — v10 BOOK writer 의 양방향 검증 (임시 루트 — 실장부 불변)
 # 계약: ①A등급만 등록 ②mandate 예외 아니면 judge_verdict(pit_pass=true) 실제 재도출
 #       ③pit_pass=false verdict 거부 ④중복 등록 거부 ⑤tracking append-only ⑥왕복 파싱
+#       ⑦남의 권위 기록(strategy_id 불일치) 거부 (11-10 감사 G4)
 # 앵커 = self-first (r-portability 금칙 ④-b: 테스트 러너는 자기 위치 1순위 — env 는 폴백)
 .self <- tryCatch({
   a <- commandArgs(trailingOnly = FALSE)
@@ -30,9 +31,14 @@ write(toJSON(list(schema = "factor_db_vintage_v1", entries = list(list(id = "T1"
              auto_unbox = TRUE), file.path(TMP, "06_Registry/factor_db_vintage.json"))
 ACT <- fromJSON("02_Infrastructure/worktask/constraint_defaults.json", simplifyVector = FALSE)$measurement_axis$active
 AD <- file.path(TMP, "art", "20261111_000000_1"); dir.create(AD, recursive = TRUE)
-write(toJSON(list(essence_grade = "A", run_id = "20261111_000000_1", measurement_axis = list(epoch = ACT)), auto_unbox = TRUE),
+write(toJSON(list(essence_grade = "A", strategy_id = "S1", run_id = "20261111_000000_1", measurement_axis = list(epoch = ACT)), auto_unbox = TRUE),
       file.path(AD, "authoritative_remeasure.json"))
 AP <- file.path(AD, "authoritative_remeasure.json")
+## (11-10 감사 G4) 남의 A 권위 기록 — strategy_id = OTHER
+AD2 <- file.path(TMP, "art", "20261111_000000_2"); dir.create(AD2, recursive = TRUE)
+write(toJSON(list(essence_grade = "A", strategy_id = "OTHER", run_id = "20261111_000000_2", measurement_axis = list(epoch = ACT)), auto_unbox = TRUE),
+      file.path(AD2, "authoritative_remeasure.json"))
+AP2 <- file.path(AD2, "authoritative_remeasure.json")
 
 # ① B등급 거부
 r1 <- tryCatch({ register_book_entry("factor_strategy", "S1", 1L, grade = "B", root = R); "no_stop" },
@@ -55,8 +61,14 @@ if (grepl("pit_pass", r3)) ok("③ pit_pass=false verdict 거부 (재도출)") e
 
 # 정상 등록 (pit_pass=true)
 vt <- file.path(TMP, "verdict_pass.json")
-write(toJSON(list(schema = "judge_verdict_v2", strategy_id = "S1", pit_pass = TRUE), auto_unbox = TRUE), vt)
-e1 <- register_book_entry("factor_strategy", "S1", 1L, grade = "A",
+write(toJSON(list(schema = "judge_verdict_v2", strategy_id = "S1", pit_pass = TRUE,
+                  reproduction = list(grade_claimed = "A", grade_reproduced = "A", match = TRUE)), auto_unbox = TRUE), vt)
+# ⑦ 남의 A 권위 기록으로 S1 등록 → 거부 (판결서는 S1 의 PASS)
+r7 <- tryCatch({ register_book_entry("factor_strategy", "S1", 1L, grade = "A",
+                                     judge_verdict_path = vt, confirm = "t", authoritative_path = AP2, root = R); "no_stop" },
+               error = function(e) conditionMessage(e))
+if (grepl("다른 전략의 권위 기록", r7)) ok("⑦ 남의 권위 기록(strategy_id 불일치) 거부") else ng(sprintf("⑦ 통과됨: %s", r7))
+e1 <-register_book_entry("factor_strategy", "S1", 1L, grade = "A",
                           judge_verdict_path = vt, confirm = "test confirm", authoritative_path = AP, root = R)
 if (identical(e1$book_id, "BOOK_0001")) ok("정상 등록 BOOK_0001") else ng("등록 실패")
 

@@ -78,6 +78,8 @@ allowed-tools: Bash(Rscript*) Read Grep Glob Write
 ```
 - 산출 위치: 전략 산출 디렉터리 + `stage_artifacts/judge/` 사본.
 - **pit_pass=true** → BOOK 등록 자격 (`register_book_entry` — 등록은 도훈 confirm 수동).
+  ★writer 는 `reproduction.match = true` ∧ `reproduction.grade_reproduced = "A"` 도 요구한다(2026-11-10 — PIT 통과여도 등급이 재현되지 않으면 등록 불가 · 필드 누락 = 거부).
+  대상 식별자는 `strategy_id`(2계층은 `fr_id` 키도 읽는다)가 등록 대상과 같아야 하고, `date` 는 권위 기록 측정일 이후여야 한다.
 - **pit_pass=false** → 결과 무효. 위반 수리 후 **재측정부터** 다시(등급도 재산출).
   pit.md 위반 시 처리 5단계(중단→무효→연쇄 오염 파악→재실행→보고) 준수.
 

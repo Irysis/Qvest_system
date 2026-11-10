@@ -89,6 +89,9 @@ read_book <- function(root = .bk_root()) {
 #'     축 기록(measurement_axis$epoch)이 있으면 현 측정 축과 같아야 하고, 그 산출물 디렉터리가 팩터 DB 판 표식에
 #'     낡음이면 거부(lean-loop 7 · contracts/factor_db_vintage.R). 축 기록이 없는 산출물(10-13 이전 = 구 축)도 거부.
 #'   · judge verdict: schema judge_verdict_v2 ∧ strategy_id 가 등록 대상과 같아야 한다(남의 PASS 로 등록 금지).
+#'   · (11-10 감사 G4) 권위 기록도 등록 대상의 것이어야 한다 — 권위 파일 strategy_id(2계층 fr_id)가 등록 strategy_id 와 같지
+#'     않거나 식별자가 없으면 거부(fail-closed · 남의 A 산출물 경로로 '진술 등급'이 되살아나지 않게). 같은 폴더 judge_request*.json
+#'     의 strategy_id · artifacts 도 대조하고, 판결서 run_id · 날짜가 있으면 권위 기록 run_id · 측정 날짜와 맞아야 한다.
 register_book_entry <- function(kind, strategy_id, layer, grade = "A",
                                 grade_basis = "essence_score(authoritative_remeasure.json)",
                                 judge_verdict_path = NULL,
@@ -104,7 +107,7 @@ register_book_entry <- function(kind, strategy_id, layer, grade = "A",
   is_mandate <- grepl("^dohoon_mandate", as.character(grade_basis))
   axis_rec <- NULL
   if (!is_mandate) {
-    axis_rec <- .bk_verify_authoritative(authoritative_path, root)
+    axis_rec <- .bk_verify_authoritative(authoritative_path, root, strategy_id = strategy_id)
     if (is.null(judge_verdict_path) || !file.exists(file.path(root, judge_verdict_path)) &&
         !file.exists(judge_verdict_path))
       stop("[book_registry] judge_verdict_path 필수 (mandate 예외 아님) — Judge(PIT) PASS 없이 등록 불가")
@@ -114,8 +117,16 @@ register_book_entry <- function(kind, strategy_id, layer, grade = "A",
       stop("[book_registry] judge_verdict pit_pass != true — PIT 미통과 전략은 등록 불가")
     if (!identical(as.character(v$schema %||% ""), "judge_verdict_v2"))
       stop("[book_registry] judge_verdict schema != judge_verdict_v2 — 판결서 형식 불명")
-    if (!identical(as.character(v$strategy_id %||% ""), as.character(strategy_id)))
-      stop(sprintf("[book_registry] judge_verdict strategy_id(%s) != 등록 대상(%s) — 다른 전략의 판결서", as.character(v$strategy_id %||% "없음"), strategy_id))
+    ## 판결서의 대상 식별자 — 1계층 strategy_id · 2계층은 fr_id 키로 적힐 수 있다(judge.md 산출 절) → 있는 쪽을 읽되 등록 대상과 같아야 한다
+    vid <- as.character(v[["strategy_id"]] %||% v[["fr_id"]] %||% "")[1]
+    if (is.na(vid) || !identical(vid, as.character(strategy_id)[1]))
+      stop(sprintf("[book_registry] judge_verdict strategy_id(%s) != 등록 대상(%s) — 다른 전략의 판결서", if (is.na(vid) || !nzchar(vid)) "없음" else vid, strategy_id))
+    ## (11-10 감사 G4 독립 확인) 재현 일치 — judge_verdict_v2 의 reproduction{grade_reproduced · match}(judge.md 검증 5 · 산출 형식).
+    ##   PIT 통과여도 엔진 재실행에서 A 가 재현되지 않았으면 등록하지 않는다. 필드가 없으면 거부(fail-closed).
+    rp <- v[["reproduction"]]
+    if (!is.list(rp) || !isTRUE(rp[["match"]]) || !identical(as.character(rp[["grade_reproduced"]] %||% "")[1], "A"))
+      stop("[book_registry] judge_verdict reproduction(match = true ∧ grade_reproduced = A) 미충족 — 등급 재현이 확인되지 않은 판결서로는 등록 불가")
+    .bk_verify_verdict_binding(v, axis_rec)
   }
   obj <- read_book(root)
   dup <- vapply(obj$entries, function(e) identical(e$strategy_id, strategy_id) &&
@@ -141,8 +152,39 @@ register_book_entry <- function(kind, strategy_id, layer, grade = "A",
   invisible(entry)
 }
 
-#' 권위 산출물 재도출 — A ∧ 현 축 ∧ 판 표식 최신. 통과 시 축 기록(list)을 돌려준다.
-.bk_verify_authoritative <- function(authoritative_path, root) {
+#' 권위 기록의 전략 식별자 — 1계층 = strategy_id(run_paper_replication auth$strategy_id = "RP_<run_id>") ·
+#'   2계층 = fr_id(<FR_ID>_result.json). 빈 값 · NA 는 식별자로 세지 않는다.
+.bk_auth_ids <- function(a) {
+  ids <- unlist(lapply(c("strategy_id", "fr_id"), function(k) {
+    x <- a[[k]]; if (is.null(x) || is.list(x) || !length(x)) return(character(0))
+    x <- as.character(x)[1]; if (is.na(x) || !nzchar(trimws(x))) character(0) else trimws(x) }))
+  unique(ids)
+}
+
+#' 산출 폴더 꼬리(부모/폴더) — 기계마다 루트가 달라도(C:/Users/.../OneDrive · G:/OneDrive) 같은 산출 폴더를 가리키는지 대조한다.
+.bk_dir_tail <- function(p) {
+  p <- sub("/+$", "", gsub("\\", "/", as.character(p)[1], fixed = TRUE))
+  tolower(paste(basename(dirname(p)), basename(p), sep = "/"))
+}
+
+#' 판결서가 이 권위 기록에 대한 것인지 — run_id(둘 다 있으면 같아야) · 판결 날짜 ≥ 권위 기록 측정 날짜(둘 다 있으면).
+#'   (11-10 감사 G4) 옛 실행에 대한 PASS 를 새 산출물과 묶어 등록하지 못하게 한다.
+.bk_verify_verdict_binding <- function(v, axis_rec) {
+  arid <- as.character(axis_rec$run_id %||% "")[1]
+  vrid <- as.character(v$run_id %||% "")[1]
+  if (!is.na(arid) && nzchar(arid) && !is.na(vrid) && nzchar(vrid) && !identical(arid, vrid))
+    stop(sprintf("[book_registry] judge_verdict run_id(%s) != 권위 기록 run_id(%s) — 다른 실행의 판결서", vrid, arid))
+  vd <- suppressWarnings(as.Date(substr(as.character(v$date %||% "")[1], 1, 10)))
+  md <- suppressWarnings(as.Date(substr(as.character(axis_rec$remeasured_at %||% "")[1], 1, 10)))
+  if (length(vd) && length(md) && !is.na(vd) && !is.na(md) && vd < md)
+    stop(sprintf("[book_registry] judge_verdict 날짜 %s < 권위 기록 측정 %s — 이 측정 이전의 판결서", vd, md))
+  invisible(TRUE)
+}
+
+#' 권위 산출물 재도출 — A ∧ 등록 대상 전략의 기록 ∧ 현 축 ∧ 판 표식 최신. 통과 시 축 기록(list)을 돌려준다.
+#' (11-10 감사 G4) 권위 기록의 전략 식별자(strategy_id · 2계층 fr_id)가 등록 대상과 같아야 한다 — 식별자가 없으면 거부(fail-closed).
+#'   같은 폴더의 Judge 요청서(judge_request*.json)가 있으면 그 strategy_id · artifacts(산출 폴더)도 대조한다.
+.bk_verify_authoritative <- function(authoritative_path, root, strategy_id = NULL) {
   if (is.null(authoritative_path) || !nzchar(authoritative_path))
     stop("[book_registry] authoritative_path 필수 (mandate 예외 아님) — 등급을 진술이 아니라 권위 파일에서 재도출한다")
   ap <- if (file.exists(authoritative_path)) authoritative_path else file.path(root, authoritative_path)
@@ -151,6 +193,24 @@ register_book_entry <- function(kind, strategy_id, layer, grade = "A",
   if (is.null(a)) stop("[book_registry] authoritative 파일 판독 실패")
   g <- as.character(a$essence_grade %||% a$grade %||% "")[1]
   if (!identical(g, "A")) stop(sprintf("[book_registry] 권위 등급 = %s (A 아님) — 진술 grade='A' 는 증거가 아니다", if (nzchar(g)) g else "NA"))
+  sid <- if (is.null(strategy_id) || !length(strategy_id)) "" else as.character(strategy_id)[1]
+  if (is.na(sid) || !nzchar(sid)) stop("[book_registry] 등록 대상 strategy_id 없음 — 권위 기록과 대조할 수 없다(fail-closed)")
+  ids <- .bk_auth_ids(a)
+  if (!length(ids))
+    stop("[book_registry] 권위 파일에 전략 식별자(strategy_id · fr_id) 없음 — 어느 전략의 등급인지 대조할 수 없다(fail-closed)")
+  if (!(sid %in% ids))
+    stop(sprintf("[book_registry] 권위 파일 전략(%s) != 등록 대상(%s) — 다른 전략의 권위 기록", paste(ids, collapse = ","), sid))
+  for (jf in file.path(dirname(ap), c("judge_request.eligible.json", "judge_request.json", "judge_request.held.json"))) {
+    if (!file.exists(jf)) next
+    jr <- tryCatch(fromJSON(jf, simplifyVector = FALSE), error = function(e) NULL)
+    if (is.null(jr)) stop(sprintf("[book_registry] 같은 폴더 Judge 요청서 판독 실패: %s — fail-closed", basename(jf)))
+    jsid <- as.character(jr$strategy_id %||% "")[1]
+    if (!is.na(jsid) && nzchar(jsid) && !identical(jsid, sid))
+      stop(sprintf("[book_registry] %s strategy_id(%s) != 등록 대상(%s) — 산출 폴더와 대상 불일치", basename(jf), jsid, sid))
+    jart <- as.character(jr$artifacts %||% "")[1]
+    if (!is.na(jart) && nzchar(jart) && !identical(.bk_dir_tail(jart), .bk_dir_tail(dirname(ap))))
+      stop(sprintf("[book_registry] %s artifacts(%s) 가 권위 기록 폴더(%s)가 아니다", basename(jf), jart, dirname(ap)))
+  }
   ep <- as.character((a$measurement_axis %||% list())$epoch %||% "")[1]
   act <- tryCatch({ e <- new.env(); sys.source(file.path(root, "02_Infrastructure/contracts/measurement_axis.R"), envir = e)
                     e$ma_config(root)$active }, error = function(err) "")
@@ -161,7 +221,9 @@ register_book_entry <- function(kind, strategy_id, layer, grade = "A",
                    e$fdv_stale(dirname(ap), root = root) }, error = function(err) list(stale = NA, reason = conditionMessage(err)))
   if (!identical(fs$stale, FALSE))
     stop(sprintf("[book_registry] 팩터 DB 판 표식 %s — %s", if (isTRUE(fs$stale)) "낡음" else "판정 불가", as.character(fs$reason %||% "")))
-  list(epoch = ep, factor_db_valid_from = fs$valid_from %||% NA_character_, checked_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"))
+  list(epoch = ep, factor_db_valid_from = fs$valid_from %||% NA_character_, checked_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+       strategy_id = sid, run_id = as.character(a$run_id %||% NA_character_)[1],
+       remeasured_at = as.character(a$remeasured_at %||% NA_character_)[1])
 }
 
 #' 리밸 사양 미작성 신호 (도훈 지시 2026-08-30)
