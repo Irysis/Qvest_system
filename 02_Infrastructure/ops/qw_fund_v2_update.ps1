@@ -39,7 +39,10 @@ $t0 = Get-Date
 Write-Host ("[fund-upd] start {0} | {1}" -f $t0.ToString('yyyy-MM-dd HH:mm:ss'), ((@($upd | ForEach-Object { $_.name }) + @($tsu | ForEach-Object { $_.update.db })) -join ','))
 $script:failed = @(); $script:refused = @(); $script:stopped = $false
 # rc 3 / 4 from a Quantiwise step = session / busy / precondition -> stop the whole run
-function Step-Stop([string]$name, [string]$step, [int]$rc) { Write-Host "[fund-upd] $name $step rc=$rc - stop the run (session / busy / precondition)"; $script:stopped = $true }
+# 2026-11-10 (audit lane A, P7): the stop line names the cause of THIS rc only. The 11-09 log printed
+#   'rc=1 - stop (4 = kicked: re-login ...)' for a CompInfo empty-sheet failure, which pointed the reader at the session.
+function Step-Why([int]$rc) { switch ($rc) { 3 { 'precondition / busy / no live session' } 4 { 'session kicked by another login - re-login via qw_refresh.ps1, then re-run' } default { "rc $rc" } } }
+function Step-Stop([string]$name, [string]$step, [int]$rc) { Write-Host "[fund-upd] $name $step rc=$rc - stop the run ($(Step-Why $rc))"; $script:stopped = $true }
 function Step-Fail([string]$name, [string]$step, [int]$rc) { Write-Host "[fund-upd] $name $step rc=$rc - this DB failed; continue with the others"; $script:failed += $name }
 
 foreach ($d in $upd) {

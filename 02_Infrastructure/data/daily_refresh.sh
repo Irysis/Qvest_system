@@ -14,15 +14,37 @@
 #   [7] Telegram + NAV
 #==============================================================================
 set -uo pipefail
+
+# ── 실행 사본 (2026-11-10 감사 레인 A · P2) — bash 는 스크립트를 실행하면서 조금씩 읽는다. 돌고 있는 원본을 고치면
+#   읽던 자리가 밀려 엉뚱한 줄을 실행한다(09-18 exit_2 · 11-10 10:08 편집 → 실행 중 후처리 구문 오류). 시작 때 자신을
+#   임시 사본으로 떠서 사본을 exec 한다(같은 pid — 잠금 · 예약 작업 rc 불변). 원본 디렉터리는 QVEST_DR_SRC_DIR 로 넘긴다.
+#   사본 실패면 원본으로 계속(막지 않는다). 끄기: QVEST_DR_NO_SNAPSHOT=1 · 시험: 08_Tests/scenarios/test_scn_data_refresh_heal.sh
+if [ -z "${QVEST_DR_SNAPSHOT:-}" ] && [ "${QVEST_DR_NO_SNAPSHOT:-0}" != "1" ]; then
+  _dr_self="${BASH_SOURCE[0]:-$0}"
+  _dr_srcdir="$(cd "$(dirname "$_dr_self")" && pwd)"
+  find "${TMPDIR:-/tmp}" -maxdepth 1 -name 'qm_dr_snapshot_*.sh' -mtime +2 -delete 2>/dev/null
+  if _dr_snap="$(mktemp "${TMPDIR:-/tmp}/qm_dr_snapshot_XXXXXX.sh")" && cp "$_dr_self" "$_dr_snap"; then
+    export QVEST_DR_SNAPSHOT="$_dr_snap" QVEST_DR_SRC_DIR="$_dr_srcdir"
+    exec "${BASH:-bash}" "$_dr_snap" "$@"
+  fi
+fi
+DR_SRC_DIR="${QVEST_DR_SRC_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)}"
+DR_DRYRUN=0; for _a in "$@"; do [ "$_a" = "--dry-run" ] && DR_DRYRUN=1; done
+
+if [ "$DR_DRYRUN" = "0" ]; then
 LOGFILE="/tmp/qm_daily_refresh_$(date +%Y%m%d).log"
 exec > >(tee -a "$LOGFILE") 2>&1
+fi
 
 echo "=== Daily Refresh v2 @ $(date) ==="
+[ -n "${QVEST_DR_SNAPSHOT:-}" ] && echo "[snapshot] 실행 사본 $QVEST_DR_SNAPSHOT (원본 $DR_SRC_DIR/daily_refresh.sh — 실행 중 편집 무관)"
 
 # ── 재진입 가드 (2026-06-11): 동시 2+ 인스턴스가 DART 쿼터 소진(10905종목 × N중복)·캐시 경합 유발 ──
 #   실증: 2026-06-10 21:31/21:32 + 06-11 00:03/07:55/08:24 — 12시간 내 5중복 관측
 LOCKDIR="/tmp/qm_daily_refresh.lock"
-if mkdir "$LOCKDIR" 2>/dev/null; then
+if [ "$DR_DRYRUN" = "1" ]; then
+  echo "[dry-run] 잠금 · 적재 · 발송 없음 — 단계 계획만 출력"
+elif mkdir "$LOCKDIR" 2>/dev/null; then
   echo $$ > "$LOCKDIR/pid"
   trap 'rm -rf "$LOCKDIR"' EXIT
 else
@@ -36,7 +58,7 @@ else
   trap 'rm -rf "$LOCKDIR"' EXIT
 fi
 
-source "$(dirname "${BASH_SOURCE[0]:-$0}")/../ops/resolve_project.sh"
+source "$DR_SRC_DIR/../ops/resolve_project.sh"
 INFRA="$BASE/02_Infrastructure"
 
 # ── Telegram 실발송 가드 (v8.1.1 2026-06-10) ────────────────────────────────
@@ -97,6 +119,64 @@ dr_fail_summary() {
   if [ "${#DR_FAILED[@]}" -eq 0 ]; then printf '없음'; else printf '%s' "${DR_FAILED[*]}"; fi
 }
 
+# ── 단계 · 실행 상태 (2026-11-10 감사 레인 A · 도훈 지시 '아침 자가 복구 = 실패한 단계만') ─────────────────────────
+#   적재 구간을 단계 8개로 묶는다(순서 = 이 파일의 실행 순서): ingest([0a][0b]) · qw([1pre]~[1z] 벤치 · 신규 상장 · 퀀티 4종 · 재적재 ·
+#   확장 · 벤치 게이트 · Size) · universe([3][3b]) · macro([4] Arrow · FRED · KTRI · MSM · 국면 · ECOS · [4gm] · 셀 감사) ·
+#   dart([5a][5b]) · krf([5c]) · fdb([6a]~[6.5]) · nonret(국민연금 · 관세청). [0c] 적재 검증 · [7] 보고는 늘 돈다.
+#   단계 끝마다 상태 파일(.cache/daily_refresh_state.json)에 '단계:ok|failed:초' 를 적는다 — 실패 = 그 단계 안에서 DR_FAILED 가 늘었다.
+#   아침 자가 복구(ops/ensure_data_current.sh)는 이 파일을 data/dr_heal_plan.py 로 읽어 실패 · 미완 단계와 그 하류만
+#   QVEST_DR_ONLY_STAGES=a,b,… 로 넘긴다(비면 전부). 모드 QVEST_DR_MODE=selfheal 이면 후처리([7.9]~[8.2] · NAV · 증류)와
+#   시험 배터리([9])를 건너뛴다(밤 실행이 이미 돌렸다 · 아침 브리핑 지연 원인).
+DR_MODE="${QVEST_DR_MODE:-full}"
+DR_ONLY="${QVEST_DR_ONLY_STAGES:-}"
+DR_STAGES_ORDER="ingest qw universe macro dart krf fdb nonret"
+DR_STAGE_REC=(); DR_SKIPPED=(); DR_CUR=""; DR_CUR_N0=0; DR_CUR_T0=0; DR_REPORTED=0
+DR_RUN_T0=$(date +%s); DR_RUN_DATE=$(date +%F); DR_RUN_AT=$(date '+%Y-%m-%dT%H:%M:%S')
+dr_selected() { [ -z "$DR_ONLY" ] && return 0; case ",$DR_ONLY," in *",$1,"*) return 0 ;; esac; return 1; }
+dr_want() {   # 단계를 돌릴지 — 건너뛰면 로그 1줄
+  if dr_selected "$1"; then return 0; fi
+  echo "[stage] $1 건너뜀 — 자가 복구 대상 아님(QVEST_DR_ONLY_STAGES=$DR_ONLY)"; DR_SKIPPED+=("$1"); return 1
+}
+dr_stage_begin() { DR_CUR="$1"; DR_CUR_N0=${#DR_FAILED[@]}; DR_CUR_T0=$(date +%s); echo "[stage] $1 시작 $(date +%H:%M:%S)"; }
+dr_stage_end() {
+  local st=ok; [ "${#DR_FAILED[@]}" -gt "$DR_CUR_N0" ] && st=failed
+  DR_STAGE_REC+=("$DR_CUR:$st:$(( $(date +%s) - DR_CUR_T0 ))"); echo "[stage] $DR_CUR 끝 · $st · $(( $(date +%s) - DR_CUR_T0 ))초"
+  dr_state_write running
+}
+_dr_js() { printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'; }
+dr_state_write() {   # $1 = running | done · $2 = 종료 코드(done 때)
+  [ "$DR_DRYRUN" = "1" ] && return 0
+  local f="${QVEST_DR_STATE:-$BASE/.cache/daily_refresh_state.json}" tmp i s="" fl=""
+  for i in "${DR_STAGE_REC[@]+"${DR_STAGE_REC[@]}"}"; do s="$s${s:+,}{\"name\":\"${i%%:*}\",\"status\":\"$(printf '%s' "$i" | cut -d: -f2)\",\"sec\":${i##*:}}"; done
+  for i in "${DR_FAILED[@]+"${DR_FAILED[@]}"}"; do fl="$fl${fl:+,}\"$(_dr_js "$i")\""; done
+  tmp="$f.tmp$$"
+  printf '{"schema":"daily_refresh_state_v1","run_date":"%s","started_at":"%s","mode":"%s","only":"%s","status":"%s","rc":%s,"reported":%s,"stages":[%s],"failed":[%s],"stale_names":"%s","updated_at":"%s"}\n' \
+    "$DR_RUN_DATE" "$DR_RUN_AT" "$DR_MODE" "$(_dr_js "$DR_ONLY")" "$1" "${2:-null}" "$DR_REPORTED" "$s" "$fl" "$(_dr_js "${DR_STALE_NAMES:-}")" "$(date '+%Y-%m-%dT%H:%M:%S')" \
+    > "$tmp" 2>/dev/null && mv -f "$tmp" "$f" 2>/dev/null || rm -f "$tmp" 2>/dev/null
+}
+# 배터리 층 — 평일 밤 = nightly · 토요일 밤 = weekly(전체). '밤' = 시작 6시간 전의 요일(00:03 일요일 실행 = 토요일 밤).
+#   러너 계약(테스트 레인): QVEST_BATTERY_TIER=nightly|weekly. 층을 모르는 옛 러너는 변수를 무시하고 전체를 돈다(깨지지 않는다).
+dr_battery_tier() {
+  [ -n "${QVEST_BATTERY_TIER:-}" ] && { echo "$QVEST_BATTERY_TIER"; return; }
+  local now_s dow; now_s=$(date -d "${QVEST_DR_NOW:-now}" +%s 2>/dev/null || date +%s)
+  dow=$(date -d "@$(( now_s - 21600 ))" +%u 2>/dev/null || date +%u)
+  [ "$dow" = "${QVEST_BATTERY_WEEKLY_DOW:-6}" ] && echo weekly || echo nightly
+}
+# Python — venv 우선 → QVEST_PY → 시스템 Python312 (구 [1pre] 안에 있던 해석을 단계 밖으로 — 단계를 건너뛰어도 뒤 단계가 쓴다)
+QVENV_PY=""
+for _c in "$BASE/.venv_qvest_ml/Scripts/python.exe" "$BASE/.venv_qvest_ml/bin/python" "/home/quant/.venvs/qvest_ml/bin/python" \
+          "${QVEST_PY:-}" "/c/Users/99922/AppData/Local/Programs/Python/Python312/python.exe"; do
+  [ -n "$_c" ] && [ -x "$_c" ] && QVENV_PY="$_c" && break
+done
+if [ "$DR_DRYRUN" = "1" ]; then
+  echo "[dry-run] 모드=$DR_MODE · 단계 지정=${DR_ONLY:-전부} · 배터리=$([ "${QVEST_DR_SKIP_BATTERY:-0}" = "1" ] && echo 건너뜀 || dr_battery_tier) · python=${QVENV_PY:-없음}"
+  for _s in $DR_STAGES_ORDER; do dr_selected "$_s" && echo "DR_PLAN	$_s	run" || echo "DR_PLAN	$_s	skip"; done
+  echo "DR_PLAN	verify	run"; echo "DR_PLAN	report	run"
+  [ "$DR_MODE" = "selfheal" ] && echo "DR_PLAN	post	skip" || echo "DR_PLAN	post	run"
+  [ -n "${QVEST_DR_SNAPSHOT:-}" ] && rm -f "$QVEST_DR_SNAPSHOT" 2>/dev/null
+  exit 0
+fi
+
 # ──────────────────────────────────────────────────────────────────────────────
 # [0] QuantiWise 적재 — 2단 (2026-08-30 배선 수리)
 #
@@ -120,6 +200,7 @@ dr_fail_summary() {
 #   이름으로** export 한다(사고 원인). run_r 은 호출마다 새 R 프로세스라 shadowing 이
 #   없지만, 한 세션에서 둘을 source 하면 조용히 덮인다 — 아래 두 블록을 합치지 말 것.
 # ──────────────────────────────────────────────────────────────────────────────
+if dr_want ingest; then dr_stage_begin ingest   # ── 단계 ingest ──
 echo "[0a/7] QuantiWise 베이스 xlsx 교체 검사 (전체 재빌드 경로)..."
 cd "$INFRA"
 run_r '
@@ -135,6 +216,7 @@ run_r '
   source("data/incremental_update_file.R")
   incremental_update_all()
 '
+dr_stage_end; fi   # ── 단계 ingest 끝 ──
 
 # ── [0c] 적재 검증은 [7/7] 직전으로 옮겼다 (v10.4 2026-09-24 — **적재 후** 측정). 아래 '[0c] 적재 검증' 블록 참조.
 #   이 자리(적재 전)에서 재면 [1pre] 벤치·[1] RAWDATA·[4/7] MSM·KTRI·국면이 아직 안 들어온 상태를 재서
@@ -162,6 +244,7 @@ run_r '
 #        그대로 멈추고(→ 퀀티 Update_File 목표일도 멈춘다 — qw_refresh.ps1 Get-Target = 이 벤치의 최신일) 아래 게이트가 그날 밤 신고한다
 #        (축 A = 갱신기 rc · rc=3 전제 부재도 실패 · 축 D = 정본 xlsx 미갱신 N일). 다음 밤 정본이 들어오면 전 구간이 따라온다(손실 없음).
 # ──────────────────────────────────────────────────────────────────────────────
+if dr_want qw; then dr_stage_begin qw   # ── 단계 qw ──
 echo "[1pre/7] Benchmark (정본 QuantiWise xlsx → 코스피200 포인트)..."
 # Python 체인 (v8.1.1): venv 우선 → QVEST_PY env → 시스템 Python312 fallback
 QVENV_PY=""
@@ -323,6 +406,11 @@ fi
 #   10-17 실측: 09-14 이후 네이버 종가가 퀀티 공식 종가와 종목·일 81% 에서 어긋났다(일치 19% · 일간 수익률 0.5%p 초과 차 52~73%).
 #   모듈 data/naver_data_collector.R 은 퇴역 표기만 남긴다(복원 = git · 태그 pre-rawdata-qw-only-20261017).
 
+dr_stage_end; fi   # ── 단계 qw 끝 ──
+
+# (11-10) [1z] 는 universe 단계 머리에 둔다 — 08_Tests/data/test_rawdata_size_guard.R 가 '# ── [1z]' ~ 'echo "[3/7]' 를 잘라 실행하므로
+#   그 구간에 단계 경계(if/fi)가 끼면 안 된다. Size 결측 실패는 universe 단계 실패로 계상된다(재실행 = universe 와 하류).
+if dr_want universe; then dr_stage_begin universe   # ── 단계 universe ──
 # ── [1z] RAWDATA 최근일 Size 채움률 경보 (2026-09-23 W-02 · 도훈 승인 처방 §3) ─────────
 #   사고: Naver 시총 스냅샷이 09-12 부터 매 실행 디코드 예외로 죽어 RAWDATA.Size 가
 #   09-10~22 100% 결측이었는데, 이 스텝은 "RAWDATA 전진" 만 봐서 매일 성공으로 끝났다.
@@ -385,10 +473,12 @@ case "$_bms_rc" in
   *) echo "!! [3b] RAWDATA BM_Ret 동기화 미측정(rc=$_bms_rc) — 정상으로 접지 않는다"
      DR_FAILED+=("rawdata_bm_ret:unmeasured(rc=$_bms_rc)") ;;
 esac
+dr_stage_end; fi   # ── 단계 universe 끝 ──
 
 # ──────────────────────────────────────────────────────────────────────────────
 # [4] Arrow / FRED / KTRI / Regime Signal
 # ──────────────────────────────────────────────────────────────────────────────
+if dr_want macro; then dr_stage_begin macro   # ── 단계 macro ──
 echo "[4/7] Arrow + FRED + KTRI + Regime..."
 
 # Arrow 확장
@@ -606,6 +696,7 @@ run_r '
   tryCatch(cache_freshness_audit(telegram_alert = .tg_on),
     error = function(e) cat(sprintf("Cache freshness audit skipped: %s\n", e$message)))
 '
+dr_stage_end; fi   # ── 단계 macro 끝 ──
 
 # ──────────────────────────────────────────────────────────────────────────────
 # [5] DART 재무제표 + Quarterly + Insider
@@ -616,6 +707,7 @@ run_r '
 #     (c) Insider 거래: 매일 (merge wrapper로 history 보존)
 # ──────────────────────────────────────────────────────────────────────────────
 DAY_OF_MONTH=$(date +%d)
+if dr_want dart; then dr_stage_begin dart   # ── 단계 dart ──
 
 # (a) Annual financials — monthly (첫 실행일 · 스탬프 기준)
 DART_ANNUAL_STAMP="$BASE/.cache/dart/.annual_last_run_ym"
@@ -654,6 +746,7 @@ run_r '
   tryCatch(dart_daily_incremental(),
     error = function(e) cat(sprintf("DART daily incremental skipped: %s\n", e$message)))
 '
+dr_stage_end; fi   # ── 단계 dart 끝 ──
 
 # ──────────────────────────────────────────────────────────────────────────────
 # [5c] 한국 FF 요인 수익(일간 · 월간) + 파마-맥베스 통제 특성(월간) 갱신 (2026-11-10 · 도훈 '팩터조정알파 및 파마-맥베스
@@ -662,12 +755,14 @@ run_r '
 #   바꾸기)이라 실패해도 옛 파일이 남는다(fail-soft). 판 보관(kr_factor_returns_vintages/)은 월간 내용 md5 가 바뀔 때만 는다.
 #   등급 노치(contracts/grade_v3.R::gv3_fa_ctx)는 meta md5 = 월간 내용 md5 일 때만 읽는다 — 둘이 어긋나면 노치를 계산하지 않는다.
 # ──────────────────────────────────────────────────────────────────────────────
+if dr_want krf; then dr_stage_begin krf   # ── 단계 krf ──
 echo "[5c/7] 한국 FF 요인 수익 · 파마-맥베스 특성 갱신..."
 ( cd "$BASE" && QM_ROOT="$BASE" "$RSCRIPT" --no-save "$INFRA/data/build_kr_factor_returns.R" ); _krf_rc=$?
 if [ "$_krf_rc" -ne 0 ]; then
   echo "!! [5c] FF 요인 갱신 실패(rc=$_krf_rc) — 옛 파일 유지"
   DR_FAILED+=("kr_factor_returns(rc=$_krf_rc)")
 fi
+dr_stage_end; fi   # ── 단계 krf 끝 ──
 
 # ──────────────────────────────────────────────────────────────────────────────
 # [6] Factor DB 갱신 (월간 [6a] + 일간 [6b]) — P1 수리 2026-06-10
@@ -685,6 +780,7 @@ fi
 #           역시 phase6+7+8 전체 재빌드(수시간). → cron 무인 자동호출 금지,
 #           QVEST_FDB_DAILY_AUTOREBUILD=1 명시 시에만 실행 (기본 0 = stale WARN만).
 # ──────────────────────────────────────────────────────────────────────────────
+if dr_want fdb; then dr_stage_begin fdb   # ── 단계 fdb ──
 echo "[6a/7] Factor DB update (monthly DB, current-month build)..."
 cd "$INFRA"
 run_r '
@@ -833,6 +929,19 @@ else
   echo "[6g/7] 일간 · 월간 대응표 — 최근(27일 안) · 건너뜀"
 fi
 
+# ── [6v] 팩터 DB 판 표식 원장 누락 감시 (2026-11-10 감사 레인 A · data/factor_db_vintage_coverage.py · 읽기 전용) ──────────
+#   수리 실행기 요약(성공)이 06_Registry/factor_db_vintage.json 에 안 올랐거나(수리 전 측정이 '현행'으로 남는다),
+#   원장 최신 수리 뒤 당월 파일이 다시 안 쓰였으면([6a] 는 데이터 상태만 보고 7일 묵힌다) DR_FAILED. 원장은 고치지 않는다(writer = Q).
+if [ -n "$QVENV_PY" ] && [ -f "$INFRA/data/factor_db_vintage_coverage.py" ]; then
+  _fdv_line="$( cd "$BASE" && "$QVENV_PY" -X utf8 "$INFRA/data/factor_db_vintage_coverage.py" --root "$BASE" 2>&1 | tr -d '\r' | grep '^FDV_COVERAGE' | tail -n 1 )"
+  echo "[6v/7] ${_fdv_line:-FDV_COVERAGE 출력 없음}"
+  case "$_fdv_line" in
+    *status=OK*) : ;;
+    *status=GAP*) DR_FAILED+=("factor_db_vintage_gap") ;;
+    *) DR_FAILED+=("factor_db_vintage_unmeasured") ;;
+  esac
+fi
+
 # ──────────────────────────────────────────────────────────────────────────────
 # [6c] conditional_ic_matrix 주간 재계산 (월요일) — 2026-07-25 배선
 #   .cache/conditional_ic_matrix.csv — pit.md V6 Gap-Directed 가설 조향 캐시.
@@ -885,10 +994,12 @@ if [ "$DAY_OF_MONTH" = "01" ] || [ "$DAY_OF_MONTH" = "15" ]; then
     }, error = function(e) cat(sprintf("Forward weights orchestrator skipped: %s\n", e$message)))
   '
 fi
+dr_stage_end; fi   # ── 단계 fdb 끝 ──
 
 # ──────────────────────────────────────────────────────────────────────────────
 # [7] Telegram + NAV Tracking + Memory
 # ──────────────────────────────────────────────────────────────────────────────
+if dr_want nonret; then dr_stage_begin nonret   # ── 단계 nonret ──
 echo "[6c/7] 비-return 원천 리프레시 (FQ-064 국민연금 · FQ-073 관세청)..."
 # 2026-07-25 도훈 지시 "지금 수집하는 데이터들 모두 자동 리프레시되도록 배선".
 #   두 원천 모두 **월간** 갱신이라 매일 호출해도 대부분 no-op이다(멱등):
@@ -904,6 +1015,7 @@ if [ -n "$QVENV_PY" ]; then
 else
   echo "  QVENV_PY 부재 — 비-return 리프레시 skip"
 fi
+dr_stage_end; fi   # ── 단계 nonret 끝 ──
 
 DR_STALE_NAMES=""
 # ── [0c] 적재 검증 — "돌렸다"가 아니라 "늘었나"를 잰다 ────────────────────────
@@ -984,7 +1096,7 @@ run_r '
   library(data.table)
   source("config.R")
   source("telegram/telegram_notify.R")
-  raw <- as.data.table(arrow::read_parquet(RAWDATA_CACHE))
+  raw <- as.data.table(arrow::read_parquet(RAWDATA_CACHE, col_select = c("Date", "Ticker")))   # (11-10) 본문은 날짜 · 종목 수 · 행 수뿐 — 전 열 판독 생략
   last_d <- max(raw$Date)
   n_tickers <- uniqueN(raw[Date == last_d]$Ticker)
   .fails <- Sys.getenv("DR_FAILED_SO_FAR", "없음")
@@ -1008,7 +1120,9 @@ run_r '
   }
   msg <- sprintf("%s\nRAWDATA: %s까지 (%d tickers)\n총 %s rows",
                  .hdr, last_d, n_tickers, format(nrow(raw), big.mark=","))
-  if (Sys.getenv("QVEST_REFRESH_TG", "0") == "1") {     # v8.1.1 telegram guard
+  # (11-10) 자가 복구 실행(ensure_data_current · QVEST_REFRESH_TG=0)도 이 보고 1통만은 서명 관문을 거쳐 보낸다 — QVEST_DR_REPORT_TG=1.
+  #   그 밖의 발송(셀 감사 · 선행 비중 · NAV)은 QVEST_REFRESH_TG 를 따른다(자가 복구에선 꺼짐).
+  if (Sys.getenv("QVEST_REFRESH_TG", "0") == "1" || Sys.getenv("QVEST_DR_REPORT_TG", "0") == "1") {     # v8.1.1 telegram guard
     # ★반환값을 읽는다(v10.4) — tg_send 는 HTTP 실패를 예외가 아니라 list(ok=FALSE) 로 돌려준다(TG-01).
     #   구판은 값을 버려 발송 실패가 성공과 구분되지 않았다. 아래 한 줄이 task_health 자기보고 면제의 증거다
     #   (scheduler_task_health.sh (C) — tg_sent=TRUE ∧ reported == Done 목록일 때만 DR exit_1 을 경보에서 뺀다).
@@ -1026,6 +1140,13 @@ run_r '
     cat(sprintf("[7] tg_sent=SKIPPED reported=%s\n", .fails))
   }
 '
+DR_REPORTED=1; dr_state_write running
+
+# ── 후처리 · 배터리 — 자가 복구 실행이면 건너뛴다(밤 실행이 이미 돌렸다 · 11-10 아침 브리핑 5시간 40분 지연의 대부분) ──
+if [ "$DR_MODE" = "selfheal" ]; then
+  echo "[post] 자가 복구 실행 — 후처리(NAV · 증류 · [7.9] 위생 · [8] 색인 · [8.1] 배선 지도 · [8.1r] 역할 · [8.2] 모듈 성능) 건너뜀"
+  printf '%s\n' "[9] 시험 배터리 건너뜀(자가 복구 실행 · 모드 selfheal${QVEST_DR_SKIP_BATTERY:+ · QVEST_DR_SKIP_BATTERY=$QVEST_DR_SKIP_BATTERY})"
+else
 
 # NAV Tracking
 WATCHLIST="$INFRA/nav_watchlist.json"
@@ -1121,10 +1242,24 @@ fi
 #     여기서 매일 수집해야 bootstrap 의 --check 가 최신값을 비교한다(수동 수집 의존 제거).
 #     fail-soft: 러너가 죽어도 refresh 전체는 계속 — 다만 그 경우 null 로 기록되어
 #     다음 --check 가 "수치 없음은 정상이 아니다"로 경고한다.
-bash "$INFRA/ops/suite_totals_watch.sh" --collect || echo "[warn] suite totals collect failed (fail-soft)"
+#   ★(2026-11-10 · 도훈 '시험 배터리를 층으로') 평일 밤 = nightly 층 · 토요일 밤 = weekly(전체) — 러너 계약 QVEST_BATTERY_TIER.
+#     11-10 실측: 전 배터리(10,975개)가 밤 2시간 30분 · 아침 2시간 56분. 층을 모르는 옛 러너는 변수를 무시하고 전체를 돈다.
+if [ "${QVEST_DR_SKIP_BATTERY:-0}" = "1" ]; then
+  printf '%s\n' "[9] 시험 배터리 건너뜀(QVEST_DR_SKIP_BATTERY=1)"
+else
+  _bt_tier="$(dr_battery_tier)"; _bt_t0=$(date +%s)
+  printf '%s\n' "[9] 시험 배터리 층=$_bt_tier (QVEST_BATTERY_TIER — 토요일 밤 = weekly · 그 밖 = nightly)"
+  QVEST_BATTERY_TIER="$_bt_tier" bash "$INFRA/ops/suite_totals_watch.sh" --collect || echo "[warn] suite totals collect failed (fail-soft)"
+  printf '%s\n' "[9] 시험 배터리 끝 · $(( $(date +%s) - _bt_t0 ))초"
+fi
+fi   # ── 후처리 · 배터리(자가 복구면 건너뜀) 끝 ──
 
 # (2026-07-26 DR-01) 실패 스텝을 이름으로 표면화 + 종료코드 반영.
 #   "Done" 이 무조건 찍히던 구판은 크론·bootstrap 어느 쪽에도 실패 신호를 주지 못했다.
+_dr_final_rc=0; [ "${#DR_FAILED[@]}" -gt 0 ] && _dr_final_rc=1
+dr_state_write done "$_dr_final_rc"
+[ -n "${QVEST_DR_SNAPSHOT:-}" ] && rm -f "$QVEST_DR_SNAPSHOT" 2>/dev/null   # 실행 사본 정리(실패해도 다음 실행이 2일 지난 사본을 지운다)
+echo "[run] 총 소요 $(( $(date +%s) - DR_RUN_T0 ))초 · 모드 $DR_MODE${DR_ONLY:+ · 단계 $DR_ONLY}"
 if [ "${#DR_FAILED[@]}" -gt 0 ]; then
   echo "=== Daily Refresh v2 Done — ★실패 ${#DR_FAILED[@]}스텝: $(dr_fail_summary) @ $(date) ==="
   exit 1

@@ -225,15 +225,76 @@ fi
 
 # ── 4) 리프레시 ─────────────────────────────────────────────────────────────
 [ -f "$REFRESH_SH" ] || { _log "❌ 리프레시 스크립트 부재: $REFRESH_SH"; exit 1; }
-_log "stale=$PRE_STALE — daily_refresh.sh 실행"
-QVEST_REFRESH_TG="${QVEST_REFRESH_TG:-0}" bash "$REFRESH_SH"; RRC=$?
+# ★(2026-11-10 감사 레인 A · 도훈 '아침 자가 복구 = 실패한 단계만') 11-10 실측: 07:14 자가 복구가 전 체인(DART 31분 · 후처리 · 시험
+#   배터리 2시간 56분)을 다시 돌려 12:15 에 끝났고, 예약 작업 상한(3시간 12분) 초과로 MorningBrief 가 종료(267014)된 뒤에도 자식이
+#   고아로 남았다. 실패 rc=1 은 QVEST_REFRESH_TG=0 이라 아무에게도 안 갔다. 이제:
+#   ① 계획 = data/dr_heal_plan.py(밤 실행 상태 .cache/daily_refresh_state.json · 실패/미완 단계 + 하류 · 모르면 전부)
+#   ② 자가 복구 모드(QVEST_DR_MODE=selfheal) — 후처리 · 시험 배터리 없음(QVEST_DR_SKIP_BATTERY=1)
+#   ③ 보고 1통 = daily_refresh [7] 이 실패 서명 관문을 거쳐 보낸다(QVEST_DR_REPORT_TG=1 · 같은 원인 반복은 무음 요약) ·
+#      그 보고가 나갔으면 아래 사후 감사는 발송하지 않는다(중복 방지) · 시간 상한 초과면 여기서 1통(_edc_notify)
+#   ④ 시간 상한 = QVEST_EDC_HEAL_TIMEOUT_MIN(기본 150분) — 근거: daily_refresh.log 적재 구간(머리 → [7.9] 시작) 실측 15회 중
+#      13회 ≤ 104분(10-05 33 · 10-07 37 · 10-06 39 · 10-20 42 · 10-10 47 · 10-17 49 · 11-10 61 · 10-04 69 · 10-08 69 · 11-08 69 · 10-16 72 ·
+#      11-10 자가 복구 104 — 퀀티 kicked 대기 63분 포함), 예외 = 10-18 206 · 11-09 294 · 11-07 415(이전 직후 전체 수급). 예약 작업 상한
+#      192분 − 150 = 42분을 사전 · 사후 감사(각 1분 안쪽)와 브리핑 본체(11-09 실측 약 4분)에 남긴다. 넘기면 자식 트리까지 끝낸다.
+DR_STATE_JSON="$BASE/.cache/daily_refresh_state.json"
+HEAL_PLAN="FULL"; HEAL_WHY="planner_absent"
+PLANNER="$BASE/02_Infrastructure/data/dr_heal_plan.py"
+if [ -f "$PLANNER" ]; then
+  _qwb=0; [ "$QW_BEHIND" = "1" ] && _qwb=1
+  _pl="$("$PYX" -X utf8 "$PLANNER" --state "$DR_STATE_JSON" --today "$(date +%F)" --stale "${PRE_ITEMS:--}" --qw-behind "$_qwb" 2>/dev/null | tr -d '\r' | grep '^DR_HEAL' | tail -n 1)"
+  HEAL_PLAN="$(printf '%s' "$_pl" | sed -n 's/.*plan=\([^	]*\).*/\1/p')"; HEAL_WHY="$(printf '%s' "$_pl" | sed -n 's/.*reason=\(.*\)$/\1/p')"
+  [ -n "$HEAL_PLAN" ] || { HEAL_PLAN="FULL"; HEAL_WHY="planner_no_output"; }
+fi
+_ONLY=""; [ "$HEAL_PLAN" != "FULL" ] && _ONLY="$HEAL_PLAN"
+HEAL_TIMEOUT_S="${QVEST_EDC_HEAL_TIMEOUT_S:-$(( ${QVEST_EDC_HEAL_TIMEOUT_MIN:-150} * 60 ))}"
+_edc_notify() {   # 1통 — 모의 발송기(QVEST_EDC_TG_MOCK=<파일>) · 무인 실행(QVEST_UNATTENDED=1)만 실발송 · 그 밖은 로그만
+  if [ -n "${QVEST_EDC_TG_MOCK:-}" ]; then printf '%s\n' "$1" >> "$QVEST_EDC_TG_MOCK"; return 0; fi
+  [ "${QVEST_UNATTENDED:-0}" = "1" ] || { _log "(발송 생략 — 무인 실행 아님) $1"; return 0; }
+  local rf; rf="$(mktemp "${TMPDIR:-/tmp}/qm_edc_tg_XXXX.R")" || return 0
+  printf 'setwd("%s/02_Infrastructure")\nsource("config.R")\nsource("telegram/telegram_notify.R")\ninvisible(tryCatch(tg_send(Sys.getenv("QVEST_EDC_MSG")), error = function(e) cat("TG send failed:", conditionMessage(e), "\\n")))\n' "$BASE" > "$rf"
+  QVEST_EDC_MSG="$1" "$RSCRIPT" --no-save "$rf" >/dev/null 2>&1; rm -f "$rf"
+}
+_desc_pids() {   # $1 = MSYS pid → 자손 MSYS pid 전부(ps PPID 재귀 — Git Bash 의 fork 는 윈도 부모 관계를 남기지 않을 때가 있다 · 11-10 시험 실측)
+  local p; for p in $(ps -ef 2>/dev/null | awk -v pp="$1" 'NR > 1 && $3 == pp { print $2 }'); do echo "$p"; _desc_pids "$p"; done
+}
+_kill_tree() {   # $1 = MSYS pid — 자손(MSYS) 전부 + 각자의 윈도 트리(Rscript · python · powershell 의 네이티브 자식)까지 끝낸다
+  local all p wp; all="$(_desc_pids "$1") $1"
+  for p in $all; do wp="$(cat "/proc/$p/winpid" 2>/dev/null)"; [ -n "$wp" ] && taskkill //F //T //PID "$wp" >/dev/null 2>&1; done
+  for p in $all; do kill -KILL "$p" 2>/dev/null; done
+}
+_log "stale=$PRE_STALE — daily_refresh.sh 자가 복구 실행 · 계획 ${HEAL_PLAN} (${HEAL_WHY}) · 상한 ${HEAL_TIMEOUT_S}s"
+_launch_mark="$(mktemp "${TMPDIR:-/tmp}/qm_edc_launch_XXXX")"; touch -d "@$(( $(date +%s) - 1 ))" "$_launch_mark" 2>/dev/null   # 이번 실행 뒤에 쓰인 상태만 '보고됨'으로 읽는다
+QVEST_REFRESH_TG="${QVEST_REFRESH_TG:-0}" QVEST_DR_MODE=selfheal QVEST_DR_ONLY_STAGES="$_ONLY" QVEST_DR_SKIP_BATTERY=1 \
+  QVEST_DR_REPORT_TG="${QVEST_DR_REPORT_TG:-1}" bash "$REFRESH_SH" &
+RPID=$!; _t0=$(date +%s); TIMED_OUT=0
+while kill -0 "$RPID" 2>/dev/null; do
+  if [ $(( $(date +%s) - _t0 )) -ge "$HEAL_TIMEOUT_S" ]; then
+    TIMED_OUT=1; _log "⚠ 자가 복구 리프레시가 상한 ${HEAL_TIMEOUT_S}s 를 넘김 — 프로세스 트리 종료(PID=$RPID)"
+    _kill_tree "$RPID"
+    _lp="$(cat "$LOCKDIR/pid" 2>/dev/null)"; [ "$_lp" = "$RPID" ] && rm -rf "$LOCKDIR"   # 죽인 실행의 잠금만 치운다
+    break
+  fi
+  sleep "${QVEST_EDC_POLL_S:-10}"
+done
+wait "$RPID" 2>/dev/null; RRC=$?
+[ "$TIMED_OUT" = "1" ] && RRC=124
 _log "daily_refresh 종료코드=$RRC"
+REPORTED=0
+if [ -f "$DR_STATE_JSON" ] && [ "$DR_STATE_JSON" -nt "$_launch_mark" ] && grep -q '"mode":"selfheal"' "$DR_STATE_JSON" \
+   && grep -q '"reported":1' "$DR_STATE_JSON"; then REPORTED=1; fi
+rm -f "$_launch_mark" 2>/dev/null
+if [ "$TIMED_OUT" = "1" ]; then
+  _edc_notify "[자가 복구] daily_refresh 가 ${HEAL_TIMEOUT_S}초 상한을 넘겨 중단했습니다 — 계획 ${HEAL_PLAN} · 데이터 기준일 ${AS_OF} · 로그 /tmp/qm_daily_refresh_$(date +%Y%m%d).log"
+elif [ "$RRC" -ne 0 ] && [ "$REPORTED" = "0" ]; then
+  _edc_notify "[자가 복구] daily_refresh 가 보고 단계 전에 끝났습니다(rc=$RRC) — 계획 ${HEAL_PLAN} · 로그 /tmp/qm_daily_refresh_$(date +%Y%m%d).log"
+fi
 
 # ── 5) 재감사 — ★"돌렸다"로 끝내지 않는다 ───────────────────────────────────
 # 오늘 실측이 이 단계의 존재 이유다: 리프레시가 "실패 0" 으로 완주했는데도
 # benchmark MISSING · p3_forecast STALE 이 남아 있었다. 실행을 성공으로 세면
 # 그 2건은 영원히 안 보인다.
-POST="$(_audit 0)"
+_post_quiet=0; { [ "$REPORTED" = "1" ] || [ "$TIMED_OUT" = "1" ] || [ "$RRC" -ne 0 ]; } && _post_quiet=1   # 보고 1통은 위에서 이미 나갔다
+POST="$(_audit "$_post_quiet")"
 POST_STALE="$(printf '%s' "$POST" | cut -d'|' -f1)"
 AS_OF="$(printf '%s' "$POST" | cut -d'|' -f2)"
 _PACT="$(_actionable "$(printf '%s' "$POST" | cut -d'|' -f3)")"

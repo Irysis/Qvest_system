@@ -10,6 +10,19 @@ setwd(root)
 source("02_Infrastructure/config.R")
 suppressPackageStartupMessages({library(data.table); library(arrow); library(jsonlite)})
 
+## ── 판정 전용 진입점 (2026-11-10 감사 레인 A · 측정 경로 신선도 차단용 계약) ─────────────────────────────────────
+##   Rscript freshness_audit.R --check [--items rawdata,benchmark]   (또는 env QVEST_FRESHNESS_CHECK=1 · QVEST_FRESHNESS_ITEMS=…)
+##   부작용 없음: 텔레그램 0 · JSON(qepm/observability/morning_freshness_latest.json) 미기록. 판정 규칙은 아래 그대로(달력 + 세션 축).
+##   출력 마지막 줄  FA_CHECK<TAB>status=FRESH|STALE|ERROR<TAB>as_of=<날짜><TAB>stale=<이름,…|->  <TAB>unreadable=<이름,…|->
+##   종료 코드  0 = 고른 항목 전부 FRESH · 3 = 하나 이상 STALE/MISSING · 1 = 하나 이상 판독 불가(PARSE_FAIL) 또는 감사기 오류(모르면 막는다)
+##   --items 를 주면 그 항목만 읽는다(이름 = 아래 audits$<이름> · 모르는 이름 = ERROR). 시험: 08_Tests/scenarios/test_scn_data_freshness_session.R
+.fa_args <- commandArgs(trailingOnly = TRUE)
+FA_CHECK <- "--check" %in% .fa_args || identical(Sys.getenv("QVEST_FRESHNESS_CHECK"), "1")
+.fa_items <- local({ i <- match("--items", .fa_args)
+  v <- if (!is.na(i) && i < length(.fa_args)) .fa_args[i + 1L] else Sys.getenv("QVEST_FRESHNESS_ITEMS", "")
+  v <- trimws(strsplit(v, ",", fixed = TRUE)[[1]]); v[nzchar(v)] })
+if (FA_CHECK) options(error = function() { cat("FA_CHECK\tstatus=ERROR\tas_of=-\tstale=-\tunreadable=auditor_error\n"); quit(status = 1, save = "no") })
+
 today <- Sys.Date()
 # [2026-07-14 Q] as_of 순환성 수리 — 구현(benchmark-max 유도)은 '부분 stale'만 잡고,
 #   '전면 stale'(아침 갱신 전체 미도래)이면 as_of가 데이터와 같이 끌려 내려가 전부 FRESH 오판
@@ -27,10 +40,30 @@ if (length(.cal) && max(.cal, na.rm = TRUE) >= as_of && !(as_of %in% .cal)) {
 }
 if (length(as_of) != 1 || is.na(as_of) || as_of > today) as_of <- today
 
+## ★거래 세션 지연 (2026-11-10 감사 레인 A) — 달력일 지연만 보면 '하루 빠진 세션'이 주말 · 휴장일에 묻힌다.
+##   실측 11-10: RAWDATA 최신 11-06(금) · as_of 11-09(월) → 달력 lag 3d ≤ max 3d → FRESH. 그러나 11-09 세션이 통째로 빠졌다
+##   (같은 실행의 퀀티 수급 done=0/4 · 셀 단위 감사 cache_freshness_audit 는 같은 파일을 STALE_CRITICAL). 10-20(화) 도 같은 꼴.
+##   as_of 가 이미 '직전 거래일'이므로 달력 여유(3d)는 주말을 두 번 센다. 세션 수 = (last_d, as_of] 의 평일 중 KRX 휴장일이 아닌 날.
+##   휴장일 정본 = 06_Registry/krx_holidays.json(ensure_data_current.sh 퀀티 축 · krx_holidays.py 와 같은 원천). 연도 미수록 · 판독 실패 =
+##   NA(세션 축 미측정 — 달력 축 판정만 쓴다 · 기존 동작). 세션 축은 max_sess 를 준 소스에만 건다(아래 rawdata · benchmark).
+.krx_hol <- tryCatch({
+  h <- jsonlite::fromJSON("06_Registry/krx_holidays.json", simplifyVector = TRUE)
+  list(years = as.integer(unlist(h$years)), days = as.Date(names(h$holidays)))
+}, error = function(e) NULL)
+.sess_lag <- function(last_d, ref) {
+  if (is.null(.krx_hol) || is.na(last_d) || is.na(ref)) return(NA_integer_)
+  if (ref <= last_d) return(0L)
+  d <- seq(last_d + 1L, ref, by = "day")
+  if (!all(unique(as.integer(format(d, "%Y"))) %in% .krx_hol$years)) return(NA_integer_)
+  as.integer(sum(!(format(d, "%u") %in% c("6", "7")) & !(d %in% .krx_hol$days)))
+}
+
 audits <- list()
-check_freshness <- function(name, path, col, max_lag_days) {
+check_freshness <- function(name, path, col, max_lag_days, max_sess = NA_integer_) {
+  if (length(.fa_items) && !(name %in% .fa_items)) return(list(name = name, status = "SKIPPED", path = path))
   if (!file.exists(path)) return(list(name = name, status = "MISSING", path = path))
-  dt <- tryCatch(as.data.table(read_parquet(path)), error = function(e) NULL)
+  ## (11-10) 날짜 열 하나만 읽는다 — 구판은 전 열을 읽었다(RAWDATA 426MB · 1,419만 행). 판정은 그 열의 최댓값뿐이라 결과 불변.
+  dt <- tryCatch(as.data.table(read_parquet(path, col_select = col)), error = function(e) NULL)
   if (is.null(dt)) {
     csv_try <- tryCatch(fread(path), error = function(e) NULL)
     if (!is.null(csv_try)) dt <- csv_try
@@ -38,8 +71,12 @@ check_freshness <- function(name, path, col, max_lag_days) {
   if (is.null(dt) || !col %in% names(dt)) return(list(name = name, status = "PARSE_FAIL", path = path))
   last_d <- max(as.Date(dt[[col]]), na.rm = TRUE)
   lag_d <- as.integer(as_of - last_d)
+  sess <- .sess_lag(last_d, as_of)
   status <- if (lag_d <= max_lag_days) "FRESH" else "STALE"
-  list(name = name, status = status, last_date = as.character(last_d), lag_days = lag_d, max_lag = max_lag_days)
+  if (!is.na(max_sess) && !is.na(sess) && sess > max_sess) status <- "STALE"   # 세션 축 — 달력 축이 FRESH 여도
+  r <- list(name = name, status = status, last_date = as.character(last_d), lag_days = lag_d, max_lag = max_lag_days)
+  if (!is.na(max_sess)) { r$sess_lag <- sess; r$max_sess <- max_sess }
+  r
 }
 ## ★2026-11-06 MSM as-of 전환(PIT-C1-MSM-PARAMS 안 A): 감사 이름 msm_daily 는 유지(소비자 mrs_regime_send 등) · 대상 = as-of 경로.
 ##   msm_hybrid(월 파일)는 폐지 — 월 MSM 은 regime_signal.R 이 as-of 일별의 달력 월평균으로 만든다(파일 없음).
@@ -48,7 +85,7 @@ audits$fred            <- check_freshness("fred",            ".cache/fred_macro.
 audits$ktri_indices    <- check_freshness("ktri_indices",    ".cache/ktri_indices.parquet",            "Date", 3)
 audits$ktri_v3_signals <- check_freshness("ktri_v3_signals", "04_Research/regime_comparison/output/ktri_v3_signals.csv", "DATE", 3)
 audits$regime_daily    <- check_freshness("regime_daily",    ".cache/unified_regime_signal_daily.parquet", "Date", 3)
-audits$benchmark       <- check_freshness("benchmark",       ".cache/benchmark.parquet",               "Date", 2)  # KOSPI200 종가
+audits$benchmark       <- check_freshness("benchmark",       ".cache/benchmark.parquet",               "Date", 2, max_sess = 0L)  # KOSPI200 종가 · 세션 0 = 직전 거래일 도달(퀀티 목표일 = 직전 거래일 · qw_refresh.ps1 Get-Target)
 audits$p3_forecast     <- check_freshness("p3_forecast",     "04_Research/decision_framework/bearish_forecast_v3/03_models/daily_predictions/P3_daily.parquet", "Date", 3)
 # ★역할 태그 (v10.4 2026-09-24) — p3_forecast 는 적재 원천이 아니라 **브리핑 [6a] 의 산출물**(601_daily_inference.py
 #   --model P3)이다. daily_refresh [0c] 가 이 감사를 판정으로 쓰면서, 리프레시가 고칠 수 없는 항목이 DR exit 1 로
@@ -66,7 +103,7 @@ if (is.list(audits$p3_forecast)) audits$p3_forecast$role <- "downstream"
 #     Gate A(원천 상태파일)와 Gate B(팩터DB 앵커)가 **둘 다 통과**했다. 앵커는 신선한
 #     주가 축이 채우기 때문이다. 감사 목록에 없으면 아무도 안 잰다.
 #   ★max_lag 는 소스 성격으로 재단한다 — 일간(2~3) / 월간 스냅샷(40) / 주간계열 포함(14).
-audits$rawdata          <- check_freshness("rawdata",          ".cache/RAWDATA.parquet",                    "Date", 3)   # 주가 패널(전략 종목선정·유동성)
+audits$rawdata          <- check_freshness("rawdata",          ".cache/RAWDATA.parquet",                    "Date", 3, max_sess = 0L)   # 주가 패널(전략 종목선정·유동성) · 세션 0(근거: 10-07 · 10-16 · 11-07 정상 실행 lag 0d — daily_refresh.log [0c])
 audits$consensus        <- check_freshness("consensus",        ".cache/consensus/eps_1y.parquet",           "Date", 10)  # 컨센서스 축(QW 적재)
 audits$investor_act     <- check_freshness("investor_act",     ".cache/investor_stock/investor_all.parquet", "Date", 10)  # 수급 축(QW 적재)
 audits$universe_support <- check_freshness("universe_support", ".cache/universe_support/us_k200.parquet",   "Date", 40)  # K200∪KQ150 월간 스냅샷
@@ -75,11 +112,22 @@ audits$fred_wide        <- check_freshness("fred_wide",        ".cache/fred_macr
 cat("=== Freshness Audit ===\n")
 stale_items <- c()
 for (a in audits) {
-  cat(sprintf("  %-18s [%s] last=%s lag=%dd (max %dd)\n",
-              a$name, a$status, a$last_date %||% "n/a", a$lag_days %||% -1L, a$max_lag %||% -1L))
+  cat(sprintf("  %-18s [%s] last=%s lag=%dd (max %dd)%s\n",
+              a$name, a$status, a$last_date %||% "n/a", a$lag_days %||% -1L, a$max_lag %||% -1L,
+              if (!is.null(a$max_sess)) sprintf(" sess=%s (max %d)", if (is.na(a$sess_lag)) "NA" else a$sess_lag, a$max_sess) else ""))
   if (isTRUE(a$status == "STALE") || isTRUE(a$status == "MISSING")) {
     stale_items <- c(stale_items, sprintf("%s(%s,lag=%dd)", a$name, a$status, a$lag_days %||% -1L))
   }
+}
+if (FA_CHECK) {   # 판정 전용 — 여기서 끝낸다(JSON · 텔레그램 없음). 계약은 파일 머리 '판정 전용 진입점'
+  .unk <- setdiff(.fa_items, names(audits))
+  .sel <- Filter(function(a) !identical(a$status, "SKIPPED"), audits)
+  .st  <- vapply(.sel, function(a) a$name, "")[vapply(.sel, function(a) isTRUE(a$status %in% c("STALE", "MISSING")), NA)]
+  .ur  <- c(.unk, vapply(.sel, function(a) a$name, "")[vapply(.sel, function(a) identical(a$status, "PARSE_FAIL"), NA)])
+  .v   <- if (length(.ur) || !length(.sel)) "ERROR" else if (length(.st)) "STALE" else "FRESH"
+  cat(sprintf("FA_CHECK\tstatus=%s\tas_of=%s\tstale=%s\tunreadable=%s\n", .v, as.character(as_of),
+              if (length(.st)) paste(.st, collapse = ",") else "-", if (length(.ur)) paste(.ur, collapse = ",") else if (!length(.sel)) "no_items" else "-"))
+  quit(status = switch(.v, FRESH = 0L, STALE = 3L, 1L), save = "no")
 }
 downstream_items <- unname(unlist(lapply(audits, function(a) if (identical(a$role, "downstream")) a$name else NULL)))
 audit_path <- "qepm/observability/morning_freshness_latest.json"

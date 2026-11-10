@@ -24,6 +24,26 @@ bench_state() {   # '0' 최신 · '1' 미최신 · 'NA' 판정 불가(판정 불
   PYTHONUTF8=1 "$PY" "$ROOT/02_Infrastructure/data/krx_holidays.py" currency --no-fetch 2>/dev/null | tail -1
 }
 
+# (c) RAWDATA 최신일 ≥ KRX 직전 거래일 (2026-11-10 감사 레인 A · P6) — 벤치만 보면 RAWDATA 가 멈춘 날에도 시작한다.
+#   11-10 실측: 벤치 11-09 · RAWDATA 11-06 인데 day=2026-11-09 일보가 나갔다 — 폭(B1~B3) · 유동성(L1 · L2) · 금융업(F1~F3) · 수급 축은
+#   build_kr_stress_index.py::on_calendar 가 직전 관측(11-06)을 앞으로 채워 11-09 값으로 실었다(관측일 열에만 남는다).
+#   직전 거래일 = (b) 판정의 세 번째 칸(krx_holidays.py currency). 판정 불가(NA)는 막지 않는다(bench_state 와 같은 규칙). 끄기: STRESS_SKIP_RAW_CHECK=1
+rawdata_state() {   # $1 = 직전 거래일(YYYY-MM-DD) → '0|RAWDATA 최신일|직전 거래일' · '1|…' · 'NA|…'
+  [ "${STRESS_SKIP_RAW_CHECK:-0}" = "1" ] && { echo "0|skip|skip"; return; }
+  case "${1:-}" in [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]) ;; *) echo "NA|?|${1:-?}"; return ;; esac
+  PYTHONUTF8=1 "$PY" - "${QVEST_STRESS_RAWDATA:-$ROOT/.cache/RAWDATA.parquet}" "$1" <<'PYR' 2>/dev/null | tail -1 || echo "NA|unreadable|$1"
+import sys, datetime as dt
+try:
+    import pyarrow.parquet as pq, pyarrow.compute as pc
+    m = pc.max(pq.read_table(sys.argv[1], columns=["Date"])["Date"]).as_py()
+    m = m.date() if isinstance(m, dt.datetime) else m
+    e = dt.date.fromisoformat(sys.argv[2])
+    print(("1" if m < e else "0") + "|" + m.isoformat() + "|" + e.isoformat())
+except Exception as ex:
+    print("NA|" + ex.__class__.__name__ + "|" + sys.argv[2])
+PYR
+}
+
 say "Qvest_StressDaily start · host=${COMPUTERNAME:-?} · lock=$LOCK · max_wait=${MAX_WAIT_MIN}m"
 # 오늘이 KRX 거래일이 아니면(주말 · 휴장일) 일보 · 메일 모두 건너뛴다(도훈 11-06 "주말이랑 휴장일엔 보낼 필요 없어").
 #   직전 거래일 마감분은 다음 거래일 04:00 실행이 만든다(예: 금요일 마감 → 월요일 아침 · 휴장일 앞날 마감 → 휴장 다음 거래일 아침).
@@ -47,12 +67,16 @@ esac
 waited=0
 while :; do
   bs="$(bench_state)"; st="${bs%%|*}"
-  if [ ! -e "$LOCK" ] && [ "$st" != "1" ]; then break; fi
+  rs="NA|-|-"; rst="NA"
+  if [ ! -e "$LOCK" ] && [ "$st" != "1" ]; then
+    rs="$(rawdata_state "${bs##*|}")"; rst="${rs%%|*}"
+    [ "$rst" != "1" ] && break
+  fi
   if [ "$waited" -ge $((MAX_WAIT_MIN * 60)) ]; then
-    say "★데이터 준비 안 됨 ${MAX_WAIT_MIN}분 초과(잠금 $([ -e "$LOCK" ] && echo 있음 || echo 없음) · 벤치 ${bs}) — 오늘은 건너뜀(묵은 데이터로 일보를 내지 않는다)"
+    say "★데이터 준비 안 됨 ${MAX_WAIT_MIN}분 초과(잠금 $([ -e "$LOCK" ] && echo 있음 || echo 없음) · 벤치 ${bs} · RAWDATA ${rs}) — 오늘은 건너뜀(묵은 데이터로 일보를 내지 않는다)"
     exit 7
   fi
-  [ $((waited % 600)) -eq 0 ] && say "대기 — 리프레시 잠금 $([ -e "$LOCK" ] && echo 있음 || echo 없음) · 벤치 상태 ${bs}(state|벤치 최신일|직전 거래일) · ${waited}s"
+  [ $((waited % 600)) -eq 0 ] && say "대기 — 리프레시 잠금 $([ -e "$LOCK" ] && echo 있음 || echo 없음) · 벤치 상태 ${bs}(state|벤치 최신일|직전 거래일) · RAWDATA ${rs} · ${waited}s"
   sleep "$POLL_SEC"; waited=$((waited + POLL_SEC))
 done
 [ "$waited" -gt 0 ] && say "데이터 준비 확인(${waited}s 대기 · 벤치 ${bs}) — 30초 뒤 시작" && sleep 30
