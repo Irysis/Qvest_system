@@ -3,6 +3,7 @@
 # boot_lean.sh — Qvest 부팅 (2026-08-23 신설 · 2026-09-05 v10 mode 정합 · 2026-10-13 v10.01 프로그램 줄)
 #   상태 8줄만 출력(Data · Queue · Last · Book · Alerts/Budget · Programs · Resume · Infra). 검사 0 · 수리 0 · R 실행 0 · 테스트 0 · 백그라운드 0 · 항상 exit 0.
 #   (Infra = 2026-11-08 — 매일 점검 기록 .cache/machine/infra_currency_<HOST>.json 을 읽기만 · 네트워크 0)
+#   (v10.2 사다리 = 2026-11-11 — Programs 줄 꼬리 '| 사다리: …'(상설 판 · 강화 사슬 · 사슬 틱 · 결과 원장 · 팩터 DB 판 표식) + Last 줄 '원장 다음 탐침' · 읽기만)
 #   ★필드가 안 읽히면 '?' 로 두고 계속한다(fail-soft) — 부팅이 세션을 막지 않는다.
 #   전수 점검(구 bootstrap.sh 전문)은 주간/수동 ops/health_full.sh 로 분리됐다.
 #==============================================================================
@@ -214,7 +215,43 @@ _g.sort(key=lambda t: os.path.getmtime(t[0]))
 c=(J(_g[-1][0]) or {}) if _g else {}; _md=_LM[_g[-1][1]] if _g else "?"
 _ag=HH(S(lambda: (time.time()-os.path.getmtime(_g[-1][0]))/3600.0)) if _g else "?"
 npb=c.get("next_probe"); npb=npb[0] if isinstance(npb,list) and npb else npb
-o.append("Last: [%s] %s %s (%s) · next %s"%(_md,c.get("l_code") or "?",c.get("grade") or "?",_ag,str(npb or "?")[:80]))
+# ★v10.2 결과 원장(2026-11-11 · 사다리 루프 6항 '닫으면 남긴다') — 06_Registry/round_outcomes.jsonl(writer = round_core v1/outcomes.R · 추가 전용) 을
+#   읽기만 한다. 의미는 outcomes.R 그대로: 빈 줄 제외 · 격리 줄(kind quarantine 의 line_md5 = 원래 줄 UTF-8 md5) 제외 · 격리 안 된 판독 불가 줄 = 멈춤('?') ·
+#   schema round_outcome_v1 만 · kind 없음 = round · 열린 탐침 = rc_open_probes(ref '<round_id>#<번호>' 가 probe_consumed 에 없는 것 · tau_clean 없음).
+#   반환 = None(원장 없음 · 첫 닫기 전) · dict · 예외(→ S 가 False = '?'). Last 줄(최근 닫힌 라운드의 첫 열린 탐침) · 사다리 꼬리가 같은 판독을 쓴다.
+#   검사: 08_Tests/scenarios/test_scn_boot_ladder.sh (f)
+def _OUTCOMES(p=None):
+    import hashlib
+    p=p or R("06_Registry","round_outcomes.jsonl")
+    if not os.path.exists(p): return None
+    L=[s for s in open(p,encoding="utf-8").read().split("\n") if s.strip()]
+    qd=set()
+    for s in L:
+        if '"kind":"quarantine"' in s:
+            x=S(lambda: json.loads(s))
+            if isinstance(x,dict) and x.get("schema")=="round_outcome_v1" and x.get("kind")=="quarantine":
+                v=x.get("line_md5"); qd.update(str(i) for i in (v if isinstance(v,list) else [v]) if i is not None)
+    if qd: L=[s for s in L if hashlib.md5(s.encode("utf-8")).hexdigest() not in qd]
+    out=[json.loads(s) for s in L]          # 격리 안 된 판독 불가 줄 = 예외(조용히 건너뛰지 않는다)
+    out=[x for x in out if isinstance(x,dict) and x.get("schema")=="round_outcome_v1"]
+    kd=lambda x: "round" if x.get("kind") is None else x.get("kind")
+    rounds=[x for x in out if kd(x)=="round"]
+    used={str(x.get("ref")) for x in out if kd(x)=="probe_consumed"}
+    op=[]
+    for r in rounds:
+        pr=r.get("probes"); pr=pr if isinstance(pr,list) else ([] if pr is None else [pr])
+        for i,t in enumerate(pr,1):
+            ref="%s#%d"%(r.get("round_id"),i)
+            if ref not in used: op.append((ref,str(r.get("round_id")),str(t)))
+    return {"n":len(rounds),"open":op,"last":rounds[-1] if rounds else None}
+_OC=S(_OUTCOMES,False)
+def _last_probe(oc):
+    if not isinstance(oc,dict) or not oc.get("last"): return ""
+    rid=str(oc["last"].get("round_id"))
+    for ref,r,t in oc["open"]:
+        if r==rid: return ' · 원장 다음 탐침 "%s"'%t[:60]
+    return ""
+o.append("Last: [%s] %s %s (%s) · next %s%s"%(_md,c.get("l_code") or "?",c.get("grade") or "?",_ag,str(npb or "?")[:80],S(lambda: _last_probe(_OC),"")))
 # ④ Book — ★v10 정본 = 06_Registry/book/book_registry.json (governor/book_state 폐지)
 b=J("06_Registry/book/book_registry.json") or {}
 ents=[e for e in (b.get("entries") or []) if isinstance(e,dict)]
@@ -322,7 +359,111 @@ def DECISIONS():
     ln=sorted(cnt,key=lambda k:-cnt[k])
     lanes=("·".join(ln[:3])+(" +%d"%(len(ln)-3) if len(ln)>3 else "")) if ln else "없음"
     return " · 대기결정 %d · 최고령 %s(%sd) · 차단 %s"%(len(op),op[0].get("id") or "?",ag,lanes)
-o.append(S(PROGRAMS,"Programs: ?(표시 예외)")+S(DECISIONS," · 대기결정 ?(표시 예외)"))
+# ⑥-c 사다리(v10.2 · 2026-11-11 도훈 "qvest 부팅 시퀀스도 v10.2 에 대응되게") — Programs 줄 꼬리 ' | 사다리: …'. 새 줄을 만들지 않는다(8줄 계약).
+#   **읽기만**(R 0 · 쓰기 0). 정의는 실행기와 같다 — 하나라도 어긋나면 부팅과 틱이 다른 판 · 사슬을 본다:
+#   상설 판 = 02_Infrastructure/ops/standing_board_run.sh '등록된 상설 판' 절(사양 "standing": true · 최상위 round_id = 디렉터리 이름 ·
+#     stage_artifacts/programs/<program>/<round_id>/prereg.json 존재 — 없으면 '미등록'). 항목 상태 = round_core v1/standing.R::rc_standing_items 사건 의미
+#     (enqueue 가 항목을 만들고 measure · verdict 가 붙는다 · 통과 = verdict.qualify true · 대기 = .rcs_pending · 실패 상한 = 코어 상수 RC_STANDING_MAX_FAILS 를
+#     소스에서 읽는다 — 못 읽으면 '대기 ?'). 원장 사슬(schema · prev = 앞 줄 md5)이 끊겼으면 코어가 읽기를 거부하므로 '?(원장 사슬 끊김)'.
+#   강화 사슬 = 02_Infrastructure/ops/chain_tick.sh 0단계(P4_ASSEMBLY/<사슬>/chain_spec.json · '_' 폴더 제외 · 원장 첫 줄 chain_registered ·
+#     마지막 줄 chain_closed = 닫힘 · tick_hold = 보류 표시). 생성 차단 = 틱 장부 .cache/chain_tick/state/<chain_id>.json 의 gen_blocked(02_Infrastructure/programs/chain_tick.R).
+#   틱 = 06_Registry/chain_tick.json enabled · 결과 원장 = _OUTCOMES(위) · 팩터 DB 판 표식 = 06_Registry/factor_db_vintage.json 마지막 완료 수리(completed_at 비움 = 진행 중).
+#   판독 실패는 0 으로 접지 않고 '?' — 없는 것과 못 읽은 것은 다른 사실이다. 검사: 08_Tests/scenarios/test_scn_boot_ladder.sh (픽스처 · 돌연변이)
+def _LD_BOARD(lp,mf):
+    import hashlib
+    if not os.path.exists(lp): return {"n":0,"q":0,"p":0,"age":None}
+    t=open(lp,encoding="utf-8").read()
+    L=t.split("\n") if t else []
+    if t.endswith("\n"): L=L[:-1]
+    prev="genesis"; recs=[]
+    for s in L:
+        r=S(lambda: json.loads(s))
+        if not isinstance(r,dict) or r.get("schema")!="rc_standing_ledger_v1" or r.get("prev")!=prev: return "?(원장 사슬 끊김)"
+        recs.append(r); prev=hashlib.md5(s.encode("utf-8")).hexdigest()
+    I={}
+    for r in recs:
+        ev=r.get("event"); cd=r.get("code")
+        if ev=="enqueue":
+            if not isinstance(cd,str) or not cd: return "?(항목 코드 없음)"
+            I[cd]={"src":r.get("source_results"),"v":r.get("verdict"),"m":[]}
+        elif ev in ("measure","verdict") and isinstance(cd,str) and cd in I:
+            if ev=="measure": I[cd]["m"].append(r)
+            else: I[cd]["v"]=r
+    def _ln(v): return 0 if v is None else (len(v) if isinstance(v,(list,dict)) else 1)
+    def _mok(m): return m.get("ok") is True and m.get("fp_same") is True
+    def _dfr(m):
+        d=m.get("deferred"); d=(d[0] if d else None) if isinstance(d,list) else d
+        return d=="refresh_lock"
+    def _pend(it):
+        if it["v"] is not None or it["src"] is not None or any(_mok(m) for m in it["m"]): return False
+        if it["m"] and _ln(it["m"][-1].get("r2"))>0: return False
+        return sum(1 for m in it["m"] if not _mok(m) and _ln(m.get("r2"))==0 and not _dfr(m))<mf
+    at=S(lambda: dt.datetime.strptime(str(recs[-1].get("at")),"%Y-%m-%dT%H:%M:%S%z").timestamp()) if recs else None
+    return {"n":len(I),"q":sum(1 for it in I.values() if isinstance(it["v"],dict) and it["v"].get("qualify") is True),
+            "p":"?" if mf is None else sum(1 for it in I.values() if _pend(it)),"age":None if at is None else (time.time()-at)/3600.0}
+def _LD_BOARDS():
+    mf=S(lambda: int(re.search(r"(?m)^RC_STANDING_MAX_FAILS <- (\d+)L?",open(R("04_Research","programs","_lib","round_core","v1","standing.R"),encoding="utf-8").read()).group(1)))
+    reg=[]; un=[]; ur=0
+    for sp in sorted(glob.glob(R("04_Research","programs","*","*","round_spec.json"))):
+        t=S(lambda: open(sp,encoding="utf-8",errors="replace").read())
+        if t is None: ur+=1; continue
+        ls=t.split("\n"); d=os.path.dirname(sp); rid=os.path.basename(d)
+        if not any(re.search(r'"standing"[ \t\r\f\v]*:[ \t\r\f\v]*true',x) for x in ls): continue
+        if not any(re.match(r'  "round_id"[ \t\r\f\v]*:[ \t\r\f\v]*"%s"'%re.escape(rid),x) for x in ls): continue
+        pg=[m.group(1) for m in (re.match(r'  "program"[ \t\r\f\v]*:[ \t\r\f\v]*"([^"]*)"',x) for x in ls) if m]
+        prog=(pg[0] if pg else "") or os.path.basename(os.path.dirname(d))
+        tag=rid.split("_")[0]
+        if not os.path.isfile(R("stage_artifacts","programs",prog,rid,"prereg.json")): un.append(tag); continue   # 등록 전(사전등록 정본 없음)
+        b=S(lambda: _LD_BOARD(R("stage_artifacts","programs",prog,rid,"standing_ledger.jsonl"),mf),"?(원장 판독 불가)")
+        reg.append("%s %s"%(tag,b if isinstance(b,str) else "항목 %d·통과 %d·대기 %s%s"%(b["n"],b["q"],b["p"],"" if b["age"] is None else "·"+HH(b["age"])+" 전")))
+    parts=reg+["%s 미등록"%x for x in un]+(["사양 판독 불가 %d"%ur] if ur else [])
+    return "상설 판 %d%s"%(len(reg),"(%s)"%" / ".join(parts) if parts else "")
+def _LD_CHAINS():
+    op=[]; nc=0; gb=0; gq=0
+    for sp in sorted(glob.glob(R("04_Research","programs","P4_ASSEMBLY","*","chain_spec.json"))):
+        d=os.path.dirname(sp); cid=os.path.basename(d)
+        if cid.startswith("_"): continue
+        lp=os.path.join(d,"chain_steps.jsonl")
+        if not os.path.isfile(lp): continue
+        t=S(lambda: open(lp,"rb").read().decode("utf-8","replace"))
+        if t is None: op.append("%s ?(원장 판독 불가)"%cid); continue
+        L=t.split("\n") if t else []
+        if t.endswith("\n"): L=L[:-1]
+        if not L or '"event":"chain_registered"' not in L[0]: continue                  # 등록 전 사슬 판
+        if '"event":"chain_closed"' in L[-1]: nc+=1; continue
+        hold=" ·보류" if os.path.exists(os.path.join(d,"tick_hold")) else ""
+        try:
+            rr=[json.loads(s) for s in L if s.strip()]
+            ks=[int(r["k"]) for r in rr if r.get("event")=="step_open"]
+            at=S(lambda: dt.datetime.strptime(str(rr[-1].get("at")),"%Y-%m-%dT%H:%M:%S%z").timestamp())
+            op.append("%s k%d %s%s%s"%(cid,max(ks) if ks else 0,rr[-1].get("event") or "?","" if at is None else " "+HH((time.time()-at)/3600.0)+" 전",hold))
+        except Exception:
+            op.append("%s ?(원장 판독 불가)%s"%(cid,hold))
+        sf=R(".cache","chain_tick","state",cid+".json")
+        if os.path.exists(sf):
+            st=S(lambda: json.load(open(sf,encoding="utf-8")))
+            if not isinstance(st,dict): gq+=1
+            elif st.get("gen_blocked") is True: gb+=1
+    return "사슬 %d%s%s%s"%(len(op),"(%s)"%" / ".join(op) if op else ""," · 닫힘 %d"%nc if nc else "",
+                          (" · ★생성 차단 %d"%gb if gb else "")+(" · 틱 장부 ? %d"%gq if gq else ""))
+def _LD_TICK():
+    d=J("06_Registry/chain_tick.json")
+    en=d.get("enabled") if isinstance(d,dict) else None
+    return "틱 켜짐" if en is True else ("틱 꺼짐" if en is False else "틱 ?")
+def _LD_OUT(oc):
+    if oc is None: return "결과 원장 없음(첫 닫기 전)"
+    if not isinstance(oc,dict): return "결과 원장 ?(판독 불가)"
+    return "결과 원장 %d건 · 열린 탐침 %d"%(oc["n"],len(oc["open"]))
+def _LD_FDV():
+    p=R("06_Registry","factor_db_vintage.json")
+    if not os.path.exists(p): return "팩터DB ?(원장 부재)"
+    E=json.load(open(p,encoding="utf-8-sig"))["entries"]
+    dn=[dt.datetime.fromisoformat(str(e["completed_at"])) for e in E if e.get("completed_at") is not None]
+    ip=sum(1 for e in E if e.get("completed_at") is None)
+    return ("팩터DB 수리 %s"%max(dn).strftime("%m-%d") if dn else "팩터DB 수리 없음")+(" · 수리 진행 중 %d"%ip if ip else "")
+def LADDER():
+    return " | 사다리: "+" · ".join([S(_LD_BOARDS,"상설 판 ?"),S(_LD_CHAINS,"사슬 ?"),S(_LD_TICK,"틱 ?"),S(lambda: _LD_OUT(_OC),"결과 원장 ?"),S(_LD_FDV,"팩터DB ?")])
+o.append(S(PROGRAMS,"Programs: ?(표시 예외)")+S(DECISIONS," · 대기결정 ?(표시 예외)")+S(LADDER," | 사다리: ?(표시 예외)"))
 # ⑦ Resume(2026-10-15 도훈 "세션이 예기치않게 종료됐을 때 새로운 세션에서도 이 프로세스가 이어질 수 있도록") —
 #   진행 중 작업(06_Registry/session_resume.json · writer = programs/session_resume.py) 최신 1건의 단계 · 다음 할 일 +
 #   등록부에서 등록됐지만 끝나지 않은 라운드(저널과 별개 자동 신호). 로직은 도구 한 곳(boot_line) — 여기서는 불러 쓰기만.
