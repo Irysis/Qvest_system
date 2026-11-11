@@ -59,6 +59,21 @@ gen_sigma <- function(R, est = "sample") {
                    "낙하**한다. 그러면 OGK 형제가 sample 형제와 동일해지고 결과표엔 두 arm 으로 보인다."))
     S <- compute_robust_cov(R, method = "OGK"); dimnames(S) <- list(a, a); return(S)
   }
+  if (identical(est, "isotropic")) {
+    # arXiv 2411.08864 등방 상관(2026-11-11) — 독립 파일 02_Infrastructure/portfolio/isotropic_corr_cov.R.
+    #   추정 실패(허용 범위 밖 · 결측 · 분산 0)는 그 함수가 이름을 부르고 멈춘다 — 표본공분산으로 낙하하지 않는다.
+    if (!exists("isotropic_corr_cov", mode = "function")) {
+      fp <- file.path(.gen_root(), "02_Infrastructure/portfolio/isotropic_corr_cov.R")
+      if (file.exists(fp)) suppressWarnings(suppressMessages(source(fp)))
+    }
+    if (!exists("isotropic_corr_cov", mode = "function"))
+      stop("gen_sigma: isotropic_corr_cov 부재 — isotropic 형제를 만들 수 없다")
+    S <- isotropic_corr_cov(R); attr(S, "iso_diag") <- NULL; dimnames(S) <- list(a, a)
+    Ssamp <- stats::cov(R)
+    if (max(abs(S - Ssamp)) / max(abs(Ssamp)) < 1e-10)
+      stop("gen_sigma: est=isotropic 산출이 표본공분산과 구별되지 않음(폴백 의심)")
+    return(S)
+  }
   if (!exists(".get_cor_cov", mode = "function")) {
     fp <- file.path(.gen_root(), "02_Infrastructure/portfolio/hrp_core.R")
     if (file.exists(fp)) suppressWarnings(suppressMessages(source(fp)))

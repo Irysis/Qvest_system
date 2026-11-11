@@ -1,7 +1,7 @@
 {
   "_doc": "비중 결정 방법론 통합 색인 — **파생 파일**(손편집 금지). 재생성 = source('02_Infrastructure/portfolio/weight_catalog.R'); sync_catalog(). 엔트리는 리졸버만 적는다(구현 복사 금지). 정규형 = wrap_adapter(method_registry.R:55).",
   "generator": "02_Infrastructure/portfolio/weight_catalog.R::sync_catalog",
-  "generated_at": "2026-10-16T21:00:00+0900",
+  "generated_at": "2026-11-11T23:04:58+0900",
   "status_vocab": {
     "retired": 0,
     "blocked_inputs": 1,
@@ -11,12 +11,12 @@
   },
   "retraction_note": "G-5(2026-08-23 도훈): settled-negative 선언 철회. DPL·PPO_RL·Genetic 은 retired 로 박지 않는다 — 정상 등재하고 같은 게이트(verify_adapter · sweep/DSR · book-marginal ΔIR≥0.05 · PIT)를 건다.",
   "counts": {
-    "generated": 9,
+    "generated": 10,
     "lean_builtin": 23,
-    "paper_adapter": 12,
+    "paper_adapter": 14,
     "qepm_registry": 14
   },
-  "n_entries": 58,
+  "n_entries": 61,
   "entries": [
     {
       "catalog_id": "lean:ivol",
@@ -137,7 +137,7 @@
       "est_cost_min": 8,
       "probe": {
         "ok": true,
-        "max_abs_dev_from_ew": 0.11266491,
+        "max_abs_dev_from_ew": 0.12183791,
         "reason": null,
         "log": ""
       }
@@ -602,7 +602,7 @@
       "est_cost_min": 8,
       "probe": {
         "ok": true,
-        "max_abs_dev_from_ew": 0.11,
+        "max_abs_dev_from_ew": 0.18546102,
         "reason": null,
         "log": ""
       }
@@ -906,7 +906,7 @@
       "est_cost_min": 10,
       "probe": {
         "ok": true,
-        "max_abs_dev_from_ew": 0.16,
+        "max_abs_dev_from_ew": 0.19667949,
         "reason": null,
         "log": ""
       }
@@ -1357,7 +1357,13 @@
       "trial_family_id": null,
       "n_trials_family": 1,
       "prior_measured": null,
-      "est_cost_min": 10
+      "est_cost_min": 10,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.10277782,
+        "reason": null,
+        "log": "[ecm] d=2026-06-01 n=25 k=5 cap=1.00 active=25 capbind=0 eps2=0.7008 infeasible=0"
+      }
     },
     {
       "catalog_id": "paper:HRPLdP2016",
@@ -1381,7 +1387,13 @@
       "trial_family_id": null,
       "n_trials_family": 1,
       "prior_measured": null,
-      "est_cost_min": 10
+      "est_cost_min": 10,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.1224707,
+        "reason": null,
+        "log": "[hrp] d=2026-06-01 n=25 maxw=0.1625 effn=13.82"
+      }
     },
     {
       "catalog_id": "paper:NCOLdP2019",
@@ -1405,7 +1417,13 @@
       "trial_family_id": null,
       "n_trials_family": 1,
       "prior_measured": null,
-      "est_cost_min": 10
+      "est_cost_min": 10,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.09431833,
+        "reason": null,
+        "log": "[nco] d=2026-06-01 n=25 q=10.40 nfacts=1 mp_var=1.0000 k=2 maxw=0.1343 effn=14.38"
+      }
     },
     {
       "catalog_id": "paper:MichaudResampledMinVar",
@@ -1429,7 +1447,13 @@
       "trial_family_id": null,
       "n_trials_family": 1,
       "prior_measured": null,
-      "est_cost_min": 10
+      "est_cost_min": 10,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.1057419,
+        "reason": null,
+        "log": "[michaud] d=2026-06-01 n=25 B=500 T=260 mcse=0.00102 maxw=0.1457 effn=14.22"
+      }
     },
     {
       "catalog_id": "paper:CVaRLPRU2000",
@@ -1453,7 +1477,13 @@
       "trial_family_id": null,
       "n_trials_family": 1,
       "prior_measured": null,
-      "est_cost_min": 10
+      "est_cost_min": 10,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.18839852,
+        "reason": null,
+        "log": "[cvar] d=2026-06-01 n=25 T=260 beta=0.95 cvar=0.006961 var=0.006411 active=20 maxw=0.2284 effn=9.74"
+      }
     },
     {
       "catalog_id": "paper:ERCMRT2010",
@@ -1477,7 +1507,73 @@
       "trial_family_id": null,
       "n_trials_family": 1,
       "prior_measured": null,
-      "est_cost_min": 10
+      "est_cost_min": 10,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.04577711,
+        "reason": null,
+        "log": "[erc] d=2026-06-01 n=25 iter=11 rc_dev=3.42e-14 maxw=0.0858 effn=21.35"
+      }
+    },
+    {
+      "catalog_id": "paper:SkewRPBKR2022",
+      "label": "SkewRPBKR2022",
+      "origin": "paper_adapter",
+      "family": "optimizer",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "adapter_file",
+        "adapter": "02_Infrastructure/methods/adapters/skew_rp_bruder_kostyuchyk_roncalli_2022.R",
+        "entrypoint": "method_weights",
+        "paper_id": "arxiv:2202.10721"
+      },
+      "screen_axes": {
+        "shrinkage_builtin": "no",
+        "statistic_order": "tail",
+        "screen_priority": "비중 카탈로그 등재(11-11 · 4분법 구성 규칙)"
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 10,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.04577711,
+        "reason": null,
+        "log": "[skrp] d=2026-06-01 n=25 n_jump=0 pi=0.0000 es=0.011111 iters=4 fallback=nojump"
+      }
+    },
+    {
+      "catalog_id": "paper:TopoRPNKA2026",
+      "label": "TopoRPNKA2026",
+      "origin": "paper_adapter",
+      "family": "optimizer",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "adapter_file",
+        "adapter": "02_Infrastructure/methods/adapters/topological_rp_nayar_kulkarni_ainasse_2026.R",
+        "entrypoint": "method_weights",
+        "paper_id": "arxiv:2604.16773"
+      },
+      "screen_axes": {
+        "shrinkage_builtin": "no",
+        "statistic_order": "second",
+        "screen_priority": "비중 카탈로그 등재(11-11 · 4분법 구성 규칙) · 허브 집중 주의"
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 10,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.18966507,
+        "reason": null,
+        "log": "[trp] d=2026-06-01 n=25 root=A00012 depth=8 leaves=10 active=25"
+      }
     },
     {
       "catalog_id": "gen:lean_score_tilt__shr_gerber_rmt",
@@ -1631,7 +1727,38 @@
         "ok": true,
         "max_abs_dev_from_ew": 0.04,
         "reason": null,
-        "log": "[weight_method_registry.R] Loaded. |   14 methods registered: MVO, MVO_grid, HRP, ERC, CVaR_LP, CDaR_LP, MaxDiv, EntropyPooling, BlackLitterman, Protection_ES, PPO_RL, Genetic, Ensemble, DPL | Functions: list_methods(family=NULL), describe_method(name),"
+        "log": ""
+      }
+    },
+    {
+      "catalog_id": "gen:qepm_MVO__shr_isotropic",
+      "label": "qepm_MVO__shr_isotropic",
+      "origin": "generated",
+      "family": "generated_shrinkage_lift",
+      "status": "active",
+      "notes": "parent=qepm:MVO rule=shrinkage_lift emitted=2026-11-11T23:04:50+0900",
+      "resolver": {
+        "kind": "adapter_file",
+        "adapter": "02_Infrastructure/methods/adapters/gen/qepm_MVO__shr_isotropic.R",
+        "entrypoint": "method_weights",
+        "parent": "qepm:MVO",
+        "rule": "shrinkage_lift"
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "sweep_candidate_family",
+      "trial_family_id": "WVF_20260824011714_qepm_MVO_shrinkage_lift",
+      "n_trials_family": 6,
+      "prior_measured": null,
+      "est_cost_min": 6,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.04,
+        "reason": null,
+        "log": ""
       }
     },
     {

@@ -71,6 +71,13 @@ GV_FIXED_RECIPE <- list(
     est_cov_method = c("sample", "ledoit_wolf", "lw_nls", "gerber_rmt"),
     # ctx$Sigma 를 통째로 받는 부모(QEPM dispatch)에 통하는 5종 — OGK 는 이 경로로만 닿는다
     est_sigma      = c("sample", "ledoit_wolf", "lw_nls", "gerber_rmt", "OGK"),
+    # (2026-11-11) 추정기 축 확장분 — 기본 방출 목록(위 est_sigma 5종)과 **따로** 선언한다. 기본 목록에 더하면 기존 형제가 새 가족 id 로
+    #   다시 방출돼 측정 전 기록(emitted_at)이 덮인다. 확장분은 기존 가족에 이어 붙여 방출한다:
+    #     generate_siblings("qepm:MVO", "shrinkage_lift", fixed_recipe = gv_recipe_ext("shrinkage_lift"),
+    #                       extends_family = "<기존 가족 id>")
+    #   isotropic = arXiv 2411.08864 등방 상관(02_Infrastructure/portfolio/isotropic_corr_cov.R). ctx$Sigma 를 통째로 받는 부모 경로 전용이다 —
+    #     cov_method= 인자 경로는 hrp_core.R::.get_cor_cov 를 고쳐야 해서 열지 않는다(부모 편집 금지 규약).
+    est_sigma_ext  = c("isotropic"),
     note = "부모가 생 표본공분산이면 추정기만 바꾼 형제. 목적함수·선별 불변."
   ),
   moment_truncation = list(
@@ -166,6 +173,21 @@ GV_FIXED_RECIPE <- list(
 '      stop(paste0("gen_sigma: rrcov 패키지 부재 — compute_robust_cov 가 **표본공분산으로 조용히 ",
                    "낙하**한다. 그러면 OGK 형제가 sample 형제와 동일해지고 결과표엔 두 arm 으로 보인다."))',
 '    S <- compute_robust_cov(R, method = "OGK"); dimnames(S) <- list(a, a); return(S)',
+'  }',
+'  if (identical(est, "isotropic")) {',
+'    # arXiv 2411.08864 등방 상관(2026-11-11) — 독립 파일 02_Infrastructure/portfolio/isotropic_corr_cov.R.',
+'    #   추정 실패(허용 범위 밖 · 결측 · 분산 0)는 그 함수가 이름을 부르고 멈춘다 — 표본공분산으로 낙하하지 않는다.',
+'    if (!exists("isotropic_corr_cov", mode = "function")) {',
+'      fp <- file.path(.gen_root(), "02_Infrastructure/portfolio/isotropic_corr_cov.R")',
+'      if (file.exists(fp)) suppressWarnings(suppressMessages(source(fp)))',
+'    }',
+'    if (!exists("isotropic_corr_cov", mode = "function"))',
+'      stop("gen_sigma: isotropic_corr_cov 부재 — isotropic 형제를 만들 수 없다")',
+'    S <- isotropic_corr_cov(R); attr(S, "iso_diag") <- NULL; dimnames(S) <- list(a, a)',
+'    Ssamp <- stats::cov(R)',
+'    if (max(abs(S - Ssamp)) / max(abs(Ssamp)) < 1e-10)',
+'      stop("gen_sigma: est=isotropic 산출이 표본공분산과 구별되지 않음(폴백 의심)")',
+'    return(S)',
 '  }',
 '  if (!exists(".get_cor_cov", mode = "function")) {',
 '    fp <- file.path(.gen_root(), "02_Infrastructure/portfolio/hrp_core.R")',
@@ -351,8 +373,11 @@ sprintf('  w <- %s', call),
 #' @param fixed_recipe 선언 레시피(기본 = GV_FIXED_RECIPE[[rule]]). 성과 무관.
 #' @param max_emit 방출 상한 — arm 팽창을 구조적으로 막는다(R4).
 #' @param dry_run TRUE 면 파일·원장 미기록(무엇이 나올지만 본다)
+#' @param extends_family 이미 방출된 가족의 trial_family_id — 주면 새 가족을 만들지 않고 그 가족에 형제를 이어 붙인다(2026-11-11).
+#'   같은 부모 · 같은 규칙이어야 하고, 이미 있는 형제를 다시 방출하면 거부한다. 원장의 형제 수는 **누적**으로 적힌다
+#'   (한 가족에서 최고를 고르면 누적 형제 수만큼의 스윕이다 — 가족을 쪼개 회계를 줄일 수 없다).
 generate_siblings <- function(catalog_id, rule, fixed_recipe = NULL, max_emit = 5L,
-                              root = .gv_root(), dry_run = FALSE, quiet = FALSE) {
+                              root = .gv_root(), dry_run = FALSE, quiet = FALSE, extends_family = NULL) {
   if (!(rule %in% names(GV_FIXED_RECIPE)))
     stop(sprintf("[gv] 미지 규칙: %s (가능: %s)", rule, paste(names(GV_FIXED_RECIPE), collapse = ", ")))
   rec <- fixed_recipe %||% GV_FIXED_RECIPE[[rule]]
@@ -392,9 +417,28 @@ generate_siblings <- function(catalog_id, rule, fixed_recipe = NULL, max_emit = 
   # ★방출 상한 — 결정적 절단(앞에서부터). 성과로 자르지 않는다.
   n_planned <- length(plan)
   if (length(plan) > max_emit) plan <- plan[seq_len(max_emit)]
+  if (!length(plan))
+    stop(sprintf("[gv] %s · %s — 방출할 형제가 없다(레시피가 이 부모 경로에 빈 목록을 준다)", catalog_id, rule))
+
+  # ★가족 확장(2026-11-11) — 이미 방출된 가족에 형제를 이어 붙인다. 새 가족 id 를 만들면 같은 부모 × 같은 규칙의 형제가 두 가족으로
+  #   갈려 '한 가족에서 최고를 고르면 형제 수만큼의 스윕'이라는 회계가 줄어든다. 확장 기록은 기존 가족 id 를 쓰고 형제 수를 누적으로 적는다.
+  ext_k_old <- 0L
+  if (!is.null(extends_family)) {
+    fam <- .gv_family_members(extends_family, root)
+    if (!length(fam$ids)) stop(sprintf("[gv] extends_family 미지 가족: %s", extends_family))
+    if (!identical(fam$parent, catalog_id) || !identical(fam$rule, rule))
+      stop(sprintf("[gv] extends_family 불일치 — 가족 %s 는 %s · %s 인데 요청은 %s · %s",
+                   extends_family, fam$parent, fam$rule, catalog_id, rule))
+    new_ids <- vapply(plan, function(p) sprintf("%s__%s", parent_label, p$suffix), character(1))
+    dup <- intersect(new_ids, fam$ids)
+    if (length(dup))
+      stop(sprintf("[gv] 이미 방출된 형제를 다시 방출할 수 없다(측정 전 기록이 덮인다): %s", paste(dup, collapse = ", ")))
+    ext_k_old <- length(fam$ids)
+  }
 
   # moment_truncation 은 부모를 대체하는 **대조쌍**이라 부모 호출이 아니라 고정 목적함수를 쓴다.
-  tfid <- sprintf("WVF_%s_%s_%s", format(Sys.time(), "%Y%m%d%H%M%S"), parent_label, rule)
+  tfid <- if (!is.null(extends_family)) as.character(extends_family) else
+    sprintf("WVF_%s_%s_%s", format(Sys.time(), "%Y%m%d%H%M%S"), parent_label, rule)
   sibs <- list(); files <- character(0)
   for (p in plan) {
     aid <- sprintf("%s__%s", parent_label, p$suffix)
@@ -418,14 +462,16 @@ generate_siblings <- function(catalog_id, rule, fixed_recipe = NULL, max_emit = 
   }
 
   # k>1 이면 argmax 를 고르는 순간 sweep 이다 — 미리 라벨을 박고 n_trials 를 가족에 누적시킨다.
-  sel <- if (length(sibs) > 1L) "sweep_candidate_family" else "chain"
+  n_family <- length(sibs) + ext_k_old          # 가족 확장이면 누적 형제 수(기존 + 새로 방출)
+  sel <- if (n_family > 1L) "sweep_candidate_family" else "chain"
   ledger <- list(
     record_type = "sibling_emission",
     trial_family_id = tfid,
     emitted_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
     parent_catalog_id = catalog_id, rule = rule,
     fixed_recipe_note = as.character(rec$note %||% ""),
-    n_planned = n_planned, n_siblings = length(sibs), max_emit = max_emit,
+    n_planned = n_planned, n_siblings = n_family, n_new = length(sibs),
+    family_extension = !is.null(extends_family), max_emit = max_emit,
     selection_type = sel,
     emission_is_pre_measurement = TRUE,
     generator = "02_Infrastructure/methods/generate_weight_variants.R::generate_siblings",
@@ -451,6 +497,35 @@ generate_siblings <- function(catalog_id, rule, fixed_recipe = NULL, max_emit = 
       cat("     ★다음: admit_generated(<파일>) — verify_adapter 통과분만 카탈로그에 오른다\n")
   }
   invisible(list(trial_family_id = tfid, siblings = sibs, files = files, ledger = ledger))
+}
+
+#' 추정기 축 확장분만 담은 레시피(2026-11-11) — generate_siblings(..., fixed_recipe = gv_recipe_ext(rule), extends_family = <가족 id>).
+#'   기본 레시피의 est_sigma_ext 를 est_sigma 자리에 놓고 cov_method 경로는 비운다(그 경로는 열지 않았다).
+gv_recipe_ext <- function(rule = "shrinkage_lift") {
+  if (!identical(rule, "shrinkage_lift")) stop(sprintf("[gv] 확장 레시피 미선언 규칙: %s", rule))
+  ext <- as.character(unlist(GV_FIXED_RECIPE$shrinkage_lift[["est_sigma_ext"]]))
+  if (!length(ext)) stop("[gv] est_sigma_ext 가 비었다")
+  list(est_cov_method = character(0), est_sigma = ext,
+       note = sprintf("추정기 축 확장분(%s) — 기존 가족에 이어 붙인 형제. 목적함수·선별 불변.", paste(ext, collapse = ", ")))
+}
+
+#' 한 가족(trial_family_id)의 방출 기록에서 형제 id · 부모 · 규칙을 읽는다(가족 확장 검사용 · 읽기 전용).
+.gv_family_members <- function(tfid, root = .gv_root()) {
+  lp <- file.path(root, GV_LEDGER)
+  out <- list(ids = character(0), parent = NA_character_, rule = NA_character_)
+  if (!file.exists(lp)) return(out)
+  for (l in readLines(lp, warn = FALSE)) {
+    if (!nzchar(trimws(l))) next
+    o <- tryCatch(fromJSON(l, simplifyVector = FALSE), error = function(z) NULL)
+    if (is.null(o) || !identical(as.character(.gv_get(o, "record_type", "")), "sibling_emission")) next
+    if (!identical(as.character(.gv_get(o, "trial_family_id", "")), as.character(tfid))) next
+    out$parent <- as.character(.gv_get(o, "parent_catalog_id", NA_character_))
+    out$rule <- as.character(.gv_get(o, "rule", NA_character_))
+    for (s in .gv_get(o, "siblings", list()))
+      out$ids <- c(out$ids, as.character(.gv_get(s, "adapter_id", "")))
+  }
+  out$ids <- unique(out$ids[nzchar(out$ids)])
+  out
 }
 
 #' moment_truncation 짝 — 부모의 고차/꼬리 목적함수를 1·2차로 제한한 대조.

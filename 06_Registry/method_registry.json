@@ -1208,6 +1208,95 @@
       "free_params": null,
       "measured": false,
       "similar_to": []
+    },
+    {
+      "method_id": "SkewRPBKR2022",
+      "route": "optimizer",
+      "adapter_kind": "weight",
+      "paper_id": "arxiv:2202.10721",
+      "paper_title": "Risk Parity Portfolios with Skewness Risk: An Application to Factor Investing and Alternative Risk Premia (Bruder · Kostyuchyk · Roncalli)",
+      "routed_on": "2026-11-11 · 4분법 분류(구성 규칙) → 비중 카탈로그 등재 · 도훈 승인 · 설계 04_Research/01_reports/portfolio_paper_layer_split_20261112/README.md §5 · 검사 08_Tests/methods/test_skew_rp_bkr_2022.R",
+      "mechanism": "수익을 정상 국면 N(μ, Σ)과 점프 국면 N(μ+μ̃, Σ+Σ̃)의 2성분 가우시안 혼합으로 두고(§2.1.2), 혼합분포 99% 기대 손실(ES · 식 es1)의 종목별 위험 기여(식 rc1)를 균등 예산에 맞춘다(§3.3 · 풀이 y* = argmin ES(y) − Σ b ln y). 점프가 없으면 가우시안 ES 위험 패리티 = 변동성 ERC 와 같은 해다(§4.2). 점프가 있으면 점프일에 크게 움직이는 종목의 위험 기여가 커져 비중이 준다. 구현은 원문 예 1 · 예 2 의 표 값을 재현한다.",
+      "kr_mapping": "엔진이 고른 ≤25종의 비중만 정한다. 점프 국면 모수가 과모수라 점프를 시장 공통 한 요인으로 제한한다 — 받은 종목 균등가중 일별 수익에 1차원 문턱 판정(|y| ≥ κσ · 정상 σ 는 점프 아닌 날로 다시 재며 고정점까지 · 부록 7.7 · 7.9) → 점프 강도 λ = 점프일 수/T · 점프 평균 · 분산은 시장 계열에서 · 종목별 점프 진폭은 점프일 원점 회귀 계수. μ = 0(논문 §4.2 — ctx$mu 미사용). 점프일이 창에 없거나 추정 불가 · 존재 조건 실패 · 풀이 미수렴이면 가우시안 ES 위험 패리티로 내려가고 진단 줄(fallback=)에 남는다. 논문은 일별 추정을 문제 삼고 주간 · 월간을 선호했다 — ctx 가 일별 창이라 일별로 쓴다. 상승 · 하락 점프를 같은 국면으로 센다(논문의 대칭 가정). ★점프 없는 창에서는 paper:ERCMRT2010 과 같은 해다(등록 검증 고정 자료는 점프 없는 정규 자료라 nearest_arm 이 근접으로 뜬다 — 중복이 아니라 논문 성질이고, 둘은 점프일이 있는 창에서만 갈린다).",
+      "adapter": "02_Infrastructure/methods/adapters/skew_rp_bruder_kostyuchyk_roncalli_2022.R",
+      "entrypoint": "method_weights",
+      "verdict": "implemented",
+      "registration": {
+        "verified_by": "register_method.R (production wrapper 경유 · 합성 fixture)",
+        "checks": {
+          "file_exists": true,
+          "sources": true,
+          "entrypoint": "method_weights",
+          "deterministic": true,
+          "non_degenerate": "max|w-EW|=0.09472",
+          "constraints": "sum=1.000000 max=0.2197",
+          "nearest_arm": "ERCMRT2010 (max|dw|=2.94e-14 · 비교 10건)  ★근접 — 같은 것을 두 번 재는지 확인할 것"
+        },
+        "failure_reason": null,
+        "unverified_on_fixture": false,
+        "unverified_reason": null,
+        "fixture": "rm_fixture(n_assets=8, n_obs=260, seed=20260813)",
+        "scope_note": "계약 준수 검증이지 성과 검증이 아니다. 성과는 dispatch Σ-A/B 가 잰다."
+      },
+      "screen_axes": {
+        "shrinkage_builtin": "no",
+        "statistic_order": "tail",
+        "screen_priority": "비중 카탈로그 등재(11-11 · 4분법 구성 규칙)"
+      },
+      "selection_type": "chain",
+      "free_params": {
+        "alpha": "0.99 — 논문 §3.3.1 · §4.2",
+        "kappa": "4.0 — 논문 부록 7.7 각주의 범위 3.5~4.0 의 상단 · 사전 고정(성과로 고르지 않음)",
+        "v": "0 — 논문 §4.3 각주",
+        "budgets": "1/n"
+      },
+      "measured": false,
+      "similar_to": []
+    },
+    {
+      "method_id": "TopoRPNKA2026",
+      "route": "optimizer",
+      "adapter_kind": "weight",
+      "paper_id": "arxiv:2604.16773",
+      "paper_title": "Topological Risk Parity (Nayar · Kulkarni · Ainasse)",
+      "routed_on": "2026-11-11 · 4분법 분류(구성 규칙) → 비중 카탈로그 등재 · 도훈 승인 · 설계 04_Research/01_reports/portfolio_paper_layer_split_20261112/README.md §5 · 검사 08_Tests/methods/test_topological_rp_nka_2026.R",
+      "mechanism": "상관 거리 D = sqrt((1−C)/2) 의 최소 신장 나무를 만들고(§4.2), 뿌리에서 바깥으로 방향을 준 뒤 위상 인자 g_r = 1 · g_v = α_pa(v)·g_pa(v) · α_u = (1−ρ) + ρ/b(u)(b = 자식 수 · §5.1 식 alpha · recursive-g)를 신호에 곱해 L1 정규화한다(w ∝ s·g). 내부 노드도 자산이라 자기 몫을 그대로 갖고 자식에게는 α 배만 내려간다(HRP 의 이분할 역분산과 다른 비이진 나무 배분).",
+      "kr_mapping": "변형 I(TRP-MST)만 구현 — 변형 II(SPY 뿌리 · 업종 ETF 층)는 ctx 에 지수 · 업종 계열이 없어 미구현. 롱온리 사상: 부호 신호 s ≡ +1(크기 1) → w ∝ g(위상 인자만 남는다 · ctx$mu 미사용 · 논문의 시장 중립 · 헤지 성질은 작동하지 않는다 · 변동성도 쓰지 않는다 — 논문 Step 5). ρ = 1: 논문은 수치를 주지 않는다 — ρ = 0 은 s ≡ 1 에서 정확히 균등이라 퇴화이고, 논문이 이름 붙인 비퇴화 극한이자 '위상 위험 패리티' 명칭을 허용한 값이 ρ = 1 이다(§6.1 · §12). 뿌리 = hub mode(최대 차수 · 동률은 이름순) — 다른 두 규칙은 s ≡ 1 에서 나무 기하와 무관해진다. 활동 필터 k = 창 전체 · ε = 0(논문 수치 없음). ★허브 집중: ρ = 1 에서 뿌리 비중 ≥ 1/(1 + 나무 최대 깊이) — 별 모양 나무면 한 종목 약 50%(비중 상한 없는 축이라 그대로 나간다). 나무는 상관 변화에 불연속이라 뿌리가 바뀌면 비중이 크게 바뀔 수 있다.",
+      "adapter": "02_Infrastructure/methods/adapters/topological_rp_nayar_kulkarni_ainasse_2026.R",
+      "entrypoint": "method_weights",
+      "verdict": "implemented",
+      "registration": {
+        "verified_by": "register_method.R (production wrapper 경유 · 합성 fixture)",
+        "checks": {
+          "file_exists": true,
+          "sources": true,
+          "entrypoint": "method_weights",
+          "deterministic": true,
+          "non_degenerate": "max|w-EW|=0.175",
+          "constraints": "sum=1.000000 max=0.3000",
+          "nearest_arm": "SchurDamping (max|dw|=0.162 · 비교 11건)"
+        },
+        "failure_reason": null,
+        "unverified_on_fixture": false,
+        "unverified_reason": null,
+        "fixture": "rm_fixture(n_assets=8, n_obs=260, seed=20260813)",
+        "scope_note": "계약 준수 검증이지 성과 검증이 아니다. 성과는 dispatch Σ-A/B 가 잰다."
+      },
+      "screen_axes": {
+        "shrinkage_builtin": "no",
+        "statistic_order": "second",
+        "screen_priority": "비중 카탈로그 등재(11-11 · 4분법 구성 규칙) · 허브 집중 주의"
+      },
+      "selection_type": "chain",
+      "free_params": {
+        "rho": "1 — 논문이 이름 붙인 비퇴화 극한(§6.1 · §12) · 사전 고정",
+        "root_rule": "hub — §5.1 Step 2 의 세 규칙 중 하나",
+        "tau": "1e-3 — 논문 §4.1",
+        "eps": "0",
+        "k": "T(창 전체)"
+      },
+      "measured": false,
+      "similar_to": []
     }
   ],
   "cross_method_synthesis": {
