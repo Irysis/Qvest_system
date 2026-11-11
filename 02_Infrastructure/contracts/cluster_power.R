@@ -104,7 +104,15 @@ cp_declare <- function(target_rho, n_clusters, n_obs = NA_integer_,
 ##     휴리스틱은 오탐(C/CR·IN/INV·M/MA 처럼 접두만 겹치는 별개 계열)과 누락을 동시에 낸다.
 CP_FACTOR_DB_CLUSTERS <- 15L
 
+## 자리표시 분류 — 경제 계열이 아니다 (2026-11-11)
+##   충실구현 신호가 팩터로 등록되면(엔진 템플릿 · 예: RP_1603_00751) 등록부에 `category = "custom"` ·
+##   `labels$economic_family = "custom"` 으로 들어온다. 이것은 '계열 미선언'을 뜻하는 자리표시이지 16번째 경제 계열이 아니다.
+##   계열로 세면 임계가 0.514(n=15) → 0.497(n=16) 로 근거 없이 내려간다(이름 휴리스틱이 가짜 계열을 만든 것과 같은 종류의 오류).
+##   ⇒ 계열 수에서 뺀다. 그런 신호를 계열-군집 설계의 base 로 쓰려면 실제 경제 계열을 선언하고 n_clusters 를 그 설계에서 직접 준다.
+CP_PLACEHOLDER_FAMILIES <- c("custom")
+
 #' 레지스트리에서 선언 계열 수를 직접 읽는다 (상수 드리프트 감시용)
+#' 자리표시 분류(CP_PLACEHOLDER_FAMILIES)는 세지 않는다 — 선언된 경제 계열만 센다.
 #' @return integer 고유 계열 수, 못 읽으면 NA (0 을 반환해 '없음'으로 위장하지 않는다)
 cp_declared_cluster_count <- function(registry_path = NULL) {
   if (is.null(registry_path)) {
@@ -124,6 +132,7 @@ cp_declared_cluster_count <- function(registry_path = NULL) {
     if (is.null(v) || !length(v)) NA_character_ else as.character(v)[1]
   }, character(1))
   cats <- cats[!is.na(cats) & nzchar(cats)]
+  cats <- cats[!(cats %in% CP_PLACEHOLDER_FAMILIES)]
   if (!length(cats)) return(NA_integer_)
   length(unique(cats))
 }

@@ -98,6 +98,36 @@ chk("F3_constant_matches_registry", is.na(decl) || identical(as.integer(decl), C
             ifelse(is.na(decl), "NA(부재)", as.character(decl)), CP_FACTOR_DB_CLUSTERS))
 chk("F4_reader_no_zero_disguise", is.na(cp_declared_cluster_count("__no_such_file__.json")),
     "읽기 실패는 **NA** — 0 을 반환해 '계열 없음' 으로 위장하지 않는다")
+## F5~F7 (2026-11-11) — 자리표시 분류 'custom'(충실구현 신호가 팩터로 등록될 때 붙는 값)은 경제 계열이 아니다.
+##   11-11 까지 F3 이 '실측 16 ↔ 상수 15' 로 빨갰다 — 16번째는 계열이 아니라 custom 2건이었다. 픽스처 등록부로 양방향을 잰다.
+.cp_fix <- function(cats, labels_only = character(0)) {
+  f <- tempfile(fileext = ".json")
+  reg <- c(lapply(seq_along(cats), function(i) list(name = paste0("f", i), category = cats[i])),
+           lapply(seq_along(labels_only), function(i) list(name = paste0("l", i), labels = list(economic_family = labels_only[i]))))
+  names(reg) <- vapply(reg, function(x) x$name, character(1))
+  writeLines(jsonlite::toJSON(reg, auto_unbox = TRUE), f); f
+}
+.fam15 <- c("defense", "quality", "liquidity", "momentum", "regime", "accrual", "value", "consensus", "growth", "risk",
+            "crowding", "investor_flow", "technical", "leverage", "size")
+.fx_a <- .cp_fix(c(.fam15, "custom", "custom"), labels_only = "custom")
+chk("F5_placeholder_not_a_family", identical(cp_declared_cluster_count(.fx_a), 15L),
+    sprintf("경제 계열 15 + custom 3건(category 2 · labels 1) → %s (자리표시는 세지 않는다)", cp_declared_cluster_count(.fx_a)))
+.fx_b <- .cp_fix(c(.fam15, "custom", "macro_sensitivity"))
+chk("F6_real_new_family_still_detected", identical(cp_declared_cluster_count(.fx_b), 16L),
+    sprintf("진짜 새 계열 1개가 들어오면 %s — 드리프트 감시는 살아 있다(자리표시만 빠진다)", cp_declared_cluster_count(.fx_b)))
+.fx_c <- .cp_fix(c("custom", "custom"))
+chk("F7_only_placeholder_is_NA", is.na(cp_declared_cluster_count(.fx_c)),
+    "자리표시뿐인 등록부 = 선언 계열 없음 → NA(0 으로 위장하지 않는다)")
+## F8 [돌연변이] 자리표시 제외 줄을 뗀 사본은 custom 을 계열로 센다 — F5 는 공허하지 않다(11-11 이전의 빨강을 재현 · 소스 텍스트 치환 1곳 단정)
+.cp_src <- paste(readLines(SRC, encoding = "UTF-8", warn = FALSE), collapse = "\n")
+.cp_from <- "  cats <- cats[!(cats %in% CP_PLACEHOLDER_FAMILIES)]\n"
+.cp_hits <- lengths(regmatches(.cp_src, gregexpr(.cp_from, .cp_src, fixed = TRUE)))
+.cp_mut_env <- new.env(parent = globalenv())
+if (.cp_hits == 1L) invisible(utils::capture.output(eval(parse(text = sub(.cp_from, "", .cp_src, fixed = TRUE), encoding = "UTF-8"), envir = .cp_mut_env)))
+.cp_mut_n <- if (.cp_hits == 1L) tryCatch(.cp_mut_env$cp_declared_cluster_count(.fx_a), error = function(e) NA_integer_) else NA_integer_
+chk("F8_mutation_counts_placeholder", .cp_hits == 1L && identical(.cp_mut_n, 16L),
+    sprintf("제외 줄을 뗀 사본 → %s (치환 %d곳) — 자리표시를 계열로 세는 옛 동작", as.character(.cp_mut_n), .cp_hits))
+unlink(c(.fx_a, .fx_b, .fx_c))
 
 cat(sprintf("\nTOTAL: %d pass / %d fail\n", PASS, FAIL))
 cat(sprintf('{"test":"cluster_power","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))
