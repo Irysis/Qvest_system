@@ -1,0 +1,95 @@
+{
+  "schema": "round_core_releases_min_v1",
+  "format_note": "정본 형식 없음(11-11 확인) — 이 파일을 읽는 검사 · 시험은 아직 없다(pins.R:17 · load.R:2 주석과 round_core README '다음' 절만 이 파일을 말한다). 그래서 매니페스트 함수 pins.R::rc_core_manifest() 의 출력(판 · 파일별 md5 · 매니페스트 md5)을 그대로 최소 기록으로 쓴다. 출시 판 불변의 실제 보증 = 등록된 라운드 · 상설 판 · 사슬이 사전등록에 코어 판과 매니페스트 md5 를 핀으로 걸고(rc_pins_compute) 측정 · 판정 직전 rc_pins_mismatches 가 대조해 어긋나면 멈추는 것이다. load.R:2 의 '검사가 막는다'(이 파일과 v1 디렉터리의 매니페스트 대조로 v1 수정을 막는 검사)는 미구현 — 후속 과제.",
+  "manifest_rule": "v1/ 의 *.R · *.sh 파일명 정렬 → 줄마다 '<파일명> <md5>' → 개행으로 이은 텍스트 파일의 md5(pins.R::rc_core_manifest)",
+  "releases": [
+    {
+      "version": "v1",
+      "status": "released",
+      "released_at": "2026-11-11T13:44:41+0900",
+      "manifest_md5": "e70ac0af48a8bfa0f37b8c65b0cddb14",
+      "n_files": 20,
+      "files": {
+        "cell_eval.R": "81a368c159a5d88b77c64a828f8cef0a",
+        "driver.R": "5069d21567b39c59cc8fab2b362d000a",
+        "fingerprint.sh": "c617ce9c79a09c8280051d56b267117f",
+        "freshness.R": "87a79a9087037af863c009a4f123ebfb",
+        "load.R": "f7aad11504ccd928149c831f76b7bd21",
+        "measure_cell.R": "eeaa8715cf75448819514d333501ed6a",
+        "metrics.R": "5464f1aac3002cfbc6596ae7f79965ea",
+        "outcomes.R": "f3681442b20edb0fc752f4a85a9362de",
+        "p1.R": "004f1026c7a8961246022d95982838ba",
+        "p2.R": "312dda12b8a307fbcfc4ff560ce9ea47",
+        "p3.R": "e375fb4d71b6407704d080dcec20b11d",
+        "p4.R": "50a749c9a6fb36c867d75d516cf005a1",
+        "pair.R": "c2453ebcda54fed8d8a5d980e1c6d7c8",
+        "pins.R": "3c793976717044796e39999ee8d4ceaf",
+        "register.R": "d8629123b0aeaf34510497ba8fc3797a",
+        "rules.R": "0cf24c4d150dfd7c739da04153af4a1c",
+        "rules_p2.R": "f8cf2dec4d4bee690dd48350ef64630a",
+        "spec.R": "ad95e3613e55564f1e149d40dc7d2273",
+        "standing.R": "83a570884a20c6574999ae434b32eca3",
+        "util.R": "b0a0b4cab76189f1c237c374ba7208f8"
+      },
+      "source_commit": "a5bdae839fe497b9f885be0ad06acd3588eafbe0",
+      "released_by": "Q — v10.2 사다리 루프 순서 1(설계 04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/README.md §4 · 재개 저널 OP-20261110-V102-LADDER S1)",
+      "immutability": "출시된 판의 파일은 고치지 않는다 — 바꿀 일이 생기면 새 판(v2)을 만든다(round_core README 원칙 · load.R 머리)",
+      "tests_at_release": [
+        {
+          "path": "08_Tests/programs/test_round_core_v1.R",
+          "pass": 39,
+          "fail": 0
+        },
+        {
+          "path": "08_Tests/programs/test_round_core_v1_flow.R",
+          "pass": 41,
+          "fail": 0
+        },
+        {
+          "path": "08_Tests/programs/test_round_core_v1_standing.R",
+          "pass": 94,
+          "fail": 0
+        },
+        {
+          "path": "08_Tests/programs/test_round_core_v1_p2.R",
+          "pass": 34,
+          "fail": 0
+        },
+        {
+          "path": "08_Tests/programs/test_round_core_v1_p4_chain.R",
+          "pass": 159,
+          "fail": 0
+        },
+        {
+          "path": "08_Tests/scenarios/test_scn_l1_chain_e2e.R",
+          "pass": 76,
+          "fail": 0
+        },
+        {
+          "path": "08_Tests/scenarios/test_scn_chain_tick_core.R",
+          "pass": 42,
+          "fail": 0
+        },
+        {
+          "path": "08_Tests/scenarios/test_scn_chain_tick.sh",
+          "pass": 58,
+          "fail": 0
+        },
+        {
+          "path": "08_Tests/ops/test_standing_board_run.sh",
+          "pass": 18,
+          "fail": 0
+        }
+      ],
+      "first_consumers": [
+        "P1_RETURN/P1S01_standing_qualification(상설 판 · 판 1)",
+        "P4 강화 사슬(p4_chain · 첫 사슬 판)"
+      ],
+      "known_limits": [
+        "P2R05 는 v1 이전 라운드 전용 코드로 등록됐다(핀 51개 파일 무접촉 결정 L1-SPEED-PLAN-20261020) — 코어 v1 소비자가 아니다.",
+        "선택 현실 점검 재채점의 p2 · p3 템플릿 닫기 연결은 v1 에 없다(설계 README §9) — 넣으려면 v2.",
+        "MC8 선택 방어 라벨(빈칸 14) · 재시드 띠(빈칸 21)는 채택 규칙 판 v2 에서 미구현(round_core README P4 절)."
+      ]
+    }
+  ]
+}
