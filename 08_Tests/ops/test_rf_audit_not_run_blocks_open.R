@@ -139,8 +139,15 @@ if (!anyNA(c(i_wd, i_fn, i_vo, i_cl)) && i_wd < i_fn && i_fn < i_vo && i_vo < i_
   ng("C3 순서", sprintf("wd=%s fn=%s vo=%s cl=%s", i_wd, i_fn, i_vo, i_cl))
 if (length(calls) == 2L && !is.na(i_vo) && !is.na(i_cl) && any(calls > i_vo & calls < i_cl) && any(calls > i_cl))
   ok("C4 rp_verify 호출 2곳 — 분기 안(에이전트 전) + 정상 경로(에이전트 후)") else ng("C4 호출 지점", paste(calls, collapse = ","))
-if (sum(grepl('Rscript "$ROOT/02_Infrastructure/ops/rf_replication_verify.R"', ac, fixed = TRUE)) == 1L)
-  ok("C5 검증기 직접 호출은 rp_verify 안 한 줄뿐(env·인자 재사용)") else ng("C5 검증기 직접 호출 수")
+## 11-11 재조준(밤 배터리 회귀 — 15be6c097): 되살림 상한 초과 경로가 '거두기만' 모드(RP_WITHDRAW_ONLY=1 · 측정 없음)로 검증기를
+##   한 번 더 직접 부른다. 측정 호출은 여전히 rp_verify 안 한 줄이어야 한다 — 거두기 호출은 바로 앞 줄(줄 이음 '\')에
+##   RP_WITHDRAW_ONLY=1 이 붙은 것만 따로 세고, 그것도 정확히 하나여야 한다(표식 없는 직접 호출이 늘면 여전히 빨개진다).
+i_vr  <- which(grepl('Rscript "$ROOT/02_Infrastructure/ops/rf_replication_verify.R"', ac, fixed = TRUE))
+is_wd <- vapply(i_vr, function(i) any(grepl("RP_WITHDRAW_ONLY=1", ac[c(i, if (i > 1L) i - 1L)], fixed = TRUE)), logical(1))
+i_fe  <- if (!is.na(i_fn)) which(grepl("^}\\s*$", ac) & seq_along(ac) > i_fn)[1] else NA_integer_
+if (sum(!is_wd) == 1L && sum(is_wd) <= 1L && !is.na(i_fe) && all(i_vr[!is_wd] > i_fn & i_vr[!is_wd] < i_fe))
+  ok(sprintf("C5 검증기 측정 호출은 rp_verify 안 한 줄뿐(env·인자 재사용) · 거두기만(RP_WITHDRAW_ONLY=1) 호출 %d", sum(is_wd))) else
+  ng("C5 검증기 직접 호출 수", sprintf("측정 %d · 거두기 %d · 줄 %s", sum(!is_wd), sum(is_wd), paste(i_vr, collapse = ",")))
 if (!is.na(i_vo)) {
   j_fi <- which(grepl("^fi\\s*$", ac) & seq_along(ac) > i_vo)[1]
   blk <- paste(ac[i_vo:j_fi], collapse = "\n")
