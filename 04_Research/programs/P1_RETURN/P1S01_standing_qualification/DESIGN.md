@@ -70,7 +70,7 @@
 ## 6. 예산 · 시행 회계
 - 칸 = 시드 2 + 레인 인계마다 1(규칙상 상한 없음 · `scan --max N` 은 운영 상한).
 - family_root = paper_key · n_family = max(계보 앞선 사전등록 · 상설 원장 회계 최댓값, 레인 측정 수(대표 + 변형 — REPLICATION-ALL-METHODS)) + 1. 같은 논문의 재구현 엔진은 앞선 상설 항목 위에 +1(시험 H3).
-- 측정 = 엔진 신호 1회(기저 캐시: 같은 엔진 md5 · 같은 데이터 판본이면 재사용) + 표준 구성. ~~DNN 엔진은 GPU 임대 규칙(WP3) 아래서.~~ → 11-11 정정(격리 교차 점검 S-2 · 판단 T1 note C-20261111-004): 상설 측정 경로(standing.R · round.sh · standing_board_run.sh · rf_cell_worker.R)는 GPU 임대를 잡지 않는다 — torch 엔진(2002.06975 DNN)은 CUDA 가 있으면 레인(gpu1)과 같은 GPU 를 함께 쓴다(RTX 4080 SUPER 16 GB · 11-11 13:4x 레인 THGNN 약 4.2 GB 사용 · 속도만 나눈다 · RAM 여유 약 11.8 GB ≥ 셀 워커 1개 정점 약 7.5 GB — 13:4x 시점 관측값). 임대를 붙이는 것은 판 2 · 코어 v2 몫.
+- 측정 = 엔진 신호 1회(기저 캐시: 같은 엔진 md5 · 같은 데이터 판본이면 재사용) + 표준 구성. ~~DNN 엔진은 GPU 임대 규칙(WP3) 아래서.~~ → 11-11 정정(격리 교차 점검 S-2 · 판단 T1 note C-20261111-004): 상설 측정 경로(standing.R · round.sh · standing_board_run.sh · rf_cell_worker.R)는 GPU 임대를 잡지 않는다 — torch 엔진(2002.06975 DNN)은 CUDA 가 있으면 레인(gpu1)과 같은 GPU 를 함께 쓴다(RTX 4080 SUPER 16 GB · 11-11 13:4x 레인 THGNN 약 4.2 GB 사용 · 속도만 나눈다 · RAM 여유 약 11.8 GB — 13:4x 시점 관측값). ★11-11 16시 정정(판단 T3 C-20261111-022): 7.5 GB 는 일반 셀 워커 값이고, 2002.06975 DNN 칸은 기억 카드 project-main-pc-ram-benchmark-20261103 기준 지속 25~33 GB · 적재 순간 45~50 GB(계산치)라 레인 측정(THGNN)과 겹쳐 돌릴 수 없다 — 시드 측정은 레인 측정 0 · GPU 임대 확보 뒤(결정 L1-CHAIN-PILOT-FIRST-20261111 의 tick_hold 해제 조건). 임대를 붙이는 것은 판 2 · 코어 v2 몫.
 
 ## 7. 노출(τ_D) — 요약(정본 = 사양 `exposures` 8줄 · 11-11 등록 전 고지 4줄 포함)
 - Q 는 시험 창(2023~) 성과를 본 상태다 — 판정 규칙은 보는 창 열만(코어 검사) · 시험 창 α 는 보고 전용.

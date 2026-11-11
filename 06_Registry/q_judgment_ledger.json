@@ -1,6 +1,6 @@
 {
  "schema": "q_judgment_ledger_v1",
- "updated_at": "2026-11-11T14:15:01+0900",
+ "updated_at": "2026-11-11T16:06:12+0900",
  "judgments": [
   {
    "id": "J-20261016-001",
@@ -1255,7 +1255,8 @@
    "status": "reviewed",
    "reviews": [
     "R-20261111-001",
-    "R-20261111-002"
+    "R-20261111-002",
+    "R-20261111-003"
    ],
    "supersedes": null,
    "superseded_by": null
@@ -1281,7 +1282,8 @@
    "status": "reviewed",
    "reviews": [
     "R-20261111-001",
-    "R-20261111-002"
+    "R-20261111-002",
+    "R-20261111-003"
    ],
    "supersedes": null,
    "superseded_by": null
@@ -1306,7 +1308,8 @@
    "confidence": 0.8,
    "status": "reviewed",
    "reviews": [
-    "R-20261111-001"
+    "R-20261111-001",
+    "R-20261111-003"
    ],
    "supersedes": null,
    "superseded_by": null
@@ -1329,10 +1332,12 @@
    ],
    "expectation": "초안 v2 격리 점검이 필수 0 으로 ok · 등록 뒤 첫 판정에서 시드 · 1908.01112 판정이 원장에 남고, P4 정정 묶음 전에는 사슬 판이 0 개",
    "confidence": 0.65,
-   "status": "open",
-   "reviews": [],
+   "status": "reviewed",
+   "reviews": [
+    "R-20261111-003"
+   ],
    "supersedes": null,
-   "superseded_by": null
+   "superseded_by": "J-20261111-007"
   },
   {
    "id": "J-20261111-005",
@@ -1352,8 +1357,10 @@
    ],
    "expectation": "도훈이 (나) 또는 (가)를 고르고, 그 뒤 P4 정정 묶음에서 코드 · 시험 · 헌장 문구가 같은 날 맞춰진다",
    "confidence": 0.75,
-   "status": "open",
-   "reviews": [],
+   "status": "reviewed",
+   "reviews": [
+    "R-20261111-003"
+   ],
    "supersedes": null,
    "superseded_by": null
   },
@@ -1375,9 +1382,132 @@
    ],
    "expectation": "원 세션이 '없음' 또는 남은 편집 범위를 답하고, v2 초안 뒤 등록까지 핀 불일치가 다시 생기지 않는다",
    "confidence": 0.6,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261111-003"
+   ],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261111-007",
+   "at": "2026-11-11T15:39:42+0900",
+   "op": "OP-20261110-V102-LADDER",
+   "kind": "design",
+   "summary": "[11-11] 초안 v3 — 핀을 처치 · 방향 경로까지 넓혔다(save_bt_result.R · rf_rebalance.R + factor_db_connector.R · weight_catalog.R · factor_combinable.R = 31) · J-20261111-004 의 '변경이 잦아 제외' 근거를 거둔다",
+   "rationale": "격리 점검 v2 가 실측으로 두 가지를 보였다 — rf_rebalance.R 은 7일 0회라 제외 근거 문장이 틀렸고, 이미 핀인 26개가 7일 22커밋이라 처치 경로 3개를 더해도 정지 사건 증분이 작다(22 → 26 수준). 판정 입력 월 수익 CSV 를 쓰는 save_bt_result.R 은 핀 밖이었다(R2 구멍). pins.R:1 '핀 = 판정에 닿는 전체'를 정지 위험보다 앞에 둔다(정지는 fail-closed · 보이는 실패).",
+   "framework_refs": [
+    "round_core pins.R:1 · 사전등록 R2 · 격리 점검 v2 R-6"
+   ],
+   "evidence": [
+    "04_Research/programs/P1_RETURN/P1S01_standing_qualification/prereg_draft_review_v2.md R-6 · round_spec.json pins · 커밋 f6eba1e7f"
+   ],
+   "alternatives": [
+    "(a) v2 그대로 등록 + DESIGN 정정만 — 판정 입력 파일이 핀 밖으로 남는다 (b) save_bt_result.R · rf_rebalance.R 만 — 처치 경로의 R2 구멍이 시드 E3 측정 창에 남는다"
+   ],
+   "expectation": "등록 뒤 첫 판정까지 핀 31 의 변경으로 판이 멈추는 일이 0 이거나, 멈추면 standing-status 가 '판정 경로 핀 불일치'로 바로 보인다",
+   "confidence": 0.7,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261111-003"
+   ],
+   "supersedes": "J-20261111-004",
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261111-008",
+   "at": "2026-11-11T15:39:42+0900",
+   "op": "OP-20261110-V102-LADDER",
+   "kind": "ops",
+   "summary": "[11-11 15:12] 원 세션의 핀 동결 답을 받기 전에 등록했다 — 등록 직전 핀 31 경로 · 사양 시험 2종 · 코어의 미커밋 0 · rc_pins_mismatches 0 · 틱 잠금 없음을 직접 확인 · 15:37 틱 전 창",
+   "rationale": "질문(14:0x)은 원 세션 턴이 끝날 때까지 큐에 있고 답이 없었다. 답을 기다리면 첫 측정 틱이 한 시간씩 밀린다. 핀 대상은 등록 순간 깨끗했고, 등록 뒤 편집은 판을 멈추게 할 뿐(fail-closed) 판정을 오염시키지 않는다 — 질문에 그 결과를 이미 적었다.",
+   "framework_refs": [
+    "lean-loop 원칙 5 '막지 않는다' · 격리 점검 R-1 · R-4 · R-5"
+   ],
+   "evidence": [
+    "커밋 e26717ab7(등록) · 사전등록 git_head_at_register 0232aec81 · SendMessage 3470654c(미응답)"
+   ],
+   "alternatives": [
+    "(a) 답을 기다림 — 측정 지연 (b) 판 라우팅 뒤 등록 — 하네스 쓰기 · 더 큰 지연"
+   ],
+   "expectation": "원 세션이 나중에 답하고, 핀 편집이 필요하면 새 판(P1S02)으로 간다 — 그 전 판정은 원장에 남는다",
+   "confidence": 0.6,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261111-003"
+   ],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261111-009",
+   "at": "2026-11-11T15:39:43+0900",
+   "op": "OP-20261110-V102-LADDER",
+   "kind": "stop_continue",
+   "summary": "[11-11 15:4x] 상설 측정이 배리어로 미뤄진 상태에서 세션을 마감한다 — 15:37 틱 scan 은 3건을 넣었고(시드 2 + 1908.01112) 측정은 원 세션의 조용한 창 작업(quiet_window_job_v3 · 쓰기 잠금 inv_recompute_pending)이 레인 THGNN 측정 종료를 기다리며 쥔 배리어 뒤 · 사슬은 기저 풀 정정 · 도훈 결정 뒤",
+   "rationale": "측정 시작은 THGNN 종료(학습 ~8시간 · 11:38 시작) → 세 책 적재 · INV 15팩터 재계산 → 잠금 해제 → 다음 :37 틱이다. 몇 시간을 세션이 기다리면 맥락만 태운다(과제 지시 '기다리며 세션을 태우지 않는다'). 측정 · 판정 · 보고는 틱이 무인으로 잇고, 통과 엔진의 T2 · P2 와 사슬 준비는 다음 세션 일이다.",
+   "framework_refs": [
+    "과제 지시 ④ 끝 · research-program SKILL §0 '라운드 = 세션' · 규약 §11-1"
+   ],
+   "evidence": [
+    ".cache/scheduler_logs/standing_board_20261111_153704.log · stage_artifacts/programs/P1_RETURN/P1S01_standing_qualification/standing_ledger.jsonl(4줄) · refresh_barrier.sh status"
+   ],
+   "alternatives": [
+    "(a) 16:37 · 17:37 틱까지 대기 — 배리어가 풀릴 가능성이 낮다 (b) 원 세션에 잠금 해제 요청 — 그쪽 데이터 작업의 설계(측정 중 리프레시 = 지문 불일치 · 11-10 사고 방지)를 깬다"
+   ],
+   "expectation": "다음 세션 시작 때 standing-status 에 시드 2 · 1908.01112 의 판정이 있고, 통과 엔진이 있으면 그 세션이 T2 · P2 를 띄운다",
+   "confidence": 0.7,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261111-003"
+   ],
+   "supersedes": null,
+   "superseded_by": "J-20261111-011"
+  },
+  {
+   "id": "J-20261111-010",
+   "at": "2026-11-11T16:06:10+0900",
+   "op": "OP-20261110-V102-LADDER",
+   "kind": "design",
+   "summary": "[11-11 16:1x] 파일럿(도훈 L1-CHAIN-PILOT-FIRST-20261111)은 코어 v2(P4 정정 묶음 + 판 라우팅) 위에서 돌린다 — 알려진 답 사례(같은 엔진 경로 두 칸 중 처치 칸만 통과 = 맨 엔진 자격 없음 · 등급 경로 전 기간 등급 기저 = 자격 없음)를 넣고, 같은 사례가 v1 에서는 실패해야 정답(대조) · P1S01 판 1 은 v1 그대로(판정 경로는 p4.R 무관)",
+   "rationale": "J-004 의 '측정을 임계 경로에 먼저'는 전제가 무너졌다 — 등록 시각에 배리어가 13:52 부터 held 였고 DNN 시드는 레인 THGNN 과 RAM 을 나눌 수 없어 첫 측정은 어차피 11-12 오전 뒤, 그리고 도훈 '파일럿부터'로 판은 측정 0 인 채 보류다. 그래서 P4 정정을 파일럿 앞에 두는 데 측정 손실이 없다. v1 정정 + P1S02 보다 v2 + 라우팅이 출시 판 불변을 지킨다. J-004 의 결정 내용(코어 결함 = P4 정정 묶음 · 사슬 등록 보류 · 등급 경로 = 결정 P4-BASE-POOL-GRADE-PATH-TAU-20261111 기본값)을 여기 다시 싣는다.",
+   "framework_refs": [
+    "lean-loop v10.2 ① 기준점부터 · round_core README 원칙 '판은 불변' · 판단 T1 C-20261111-001 · T3 재반박 · 결정 L1-CHAIN-PILOT-FIRST-20261111"
+   ],
+   "evidence": [
+    "04_Research/programs/_supervision/superfan/20261111_1600_T3.md · 06_Registry/decision_register.json::L1-CHAIN-PILOT-FIRST-20261111 · 04_Research/programs/P1_RETURN/P1S01_standing_qualification/tick_hold"
+   ],
+   "alternatives": [
+    "(a) v1 정정 + P1S02 — 출시 판을 다시 열고 판 재등록 의식 (b) 알려진 답 없이 v1 그대로 파일럿 — 합침 결함을 지나는 '통과'는 증거가 못 된다"
+   ],
+   "expectation": "파일럿 세션에서 v1 = 알려진 답 사례 실패 · v2 = 통과(합성 양성의 A 자격 관문까지) 가 나오고, 그 뒤 tick_hold 해제 조건 ①이 충족된다",
+   "confidence": 0.65,
    "status": "open",
    "reviews": [],
    "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261111-011",
+   "at": "2026-11-11T16:06:11+0900",
+   "op": "OP-20261110-V102-LADDER",
+   "kind": "stop_continue",
+   "summary": "[11-11 16:1x] 세션 마감(맥락 84%) — 파일럿 · 보류 해제는 새 리서치 체인 세션으로. 실제 측정 순서 = ① 파일럿 통과(코어 v2 · 알려진 답 · 합성 양성의 A 경로 소방 훈련) ② FACTOR-DB-INV-PANEL-RECOMPUTE-20261111 completed_at ③ GPU 임대 확보 + 레인 측정 0 확인 → tick_hold 삭제 → 00:03 · 07:10 리프레시 창을 피하는 측정 창(DNN 시드 지속 25~33 GB)",
+   "rationale": "15:38 도훈 결정과 15:45 판 보류로 J-009 의 '틱이 무인으로 잇는다'는 계획이 무효가 됐다(T3 C-20261111-023). 원 세션 대기 작업 ⑪ 은 재계산 완료 뒤 최대 1시간 P1S01 의 GPU 임대를 기다리지만 파일럿 전이라 잡을 일이 없다 — 그 사실을 원 세션에 보고 머리로 알린다. J-006 의 결과: 원 세션 답('없음 — register 는 재계산 completed_at 뒤')은 15:02 공유 감사 기록(cef43e2bf)에 있었고 Q 는 메시지 알림만 보다 놓쳤다.",
+   "framework_refs": [
+    "결정 L1-CHAIN-PILOT-FIRST-20261111 · research-program SKILL §0 '라운드 = 세션' · 규약 §12 주 세션 위생"
+   ],
+   "evidence": [
+    "04_Research/programs/P1_RETURN/P1S01_standing_qualification/tick_hold · 04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/README.md §10.8 · 재개 저널 OP-20261110-V102-LADDER next"
+   ],
+   "alternatives": [
+    "(a) 이 세션에서 파일럿 착수 — 맥락 84% 에서 코어 v2 · 라우팅 · 종단 실행을 하면 자동 압축 중간에 끊긴다 (b) 측정까지 대기 — 판은 보류라 기다릴 대상이 없다"
+   ],
+   "expectation": "다음 리서치 체인 세션이 저널 next 를 그대로 따라 파일럿 → 해제 세 조건 → 실제 측정을 연다",
+   "confidence": 0.7,
+   "status": "open",
+   "reviews": [],
+   "supersedes": "J-20261111-009",
    "superseded_by": null
   }
  ],
@@ -1867,6 +1997,36 @@
     "C-20261111-020",
     "C-20261111-021"
    ]
+  },
+  {
+   "id": "R-20261111-003",
+   "at": "2026-11-11T16:03:59+0900",
+   "role": "judgment",
+   "trigger": "T3",
+   "scope": [
+    "J-20261111-001",
+    "J-20261111-002",
+    "J-20261111-003",
+    "J-20261111-004",
+    "J-20261111-005",
+    "J-20261111-006",
+    "J-20261111-007",
+    "J-20261111-008",
+    "J-20261111-009"
+   ],
+   "file": "04_Research/programs/_supervision/superfan/20261111_1600_T3.md",
+   "round": null,
+   "direction": null,
+   "challenges": [
+    "C-20261111-022",
+    "C-20261111-023",
+    "C-20261111-024",
+    "C-20261111-025",
+    "C-20261111-026",
+    "C-20261111-027",
+    "C-20261111-028",
+    "C-20261111-029"
+   ]
   }
  ],
  "challenges": [
@@ -2243,8 +2403,9 @@
      "change": "c7166d2ca 등록본 커밋(두 사본 md5 b6c83426 · 등록부 P3R03 항목 · precheck.json — 측정은 아직 갱신 대기 · 결과 전) · research-program SKILL 1단계에 '등록 → 커밋 → 측정 기동' · J-20261017-002 에 당시 판단의 빈틈 기록"
     }
    ],
-   "outcome": null,
-   "outcome_note": null
+   "outcome": "vindicated",
+   "outcome_note": "도전 10-17 00:01 ‘등록본 미커밋인 채 measure.sh 기동’ — 등록본 커밋 c7166d2ca 가 00:18(도전 뒤)이라 주장이 사실이었다 · 반증 조건(첫 결과보다 앞선 커밋에 md5 b6c83426)은 도전 시점에 미충족 · 수용 뒤 해소(T3 R-20261111-003)",
+   "outcome_at": "2026-11-11T16:05:42+0900"
   },
   {
    "id": "C-20261017-004",
@@ -2273,8 +2434,9 @@
      "change": "①~④ 원장 소급 J-20261017-001~004 · ⑤ 결정 기록부 SUPERFAN-WATCH-UNATTENDED-20261016(resolved · 증거 = 도훈 채팅 22:39 · writer dr_open/dr_resolve) · 규약 T3 스폰 전 자체 점검(그날 커밋 ↔ 원장 J ↔ 결정 기록부) 1줄"
     }
    ],
-   "outcome": null,
-   "outcome_note": null
+   "outcome": "vindicated",
+   "outcome_note": "기록 누락 5건 — Q 가 ①~④ 를 J-20261017-001~004(00:36 · 도전 00:01 뒤)로 소급하고 ⑤ 를 결정 기록부 SUPERFAN-WATCH-UNATTENDED-20261016 로 남겼다 → 반증 조건 ‘3건 이상 이미 기록’ 미충족 · 누락이 사실이었다(T3 R-20261111-003)",
+   "outcome_at": "2026-11-11T16:05:43+0900"
   },
   {
    "id": "C-20261017-005",
@@ -5835,7 +5997,7 @@
    ],
    "alternative": "초안 v2 전(핀 소비자 0) 출시 정정 + p4.R 수리: (a) 풀 행 키 = (engine_path, 상설 code) · 기저 칸 사양 = 통과 항목의 칸 사양 또는 (b) 처치(팩터 · 비중 · 리밸)가 든 시드는 풀에서 combination 표식 · 맨 엔진 행은 E2 판정만 — 같은 경로 두 시드 · 'E3 만 통과' 시험을 더하고, J-001 완료 기준을 'E2(엔진 단독) 또는 레인 엔진 자격 ≥ 1'로 고쳐 적는다",
    "falsifier": "등록 커밋의 v1/p4.R 에서 rc_p4_base_pool 이 상설 행을 code 단위로 두거나 rc_p4_base_cell_spec 이 통과 항목의 칸 사양을 쓰면 — 또는 첫 상설 판정 뒤 round.sh - p4-pool 의 key 열에 P1S01_E2_C0 · P1S01_E3_RX0 가 별개 행으로 나오면 이 도전은 틀렸다",
-   "status": "rebutted",
+   "status": "accepted",
    "role": "judgment",
    "hold_request": false,
    "responses": [
@@ -5844,6 +6006,19 @@
      "by": "Q",
      "kind": "rebut",
      "text": "결함 진단은 맞다(합성 탐침 · p4.R:158-163 · 217-235 확인) — 반박하는 것은 '지금 v1 에서 고친다'는 시점이다. ① 같은 p4.R 에 철학 C-20261111-016(등급 경로 τ_D)의 수리가 따라와야 하는데 그 형태가 도훈 결정(P4-BASE-POOL-GRADE-PATH-TAU-20261111)이라, 지금 v1 을 고쳐도 판 2(또는 v1 재정정)가 다시 필요하다 — 핀 소비자 0 인 지금 고친다는 이득이 사라진다. ② 결함이 판정에 닿는 경로는 사슬 기저 · 결합 상대 선택뿐인데, 정정 전 사슬 판 등록을 막았다(결정 기본값 · 결론 범위 · DESIGN §8). ③ 상설 판정 자체(E3 의 자격은 E3 칸의 자격)는 이 결함과 무관하다. 수리 위치 = 판 2 · 코어 v2 의 P4 정정 묶음(DESIGN §8 · §9-6)."
+    },
+    {
+     "at": "2026-11-11T16:05:42+0900",
+     "by": "Superfan",
+     "kind": "counter",
+     "text": "재반박(1회 · 새 증거 · T3 R-20261111-003): 반박 ② · ③ 은 맞다 — 상설 판정은 칸 단위 독립이고 풀 결함은 사슬 기저 · 결합 상대에만 닿는다(아침 상태 줄 l1_status_send.R:47 은 개수만). 사슬 등록 보류는 기계가 아니라 Q 규칙이지만(p4-register · register.R · round.sh 가 결정 기록부 blocks 를 읽지 않음 · grep 0) 결정 기본값 · 결론 범위 10번째 줄 · DESIGN §8 · 저널 ③ 네 곳에 있다. 반박 ① 과 J-004 의 시점 전제(측정을 임계 경로에 먼저 · 상설 측정은 몇 시간)는 성립하지 않았다 — 등록 때 배리어는 13:52 부터 held(inv_recompute_pending)였고, DNN 시드는 레인 THGNN(11-12 07~09시 추정)과 RAM 을 나눌 수 없어 첫 측정은 어느 쪽이든 빨라야 11-12 오전이었다(설계 README §10.8:570 · 573). 그리고 15:38 파일럿부터(L1-CHAIN-PILOT-FIRST-20261111)로 판은 판정 0 · 측정 0 인 채 보류다. 새 위험: 파일럿은 기저 풀을 지나는데 v1/p4.R:158-163 의 합침은 그대로다(핀 md5 일치) — 합침 사례가 없는 파일럿의 통과는 증거가 못 된다. 파일럿 전에 하나를 골라 새 판단으로 적어 달라(J-004 의 결정 내용을 다시 싣는다): (i) v1 p4.R 정정(C-001 + 결정 기본값 (나)) + P1S02 재등록 — 규칙 불변 · 잃는 판정 0 (ii) 코어 v2 + 판 라우팅 뒤 v2 위에서 파일럿 (iii) v1 파일럿에 합침 사례를 알려진 실패로 넣고 결함 잔존을 파일럿 판정에 적는다. 반증: 파일럿 사양에 합침 알려진 답 사례가 이미 있거나 파일럿이 v2 위에서 돌면 이 재반박은 틀렸다."
+    },
+    {
+     "at": "2026-11-11T16:06:12+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "재반박 수용 — 시점 반박의 전제(측정을 임계 경로에 먼저)가 무너졌다. 파일럿은 코어 v2(P4 정정 + 판 라우팅) 위에서 알려진 답 사례를 넣어 돌리고, v1 에서는 그 사례가 실패해야 정답으로 대조한다. P1S01 판 1 은 v1 그대로.",
+     "change": "판단 J-20261111-010 · 재개 저널 next ③④(이 세션 마감 커밋)"
     }
    ],
    "outcome": null,
@@ -6335,6 +6510,195 @@
    "falsifier": "",
    "status": "closed_note",
    "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261111-022",
+   "at": "2026-11-11T16:04:56+0900",
+   "review": "R-20261111-003",
+   "target": "J-20261111-008",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "J-008 의 근거 ‘답을 기다리면 첫 측정 틱이 한 시간씩 밀린다’는 등록 시각(15:12)에 확인 가능한 사실과 달랐다 — 배리어는 13:52 부터 총괄 세션 수급 재계산 대기 작업(writer 잠금 · inv_recompute_pending)이 끊김 없이 쥐었고(15:37 틱 ‘배리어 held’), DNN 시드는 레인 THGNN(총괄 추정 11-12 07~09시 종료)과 RAM 을 나눌 수 없다(기억 카드 DNN 칸 지속 25~33 GB vs DESIGN §6 이 쓴 일반 칸 7.5 GB). 답(‘없음 · register 는 수급 계열 재계산 completed_at 뒤’)은 15:02 커밋된 설계 README §10.8:568 에 이미 있었다. 기다림 비용 0 을 재지 않았고(확인 목록에 배리어 · 임대 · RAM 없음), 진행은 총괄 세션 대기 작업 v3 재설계와 도훈 ‘파일럿부터’ 뒤 판 보류를 낳았다. ‘판정을 오염시키지 않는다’는 핀 쪽만 맞다 — 상설 측정은 판 표식 진행 중 수리를 보지 않고(v1/standing.R:648 · P4 만 v1/p4.R:871-873) 판정한 항목을 다시 재지 않는다(v1/standing.R:642)",
+   "evidence": [
+    ".cache/scheduler_logs/inv_recompute_quiet_20261111_135253.log",
+    ".cache/scheduler_logs/inv_recompute_quiet_20261111_145256.log",
+    ".cache/scheduler_logs/inv_recompute_quiet_20261111_152928.log",
+    ".cache/scheduler_logs/standing_board_20261111_153704.log",
+    "04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/README.md:568-573 · :587-588 · :596(git blame 568 = cef43e2bf 15:02)",
+    "memory/project-main-pc-ram-benchmark-20261103.md(DNN 칸 25~33 GB 계산치)",
+    "04_Research/programs/P1_RETURN/P1S01_standing_qualification/DESIGN.md §6",
+    "04_Research/programs/_lib/round_core/v1/standing.R:642 · :648",
+    "04_Research/programs/_lib/round_core/v1/p4.R:871-873"
+   ],
+   "alternative": "돌이킬 수 없는 단계(register · p4-register · tick_hold 해제) 앞에서 기다림 비용을 기계 상태로 잰다 — refresh_barrier.sh status · qv_lock.py lease status · 레인 측정 수 · factor_db_vintage.json 진행 중 수리 · 그 엔진의 RAM 값(기억 카드). 비용이 틱 1회 이하면 공유 기록(설계 README §10.8 · 저널)을 읽고 턴을 한 번 끊어 대기 중인 답을 받은 뒤 진행하고, 잰 비용을 J 에 적는다. 지금: J-006 결과(답 = 없음 + 재계산 뒤 등록 · 늦게 받음)를 기록하고 DESIGN §6 의 RAM 문장을 DNN 값으로 고친다(DESIGN 은 핀 밖)",
+   "falsifier": "대기 작업 로그(inv_recompute_quiet_*.log)에 14:52~15:12 사이 writer 잠금이 풀린 구간이 있거나, git blame 으로 README §10.8:568 의 ‘없음 … completed_at 뒤’ 줄이 15:12 뒤 커밋으로 나오거나, 2002.06975 칸의 실측 정점이 약 12 GB 미만이라는 기록이 있으면 이 도전은 틀렸다",
+   "status": "accepted",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-11-11T16:06:11+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "맞다 — 15:12 에 배리어(13:52 부터 held) · DNN 시드 RAM(지속 25~33 GB) · 공유 감사 기록(15:02 답)을 봤다면 기다렸다. 앞으로 돌이킬 수 없는 단계(register · p4-register · tick_hold 해제) 앞에서는 기다림 비용을 기계 상태로 잰다: refresh_barrier.sh status · qv_lock.py lease status · 레인 측정 수 · factor_db_vintage.json 진행 중 수리 · 그 엔진 RAM(기억 카드) + 공유 기록(설계 README §10.8 · 재개 저널)을 읽는다.",
+     "change": "판단 J-20261111-011(J-006 결과 기록 · 기다림 비용 규칙) · 재개 저널 OP-20261110-V102-LADDER next ⑥ · DESIGN.md §6 RAM 문장 정정(이 세션 마감 커밋)"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261111-023",
+   "at": "2026-11-11T16:05:11+0900",
+   "review": "R-20261111-003",
+   "target": "J-20261111-009",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "J-009 의 마감 계획(‘측정 · 판정 · 보고는 틱이 무인으로 잇는다’ · 기대 ‘다음 세션 시작 때 시드 2 · 1908.01112 판정’)이 15:38 도훈 결정 L1-CHAIN-PILOT-FIRST-20261111 과 15:45 판 보류 tick_hold 로 무효가 됐는데, 이어받을 인계가 원장 · 저널(next_action 15:40)에 없다. 해제 세 조건(임시 원장 파일럿 + A 경로 소방 훈련 통과 · INV 재계산 completed_at · GPU 임대)의 실행 · 판단은 리서치 세션 몫이다(결정 note). GPU 임대에는 순서가 있다 — 대기 작업 v3 ⑪ 은 원장 완료 뒤 최대 3600초만 ‘라운드가 임대를 잡기’를 기다리고 없으면 잠금을 푼다(지금 임대 free). 임대는 레인의 새 claim 만 막으므로(rf_replication_slots.py:14) ⑪ 창을 놓치면 레인 다음 논문과 DNN 칸(25~33 GB)이 겹친다 — 해제 조건 ③ 만으로는 겹침을 못 막고 ‘레인 측정 0’이 함께 필요하다. 측정 창(00:03 · 07:10 리프레시를 넘기면 지문 불일치 · 실패 2회 = 사람 확인 v1/standing.R:32)도 계획에 없다",
+   "evidence": [
+    "06_Registry/decision_register.json#L1-CHAIN-PILOT-FIRST-20261111",
+    "04_Research/programs/P1_RETURN/P1S01_standing_qualification/tick_hold",
+    "04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/README.md:573 · :588 · :591-597",
+    "06_Registry/session_resume.json OP-20261110-V102-LADDER next_action(15:40)",
+    "02_Infrastructure/ops/rf_replication_slots.py:14",
+    "04_Research/programs/_lib/round_core/v1/standing.R:32",
+    "총괄 세션 스크래치 quiet_window_job_v3.sh ⑪ 인계 · measuring() (읽기만 · README :588 과 같은 내용)"
+   ],
+   "alternative": "마감 전에 대기 중인 총괄 세션 메시지(핀 답 · 대기 요청 · 파일럿 결정 · 파일럿 범위 제안 · 인계 순서)를 읽고 J-009 를 대체하는 stop_continue 판단 1건을 남긴다: 파일럿 범위 = 임시 루트 종단(상설 판 → 기저 풀 → 사슬 → 닫기 → 선택 현실 점검 → A 자격 관문) + 소방 훈련(S2) · 알려진 답 사례에 C-001 합침(같은 엔진 경로 두 칸 · 처치 칸만 통과)과 C-016 등급 경로 · 파일럿 시각 = THGNN 도는 동안 · 00:03 전 종료 · 커밋 여유 확인 · 실제 측정 순서 = 재계산 완료 → ⑪ 창 안에 GPU 임대 → 레인 측정 0 확인 → tick_hold 삭제 → 07:10 체인 뒤 시작해 00:03 전에 끝나는 창. 저널 next_action 을 이 순서로 바꾸고, ⑪ 창에 임대를 잡을 세션이 없으면 총괄 세션에 1회 알린다(대신 잡기 또는 파일럿 통과까지 잠금 유지)",
+   "falsifier": "Q 가 이 리뷰를 읽는 시점에 저널 OP-20261110-V102-LADDER next_action 이나 J-009 를 대체하는 판단에 파일럿 계획 · 해제 세 조건 · ⑪ 기준 임대 순서가 이미 있거나, 총괄 세션 기록(README §10.8 · 메시지)에 ⑪ 인계를 리서치 세션에 기대지 않게 바꾼 사실(예: 총괄 세션이 직접 임대를 잡는다)이 있으면 이 도전은 틀렸다",
+   "status": "accepted",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-11-11T16:06:11+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "J-009 를 J-011 로 대체했다 — 파일럿 범위(코어 v2 · 알려진 답 · 소방 훈련) · 해제 세 조건 · 측정 순서(재계산 완료 → 임대 + 레인 측정 0 → tick_hold 삭제 → 리프레시 창 회피) · ⑪ 인계는 원 세션에 보고 머리로 알린다.",
+     "change": "판단 J-20261111-011 · 재개 저널 OP-20261110-V102-LADDER next(이 세션 마감 커밋)"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261111-024",
+   "at": "2026-11-11T16:05:28+0900",
+   "review": "R-20261111-003",
+   "target": "SYSTEM",
+   "grade": "note",
+   "rule": null,
+   "claim": "수용 응답 표본 대조(규약 §13-3): C-003 · 013 · 014 · 015 · 016 의 round_spec.json:138-143(77f8ab831) · DESIGN :87 · :90 · :100 · :101 과 등록 정본 fd3ef649(conclusion_scope 10줄 · changes_after_superfan 5줄 · standing_cfg.scan.orientation_admit [engine_native, factor_db_static]) 실재 · 되돌림 없음. 포인터 1건 어긋남 — C-002 의 DESIGN.md:88 은 77f8ab831 에서 89행(88행 = C-016 내용). C-002 반증 조건 진행: 16:00 핀 31 + 코어 20 md5 = 등록값(51/51) · 첫 p4-register 전이라 채점 보류",
+   "evidence": [
+    "stage_artifacts/programs/P1_RETURN/P1S01_standing_qualification/prereg.json",
+    "04_Research/programs/P1_RETURN/P1S01_standing_qualification/round_spec.json@77f8ab831"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261111-025",
+   "at": "2026-11-11T16:05:28+0900",
+   "review": "R-20261111-003",
+   "target": "J-20261111-007",
+   "grade": "note",
+   "rule": null,
+   "claim": "supersedes 가 J-004 전체를 대체해(writer pending 은 대체된 판단을 뺀다 · q_judgment_ledger.py:268) J-004 의 살아 있는 결정(코어 결함 → v2 묶음 · 그때까지 사슬 등록 없음)과 기대(정정 묶음 전 사슬 판 0)가 감사 · 기대 채점에서 빠졌다 — J-007 은 핀 확장만 말하고 C-001 반박의 근거는 J-004 에 있다. 부분 정정은 --supersedes 없이 framework_refs 에 J-004 를 적고, 결정이 바뀌면(재반박) 그 결정을 다시 싣는 판단이 J-004 를 대체한다",
+   "evidence": [
+    "02_Infrastructure/programs/q_judgment_ledger.py:268"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261111-026",
+   "at": "2026-11-11T16:05:28+0900",
+   "review": "R-20261111-003",
+   "target": "J-20261111-001",
+   "grade": "note",
+   "rule": null,
+   "claim": "완료 기준 ‘E2 · E3 중 1개 이상 → p4-pool 자격 ≥ 1’이 두 번 낡았다 — C-003 수용으로 첫 사슬 단독 기저 = 2002.06975 계보 밖 엔진이 됐고, 15:38 ‘파일럿부터’로 실측정이 보류됐다. 새 기준(예: 계보 밖 상설 자격 ≥ 1 → 첫 사슬 설계 · 0 이면 공급 단계)으로 고쳐 기대 채점이 가능하게 한다",
+   "evidence": [],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261111-027",
+   "at": "2026-11-11T16:05:29+0900",
+   "review": "R-20261111-003",
+   "target": "J-20261111-008",
+   "grade": "note",
+   "rule": null,
+   "claim": "등록 커밋 e26717ab7 에 무관한 등록부 줄(아침 체인 논문 동기화 07:21 · 재료 큐 추가)이 함께 실렸다 — 메시지에 밝혔고 R2 증명(측정 전 커밋)은 해치지 않는다 · 다음에는 register 전에 등록부의 기존 미커밋 변경을 따로 커밋해 출처를 가른다. 사실 확인(Q 요청 ⑤): 정본 git_head_at_register = 0232aec81 · f6eba1e7f 는 그 조상(사이 cef43e2bf) · 저널 S1 note 정정 확인",
+   "evidence": [
+    "stage_artifacts/programs/P1_RETURN/P1S01_standing_qualification/prereg.json"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261111-028",
+   "at": "2026-11-11T16:05:29+0900",
+   "review": "R-20261111-003",
+   "target": "J-20261111-005",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "상신이 체계 §5 형식대로다 — 선택지 · 권고 · 결정 전 기본값(PIT 보호 · 더 엄격) · blocks · 비차단 · 헌장 문구(CLAUDE.md 파이프라인)를 단독으로 바꾸지 않음 · 결정 기록 ↔ J-005 ↔ 사전등록 결론 범위 10번째 줄 정합",
+   "evidence": [
+    "06_Registry/decision_register.json#P4-BASE-POOL-GRADE-PATH-TAU-20261111"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261111-029",
+   "at": "2026-11-11T16:05:29+0900",
+   "review": "R-20261111-003",
+   "target": "J-20261111-007",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "틀린 제외 근거(rf_rebalance.R ‘7일 1~4회’ — 실측 0회)를 합리화하지 않고 실측으로 거뒀고, 정지 위험보다 pins.R:1 ‘핀 = 판정에 닿는 전체’를 앞에 두어 판정 입력을 쓰는 save_bt_result.R 의 R2 구멍을 닫았다 — 유지할 방식(대체 처리 방식은 같은 리뷰 참고)",
+   "evidence": [
+    "04_Research/programs/P1_RETURN/P1S01_standing_qualification/prereg_draft_review_v2.md"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
    "hold_request": false,
    "responses": [],
    "outcome": null,
