@@ -125,38 +125,103 @@ def mc3_auto(out, src, k):
         return ("never_met 유력(%s · 최대 %s < 50)" % (tag, mx)) if mx < 50 else ("통과 유력(%s · 최대 %s) — 단 비중을 점수로 읽는다" % (tag, mx))
     return "개수 자료 없음"
 
+# 주 기여 층(1개) · 부 기여(다른 논문 기여 층) · 한 모형이 다 하는가 · 내부 종목별 값(점수로 내보낼 수 있는가)
+#   주 기여 = 논문 기여(P) 층이 여럿일 때 논문의 중심(FIDELITY kept 의 '기전' 서술 · 논문 표제) 하나. 결정문 경계 3: 한 모형이 다 하면 내부 값을 점수로 내보내 예측으로 잰다.
+ER, RK, CN, EX = "기대수익 예측", "위험 예측", "구성 규칙", "노출 규칙"
+X = {
+ "RP_AUTO_0806_2606": (ER, [], False, "있음 — 이미 점수로 낸다(ANN 예측)"),
+ "RP_AUTO_1403_8125": (ER, [], False, "있음 — 출력 추가(순위 지표 C−MDD)"),
+ "RP_AUTO_1505_00328": (ER, [], False, "있음 — 이미 낸다(−과거 수익)"),
+ "RP_AUTO_1707_05552": (ER, [], False, "있음 — 이미 낸다"),
+ "RP_AUTO_2001_04185": (CN, [], False, "있음 — 이미 낸다(감속 포지션 · 원 신호는 표준 모멘텀 순위라 예측 기여 아님)"),
+ "RP_AUTO_2002_06975": (ER, [], False, "있음 — 이미 낸다(DNN 예측)"),
+ "RP_AUTO_2003_02515": (ER, [], False, "있음 — 이미 낸다(앙상블 예측)"),
+ "RP_AUTO_2006_04639": (ER, [], False, "있음 — 출력 추가(요인 로딩 β)"),
+ "RP_AUTO_2011_05381": (ER, [], True, "있음 — 이미 낸다(정책 점수 x'θ · 적격 전 종목)"),
+ "RP_AUTO_2202_05702": (ER, [], False, "있음 — 이미 낸다(예측 상대수익)"),
+ "RP_AUTO_2302_10175": (ER, [], True, "있음 — 출력 추가(포지션 값 X) · 단 고정 패널 46종이라 폭이 모자란다"),
+ "RP_AUTO_2404_08129": (ER, [], False, "있음 — 출력 추가(모형 예측수익)"),
+ "RP_AUTO_2505_16336": (ER, [], False, "있음 — 출력 추가(INTAN 특성)"),
+ "RP_AUTO_2505_20608": (ER, [], False, "있음 — 이미 낸다"),
+ "RP_AUTO_2511_12129": (ER, [], False, "있음 — 이미 낸다(ML 예측)"),
+ "RP_AUTO_2511_12490": (ER, [], False, "있음 — 출력 추가(EDGE 점수)"),
+ "RP_AUTO_2608_24703": (EX, [ER], False, "노출 신호는 시장 단위 값(종목별 아님) · 리더 점수는 종목별(출력 추가 가능)"),
+ "RP_AUTO_2608_27076": (ER, [], False, "있음 — 이미 낸다(확률 순위)"),
+ "RP_AUTO_CLEAN_1109_3488": (CN, [], False, "없음 — 점수는 외생 입력"),
+ "RP_AUTO_CLEAN_1505_00328": (ER, [], False, "있음 — 출력 추가(−과거 수익)"),
+ "RP_AUTO_CLEAN_1610_01338": (ER, [], False, "있음 — 이미 낸다"),
+ "RP_AUTO_CLEAN_1801_01777": (ER, [], False, "있음 — 출력 추가(DNN 예측점수)"),
+ "RP_AUTO_CLEAN_1810_08384": (CN, [RK], False, "없음 — 신호는 표준 모멘텀 순위"),
+ "RP_AUTO_CLEAN_1908_01112": (ER, [RK], False, "있음 — 출력 추가(예측 누적수익 Chat)"),
+ "RP_AUTO_CLEAN_2202_10721": (CN, [RK], False, "없음 — 종목별 값 없음(슬리브 사이 배분)"),
+ "RP_AUTO_CLEAN_2210_12462": (ER, [], False, "있음 — 출력 추가(딥팩터 점수)"),
+ "RP_AUTO_CLEAN_2305_16364": (ER, [CN], True, "있음 — 출력 추가(softmax 전 점수 — 순전파 안)"),
+ "RP_AUTO_CLEAN_2411_08864": (RK, [], False, "없음 — α 는 외생 입력"),
+ "RP_AUTO_CLEAN_2412_12350": (ER, [], False, "있음 — 출력 추가(Lasso 기대수익)"),
+ "RP_AUTO_CLEAN_2601_04602": (RK, [ER], True, "쌍별 예측 상관은 있다(추정기 축 값 · torch) · 종목별 신호는 군집 상대값이라 다른 구성에 못 꽂는다"),
+ "RP_AUTO_CLEAN_2601_10732": (EX, [], False, "없음 — 시장 단위 국면 상태뿐"),
+ "RP_AUTO_CLEAN_2604_16773": (CN, [], False, "없음 — 부호 신호는 외생 입력"),
+ "RP_AUTO_COMBO_combo_1403_8125_2301_091": ("결합", [], False, "대상 아님"),
+}
+
 rows = []
 for (d, key, title, er, rk, cn, ex, main, dest, old3, wline, note, mc3_hand) in F:
     s = st[d]; c = cnt[d]
+    lp, ls, one_model, internal = X[d]
     cell, src, k = count_cell(c)
     if d in COUNT_UNRELIABLE:                      # L1 기록의 최신 산출이 엔진 원 출력이 아니라 강화 칸(top_n_long)인 엔진 — 개수로 쓰지 않는다
         cell, src, k = "자료 없음(남은 산출 = 강화 칸)", 'none', None
     out = s['outputs'].replace('FACTORS+PORTFOLIO', 'PORTFOLIO+FACTORS')
     mc3 = mc3_hand or mc3_auto(s['outputs'], src, k)
     rows.append(dict(engine_dir=d, paper=key, title=title, outputs=out, declared_construction=c.get('cons'), router_program=c.get('prog'),
+                     layer_primary=lp, layer_secondary=ls, one_model=one_model, internal_value=internal,
                      expected_return=er[0], expected_return_what=er[1], risk=rk[0], risk_what=rk[1], construction=cn[0], construction_what=cn[1],
                      exposure=ex[0], exposure_what=ex[1], main_contribution=main, destination=dest, old_3class=old3, weight_line=wline,
                      count_source=src, counts=cell, mc3_standard_construction=mc3, p1s01_entry_dryrun=entry_cell(d), note=note))
 
 json.dump(rows, open(os.path.join(REP, 'classification.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
 with open(os.path.join(REP, 'classification.csv'), 'w', encoding='utf-8-sig', newline='') as f:
-    w = csv.DictWriter(f, fieldnames=list(rows[0].keys())); w.writeheader(); w.writerows(rows)
+    w = csv.DictWriter(f, fieldnames=list(rows[0].keys())); w.writeheader()
+    w.writerows([dict(r, layer_secondary=' · '.join(r['layer_secondary'])) for r in rows])
 
 SYM = {'P': '●', 'S': '○', 'X': '외생', '-': '–'}
-lines = ["| # | 엔진 디렉터리 | 논문 | 산출 | ① 기대수익 예측 | ② 위험 예측 | ③ 구성 규칙 | ④ 노출 규칙 | 주 기여 → 목적지 | 구 3분류 | 신호일당 종목 수(최소/중앙/최대) | 표준 구성에 올리면 실효 시작 규칙은 | 지금 상설 입구(판 1 건식 스캔) |",
-         "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
+def short(r): return r['engine_dir'].replace('RP_AUTO_', '')
+def cell(sym, what): return SYM[sym] + ((" " + what) if what else "")
+
+# 표 1 — 분류(유형 열 = 주 기여 층 1개 + 부 기여 · 내부 종목별 값)
+t1 = ["**표 1 — 분류**", "",
+      "| # | 엔진 디렉터리 | 논문 | 산출 | 주 기여 층 | 부 기여 | 한 모형 | 내부 종목별 값(점수로 내보낼 수 있나) | 가는 곳 | 구 3분류 |",
+      "|---|---|---|---|---|---|---|---|---|---|"]
 for i, r in enumerate(rows, 1):
-    def cell(sym, what): return SYM[sym] + ((" " + what) if what else "")
-    lines.append("| %d | `%s` | %s %s | %s | %s | %s | %s | %s | **%s** → %s | %s | %s | %s | %s |" % (
-        i, r['engine_dir'].replace('RP_AUTO_', ''), r['paper'], r['title'], r['outputs'],
-        cell(r['expected_return'], r['expected_return_what']), cell(r['risk'], r['risk_what']), cell(r['construction'], r['construction_what']),
-        cell(r['exposure'], r['exposure_what']), r['main_contribution'], r['destination'], r['old_3class'], r['counts'], r['mc3_standard_construction'], r['p1s01_entry_dryrun']))
-open(os.path.join(REP, 'classification_table.md'), 'w', encoding='utf-8').write("\n".join(lines) + "\n")
+    t1.append("| %d | `%s` | %s %s | %s | **%s** | %s | %s | %s | %s | %s |" % (
+        i, short(r), r['paper'], r['title'], r['outputs'], r['layer_primary'], ' · '.join(r['layer_secondary']) or '–',
+        '예' if r['one_model'] else '–', r['internal_value'], r['destination'], r['old_3class']))
+
+# 표 2 — 단계별 근거(추정 단계 = 종목별 데이터로 종목별 값을 만든다 / 규칙 단계 = 값을 받아 비중을 낸다)
+t2 = ["**표 2 — 단계별 근거**(비중 줄 = `engine.R` 의 Weight 대입 줄)", "",
+      "| # | 엔진 디렉터리 | 추정 단계 ① 기대수익 | 추정 단계 ② 위험 | 규칙 단계 ③ 구성(자르기 · 비중) | 규칙 단계 ④ 노출 | 비중 줄 |",
+      "|---|---|---|---|---|---|---|"]
+for i, r in enumerate(rows, 1):
+    t2.append("| %d | `%s` | %s | %s | %s | %s | %s |" % (
+        i, short(r), cell(r['expected_return'], r['expected_return_what']), cell(r['risk'], r['risk_what']),
+        cell(r['construction'], r['construction_what']), cell(r['exposure'], r['exposure_what']), r['weight_line']))
+
+# 표 3 — 신호일당 종목 수 · 실효 시작 규칙 · 지금 입구
+t3 = ["**표 3 — 신호일당 종목 수와 입구**", "",
+      "| # | 엔진 디렉터리 | 신호일당 종목 수(최소/중앙/최대) | 표준 구성에 올리면 실효 시작 규칙은 | 지금 상설 입구(판 1 건식 스캔) |",
+      "|---|---|---|---|---|"]
+for i, r in enumerate(rows, 1):
+    t3.append("| %d | `%s` | %s | %s | %s |" % (i, short(r), r['counts'], r['mc3_standard_construction'], r['p1s01_entry_dryrun']))
+open(os.path.join(REP, 'classification_table.md'), 'w', encoding='utf-8').write("\n".join(t1 + [""] + t2 + [""] + t3) + "\n")
 
 from collections import Counter
 print('rows', len(rows))
 print('outputs', Counter(r['outputs'] for r in rows))
-print('main', Counter(r['main_contribution'] for r in rows))
+print('layer_primary', Counter(r['layer_primary'] for r in rows))
+print('one_model', [short(r) for r in rows if r['one_model']])
+print('secondary', [(short(r), r['layer_secondary']) for r in rows if r['layer_secondary']])
+print('internal', Counter(r['internal_value'].split(' — ')[0] for r in rows))
+print('need_score_output', [short(r) for r in rows if '출력 추가' in r['internal_value'] and r['layer_primary'] == ER])
 print('old3', Counter(r['old_3class'] for r in rows))
 po = [r for r in rows if r['outputs'] == 'PORTFOLIO']
 print('PORTFOLIO-only', len(po))
