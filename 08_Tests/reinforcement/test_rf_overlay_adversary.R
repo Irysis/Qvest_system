@@ -20,6 +20,12 @@ ok <- function(m) { PASS <<- PASS + 1L; cat("  OK  ", m, "\n") }
 ng <- function(m, why = "") { FAIL <<- FAIL + 1L; cat("  FAIL", m, if (nzchar(why)) paste0(" — ", why) else "", "\n") }
 skip <- function(m, why) { SKIP <<- SKIP + 1L; cat("  SKIP", m, "—", why, "\n") }
 
+# 리프레시 배리어 격리(2026-11-11) — 적대검증 착수 대기(rb_wait)가 운영 잠금(/tmp/qm_daily_refresh.lock · qm_rawdata_writer.lock)을 읽지 않게
+#   모래상자 경로를 준다. 운영 writer 잠금이 걸린 동안 이 시험이 600초를 기다린 뒤 deferred_refresh_lock 으로 멈췄다(11-11 실측 606초 · rc 1)
+#   — 잴 것은 반증 검정이지 운영 잠금 상태가 아니다.
+.rb_tmp <- gsub("\\", "/", tempdir(), fixed = TRUE)
+Sys.setenv(QM_REFRESH_LOCKDIR = file.path(.rb_tmp, "qm_daily_refresh.lock"), QM_RAWDATA_WRITER_LOCKDIR = file.path(.rb_tmp, "qm_rawdata_writer.lock"))
+
 ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
 invisible(capture.output(suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_overlay_adversary.R")))))
 .adv_load_deps(ROOT)
