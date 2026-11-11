@@ -16,6 +16,8 @@
 # 왜 축마다 모델이 다른가: 판독형(원문 문장을 해석해 코드와 대조)은 깊이 문제라 opus,
 #   대조형(논문의 수치를 찾아 코드 수치와 비교)은 해석이 안 들어가 sonnet 으로 충분하다.
 #   축이 좁아지는 것 자체가 비용 절감이다 — 각자 논문 전문이 아니라 자기 절만 읽는다.
+#   (2026-11-11 도훈 "검증도 올려" · decision_register LLM-LANE-FABLE-VERIFICATION-20261111) 판독형 3축 = fable. 모델의 정본은 축 등록부다 — 이 주석이 아니다.
+#   Fable 축은 한도에 닿으면 폴백 모델(설정 llm.fable_limit_fallback)로 처음부터 한 번 다시 돈다(아래 '병렬 실행').
 #
 # 경계: 각 레인은 읽기 전용 + 자기 축 파일 1개 쓰기. 병합은 **R 이 한다**(LLM 판정자 없음)
 #   — 이 저장소 규약과 같다("R 이 등재한다. LLM 은 카탈로그를 못 쓴다").
@@ -217,8 +219,11 @@ jl start "paper=$PKEY" "wdir=$WDIR" "axes=$NAX" "html=$HTMLU"
 # ★한 축이 죽어도 나머지는 간다. 죽은 축은 파일이 없고, 병합기가 그걸 unverifiable 로
 #   **명시적으로** 센다 — 조용히 빠지는 축이 없다는 것이 이 설계의 요점이다.
 # ★무인 LLM 단일 진입(P0-M1 2026-09-24) — 축마다 rf_llm_agent_run(AutoMem 차단·무인 표식)을 거친다.
-#   모델·노력 = 축 계획 값(M/E · rf_fidelity_axes.json) — 서브셸 안에서 LLM_MODEL/LLM_EFFORT 로 넘긴다.
-#   구판과 같이 축 레인엔 폴백을 싣지 않는다(LLM_FALLBACK_MODEL 비움).
+#   모델·노력 = 축 계획 값(M/E · rf_fidelity_axes.json) — 서브셸 안에서 해석기(rf_llm_resolve)의 덮어쓰기 자리에 넣어 그대로 받는다.
+# ★한도 폴백(2026-11-11 · LLM-LANE-FABLE-VERIFICATION-20261111): 축 모델이 Fable 계열이면 해석기가 폴백(설정 llm.fable_limit_fallback ·
+#   기본 opus/max)을 싣고, 한도 문구가 나오면 그 축만 폴백 모델로 처음부터 한 번 다시 돈다(도훈 09-17). 판독형 축은 필수 축이라
+#   한도로 죽으면 병합 판정이 unverifiable 이 된다 — 그래서 싣는다. Opus · Sonnet 축은 폴백이 비어 있다(종전 그대로).
+#   검사 = 08_Tests/ops/test_rf_fanout_limit_fallback.sh · 허용 목록 = test_llm_single_entry.sh §G.
 _RFLE="$ROOT/02_Infrastructure/ops/rf_llm_env.sh"
 [ -f "$_RFLE" ] || _RFLE="$(dirname "${BASH_SOURCE[0]:-$0}")/rf_llm_env.sh"
 . "$_RFLE"
@@ -227,17 +232,19 @@ while IFS=$'\t' read -r K M E PF OUT; do
   [ -n "${K:-}" ] || continue
   rm -f "$OUT"
   (
-    LLM_MODEL="$M"; LLM_EFFORT="$E"; LLM_FALLBACK_MODEL=""; LLM_FALLBACK_EFFORT=""
+    rf_llm_resolve fidelity_axis "$M" "$E"
+    # 한도로 끊긴 1차가 쓰다 만 축 파일을 치운다 — 폴백 실행은 빈 자리에서 처음부터 쓴다(rf_llm_agent_run 이 폴백 직전에 부른다)
+    rf_llm_before_fallback() { rm -f "$OUT"; }
     # (FA-CLEAN-BASE-PATH) 청정 표식이 실린 스폰(검증기가 싣는다)이면 셸 통로 7종 + Agent + Skill 도 금지 — 단일 감사 레인과 같은 목록.
-    #   두 호출 모두 LLM_FALLBACK_MODEL="" 를 앞에 둔다(위 서브셸 대입과 같은 값 · 폴백 배선 검사 test_llm_single_entry.sh §G2 의 3줄 창 안).
+    #   폴백은 위 해석기가 정한 그대로다(Fable 축에만 실린다) — 두 호출이 같은 값을 쓴다.
     if [ "${QVEST_CLEAN_LANE:-0}" = "1" ]; then
-      LLM_FALLBACK_MODEL="" rf_llm_agent_run "$PF" "$LOG.$K.run" "${QVEST_FA_TIMEOUT:-1800}" \
+      rf_llm_agent_run "$PF" "$LOG.$K.run" "${QVEST_FA_TIMEOUT:-1800}" \
         --permission-mode acceptEdits \
         --allowed-tools "Read,Write,Glob,Grep,WebFetch,WebSearch" \
         --disallowed-tools "Bash,PowerShell,Monitor,REPL,Workflow,CronCreate,RemoteTrigger,Agent,Edit,Skill" \
         --add-dir "$WDIR"
     else
-      LLM_FALLBACK_MODEL="" rf_llm_agent_run "$PF" "$LOG.$K.run" "${QVEST_FA_TIMEOUT:-1800}" \
+      rf_llm_agent_run "$PF" "$LOG.$K.run" "${QVEST_FA_TIMEOUT:-1800}" \
         --permission-mode acceptEdits \
         --allowed-tools "Read,Write,Glob,Grep,WebFetch,WebSearch" \
         --disallowed-tools "Bash,Agent,Edit" \
@@ -246,7 +253,7 @@ while IFS=$'\t' read -r K M E PF OUT; do
     _arc=$LLM_RC
     cat "$LOG.$K.run" >> "$LOG.$K" 2>/dev/null
     rm -f "$LOG.$K.run" "$LOG.$K.run.primary"
-    echo "[axis $K] rc=$_arc model=$M" >> "$LOG"
+    echo "[axis $K] rc=$_arc model=$M used=${LLM_USED_MODEL:-$M}/${LLM_USED_EFFORT:-$E} fell_back=${LLM_FELL_BACK:-0}" >> "$LOG"
   ) &
   PIDS="$PIDS $!"
 done < "$PLAN"

@@ -229,7 +229,9 @@ echo "--- G. 한도 폴백 배선 — 허용 목록 밖 호출자는 LLM_FALLBAC
 # (v10.01 2026-10-13) rf_b5_design.sh 퇴역 — 허용 목록에서 뺐다. 직접 레인 돌연변이 표본 = cleaner_distill_run.sh(구 rf_b1_design.sh)
 # (v10.2 2026-11-11) chain_gen_run.sh 편입 — 도훈 지시 "최신 페이블 적용"(decision_register LLM-LANE-FABLE-GENERATION-20261111)으로 생성기가 Fable 이 됐다.
 #   도훈 09-17 "fable 한도 소진하면 opus 최대 effort 로" 가 이 레인에도 걸린다. 읽기 전용 레인이라 반쪽 산출물 청소 훅은 필요 없다(1차 출력 = out.md.primary).
-FB_ALLOW="rf_replication_auto.sh,rf_overlay_audit.sh,chain_gen_run.sh"
+# (v10.2 2026-11-11 · 같은 날 "검증도 올려" · LLM-LANE-FABLE-VERIFICATION-20261111) rf_fidelity_fanout.sh 편입 — 판독형(필수) 3축이 Fable 이 됐다.
+#   필수 축이 한도로 죽으면 감사가 unverifiable 이 되므로 Fable 축은 폴백을 싣는다. 거동 검사 = test_rf_fanout_limit_fallback.sh.
+FB_ALLOW="rf_replication_auto.sh,rf_overlay_audit.sh,chain_gen_run.sh,rf_fidelity_fanout.sh"
 cat > "$T/g_scan.py" <<'PYG'
 import io, os, re, sys
 ops = sys.argv[1]; allow = set(sys.argv[2].split(','))

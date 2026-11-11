@@ -1433,6 +1433,9 @@ SUITES=(
   # 2026-09-06 — 적대적 충실도 감사 레인 결함 3종(역슬래시 QM_ROOT 병합 즉사 · 병합 실패 exit 0 · 미실행=unverifiable→proceed):
   #   병합 단계 ROOT 정규화·실패 전파(셸 · claude 미호출) · 처분 audit_required · 감사 없이 개설 불가(rf_audit_gate + 배선 재도출).
   "08_Tests/ops/test_rf_fanout_merge_root.sh"
+  # 2026-11-11 도훈 "검증도 올려"(LLM-LANE-FABLE-VERIFICATION-20261111) — 충실도 감사 판독형(필수) 3축이 Fable 이 됐다. Fable 축이 한도에 닿으면
+  #   그 축만 opus/max 로 처음부터 다시 돈다(필수 축이 죽으면 감사가 unverifiable). 가짜 claude + 실제 병합기 · 돌연변이 2종.
+  "08_Tests/ops/test_rf_fanout_limit_fallback.sh"
   "08_Tests/ops/test_rf_audit_disposition_required.R"
   # 2026-09-07 도훈 "텔레 보내는 양식 자체를 수정해줘" — 감사 지적 통지는 요약(축 1줄 + 소제목 + 포인터)이고 원문은 파일에 남는다
   "08_Tests/ops/test_rf_audit_tg_brief.R"

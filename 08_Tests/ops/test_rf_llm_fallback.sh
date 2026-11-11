@@ -20,6 +20,8 @@
 #   E3b(Fable 은 지정 레인 FABLE_LANES 에만 · Fable 레인은 폴백 필수 · 그 밖 레인은 폴백 없음 — 목록은 설정에서 재도출) · E3m(지정 밖 fable · 암묵값) ·
 #   E3m2(폴백을 끈 돌연변이). 재는 성질은 같다 — 운영 설정이 채택된 편성과 일치하고, 편성 밖 Fable · 폴백 없는 Fable 이 생기면 잡는다.
 #   스테이징 검증: QVEST_TEST_LLM_CFG=<후보 설정> 을 주면 운영 설정 대신 그 파일을 잰다.
+# (같은 날 "검증도 올려" · LLM-LANE-FABLE-VERIFICATION-20261111) E4(감사 축 편성 — 판독형 3축 fable · 대조형 3축 sonnet) · E4m · E5(Judge 정의 fable/max) 추가.
+#   스테이징: QVEST_TEST_AXES=<후보 축 등록부> · QVEST_TEST_JUDGE_MD=<후보 judge.md>.
 #==============================================================================
 set -uo pipefail
 ROOT="${QM_ROOT:-C:/Users/99922/OneDrive/Quant_Module_Moltbot}"
@@ -273,6 +275,26 @@ w=$(QVEST_LLM_FALLBACK=off lane_policy_check "$LIVE_CFG")
 if printf '%s' "$w" | grep -q "replication:no_fallback" && printf '%s' "$w" | grep -q "chain_generator:no_fallback"; then
   ok "E3m2 [돌연변이] 폴백을 끄면 Fable 레인 둘의 폴백 부재를 E3b 검사가 잡는다"
 else ng "E3m2" "[$w]"; fi
+# E4 — 감사 축 등록부 편성(11-11 도훈 "검증도 올려" · LLM-LANE-FABLE-VERIFICATION-20261111): 판독형(필수) 3축 = fable/xhigh · 대조형 3축 = sonnet/high
+AXES_LIVE="${QVEST_TEST_AXES:-$ROOT/06_Registry/rf_fidelity_axes.json}"
+axes_plan(){ "$PY" -c "import io,json,sys
+a=json.loads(io.open(sys.argv[1],'rb').read().decode('utf-8'))['axes']
+print(' '.join('%s=%s/%s/%s'%(x['key'],x['model'],x['effort'],'req' if x.get('required') else 'opt') for x in a))" "$1" | tr -d '\r'; }
+AX_WANT="signal=fable/xhigh/req timing=sonnet/high/opt universe=sonnet/high/opt portfolio=fable/xhigh/req cost=sonnet/high/opt undeclared=fable/xhigh/req"
+_ax="$(axes_plan "$AXES_LIVE")"
+[ "$_ax" = "$AX_WANT" ] && ok "E4 감사 축 편성 = 판독형(필수) 3축 fable/xhigh · 대조형 3축 sonnet/high" || ng "E4 감사 축 편성" "[$_ax]"
+# E4m — 돌연변이: 필수 축 하나를 opus 로 되돌린 등록부는 편성 대조가 잡는다
+"$PY" -c "import io,json,sys
+d=json.loads(io.open(sys.argv[1],'rb').read().decode('utf-8'))
+[x.update(model='opus') for x in d['axes'] if x['key']=='signal']
+io.open(sys.argv[2],'w',encoding='utf-8').write(json.dumps(d,ensure_ascii=False))" "$AXES_LIVE" "$T/axes_mut.json"
+_axm="$(axes_plan "$T/axes_mut.json")"
+[ "$_axm" != "$AX_WANT" ] && printf '%s' "$_axm" | grep -q 'signal=opus/' && ok "E4m [돌연변이] 필수 축을 opus 로 되돌리면 편성 대조가 잡는다" || ng "E4m" "[$_axm]"
+# E5 — Judge 에이전트 정의(11-11 도훈 "검증도 올려"): 모델 = 별칭 fable · 노력 max(ID 고정이 아니다 — 별칭이 최신으로 풀린다)
+JDG="${QVEST_TEST_JUDGE_MD:-$ROOT/.claude/agents/judge.md}"
+_jm="$(sed -n '1,12p' "$JDG" | tr -d '\r' | sed -n 's/^model:[[:space:]]*//p' | head -n 1)"
+_je="$(sed -n '1,12p' "$JDG" | tr -d '\r' | sed -n 's/^effort:[[:space:]]*//p' | head -n 1)"
+[ "$_jm/$_je" = "fable/max" ] && ok "E5 Judge 정의 = model fable(별칭) · effort max" || ng "E5 Judge 정의" "$_jm/$_je"
 
 #── G. (선택) 실모델 별칭 확인 — RF_LLM_LIVE=1 일 때만. 한도를 조금 쓴다 ─────────────────────
 echo "=== G. 실모델 별칭 (RF_LLM_LIVE=1 일 때만) ==="

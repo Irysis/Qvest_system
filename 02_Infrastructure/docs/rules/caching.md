@@ -9,7 +9,10 @@
 | 구간 | 에이전트 | 핀 | 근거 |
 |---|---|---|---|
 | **가설설계** | `alpha-hypothesis` | **`model: opus`** (현행 Opus 5) | Step 0 발굴 + ①메커니즘 →②가설 서술 →③반증 조건 →④국면 경계. ★2026-08-29 Fable→Opus 승격 |
-| 그 외 **전 구간** | `alpha-research` · `risk-research` · `optimizer-research` · `forge` · `judge` (+ ondemand `architect` · `book-tracker`) | **`model: opus`** (현행 Opus 5) | 구현·측정·판정 구간 |
+| 그 외 **전 구간** | `alpha-research` · `risk-research` · `optimizer-research` · `forge` (+ ondemand `architect` · `book-tracker`) | **`model: opus`** (현행 Opus 5) | 구현·측정 구간 |
+| **PIT 판결** | `judge` | **`model: fable`** (별칭 = 최신 Fable · effort max) | ★2026-11-11 도훈 "검증도 올려"(decision_register LLM-LANE-FABLE-VERIFICATION-20261111) — PIT 최종 판결자에 가장 높은 추론 등급. Fable 한도로 스폰이 실패하면 세션이 Agent 호출의 `model` 인자로 opus 를 지정해 다시 띄운다 |
+
+- **1계층 무인 레인의 모델 편성은 이 문서가 아니라 등록부가 정본이다**: 레인 = `06_Registry/reinforce_auto_config.json::llm` · 감사 축 = `06_Registry/rf_fidelity_axes.json`. 2026-11-11 도훈 지시로 충실구현 구현 에이전트 · 강화 사슬 생성기 · 충실도 감사 판독형 3축 = `fable`(한도면 opus/max 로 처음부터 다시 돈다) — 검사 `08_Tests/ops/test_rf_llm_fallback.sh` E3 · E4 · E5.
 
 - **★구간 분리는 유지한다 — 이제 근거가 모델이 아니라 역할이다**: 2026-08-08 분리의 동기는 "단일 에이전트에 모델을 부분 적용할 수 없다" 였고 2026-08-29 통일로 그 동기는 소멸했다. 그러나 분리는 남는다 — **설계자≠측정자 방화벽**이 스폰 경계로만 강제되기 때문이다(프롬프트 문구는 아무것도 강제하지 않는다). 6-agent 파이프라인 *구조*는 불변(alpha-hypothesis 는 alpha 내부 구간 분리이지 추가 심사 단계가 아님).
 - **핸드오프 계약**: `alpha-hypothesis` → `qepm/mailbox/worktask/{WT_id}/alpha_hypothesis.json` → `alpha-research` 가 **승계(재작성 금지)** 후 ⑤ AST 구성부터. `verdict: "economic_void"` 면 하류 진행 금지·Q-Lead escalate. 부재 시 alpha-research 가 **동기** spawn(배경 실행 후 "대기 중" 종료 = 체인 절단).
