@@ -404,6 +404,28 @@ function QW-Alive {
   foreach ($h in [Win]::Wins([uint32]$p.Id)) { $t=[Win]::Txt($h); if ($t -like "*Quantiwise7*" -and $t -notlike "*Login*") { return $true } }
   return $false
 }
+# (2026-11-11) 'session kicked' 의 사유를 남긴다 — QW-Alive 가 거짓이 되는 세 경로(단말 프로세스 없음 · 중복 로그인 종료 대화상자 ·
+#   로그인 전 창뿐) 중 무엇이었는지. 11-11 자동 수급 4회가 모두 OHLCVS 갱신 약 20분 뒤 'kicked' 로 끝났는데 사유 줄이 없어
+#   단말 종료 · 다른 기기 로그인 · 로그인 창 가운데 무엇인지 가를 수 없었다. 판정은 바꾸지 않는다(기록만).
+#   창 제목 · 대화상자 본문 원문은 남기지 않는다(아이디 · 기기명 · IP 노출 방지) — 개수와 분류만. 출력은 ASCII(로그 깨짐 방지).
+function QW-AliveDiag {
+  try {
+    $ps = @(Get-Process qwMain -EA SilentlyContinue)
+    if ($ps.Count -eq 0) { return "alive-diag: proc=0" }
+    $kd = 0; if (Kick-Dialog) { $kd = 1 }
+    $n = 0; $q7 = 0; $lg = 0; $dlg = 0
+    foreach ($pp in $ps) {
+      foreach ($h in [Win]::Wins([uint32]$pp.Id)) {
+        $n++; $t = [Win]::Txt($h)
+        if ($t -like "*Quantiwise7*") { $q7++ }
+        if ($t -like "*Login*") { $lg++ }
+        if ([Win]::Cls($h) -eq '#32770') { $dlg++ }
+      }
+    }
+    $st = '?'; try { $st = $ps[0].StartTime.ToString('HH:mm:ss') } catch {}
+    return "alive-diag: proc=$($ps.Count) started=$st kickdlg=$kd wins=$n q7=$q7 login=$lg dialogs=$dlg"
+  } catch { return "alive-diag: error" }
+}
 function Ensure-Login {
   if (QW-Alive) { return $true }
   if (Kick-Dialog) {
@@ -474,7 +496,7 @@ function Refresh-One($f,$target) {
       foreach ($h in $ws.Hyperlinks) { if ($h.ScreenTip -like "Quantiwise*") { $h.Follow() } }
     }
     Start-Sleep -Seconds 6
-    if (-not (QW-Alive)) { Write-Host "[$($f.name)] session kicked"; $result="kicked" }
+    if (-not (QW-Alive)) { Write-Host "[$($f.name)] session kicked"; Write-Host "[$($f.name)] $(QW-AliveDiag)"; $result="kicked" }
     else {
       # Completion = EVERY query sheet's resolved Period(To) (B6 bracket) >= target.
       #   (2026-09-19 fix) old check = sheet1 bracket == target. After midnight / before RAWDATA
