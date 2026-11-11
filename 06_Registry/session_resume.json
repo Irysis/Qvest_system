@@ -1,6 +1,6 @@
 {
  "schema": "session_resume_v1",
- "updated_at": "2026-11-11T21:51:48+0900",
+ "updated_at": "2026-11-11T22:03:56+0900",
  "operations": [
   {
    "id": "OP-20261015-MSM-A",
@@ -551,7 +551,7 @@
    "goal": "전수점검 결론(A 미산출 = 생성 편중 · 시행 소진 · 기준점 부재 · 정지)에 따라 1계층의 일하는 순서를 바꿔 계약 경로 A 를 낸다 — 설계 README §4 의 순서와 완료 기준",
    "status": "in_progress",
    "started_at": "2026-11-10T10:27:03+0900",
-   "updated_at": "2026-11-11T21:51:48+0900",
+   "updated_at": "2026-11-11T22:03:56+0900",
    "steps": [
     {
      "id": "S0",
@@ -607,7 +607,7 @@
      "updated_at": "2026-11-10T12:13:47+0900"
     }
    ],
-   "next_action": "★11-11 22:0x P1S01 첫 실측정 — 1908.01112 = 측정 무효 2회(판정 아님 · 원인 셋: 신호일 격자 · 시작일 미전달 · 폭 — J-20261111-020 → 026 정정 · 텔레그램 보고 + 정정) · 시드 E2 · E3 = 대기(J-027 계획대로 진행). 지금 도는 것: 감시 셸 p1s01_seed_watch.sh(세션 스크래치 · winpid 31928 · 상태 .cache/scheduler_logs/p1s01_seed_watch_state.txt · 로그 .cache/scheduler_logs/p1s01_seed_watch_20261111_194533.log) — 레인 gpu1 claim 이 끝나는 순간 GPU 임대(holder P1S01_standing · holder-pid = 셸 winpid)를 잡고 11-12 08:20~17:45 창(밤 · 아침 체인 미실행 · 배리어 free · 지문 20분 안정 · 가용 메모리 ≥ 16 GB · fresh-check)에서 measure-item E2 → E3 → 임대 해제(종료 trap). 셸이 죽으면 임대 = holder_dead 로 풀린다(레인 재개). 다음 세션 할 일: ⓐ 셸이 끝나면(측정만 함) 판정 전 점검 Rscript <스크래치>/prejudge_check.R P1S01_E2_C0 --eval · P1S01_E3_RX0 --eval(측정 ok · 지문 · 키 파일 · 축 감사 · 실효 시작 날짜 · 칸 평가 · β-통제 알파 유한 여부 — 시험 창 값은 읽지 않음) → bash round.sh 04_Research/programs/P1_RETURN/P1S01_standing_qualification judge → results/standing/<code>.verdict.json 확인 → standing-report --send(코어 고정 문구) → ★바로 뒤 다음 리서치 브리핑 1통(prep_send · qvest-telegram §0.7)에 '시드 보는 창 = 2005-02~2022-12 — 기저 신호 첫날 2005-01-31(엔진 기본 시작값 · 표준 구성 경로가 측정 시작일을 넘기지 않음 · 축 시작 2000 과 다름) · 판 2 재측정 대상'을 적는다 · 판단 원장 판정 기록에도 같은 줄 → 감독(통과 = 판단 T2 + 철학 P2 즉시 · 미달 = 일 묶음 · superfan-mark) — 스크래치가 지워졌으면 같은 점검을 다시 쓴다(v1/standing.R rc_standing_context · v1/cell_eval.R rc_eval_cell · v1/metrics.R rc_metric_beta_alpha). ⓑ 셸이 종료 5(임대 상실) · 6(대기 상한) · 3(E2 실패)이면 로그를 보고 판단. ⓒ E2 · E3 판정 뒤 tick_hold 삭제 — 그 전에 scan --dry-run 으로 torch 엔진(예: THGNN 이 입구 통과)이 들어올지 확인(v1 판 무인 틱엔 GPU 관문 없음 → 들어오면 tick_hold 유지 또는 P1S02(v2) 등록). ⓓ 판 2(코어 v2 · 시드 판정 뒤 · 판 1 핀 해제 시점) 변경 후보 = 분류 세션 설계 04_Research/01_reports/portfolio_paper_layer_split_20261112/README.md §6(신호일 격자 as-of 맞춤 · 시작일 전달(측정 변경 선언 · 시드 재측정 · 판 표식) · 예측형 엔진 점수 출력 · 입구 사유 2개) — 판 2 가 같은 칸을 다시 판정하면 기저 풀이 어느 판의 판정을 읽는지(최신 판 우선)도 정한다 · 측정 계약의 뜻을 바꾸는 선택(면제 확장)은 도훈 결정. ⓔ 첫 강화 사슬: 2002.06975 계보 밖 상설 자격 = 0 → 시드 판정 뒤 다음 일 = 공급(레인 · DESIGN §9-2 인계 소급 · factor_db_asof 엔진의 등록부 방향 재검증 · ⓓ). ⓕ 정정 기록: 저널 · 파일럿 보고서의 '--holder-pid $$' 는 Git Bash MSYS pid → Windows pid(/proc/$$/winpid). ⓖ 첫 판정 기록: git log 0232aec81.. -- contracts/audit_bt_result.R reinforcement/rf_sleeve.R = 0 커밋(11-11 19:39) · 핀 31 파일 등록 뒤 커밋 0(11-11 21:30). ⓗ 도훈 결정 PAPER-CONTRIBUTION-LAYER-TAXONOMY-20261111(예측 · 배분 정의 · 4분법) · 저널 앞 판 ⓔ(H5 시험 격리) · ⓕ(P2 상설 판 설계 — C-20261111-030)",
+   "next_action": "★11-11 22:1x P1S01 판 1 = 보류 고정(도훈 결정 P1S01-SEEDS-SKIP-TO-EDITION2-20261111 '시드 측정은 건너뛰고 판 2로 넘겨'). 판 1 상태: 1908.01112 측정 무효 2회(판정 아님 · 원인 셋 = 신호일 격자 · 시작일 미전달 · 폭 — J-20261111-020 → 026) · 시드 E2 · E3 미측정 · 판정 0 · 감시 셸 종료 · GPU 임대 free(잡은 적 없음) · 레인은 THGNN 뒤 다음 논문. ★tick_hold 는 지우지 않는다(04_Research/programs/P1_RETURN/P1S01_standing_qualification/tick_hold — 지우면 무인 틱이 GPU 관문 없이 대기 중인 DNN 시드를 잰다 · 26시간 뒤 standing_board.scan_stale 경고는 의도된 것). 다음 = 판 2(P1S02 · 코어 v2 위 새 핀) 구축 — 설계 04_Research/01_reports/portfolio_paper_layer_split_20261112/README.md §6 · §8: (2) 레인 출력 계약(예측형 엔진이 PORTFOLIO 와 함께 점수 패널 · 프롬프트 = 운영 스크립트라 후보판 → 시험 → 원자 교체) → (3) 셀 경로 정합(as-of 정렬 = 결과 동일 시험 · 시작일 주입 = 측정 변경 선언 · 4묶음 14 · 9 · 2 · 8 · 2002.06975 스케줄 수리 · 판 표식 · 판단 T4) → 판 2 등록(입구 사유 portfolio_only_base · breadth_insufficient · 초안 · 격리 교차 점검 · 철학 P1 · 판단 T1) → 시드 재측정(GPU 임대 = 코어 v2 관문 · 00:03 · 07:10 창 회피) → (4) 1908.01112 점수 패널 패치 → 레인 재측정 → 판 2 스캔. 판 1 핀 31 파일은 더 보호하지 않는다(판 1 은 재지 않는다). 판 2 첫 판정 전에 판정 전 점검을 한다(측정 ok · 지문 동일 · 키 파일 · 축 감사 · 실효 시작 날짜 · 칸 평가 · β-통제 알파 유한 여부 — 시험 창 값은 읽지 않는다 · 인프라 결함으로 지표가 NA 면 '미시험'이 최종 판정으로 굳는다). 판 2 세션이 정할 것: 같은 칸을 두 판이 판정하면 기저 풀이 어느 판을 읽는지(최신 판 우선) · 판 1 을 어떻게 닫는지. 판 2 구축을 어느 세션이 하는지 = 도훈 답 대기(설계 맥락 = 분류 세션 local_ffde0db1). 그 밖: 도훈 결정 PAPER-CONTRIBUTION-LAYER-TAXONOMY-20261111(예측 · 배분 4분법) · 정정 '--holder-pid $$' = MSYS pid(Windows pid = /proc/$$/winpid) · 첫 강화 사슬 = 2002.06975 계보 밖 상설 자격 0 → 공급 · 저널 앞 판 ⓔ(H5 시험 격리) · ⓕ(P2 상설 판 설계 — C-20261111-030)",
    "context_files": [
     "04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/README.md",
     "04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/findings_ledger.md",
@@ -636,14 +636,6 @@
     "레인 재가동(S0) · 비밀 값 교체 — 설계 README §6 결정 1 · 4(도훈 직접 조치)"
    ],
    "log": [
-    {
-     "at": "2026-11-10T10:27:04+0900",
-     "text": "결정 대기: GRADE-V33-NOTCH-ASOF-AND-RULE-CHANGE-PROCEDURE-20261110 — 알파 노치 요인 as-of 재검 + 규칙 변경 절차"
-    },
-    {
-     "at": "2026-11-10T10:27:05+0900",
-     "text": "결정 대기: 레인 재가동(S0) · 비밀 값 교체 — 설계 README §6 결정 1 · 4(도훈 직접 조치)"
-    },
     {
      "at": "2026-11-10T10:27:05+0900",
      "text": "11-10 전수점검 세션 마감: 수리 20건 · 새 부품(결과 원장 · 시행 예산) · 규칙 개정 · 결정 3건 상정 · 커밋 5c05969b8~4f5d7772f · 분기점 텔레그램 1통 발송. 측정 · 라운드 등록은 하지 않았다"
@@ -795,6 +787,14 @@
     {
      "at": "2026-11-11T21:51:48+0900",
      "text": "다음: ★11-11 22:0x P1S01 첫 실측정 — 1908.01112 = 측정 무효 2회(판정 아님 · 원인 셋: 신호일 격자 · 시작일 미전달 · 폭 — J-20261111-020 → 026 정정 · 텔레그램 보고 "
+    },
+    {
+     "at": "2026-11-11T22:03:56+0900",
+     "text": "11-11 22:0x 도훈 결정 P1S01-SEEDS-SKIP-TO-EDITION2-20261111('시드 측정은 건너뛰고 판 2로 넘겨') — 감시 셸 p1s01_seed_watch.sh 종료(프로세스 31928 · 자식 0 확인) · GPU 임대 = 잡은 적 없음(free) · 판 1 tick_hold 유지 + 사유 갱신(드라이런 '보류 1') · 판단 J-20261111-028(J-027 대체). 판 1 최종 상태 = 1908.01112 측정 무효 2회(판정 아님) · 시드 2건 미측정 · 판정 0."
+    },
+    {
+     "at": "2026-11-11T22:03:56+0900",
+     "text": "다음: ★11-11 22:1x P1S01 판 1 = 보류 고정(도훈 결정 P1S01-SEEDS-SKIP-TO-EDITION2-20261111 '시드 측정은 건너뛰고 판 2로 넘겨'). 판 1 상태: 1908.01112 측정"
     }
    ]
   }

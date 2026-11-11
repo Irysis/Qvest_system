@@ -1,6 +1,6 @@
 {
  "schema": "q_judgment_ledger_v1",
- "updated_at": "2026-11-11T21:50:41+0900",
+ "updated_at": "2026-11-11T22:02:03+0900",
  "judgments": [
   {
    "id": "J-20261016-001",
@@ -1890,6 +1890,29 @@
    "status": "open",
    "reviews": [],
    "supersedes": null,
+   "superseded_by": "J-20261111-028"
+  },
+  {
+   "id": "J-20261111-028",
+   "at": "2026-11-11T22:02:03+0900",
+   "op": "OP-20261110-V102-LADDER",
+   "kind": "stop_continue",
+   "summary": "[11-11 22:0x] 시드 E2 · E3 판 1 측정 중단 — 도훈 결정 P1S01-SEEDS-SKIP-TO-EDITION2-20261111('시드 측정은 건너뛰고 판 2로 넘겨'). 감시 셸 종료 · GPU 임대 잡은 적 없음 · 판 1 tick_hold 유지(사유 갱신) · 시드 · 1908.01112 는 판 2 에서",
+   "rationale": "J-027(계획대로 진행)은 Q 권고였고 대안((나) 건너뛰기)을 함께 올렸다 — 도훈이 (나)를 골랐다. 급한 측정이 아니고(첫 사슬을 막는 것은 계보 밖 자격 엔진 0) 판 2 에서 다시 재야 하며 GPU 5~6시간 + 레인 정지가 든다는 점을 설명한 뒤의 결정이다. J-017(임대를 THGNN 종료 순간 감시 셸이 잡는다)은 대상이 사라져 종료 — 임대는 한 번도 잡히지 않았다. tick_hold 를 지우지 않는 것은 Q 판단: 판 1 측정 경로에 GPU 관문이 없어, 지우면 무인 틱이 대기 중인 DNN 시드를 레인 · 임대 확인 없이 잰다.",
+   "framework_refs": [
+    "06_Registry/decision_register.json P1S01-SEEDS-SKIP-TO-EDITION2-20261111 · round_core README '판 라우팅 · v2' C-20261111-032"
+   ],
+   "evidence": [
+    "프로세스 31928 종료 확인 · qv_lock lease status = free · standing_board_run.sh --dry-run '보류 1'"
+   ],
+   "alternatives": [
+    "tick_hold 삭제(원 계획의 마지막 단계) — 판 1 에 미측정 torch 칸이 남아 있어 불가"
+   ],
+   "expectation": "레인은 THGNN 뒤 다음 논문으로 · 판 2 구축 세션이 셀 경로를 고치고 P1S02 를 등록 · 판정 경로 첫 실전 통과는 판 2 첫 측정에서(판정 전 점검 포함)",
+   "confidence": 0.85,
+   "status": "open",
+   "reviews": [],
+   "supersedes": "J-20261111-027",
    "superseded_by": null
   }
  ],

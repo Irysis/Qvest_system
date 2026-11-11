@@ -4595,7 +4595,54 @@
       "decided_at": "2026-11-11T20:58:31+0900",
       "note": "도훈 2026-11-11 20:0x: \"1계층 리서치에서 LLM 호출 파트에서 고품질 추론이 필요해서 최신 페이블 적용하면 리서치 퀄리티가 향상될 영역 있는지 확인해보고 적용시켜줘\". ★도훈이 정한 것은 '찾아서 적용한다'까지이고, 어느 레인인지는 총괄 세션(Q)이 조사해 골랐다(Q 해석) — 넓히거나 줄이는 것은 도훈 결정. 적용 = 06_Registry/reinforce_auto_config.json llm.lanes.replication.model opus → fable · llm.lanes.chain_generator 신설(fable/max) · ops/chain_gen_run.sh 가 Fable 한도 폴백(opus/max)을 싣는다. 별칭 fable 이 푼 모델 = claude-fable-5-2(무인 인증 실호출 확인). 볼 것 = 새 논문 10편 뒤 논문당 감사 기각 재구현 횟수(기준 29/7 = 4.1) · 줄지 않으면 되돌린다. 검사 = test_rf_llm_fallback.sh E3 · E3b · E3m2 · test_llm_lane_wiring.sh C6c · C6d · test_llm_single_entry.sh G · test_scn_chain_gen_guard.sh F · M4.",
       "registered_at": "2026-11-11T20:58:30+0900"
+    },
+    {
+      "id": "P1S01-SEEDS-SKIP-TO-EDITION2-20261111",
+      "title": "P1S01 판 1 의 시드 E2 · E3(2002.06975 DNN) 측정을 판 1 에서 할지, 건너뛰고 판 2(셀 경로 수리 뒤)에서 잴지",
+      "status": "resolved",
+      "opened_at": "2026-11-11T22:01:59+0900",
+      "options": [
+        "(가) 판 1 에서 계획대로 잰다(11-12 낮 · GPU 5~6시간 · 그동안 레인 정지) — 판정 기록 · 보고에 보는 창 시작 2005 를 적고 판 2 에서 다시 잰다",
+        "(나) 건너뛰고 판 2 로 넘긴다 — 감시 셸을 내리고(임대 없음 · 레인은 THGNN 뒤 다음 논문) 셀 경로 수리 · 판 2 등록 뒤 시드와 1908.01112 를 잰다"
+      ],
+      "recommendation": "Q 판단(J-20261111-027)은 (가)였다 — 판정 경로(칸 평가 · 판정 · 원장 · 보고)의 첫 실전 통과(답을 아는 항목)라는 가치. 다만 급한 측정은 아니고(첫 사슬을 막는 것은 2002.06975 계보 밖 자격 엔진 0 이다) 판 2 에서 어차피 다시 재야 하므로 (나)를 대안으로 올렸다.",
+      "default_until_decided": "(가) — 감시 셸이 레인 THGNN 종료 순간 GPU 임대를 잡고 11-12 08:20~17:45 창에서 측정",
+      "blocks": [
+        "item:P1S01_seed_measure"
+      ],
+      "owner": "dohoon",
+      "source": "11-11 P1S01 첫 실측정 — 1908.01112 측정 무효(원인 셋) · 시드 엔진 기저 시작 2005(셀 경로 시작일 미전달 · 판단 Superfan T4 C-20261111-038) → 도훈 '시드 측정이 뭐하는건데?' → 측정 세션의 설명과 대안 제시",
+      "decision": "(나) 시드 측정은 건너뛰고 판 2 로 넘긴다 — 판 1 에서는 시드를 재지 않는다 · 감시 셸 종료 · GPU 임대 없음(레인 계속) · 판 1 은 보류(tick_hold) 유지 · 시드와 1908.01112 는 판 2(P1S02 · 코어 v2 · 셀 경로 수리 뒤)에서 잰다",
+      "decided_by": "dohoon",
+      "decided_at": "2026-11-11T22:02:01+0900",
+      "note": "도훈 2026-11-11 22:0x 측정 세션 채팅: \"시드 측정은 건너뛰고 판 2로 넘겨\". 집행(같은 시각): 감시 셸 p1s01_seed_watch.sh 종료(프로세스 · 자식 0 확인) · GPU 임대 = 잡은 적 없음(free) · 판 1 보류 파일 04_Research/programs/P1_RETURN/P1S01_standing_qualification/tick_hold 는 유지하고 사유를 고쳐 적음(지우면 무인 틱이 GPU 관문 없이 DNN 시드를 잰다) · 드라이런 '보류 1' 확인. 판 1 원장 = scan 2 · enqueue 3 · 1908.01112 측정 실패 2 · 판정 0(그대로 남는다). 이제 판 1 핀 31개 파일을 보호할 이유가 없다 — 판 2 구축에서 셀 경로를 고친다(설계 = 04_Research/01_reports/portfolio_paper_layer_split_20261112/README.md §6). 판정 경로의 첫 실전 통과는 판 2 의 첫 측정으로 밀린다 — 판 2 첫 판정 전에 같은 판정 전 점검(측정 ok · 지문 · 키 파일 · 축 감사 · 칸 평가 · β-통제 알파 유한 여부)을 한다.",
+      "registered_at": "2026-11-11T22:01:59+0900",
+      "recorded_by": "Q (P1S01 측정 세션 local_5ea99f84)",
+      "evidence": "채팅 응답 2026-11-11 22:0x \"시드 측정은 건너뛰고 판 2로 넘겨\" — 직전 Q 답변 = 시드 측정 설명 + '건너뛰고 판 2 로 넘기길 원하시면 말씀해 주십시오'"
+    },
+    {
+      "id": "LLM-LANE-FABLE-VERIFICATION-20261111",
+      "title": "검증 쪽(충실도 감사 판독형 3축 · Judge)도 최신 Fable 로 올릴지",
+      "status": "resolved",
+      "opened_at": "2026-11-11T22:04:20+0900",
+      "options": [
+        "검증도 올림 — 충실도 감사 판독형 3축(signal · portfolio · undeclared)과 Judge 를 Fable 로. 대조형 3축(Sonnet) · 코드 감사 · Superfan · 단일 감사자 폴백은 그대로",
+        "지금은 유지 — 새 논문 10편 결과에서 감사가 병목으로 드러나면 그때 올림"
+      ],
+      "recommendation": "지금은 유지(총괄 세션 권고) — 같이 올리면 논문당 Fable 호출이 3배 넘게 늘어 한도 소모가 커지고, 만든 모델(Fable)과 다른 계열(Opus)이 감사한다는 구분이 사라진다. 올리는 쪽의 근거 = 감사 오판(10-14 실측: 원문 채택 문장을 근거에 싣고 반대 결론)이 재구현을 태우고, Judge 는 PIT 최종 판결자라 추론 등급이 가장 중요하다.",
+      "default_until_decided": "지금은 유지 — 새 논문 10편 결과에서 감사가 병목으로 드러나면 그때 올림",
+      "blocks": [
+        "lane:fidelity_audit",
+        "item:judge_agent_model"
+      ],
+      "owner": "dohoon",
+      "source": "11-11 총괄 세션이 Fable 적용 보고(LLM-LANE-FABLE-GENERATION-20261111) 끝에 올린 선택지 '검증 쪽(충실도 감사 판독형 3축 · Judge)도 Fable로 올릴까요?'",
+      "decision": "검증도 올림 — 충실도 감사 판독형 3축(signal · portfolio · undeclared)과 Judge 를 Fable 로. 대조형 3축(Sonnet) · 코드 감사 · Superfan · 단일 감사자 폴백은 그대로",
+      "decided_by": "dohoon",
+      "decided_at": "2026-11-11T22:04:22+0900",
+      "note": "도훈 2026-11-11 21:1x: \"검증도 올려\"(총괄 세션은 '지금은 유지'를 권고했고 한도 소모 증가를 알린 뒤의 선택). 적용 = 06_Registry/rf_fidelity_axes.json 필수 3축 model opus → fable(xhigh 그대로) · .claude/agents/judge.md model opus → fable(max 그대로) · ops/rf_fidelity_fanout.sh 가 Fable 축에 한도 폴백(opus/max)을 싣는다 — 판독형 축은 필수 축이라 한도로 죽으면 병합 판정이 unverifiable 이 되기 때문. Judge 는 세션 에이전트라 폴백 배선이 없다 — Fable 한도로 스폰이 실패하면 세션이 model 인자로 opus 를 지정해 다시 띄운다. 검사 = test_rf_fanout_limit_fallback.sh(신설 21 · 수정 전 러너에서 11 빨강) · test_rf_llm_fallback.sh E4 · E4m · E5 · test_llm_single_entry.sh G. 볼 것 = LLM-LANE-FABLE-GENERATION-20261111 과 같다(새 논문 10편 뒤 논문당 감사 기각 재구현 횟수 · 기준 4.1) + 주간 Fable 사용량.",
+      "registered_at": "2026-11-11T22:04:20+0900"
     }
   ],
-  "last_updated": "2026-11-11T20:58:32+0900"
+  "last_updated": "2026-11-11T22:04:24+0900"
 }
