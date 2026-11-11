@@ -21,8 +21,10 @@
 #     b   = data.table(Date, Ticker, .base_sig)  — 기저 엔진 원산출(캐시에 든 모양 그대로)
 #     cal = 거래일 벡터(Date) — 셀 엔진의 패널 달력(unique(DT$Date))
 #     panel = data.table(Date, Ticker, .base_sig) — Date 가 월말 거래일로 옮겨진 패널(입력은 바꾸지 않는다)
-#     diag  = list(rule, n_engine_dates, n_cell_dates, n_identity, n_moved, n_superseded, n_dropped_tail,
-#                  max_lag_td, median_lag_td)   (지연 = 거래일 수)
+#     diag  = list(rule, n_engine_dates, n_cell_dates, n_identity, n_moved, n_superseded, n_dropped_tail, n_offcal,
+#                  max_lag_td, median_lag_td, first_engine_date, last_engine_date)   (지연 = 거래일 수)
+#       n_superseded > 0 = 한 달에 신호가 둘 이상(주간 · 일간 격자 — 셀 경로는 월말 표본) · n_offcal > 0 = 달력에 없는 날짜의 신호
+#       (그 달 마지막 거래일 뒤 도장이면 한 달 늦게 가거나 다음 달 신호에 덮인다) — 둘 다 소비자(상설 판 코어)가 판정 전에 본다.
 #   검사 = 08_Tests/reinforcement/test_rf_base_align.R
 #==============================================================================
 suppressMessages(library(data.table))
@@ -53,6 +55,7 @@ rf_base_month_snap <- function(b, cal) {
   ## 지연(거래일 수) — 달력 안 위치 차. 달력에 없는 신호일은 그 날 이상인 첫 거래일 위치로 센다
   ##   (남은 신호는 전부 s ≤ d 이고 d 는 달력 안이므로 위치 차는 0 이상이다)
   ci <- as.integer(cal)
+  n_offcal <- sum(!(as.integer(E) %in% ci))                    # 거래일 달력에 없는 엔진 신호일 수
   lag <- match(as.integer(keep$d), ci) - (findInterval(as.integer(keep$s), ci, left.open = TRUE) + 1L)
   out <- b[keep, on = .(Date = s), nomatch = NULL]            # 고른 신호일의 행만 · 열 d = 목표 월말
   out[, Date := d]
@@ -61,6 +64,7 @@ rf_base_month_snap <- function(b, cal) {
   list(panel = out,
        diag = list(rule = RF_BASE_ALIGN_RULE, n_engine_dates = length(E), n_cell_dates = nrow(keep),
                    n_identity = sum(keep$s == keep$d), n_moved = sum(keep$s != keep$d), n_superseded = n_super,
-                   n_dropped_tail = n_tail, max_lag_td = if (nrow(keep)) max(lag) else 0L,
-                   median_lag_td = if (nrow(keep)) as.numeric(stats::median(lag)) else 0))
+                   n_dropped_tail = n_tail, n_offcal = n_offcal, max_lag_td = if (nrow(keep)) max(lag) else 0L,
+                   median_lag_td = if (nrow(keep)) as.numeric(stats::median(lag)) else 0,
+                   first_engine_date = format(min(E)), last_engine_date = format(max(E))))
 }

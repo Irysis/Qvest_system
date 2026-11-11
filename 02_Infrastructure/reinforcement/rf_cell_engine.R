@@ -59,7 +59,7 @@ if (!is.null(SPEC[["cap_core"]])) {
   .CC <- rf_cc_parse(SPEC[["cap_core"]])
   if (!is.null(.CC) && .CC$k == 0L) .CC <- NULL
 }
-.RF_DIAG <- list()   # 엔진 진단(B7 전달량 · cap_core) — 비어 있으면 아무것도 쓰지 않는다(기존 칸 무변화)
+.RF_DIAG <- list()   # 엔진 진단(B7 전달량 · cap_core · 기저 정합) — 비어 있으면 아무것도 쓰지 않는다(기저가 엔진이 아닌 칸 무변화 · 기저가 엔진인 칸은 판 2 S1 부터 항상 base_alignment 를 남긴다)
 .LIQ_MIN <- as.numeric(.AX$liq_adv20_min %||% 2e8)
 .START   <- as.Date(.AX$start_date    %||% "2005-01-01")
 
@@ -109,7 +109,10 @@ if (identical(.base$kind, "mom_12_1")) {
   #   키·적재·저장 규약 정본 = rf_base_cache.R — 파일 도장(mtime 초+size) · factor DB build_hash · 메모리 지문 ·
   #   적중 시 키 전문 대조 · 실행 중 도장이 바뀌면 저장 생략 · tmp→rename.
   suppressMessages(source(file.path(.RF_ROOT, "02_Infrastructure/reinforcement/rf_base_cache.R")))
+  suppressMessages(source(file.path(.RF_ROOT, "02_Infrastructure/reinforcement/rf_base_align.R")))   # 기저 신호 달 스냅(판 2 S1 · 2026-11-11) — 엔진 기저 경로에서만 적재
   .rf_dt_fp <- NULL   # 메모리 RAWDATA 지문 — 첫 기저 적재 때 한 번(기저 엔진이 DT 를 건드리기 전)
+  .rf_cal <- sort(unique(DT$Date))                                                   # (판 2 S1) 달 스냅용 거래일 달력 — 패널 전체
+  .rf_rp_start <- if (exists(".RP_START_DATE")) as.Date(.RP_START_DATE) else .START   # (판 2 S1) 러너가 준 측정 시작일(없으면 칸 고정 축 시작일)
   .load_one <- function(.be) {
     if (is.null(.be) || !file.exists(.be))
       stop("[rf_cell_engine] base_signal path 부재: ", .be %||% "(NULL)")
@@ -121,7 +124,7 @@ if (identical(.base$kind, "mom_12_1")) {
     .ck <- rf_base_cache_key(.eng_md5, rawdata_path = .rawp,
                              bench_path = file.path(.RF_ROOT, ".cache", "benchmark.parquet"),
                              factor_db_dir = file.path(.RF_ROOT, ".cache", "factor_db"),
-                             data_fp = .rf_dt_fp, n_rows = nrow(DT), start = .START)
+                             data_fp = .rf_dt_fp, n_rows = nrow(DT), start = .rf_rp_start)   # (판 2 S1) 키의 시작일 = 엔진에 넘긴 값(레인 시드 키와 같은 값)
     .cpath <- file.path(.cdir, .ck$file)
     .b <- NULL; .why <- "uncacheable"
     if (isTRUE(.ck$cacheable)) {
@@ -130,11 +133,16 @@ if (identical(.base$kind, "mom_12_1")) {
       if (!is.null(.b)) cat(sprintf("[rf_cell_engine] 기저 캐시 적중 — %s (%d행)\n",
                                     basename(.cpath), nrow(.b)))
     }
+    .rf_hit <- !is.null(.b)   # (판 2 S1) 진단용 — 이 적재가 캐시 적중이었나
     if (is.null(.b)) {
       cat(sprintf("[rf_cell_engine] 기저 캐시 미스 — 엔진 실행: %s [%s · %s]\n",
                   basename(.be), .why, basename(.cpath)))
       .env <- new.env(parent = globalenv())
       .env$RAWDATA <- DT; .env$BM_DT <- if (exists("BM_DT")) BM_DT else NULL
+      ## (판 2 S1 · 2026-11-11) 측정 시작일을 기저 엔진에 넘긴다 — 러너(run_paper_replication.R)가 레인 측정에서 넘기는 것과 같은 값.
+      ##   전에는 넘기지 않아 엔진마다 다른 기본 시작일로 떨어졌다(2005-01-01 · 자료 첫날 · 멈춤). ★측정 변경이다(결과 동일 수리 아님 —
+      ##   04_Research/01_reports/portfolio_paper_layer_split_20261112/README.md §2-1 · §6-3). 캐시 판(rf_base_cache_v3)이 주입 전 캐시를 끊는다.
+      .env$.RP_START_DATE <- .rf_rp_start
       sys.source(.be, envir = .env)
       .b <- if (exists("FACTORS", envir = .env, inherits = FALSE)) {
               x <- as.data.table(get("FACTORS", envir = .env)); setnames(x, "Score", ".base_sig"); x
@@ -144,6 +152,7 @@ if (identical(.base$kind, "mom_12_1")) {
             } else stop("[rf_cell_engine] 기저 엔진이 FACTORS/PORTFOLIO 를 만들지 않았다: ", .be)
       .b <- .b[, .(Date, Ticker, .base_sig)]
       if (!nrow(.b)) stop("[rf_cell_engine] 기저 엔진 산출이 비었다: ", .be)
+      data.table::setattr(.b, "rf_base_kind", if (exists("FACTORS", envir = .env, inherits = FALSE)) "factors" else "portfolio_weights")   # (판 2 S1) 기저 = 점수 패널인가 비중인가(캐시에 함께 남는다)
       .sv <- tryCatch(rf_base_cache_save(.b, .cpath, .ck),
                       error = function(e) paste("error:", conditionMessage(e)))
       if (startsWith(.sv, "error:"))
@@ -152,8 +161,21 @@ if (identical(.base$kind, "mom_12_1")) {
         cat("[rf_cell_engine] 기저 캐시 저장 생략:", .sv, "\n")
       rm(.env); gc(verbose = FALSE)
     }
+    .rf_kind <- attr(.b, "rf_base_kind", exact = TRUE) %||% "unknown"   # (판 2 S1) v3 캐시 · 레인 시드가 남긴 속성(없으면 unknown)
     data.table::setattr(.b, "rf_base_cache_key", NULL)
-    .b
+    ## (판 2 S1 · 2026-11-11) 달 스냅 — 기저 신호를 월말 격자에 맞춘다(rf_base_align.R). 캐시에는 엔진 원산출 그대로 두고 적재 뒤에 맞춘다.
+    ##   월말 거래일에 신호를 내는 엔진은 항등(비트 동일) · 그 밖 격자는 그 달의 마지막 신호가 월말로 온다(s ≤ d · 모수 없음).
+    .al <- rf_base_month_snap(.b, .rf_cal)
+    if (!nrow(.al$panel))
+      stop("[rf_cell_engine] 달 스냅 뒤 기저 패널이 비었다(엔진 신호일이 전부 패널 달력 뒤): ", .be)
+    .RF_DIAG$base_alignment[[paste0(basename(dirname(.be)), "/", basename(.be))]] <<-
+      c(.al$diag, list(start_injected = TRUE, start = format(.rf_rp_start), from_cache = .rf_hit, base_kind = .rf_kind,
+                       n_cell_dates_from_start = sum(unique(.al$panel$Date) >= .START),   # 칸 시작일 이후 월말 수(n_cell_dates 는 시작일 전 월말도 센다)
+                       first_cell_date = format(min(.al$panel$Date)), last_cell_date = format(max(.al$panel$Date))))
+    cat(sprintf("[rf_cell_engine] base_alignment %s | 엔진 신호일 %d → 월말 %d(항등 %d · 옮김 %d · 덮임 %d · 꼬리 제외 %d) · 최대 지연 %d거래일 · 시작 %s\n",
+                .al$diag$rule, .al$diag$n_engine_dates, .al$diag$n_cell_dates, .al$diag$n_identity, .al$diag$n_moved,
+                .al$diag$n_superseded, .al$diag$n_dropped_tail, as.integer(.al$diag$max_lag_td), format(.rf_rp_start)))
+    .al$panel
   }
   if (identical(.base$kind, "engine_blend")) {
     .paths <- unlist(.base$paths %||% list())
@@ -1362,7 +1384,7 @@ cat(sprintf("[rf_cell_engine] cell=%s | univ=%s | factors=%s | wt=%s | months=%d
             .wt$kind,
             length(.sig_dates), if (exists("PORTFOLIO")) nrow(PORTFOLIO) else nrow(FACTORS)))
 
-# ── 엔진 진단 파일 (2026-10-03 · B7 전달량 · cap_core) — 진단이 비어 있으면(기존 칸 전부) 아무것도 쓰지 않는다 ──
+# ── 엔진 진단 파일 (2026-10-03 · B7 전달량 · cap_core · 2026-11-11 기저 정합 base_alignment) — 진단이 비어 있으면(기저가 엔진이 아닌 칸) 아무것도 쓰지 않는다 ──
 #   위치 = 러너 산출 디렉터리(OUT_DIR — 러너가 엔진을 new.env(parent = 러너 함수 환경)에서 source 하므로 상위 환경에서 보인다) ·
 #   러너 밖(검사)은 RF_ENGINE_DIAG_DIR 환경변수. 둘 다 없으면 쓰지 않는다 — 그 경우 판정 계약(contracts/sleeve_delivery.R)이 파일 부재로 멈춘다(fail-closed).
 #   ★판정 입력이 아니다 — 계약이 rows 에서 요약을 재도출하고 authoritative_remeasure.json 의 실현 규약(exec_price)을 붙인 산출물만 판정 입력이다.

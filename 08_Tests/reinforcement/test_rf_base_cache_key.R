@@ -56,7 +56,7 @@ make_root <- function(tag) {
   r <- file.path(TMP, tag)
   dir.create(file.path(r, ".cache", "factor_db"), recursive = TRUE, showWarnings = FALSE)
   dir.create(file.path(r, "02_Infrastructure", "reinforcement"), recursive = TRUE, showWarnings = FALSE)
-  for (f in c("rf_rebalance.R", "rf_sleeve.R", "rf_axes.R", "rf_base_cache.R"))   # rf_axes.R = 엔진이 source 하는 고정 축 단정(MC5 10-13)
+  for (f in c("rf_rebalance.R", "rf_sleeve.R", "rf_axes.R", "rf_base_cache.R", "rf_base_align.R"))   # rf_axes.R = 엔진이 source 하는 고정 축 단정(MC5 10-13) · rf_base_align.R = 기저 경로가 적재하는 달 스냅(판 2 S1 11-11)
     file.copy(file.path(ROOT, "02_Infrastructure/reinforcement", f),
               file.path(r, "02_Infrastructure/reinforcement", f), overwrite = TRUE)
   writeBin(as.raw(rep(1L, 1000L)), file.path(r, ".cache", "rawdata.parquet"))
@@ -170,7 +170,7 @@ k9b <- rf_base_cache_key(unname(tools::md5sum(STUB)), rawp(r9), benchp(r9), fdbd
 if (!isTRUE(k9b$cacheable)) ok("K9b 메모리 지문 부재 → cacheable=FALSE") else ng("K9b", "지문 없이 캐시 허용")
 k9c <- rf_base_cache_key(unname(tools::md5sum(STUB)), rawp(r9), benchp(r9), fdbd(r9),
                          rf_base_data_fingerprint(FIX), nrow(FIX), START)
-if (isTRUE(k9c$cacheable) && grepl("^base_v2_[0-9a-f]{12}_[0-9a-f]{32}\\.rds$", k9c$file))
+if (isTRUE(k9c$cacheable) && grepl("^base_v3_[0-9a-f]{12}_[0-9a-f]{32}\\.rds$", k9c$file))
   ok(paste("K9c 정상 판독 → cacheable · 파일명", k9c$file)) else ng("K9c", paste(k9c$cacheable, k9c$file))
 # K10 키 전문 대조 — 파일명이 같아도 속성 키가 다르면 적중 금지
 f10 <- file.path(TMP, "k10.rds"); o10 <- data.table(a = 1); setattr(o10, "rf_base_cache_key", "other"); saveRDS(o10, f10)
@@ -257,8 +257,8 @@ e1 <- run_engine(ENGINE, RE, FIX, CNT)
 if (is.null(e1$err) && e1$miss && e1$runs == 1L) ok("E1 첫 실행 = 미스(기저 엔진 1회)") else
   ng("E1", paste(e1$err %||% "", "runs", e1$runs, paste(tail(e1$log, 3), collapse = " | ")))
 cf <- list.files(file.path(RE, ".cache", "rf_base_signal"), full.names = TRUE)
-if (length(cf) == 1L && grepl("^base_v2_", basename(cf)) &&
-    grepl("^rf_base_cache_v2\\|", attr(readRDS(cf), "rf_base_cache_key") %||% ""))
+if (length(cf) == 1L && grepl("^base_v3_", basename(cf)) &&
+    grepl("^rf_base_cache_v3\\|", attr(readRDS(cf), "rf_base_cache_key") %||% ""))
   ok(paste("E1b 캐시 1개 생성 · 속성에 키 전문 —", basename(cf))) else ng("E1b", paste(basename(cf), collapse = ","))
 e2 <- run_engine(ENGINE, RE, FIX, CNT)
 if (is.null(e2$err) && e2$hit && e2$runs == 1L) ok("E2 무변경 재실행 = 적중(기저 엔진 미실행) — 양성 대조") else

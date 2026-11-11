@@ -40,7 +40,7 @@
 #==============================================================================
 suppressMessages(library(data.table))
 
-RF_BASE_CACHE_VERSION <- "rf_base_cache_v2"
+RF_BASE_CACHE_VERSION <- "rf_base_cache_v3"   # v3(2026-11-11 · 판 2 S1): 셀 경로가 기저 엔진에 측정 시작일을 넘긴다 — 주입 전(v2) 캐시가 적중하지 않게 판을 올린다
 RF_BASE_CACHE_AUX_FILES <- c("fundamental_merged.parquet", "fundamental_xlsx.parquet",
                              "ecos_bond_rates.parquet", "investor_wide.parquet")
 RF_BASE_CACHE_AUX_DIRS  <- c("consensus")
@@ -160,7 +160,7 @@ rf_base_cache_key <- function(engine_md5, rawdata_path, bench_path, factor_db_di
   hash <- .rfbc_md5_str(key)
   list(key = key, hash = hash, cacheable = cacheable, stamps = st,
        paths = list(rawdata = rawdata_path, bench = bench_path, factor_db = factor_db_dir),
-       file = paste0("base_v2_", if (eng_ok) substr(engine_md5, 1L, 12L) else "nohash",
+       file = paste0("base_v3_", if (eng_ok) substr(engine_md5, 1L, 12L) else "nohash",
                      "_", hash, ".rds"))
 }
 
@@ -237,6 +237,7 @@ rf_base_cache_seed_save <- function(FACTORS, PORTFOLIO, ck, root, provenance = "
        } else return("no_engine_output")
   if (!nrow(b)) return("empty_engine_output")
   data.table::setattr(b, "rf_base_seeded_from", as.character(provenance)[1])
+  data.table::setattr(b, "rf_base_kind", if (data.table::is.data.table(FACTORS)) "factors" else "portfolio_weights")   # (판 2 S1) 셀 엔진 진단 base_kind 가 읽는다
   cdir <- file.path(root, ".cache", "rf_base_signal")
   dir.create(cdir, recursive = TRUE, showWarnings = FALSE)
   rf_base_cache_save(b, file.path(cdir, ck$file), ck)

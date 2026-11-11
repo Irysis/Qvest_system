@@ -70,6 +70,7 @@ if (!all(.REQ %in% names(RAWDATA)))
 .FUND_ROLL <- 456L                                   # ★changed(8) 연간 회계 usable 이후 캐리 상한(달력일 ≈ 15개월)
 .MIN_N    <- 10L                                     # ★changed(11) 5분위 정의역(다리당 ≥ 2)
 .SEED_BASE <- 20020697L                              # ★changed(6) 시드 = 논문 번호(임의 상수) + 월 인덱스
+.K_REF_MI  <- 2005L * 12L + 1L                       # ★changed(17) 월 인덱스 k 의 기준 달 = 2005-01(k = 1) — 시작일이 달라져도 같은 달은 같은 시드
 .N_WORKERS_CAP <- 32L                                # ★changed(15) 워커 상한(실제 = min(상한, 논리 CPU − 1) · cuda 면 ≤ 8)
 .FEATS <- sprintf("x%02d", 1:31)                     # ★changed(9) 엔진 열 xNN = Table 1 No.NN (No.32·33 = data_gap)
 .FEAT_NAMES <- c("ret_1d", "ret_2d", "ret_3d", "ret_5d", "ret_10d", "ret_20d", "ret_40d", "ret_60d",
@@ -267,7 +268,7 @@ cat(sprintf("%s 컨센서스: 영업이익 FY1 %d행(%s~%s) · 목표주가 %d�
 .G[, c("op", "tp") := NULL]; rm(.op, .tp); gc(verbose = FALSE)
 
 # =============================================================================
-# 6. 스케줄 — 월말 시그널 · 5영업일 갱신 격자 · 학습창 [u−1004, u−5]  ★changed(3)(5)
+# 6. 스케줄 — 월말 시그널 · 5영업일 갱신 격자 · 학습창 [u−1004, u−5]  ★changed(3)(5)(17)
 # =============================================================================
 .CAL[, MI := year(Date) * 12L + month(Date)]
 .me <- .CAL[, .(Date = max(Date), di = max(di)), by = MI]
@@ -275,6 +276,10 @@ setorder(.me, MI)
 .me <- .me[MI < max(MI) & Date >= .START]                                                     # 마지막 달력월 = 부분월 → 제외
 .anchor_i <- .CAL[Date >= .ANCHOR, min(di)]
 .grid5 <- .CAL[di >= .anchor_i & ((di - .anchor_i) %% .UPD_EVERY) == 0L, di]
+## ★changed(17) (2026-11-11) 갱신 격자 앵커 이전의 월말 = 갱신점이 없다 → 스케줄 밖. 시작일이 앵커보다 앞이면(측정 축 시작 2000-01-01 을 받을 때)
+##   종전에는 아래 max(integer(0)) 이 -Inf 가 되어 묶음 사이 형 불일치로 멈췄다. 기본 시작(2005-01-01)에서는 해당 달이 없다(결과 불변).
+.n_pre_anchor <- .me[di < .anchor_i, .N]
+.me <- .me[di >= .anchor_i]
 .SCH <- .me[, {
   u <- max(.grid5[.grid5 <= di])
   .(pred_i = di, u_i = u, smax_i = u - .HORIZON, smin_i = u - .HORIZON - (.N_TRAIN - 1L))
@@ -282,12 +287,14 @@ setorder(.me, MI)
 .n_sched_all <- nrow(.SCH)
 .SCH <- .SCH[smin_i >= 1L]
 setorder(.SCH, pred_i)
-.SCH[, k := seq_len(.N)]
+## ★changed(17) 월 인덱스 k = 달력 월 기준(2005-01 = 1 · 그 앞 달은 0 이하). 순번(seq_len)이면 시작일이 달라질 때 같은 달의 시드가 밀려
+##   같은 입력을 다른 시드로 다시 학습한다. 달력 기준이면 겹치는 달의 시드 · 예측 캐시 키가 시작일과 무관하게 같다.
+.SCH[, k := MI - .K_REF_MI + 1L]
 .SCH[, seed := .SEED_BASE + k]
 if (nrow(.SCH) < 12L) stop(sprintf("%s 스케줄 월 %d개 — 격자 범위 확인", .TAG, nrow(.SCH)))
 .PANEL_FROM_I <- min(.SCH$smin_i)
-cat(sprintf("%s 스케줄 %d개월(%s ~ %s · 학습창 미달로 제외 %d) · 갱신 격자 앵커 %s · 첫 달: 갱신 %s · 학습집합 %s ~ %s\n",
-            .TAG, nrow(.SCH), as.character(min(.SCH$Date)), as.character(max(.SCH$Date)), .n_sched_all - nrow(.SCH),
+cat(sprintf("%s 스케줄 %d개월(%s ~ %s · 학습창 미달로 제외 %d · 앵커 전 제외 %d) · 갱신 격자 앵커 %s · 첫 달: 갱신 %s · 학습집합 %s ~ %s\n",
+            .TAG, nrow(.SCH), as.character(min(.SCH$Date)), as.character(max(.SCH$Date)), .n_sched_all - nrow(.SCH), .n_pre_anchor,
             as.character(.CAL$Date[.anchor_i]), as.character(.CAL$Date[.SCH$u_i[1]]),
             as.character(.CAL$Date[.SCH$smin_i[1]]), as.character(.CAL$Date[.SCH$smax_i[1]])))
 

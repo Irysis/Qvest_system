@@ -131,6 +131,10 @@ rp <- strip(RPR); vf <- strip(VER)
 gate_ln <- grep('QVEST_RP_SEED_BASE_CACHE', rp, fixed = TRUE)
 chk(length(gate_ln) == 1L && grepl("is.null(data_cutoff)", rp[gate_ln], fixed = TRUE) && grepl('"1"', rp[gate_ln], fixed = TRUE),
     "S10a 러너 시드 관문 = 환경변수 \"1\" ∧ data_cutoff NULL (한 곳)", paste(gate_ln, collapse = ","))
+## (2026-11-11 · 판단 T4 C-20261111-060) 변형 스위치(engine_vars)를 받은 실행은 시드하지 않는다 — 시드 키에 변형이 없어서, 스위치로 고른 변형의
+##   산출이 기본 키로 심기면 셀(스위치 없이 엔진 기본값으로 돈다)이 캐시 적중 여부에 따라 다른 변형을 기저로 받는다.
+chk(length(gate_ln) == 1L && grepl("!length(engine_vars)", rp[gate_ln], fixed = TRUE),
+    "S10e 러너 시드 관문 — 변형 스위치(engine_vars)를 받은 실행은 시드하지 않는다", paste(gate_ln, collapse = ","))
 i_key <- grep("rf_base_cache_seed_key(", rp, fixed = TRUE)[1]; i_src <- grep("source(factor_engine_path", rp, fixed = TRUE)[1]
 i_sav <- grep("rf_base_cache_seed_save(", rp, fixed = TRUE)[1]; i_flt <- grep("FACTORS <- FACTORS[Date <= data_cutoff]", rp, fixed = TRUE)[1]
 chk(!anyNA(c(i_key, i_src, i_sav)) && i_key < i_src && i_src < i_sav && (is.na(i_flt) || i_sav < i_flt),

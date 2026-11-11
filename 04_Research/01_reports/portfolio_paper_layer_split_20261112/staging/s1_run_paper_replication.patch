@@ -1,0 +1,13 @@
+--- a/02_Infrastructure/alpha_search/run_paper_replication.R
++++ b/02_Infrastructure/alpha_search/run_paper_replication.R
+@@ -650,7 +650,9 @@
+   #   심는다(정본·근거 = reinforcement/rf_base_cache.R '기저 캐시 시드'). 켜는 자 = 레인 검증기(QVEST_RP_SEED_BASE_CACHE=1)뿐 —
+   #   셀 워커·세션 호출은 비트 동일. data_cutoff 절단 판은 셀이 보는 RAWDATA 와 달라 시드하지 않는다. 실패는 전부 비치명.
+   .seed_ck <- NULL
+-  if (identical(Sys.getenv("QVEST_RP_SEED_BASE_CACHE", ""), "1") && is.null(data_cutoff)) {
++  ## (2026-11-11 · 판단 T4 C-20261111-060) 변형 스위치(engine_vars)를 받은 실행은 시드하지 않는다 — 시드 키에는 변형이 없어서, 대표 변형을
++  ##   스위치로 지정한 실행의 산출이 기본 키로 심기면 셀(스위치 없이 엔진 기본값으로 돈다)이 캐시 적중 여부에 따라 다른 변형을 기저로 받는다.
++  if (identical(Sys.getenv("QVEST_RP_SEED_BASE_CACHE", ""), "1") && is.null(data_cutoff) && !length(engine_vars)) {
+     .seed_ck <- tryCatch({
+       suppressMessages(source(file.path(.RP_INFRA, "reinforcement", "rf_base_cache.R"), local = TRUE))
+       rf_base_cache_seed_key(factor_engine_path, RAWDATA, root = .RP_ROOT, start = start_date)

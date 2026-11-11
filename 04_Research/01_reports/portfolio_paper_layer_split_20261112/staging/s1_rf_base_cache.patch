@@ -1,5 +1,5 @@
---- 02_Infrastructure/reinforcement/rf_base_cache.R	2026-10-05 19:46:56.000000000 +0900
-+++ C:/Users/User/AppData/Local/Temp/claude/594eba70e8c297ec/366d9898-c1f0-420f-8cb3-7dbbb4838c04/scratchpad/s1_cand/rf_base_cache.R	2026-11-11 22:18:31.254446000 +0900
+--- a/02_Infrastructure/reinforcement/rf_base_cache.R
++++ b/02_Infrastructure/reinforcement/rf_base_cache.R
 @@ -40,7 +40,7 @@
  #==============================================================================
  suppressMessages(library(data.table))
@@ -18,3 +18,11 @@
                       "_", hash, ".rds"))
  }
  
+@@ -237,6 +237,7 @@
+        } else return("no_engine_output")
+   if (!nrow(b)) return("empty_engine_output")
+   data.table::setattr(b, "rf_base_seeded_from", as.character(provenance)[1])
++  data.table::setattr(b, "rf_base_kind", if (data.table::is.data.table(FACTORS)) "factors" else "portfolio_weights")   # (판 2 S1) 셀 엔진 진단 base_kind 가 읽는다
+   cdir <- file.path(root, ".cache", "rf_base_signal")
+   dir.create(cdir, recursive = TRUE, showWarnings = FALSE)
+   rf_base_cache_save(b, file.path(cdir, ck$file), ck)
