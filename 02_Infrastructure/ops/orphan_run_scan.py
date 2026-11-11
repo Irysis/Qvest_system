@@ -69,13 +69,42 @@ def scan_file(path):
     return out
 
 
+# ★창은 날짜순으로 자른다(2026-11-11 수리). 구판 `sorted(glob)[-N:]` 은 **이름순** 마지막 N개였다 —
+#   이름이 알파벳 뒤쪽인 러너(replication_auto_ · reinforce_auto_ · weight_catalog_ …)의 옛 로그가 창을 채워
+#   날짜가 최근인 alpha_queue_ · mode_queue_ · paper_router_ 로그를 놓쳤다(11-11 실측: --days 30 창 180개 안 런 구간 = 이름순 1 · 날짜순 6).
+#   날짜 = 파일 이름 속 YYYYMMDD(실제 로그 규칙 `<러너>_YYYYMMDD[_접미].log`) · 이름에 날짜가 없으면
+#   (weekly_research.log · task_health.log 처럼 이어 쓰는 로그) 수정 시각의 날짜. 같은 날짜 안은 수정 시각 · 이름 순.
+#   창 크기(max(days*6, 20)개)는 구판 그대로다.
+_NAME_DATE = re.compile(r'(?<!\d)(20\d{2})(\d{2})(\d{2})')
+
+
+def file_date_key(path):
+    """(YYYY-MM-DD, 수정 시각, 이름) — 이름 속 날짜가 있으면 그것, 없으면 수정 시각의 날짜."""
+    import datetime
+    base = os.path.basename(path)
+    try:
+        mt = os.path.getmtime(path)
+    except OSError:
+        mt = 0.0
+    day = None
+    for m in _NAME_DATE.finditer(base):
+        try:
+            day = datetime.date(int(m.group(1)), int(m.group(2)), int(m.group(3))).isoformat()
+            break
+        except ValueError:
+            continue
+    if day is None:
+        day = datetime.date.fromtimestamp(mt).isoformat() if mt else '0000-00-00'
+    return (day, mt, base)
+
+
 def main(argv):
     root = argv[0] if argv else '.'
     days = 14
     if '--days' in argv:
         days = int(argv[argv.index('--days') + 1])
     pat = os.path.join(root, '.cache', 'scheduler_logs', '*.log')
-    files = sorted(glob.glob(pat))[-max(days * 6, 20):]
+    files = sorted(glob.glob(pat), key=file_date_key)[-max(days * 6, 20):]
 
     runs = []
     for f in files:

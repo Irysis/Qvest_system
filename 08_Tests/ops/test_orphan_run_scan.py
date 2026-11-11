@@ -21,6 +21,7 @@ import sys
 import tempfile
 import shutil
 import datetime
+import time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SCAN = os.path.join(ROOT, '02_Infrastructure', 'ops', 'orphan_run_scan.py')
@@ -145,8 +146,46 @@ if "★" in out and "1건" in out:
 else:
     ng("상태라인 N건", out.strip())
 
-print("== 실 저장소 축: 오늘 18:30 사건이 실제로 잡히는가 ==")
-out = run(ROOT, '--days', '30')
+print("== ★창 축(11-11): 이름순으로는 뒤지만 날짜는 오래된 로그가 많아도 최근 로그를 보는가 ==")
+# 구판 결함: sorted(glob)[-N:] = 이름순 마지막 N개 → 이름이 뒤쪽(zz_)인 옛 로그가 창을 채워 최근(a_) 로그를 놓쳤다.
+# --days 1 → 창 = max(6, 20) = 20개. 옛 로그 25개(이름 zz_ · 2026-01 날짜 · 정상 종료)를 깔고 최근 무짝 2개를 둔다:
+#   a_recent_<오늘>.log(이름 속 날짜) · ab_undated.log(이름에 날짜 없음 → 수정 시각 = 지금).
+#   이름에 날짜 없고 수정 시각이 옛날인 zzzz_undated_old.log 의 무짝은 창 밖이어야 한다(수정 시각 대체의 반대 방향).
+d = tempfile.mkdtemp()
+_ld = os.path.join(d, '.cache', 'scheduler_logs')
+os.makedirs(_ld)
+def _wl(name, lines, mtime=None):
+    p = os.path.join(_ld, name)
+    io.open(p, 'w', encoding='utf-8').write("\n".join(lines) + "\n")
+    if mtime is not None:
+        os.utime(p, (mtime, mtime))
+_old = datetime.datetime(2026, 1, 1, 12, 0, 0)
+for i in range(25):
+    t0 = _old + datetime.timedelta(days=i)
+    _wl('zz_old_%s.log' % t0.strftime('%Y%m%d'),
+        ["%s [router] start (옛)" % t0.strftime('%Y-%m-%dT%H:%M:%S+09:00'),
+         "%s [router] claude -p exit=0" % t0.strftime('%Y-%m-%dT%H:%M:%S+09:00')],
+        mtime=time.mktime(t0.timetuple()))
+_wl('a_recent_%s.log' % datetime.datetime.now().strftime('%Y%m%d'),
+    ["%s [modeq] start (최근 · 이름 속 날짜)" % ts(500), "%s [modeq] 토큰 지문: abc" % ts(499)])
+_wl('ab_undated.log',
+    ["%s [recheck] start (최근 · 날짜 없는 이름)" % ts(400), "%s [recheck] 토큰 지문: abc" % ts(399)])
+_wl('zzzz_undated_old.log',
+    ["%s [alpha_queue] start (옛 · 날짜 없는 이름)" % "2025-06-01T10:00:00+09:00"],
+    mtime=time.mktime(datetime.datetime(2025, 6, 1, 10, 0, 0).timetuple()))
+out = run(d, '--days', '1')
+shutil.rmtree(d, ignore_errors=True)
+if ("스캔 로그 20개" in out and "무음 사망 의심): 2건" in out and "modeq 1" in out and "recheck 1" in out
+        and "alpha_queue" not in out):
+    ok("날짜순 창 — 이름 뒤쪽 옛 로그 25개 속에서 최근 무짝 2건(이름 속 날짜 · 수정 시각) 검거 · 옛 수정 시각 로그는 창 밖")
+else:
+    ng("창이 날짜순이 아니다", out.strip().splitlines()[:8])
+
+print("== 실 저장소 축: 08-22 18:30 사건이 실제로 잡히는가 ==")
+# 11-11: 창을 사건 날짜까지 덮게 잡는다. 구판 '--days 30' 은 사건 뒤 30일이 지나면(10월부터) 창 밖이라
+#   이 단언이 날짜만으로 빨개졌다 — 지키려는 성질(실로그 형식에서 실사고를 잡는다)은 그대로 두고 창만 사건에 맞춘다.
+_incident_days = (datetime.date.today() - datetime.date(2026, 8, 22)).days + 1
+out = run(ROOT, '--days', str(max(30, _incident_days)))
 if "2026-08-22T18:30:58" in out and "modeq" in out:
     ok("실사고 18:30 modeq 런 검거")
 elif "무음 사망 의심): 0건" in out:
