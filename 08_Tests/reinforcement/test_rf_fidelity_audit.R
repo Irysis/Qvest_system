@@ -216,6 +216,24 @@ if (!is.na(i_cf)) {
   ev$.tg_clip <- function(x, cap) substr(as.character(x), 1L, cap)
   ev$system2 <- function(cmd, args, ...) { called <<- c(called, paste("system2", paste(args, collapse = " "))); 0L }
   ev$quit <- function(...) stop(structure(class = c("quit_called", "condition"), list(message = "quit", call = NULL)))
+  ## ★10-20 109d910a1c — 분기가 공유 스킵리스트 앞에서 .slot_book_lock() 을 부른다(다중 슬롯 기록 잠금 · WP3).
+  ##   대역 없이 운영 정의(.SBL 줄 + 함수 본문)를 vf 에서 그대로 꺼내 ev 에 둔다. 슬롯 작업자(.RP_SLOT)로 세워 잠금이 실제로 잡히게 한다 —
+  ##   qv_lock.R = 샌드박스 사본(ev$ROOT = SB) · 잠금 디렉터리 = 샌드박스 .cache(QVEST_RP_STATE_DIR). 운영 .cache/qv_locks 는 건드리지 않는다.
+  i_sbl <- which(startsWith(vf, ".SBL <- new.env("))[1]
+  i_lk  <- which(startsWith(vf, ".slot_book_lock <- function("))[1]
+  i_lke <- if (!is.na(i_lk)) which(vf == "}" & seq_along(vf) > i_lk)[1] else NA_integer_
+  dir.create(file.path(SB, "02_Infrastructure/ops"), recursive = TRUE, showWarnings = FALSE)
+  file.copy(file.path(ROOT, "02_Infrastructure/ops/qv_lock.R"), file.path(SB, "02_Infrastructure/ops/qv_lock.R"), overwrite = TRUE)
+  .sd0 <- Sys.getenv("QVEST_RP_STATE_DIR", NA_character_); Sys.setenv(QVEST_RP_STATE_DIR = file.path(SB, ".cache"))
+  LKD <- file.path(SB, ".cache", "qv_locks", "rf_replication.book.qvlock")
+  ev$.RP_SLOT <- "sbx"
+  if (!is.na(i_sbl) && !is.na(i_lke) && i_sbl < i_lk) eval(parse(text = vf[c(i_sbl, i_lk:i_lke)]), envir = ev)
+  .lk_ok <- function(ev_called, after_ev) {          # 잠금 = 실제로 불렸고(실패 아님) · 공유 기록 사건보다 먼저 · 이 프로세스가 소유
+    i_l <- match("slot_book_lock", ev_called); i_a <- match(after_ev, ev_called)
+    ow <- tryCatch(fromJSON(file.path(LKD, "owner.json"), simplifyVector = FALSE), error = function(e) list())
+    !is.na(i_l) && !is.na(i_a) && i_l < i_a && !("slot_book_lock_failed" %in% ev_called) &&
+      identical(as.integer(ow$pid %||% -1L), Sys.getpid()) && identical(ow$purpose %||% "", "replication_bookkeeping:sbx")
+  }
   quitted <- tryCatch({ eval(parse(text = vf[i_cf:(q_cf + 1L)]), envir = ev); FALSE },
                       quit_called = function(e) TRUE, error = function(e) { cat("    eval 오류:", conditionMessage(e), "\n"); NA })
   sk  <- fromJSON(file.path(SB, "06_Registry/replication_skiplist.json"), simplifyVector = FALSE)
@@ -231,6 +249,9 @@ if (!is.na(i_cf)) {
   if (length(sent) >= 1L && grepl("측정 전", as.character(sent[[1]]$status$previous %||% ""), fixed = TRUE))
     ok("D7c 보고의 직전 판정 = '측정 전 감사' — 감사가 측정 앞이라 등급이 없다(10-17)") else
     ng("D7c 직전 판정 문구", if (length(sent)) as.character(sent[[1]]$status$previous %||% "-") else "보고 없음")
+  if (.lk_ok(called, "fidelity_audit_conflict"))
+    ok("D7d 기록 잠금(운영 .slot_book_lock 정의) — 상충 기록 전에 실제로 잡힘 · 소유 = 이 프로세스 · 용도 replication_bookkeeping:sbx") else
+    ng("D7d 기록 잠금", sprintf("def=%s/%s/%s calls=%s lockdir=%s", i_sbl, i_lk, i_lke, paste(called, collapse = ","), dir.exists(LKD)))
   ## 리뷰 C1 · C2 · U6 — 판정 재료에 엔진 지문 · 레인 모드가 실리고, 청정 작업 디렉터리 파일에 등급 · 산출물 경로가 없고, 앞 판정은 지워진다
   cfo <- if (file.exists(cfj)) fromJSON(cfj, simplifyVector = FALSE) else list()
   if (identical(cfo$engine_md5, unname(tools::md5sum(file.path(SB, "w/engine.R")))) && identical(cfo$lane_mode, "clean") &&
@@ -242,12 +263,18 @@ if (!is.na(i_cf)) {
   unlink(file.path(SB, "06_Registry/replication_skiplist.json")); dir.create(file.path(SB, "06_Registry/replication_skiplist.json"))
   writeLines('{"status":"in_progress","paper":{"paper_key":"9999.00001"}}', file.path(SB, "06_Registry/replication_request.json"))
   sent <- list(); called <- character(0)
+  if (!is.null(ev$.SBL$h)) { ev$.SBL$q$qv_lock_release(ev$.SBL$h); ev$.SBL$h <- NULL }   # D7 이 잡은 잠금을 놓는다 — D8 이 다시 잡는지 본다
   q8 <- tryCatch({ eval(parse(text = vf[i_cf:(q_cf + 1L)]), envir = ev); FALSE }, quit_called = function(e) TRUE,
                  error = function(e) { cat("    eval 오류:", conditionMessage(e), "\n"); NA })
   if (isTRUE(q8) && "audit_conflict_skiplist_failed" %in% called && !any(grepl("next_replication.R", called, fixed = TRUE)) &&
       length(sent) == 1L && grepl("멈춘다", as.character(sent[[1]]$next_step %||% ""), fixed = TRUE))
     ok("D8 보류 기록 실패 → 다음 논문 발행 안 함 · 보고가 멈춤을 알린다(같은 논문 즉시 재발행 방지) ★양성") else
     ng("D8 보류 실패 처리", paste(called, collapse = ","))
+  if (.lk_ok(called, "audit_conflict_skiplist_failed"))
+    ok("D8b 기록 잠금 — 스킵리스트 기록(실패) 전에 다시 잡힘") else
+    ng("D8b 기록 잠금", paste(called, collapse = ","))
+  if (!is.null(ev$.SBL$h)) { ev$.SBL$q$qv_lock_release(ev$.SBL$h); ev$.SBL$h <- NULL }
+  if (is.na(.sd0)) Sys.unsetenv("QVEST_RP_STATE_DIR") else Sys.setenv(QVEST_RP_STATE_DIR = .sd0)
 }
 i_pw <- which(grepl(".prior_audit_findings.md", code, fixed = TRUE))[1]
 i_gt <- which(grepl("rf_audit_gate(", code, fixed = TRUE))[1]

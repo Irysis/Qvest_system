@@ -131,7 +131,23 @@ i_vo  <- which(grepl('"$PREV_FAIL" = "audit_not_run"', ac, fixed = TRUE) & grepl
 ## 에이전트 호출 = 단일 진입 rf_llm_agent_run(P0-M1 2026-09-24 이관 — 구 표적 "claude -p" 는 레인에 없다 · 10-13 표적 이설)
 i_cl  <- which(grepl("rf_llm_agent_run ", ac, fixed = TRUE) & !grepl("rf_llm_agent_run()", ac, fixed = TRUE))[1]
 i_wd  <- which(grepl('WDIR="$ROOT/04_Research/strategies/RP_AUTO_${SLUG}"', ac, fixed = TRUE))[1]
-calls <- which(grepl("^\\s*rp_verify; exit", ac))
+## 11-11 재조준(C4): 호출 줄 형식이 `rp_verify; exit` → `rp_verify; VRC=$?` (+ rp_chain_reimplement "$VRC" · exit $VRC)로 바뀌었다.
+##   지키는 성질 = 검증기 호출 직후 종료 코드를 잡고(사이에 다른 명령 없음), 덮어쓰지 않은 채 연쇄 재구현 판단과 exit 에 그대로 쓴다.
+##   호출 지점 = 정의(rp_verify())가 아닌 줄 첫 명령 rp_verify. 각 지점에서 다음 exit 까지 명령을 ; · 줄 단위로 쪼개 순서를 잰다.
+calls <- which(grepl("^\\s*rp_verify\\s*(;|$)", ac))
+.vrc_use <- function(i) {
+  j <- which(grepl("(^|;)\\s*exit\\b", ac) & seq_along(ac) >= i)[1]
+  if (is.na(j) || j - i > 6L) return(sprintf("%d: exit 없음(6줄 안)", i))
+  st <- trimws(unlist(strsplit(ac[i:j], ";", fixed = TRUE))); st <- st[nzchar(st)]
+  i_ex <- which(grepl("^exit\\b", st))[1]
+  pre <- st[seq_len(i_ex - 1L)]
+  if (!identical(st[1:2], c("rp_verify", "VRC=$?"))) return(sprintf("%d: 호출 직후 VRC=$? 아님 [%s]", i, paste(st[1:2], collapse = " | ")))
+  if (any(grepl("(^|\\s)VRC=", pre[-(1:2)]))) return(sprintf("%d: exit 전에 VRC 재할당", i))
+  if (!grepl('^exit "?\\$\\{?VRC\\}?"?$', st[i_ex])) return(sprintf("%d: exit 가 VRC 를 안 씀 [%s]", i, st[i_ex]))
+  if (!any(grepl('^rp_chain_reimplement "?\\$\\{?VRC\\}?"?$', pre))) return(sprintf("%d: rp_chain_reimplement 가 VRC 를 안 받음", i))
+  ""
+}
+vrc_bad <- vapply(calls, .vrc_use, character(1)); vrc_bad <- vrc_bad[nzchar(vrc_bad)]
 if (!is.na(i_fn)) ok("C1 verify 호출이 함수 rp_verify 하나로 모였다") else ng("C1 rp_verify 없음")
 if (!is.na(i_vo)) ok("C2 audit_not_run + engine.R 분기 존재") else ng("C2 분기 없음")
 if (!anyNA(c(i_wd, i_fn, i_vo, i_cl)) && i_wd < i_fn && i_fn < i_vo && i_vo < i_cl)
@@ -139,6 +155,9 @@ if (!anyNA(c(i_wd, i_fn, i_vo, i_cl)) && i_wd < i_fn && i_fn < i_vo && i_vo < i_
   ng("C3 순서", sprintf("wd=%s fn=%s vo=%s cl=%s", i_wd, i_fn, i_vo, i_cl))
 if (length(calls) == 2L && !is.na(i_vo) && !is.na(i_cl) && any(calls > i_vo & calls < i_cl) && any(calls > i_cl))
   ok("C4 rp_verify 호출 2곳 — 분기 안(에이전트 전) + 정상 경로(에이전트 후)") else ng("C4 호출 지점", paste(calls, collapse = ","))
+if (length(calls) == 2L && length(vrc_bad) == 0L)
+  ok(sprintf("C4b 두 호출(%s) 모두 직후 VRC=$? → 재할당 없이 rp_chain_reimplement \"$VRC\" · exit $VRC (종료 코드를 버리지 않는다)", paste(calls, collapse = ","))) else
+  ng("C4b 검증기 종료 코드 소비", paste(vrc_bad, collapse = " ; "))
 ## 11-11 재조준(밤 배터리 회귀 — 15be6c097): 되살림 상한 초과 경로가 '거두기만' 모드(RP_WITHDRAW_ONLY=1 · 측정 없음)로 검증기를
 ##   한 번 더 직접 부른다. 측정 호출은 여전히 rp_verify 안 한 줄이어야 한다 — 거두기 호출은 바로 앞 줄(줄 이음 '\')에
 ##   RP_WITHDRAW_ONLY=1 이 붙은 것만 따로 세고, 그것도 정확히 하나여야 한다(표식 없는 직접 호출이 늘면 여전히 빨개진다).
