@@ -1,0 +1,20 @@
+--- 02_Infrastructure/reinforcement/rf_base_cache.R	2026-10-05 19:46:56.000000000 +0900
++++ C:/Users/User/AppData/Local/Temp/claude/594eba70e8c297ec/366d9898-c1f0-420f-8cb3-7dbbb4838c04/scratchpad/s1_cand/rf_base_cache.R	2026-11-11 22:18:31.254446000 +0900
+@@ -40,7 +40,7 @@
+ #==============================================================================
+ suppressMessages(library(data.table))
+ 
+-RF_BASE_CACHE_VERSION <- "rf_base_cache_v2"
++RF_BASE_CACHE_VERSION <- "rf_base_cache_v3"   # v3(2026-11-11 · 판 2 S1): 셀 경로가 기저 엔진에 측정 시작일을 넘긴다 — 주입 전(v2) 캐시가 적중하지 않게 판을 올린다
+ RF_BASE_CACHE_AUX_FILES <- c("fundamental_merged.parquet", "fundamental_xlsx.parquet",
+                              "ecos_bond_rates.parquet", "investor_wide.parquet")
+ RF_BASE_CACHE_AUX_DIRS  <- c("consensus")
+@@ -160,7 +160,7 @@
+   hash <- .rfbc_md5_str(key)
+   list(key = key, hash = hash, cacheable = cacheable, stamps = st,
+        paths = list(rawdata = rawdata_path, bench = bench_path, factor_db = factor_db_dir),
+-       file = paste0("base_v2_", if (eng_ok) substr(engine_md5, 1L, 12L) else "nohash",
++       file = paste0("base_v3_", if (eng_ok) substr(engine_md5, 1L, 12L) else "nohash",
+                      "_", hash, ".rds"))
+ }
+ 

@@ -1,0 +1,46 @@
+--- 02_Infrastructure/reinforcement/rf_cell_engine.R	2026-11-10 17:31:44.990291700 +0900
++++ C:/Users/User/AppData/Local/Temp/claude/594eba70e8c297ec/366d9898-c1f0-420f-8cb3-7dbbb4838c04/scratchpad/s1_cand/rf_cell_engine.R	2026-11-11 22:18:31.251953200 +0900
+@@ -44,6 +44,7 @@
+ suppressMessages(source(file.path(.RF_ROOT, "02_Infrastructure/reinforcement/rf_rebalance.R")))
+ suppressMessages(source(file.path(.RF_ROOT, "02_Infrastructure/reinforcement/rf_sleeve.R")))
+ suppressMessages(source(file.path(.RF_ROOT, "02_Infrastructure/reinforcement/rf_axes.R")))   # 고정 축 단정(MC5 · Σw ≤ 1)
++suppressMessages(source(file.path(.RF_ROOT, "02_Infrastructure/reinforcement/rf_base_align.R")))   # 기저 신호 달 스냅(판 2 S1 · 2026-11-11)
+ .RB <- rf_rb_parse(SPEC[["rebalance"]])
+ .SL <- rf_sl_parse(SPEC[["defense_sleeve"]])   # B7 구조적 방어 슬리브(없으면 NULL = 기존 경로)
+ # ★PR-L1 cap_core(벤치 인지 코어-위성 · 2026-10-03 CAPCORE-IMPL) — 키가 없거나 k=0 이면 rf_capcore.R 를 적재조차 하지 않는다(기존 칸 비트 동일).
+@@ -110,6 +111,8 @@
+   #   적중 시 키 전문 대조 · 실행 중 도장이 바뀌면 저장 생략 · tmp→rename.
+   suppressMessages(source(file.path(.RF_ROOT, "02_Infrastructure/reinforcement/rf_base_cache.R")))
+   .rf_dt_fp <- NULL   # 메모리 RAWDATA 지문 — 첫 기저 적재 때 한 번(기저 엔진이 DT 를 건드리기 전)
++  .rf_cal <- sort(unique(DT$Date))                                                   # (판 2 S1) 달 스냅용 거래일 달력 — 패널 전체
++  .rf_rp_start <- if (exists(".RP_START_DATE")) as.Date(.RP_START_DATE) else .START   # (판 2 S1) 러너가 준 측정 시작일(없으면 칸 고정 축 시작일)
+   .load_one <- function(.be) {
+     if (is.null(.be) || !file.exists(.be))
+       stop("[rf_cell_engine] base_signal path 부재: ", .be %||% "(NULL)")
+@@ -135,6 +138,10 @@
+                   basename(.be), .why, basename(.cpath)))
+       .env <- new.env(parent = globalenv())
+       .env$RAWDATA <- DT; .env$BM_DT <- if (exists("BM_DT")) BM_DT else NULL
++      ## (판 2 S1 · 2026-11-11) 측정 시작일을 기저 엔진에 넘긴다 — 러너(run_paper_replication.R)가 레인 측정에서 넘기는 것과 같은 값.
++      ##   전에는 넘기지 않아 엔진마다 다른 기본 시작일로 떨어졌다(2005-01-01 · 자료 첫날 · 멈춤). ★측정 변경이다(결과 동일 수리 아님 —
++      ##   04_Research/01_reports/portfolio_paper_layer_split_20261112/README.md §2-1 · §6-3). 캐시 판(rf_base_cache_v3)이 주입 전 캐시를 끊는다.
++      .env$.RP_START_DATE <- .rf_rp_start
+       sys.source(.be, envir = .env)
+       .b <- if (exists("FACTORS", envir = .env, inherits = FALSE)) {
+               x <- as.data.table(get("FACTORS", envir = .env)); setnames(x, "Score", ".base_sig"); x
+@@ -153,7 +160,14 @@
+       rm(.env); gc(verbose = FALSE)
+     }
+     data.table::setattr(.b, "rf_base_cache_key", NULL)
+-    .b
++    ## (판 2 S1 · 2026-11-11) 달 스냅 — 기저 신호를 월말 격자에 맞춘다(rf_base_align.R). 캐시에는 엔진 원산출 그대로 두고 적재 뒤에 맞춘다.
++    ##   월말 거래일에 신호를 내는 엔진은 항등(비트 동일) · 그 밖 격자는 그 달의 마지막 신호가 월말로 온다(s ≤ d · 모수 없음).
++    .al <- rf_base_month_snap(.b, .rf_cal)
++    .RF_DIAG$base_alignment[[basename(dirname(.be))]] <<- c(.al$diag, list(start_injected = TRUE, start = format(.rf_rp_start)))
++    cat(sprintf("[rf_cell_engine] base_alignment %s | 엔진 신호일 %d → 월말 %d(항등 %d · 옮김 %d · 덮임 %d · 꼬리 제외 %d) · 최대 지연 %d거래일\n",
++                .al$diag$rule, .al$diag$n_engine_dates, .al$diag$n_cell_dates, .al$diag$n_identity, .al$diag$n_moved,
++                .al$diag$n_superseded, .al$diag$n_dropped_tail, as.integer(.al$diag$max_lag_td)))
++    .al$panel
+   }
+   if (identical(.base$kind, "engine_blend")) {
+     .paths <- unlist(.base$paths %||% list())

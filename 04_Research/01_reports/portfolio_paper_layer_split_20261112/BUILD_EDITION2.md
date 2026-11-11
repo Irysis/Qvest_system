@@ -85,6 +85,22 @@
 | S6 시드 측정 | 착수 전 | GPU 임대 free · 판 1 tick_hold 유지 |
 | S7 1908.01112 | 착수 전 | |
 
+### S1 이어 하기(11-11 22:5x 기준 — 여기서부터)
+
+지금까지: 달 스냅 함수와 단위 시험은 커밋됨(`71801c87d`). 셀 엔진 · 기저 캐시의 **후보판**을 만들었고 구문 확인을 통과했다. 운영 파일은 아직 그대로다.
+- 후보판 생성기 = `staging/make_s1_candidates.py <저장소> <폴더>`(치환 4곳 + 2곳 · 각 한 곳 일치 단정 · 줄끝 보존). 패치 = `staging/s1_rf_cell_engine.patch`(46줄) · `staging/s1_rf_base_cache.patch`(20줄).
+- 생성 당시 원본 md5: `rf_cell_engine.R` = `26993a0411bf1c1132df9962578dfb8d`(CRLF) · `rf_base_cache.R` = `f6fef4f9eee6adfb007b0e1d97668f9f`(LF). 교체 전에 원본이 이 값인지 확인한다(다르면 생성기를 다시 돌린다).
+- 후보판 내용: ① `rf_base_align.R` 적재 ② `.rf_cal`(패널 달력) · `.rf_rp_start`(러너의 `.RP_START_DATE` · 없으면 `.START`) ③ 기저 엔진 환경에 `.RP_START_DATE` 주입 ④ `.load_one` 반환 직전에 `rf_base_month_snap` 적용 + `.RF_DIAG$base_alignment[[엔진 폴더]]` 기록 + 로그 한 줄 ⑤ 캐시 판 `rf_base_cache_v3` · 파일 접두 `base_v3_`.
+
+다음 순서:
+1. `08_Tests/reinforcement/test_rf_base_cache_key.R` 의 파일 접두 기대값(`base_v2_`)을 새 판에 맞춘다(접두를 읽는 코드는 이 시험과 `rf_base_cache.R` 뿐임을 확인했다).
+2. 판단 Superfan T4(시작일 주입 = 측정 변경 · 달 스냅 = 판 규칙) — 백그라운드 · opus. 프롬프트에 '저장소 전체 재귀 검색 금지'를 적는다.
+3. 후보판을 원자 교체한다(매시 37분 상설 판 틱을 피한다 · 지금 대기 측정은 없다 — 판 1 보류 · 사슬 0). 원본은 스크래치에 사본을 남긴다.
+4. 회귀 시험: `test_rf_base_align.R` · `test_rf_cell_engine_smoke.R` · `test_rf_base_cache_key.R` · `test_rf_base_cache_seed.R`. 실패하면 원본으로 되돌린다.
+5. 비트 동일 실증: 월말 격자 기저 캐시(예 2002.06975 — 신호일 261 전부 월말)에 `rf_base_month_snap` 을 걸어 항등(`n_moved = 0` · 패널 동일)임을 보이고, 1908.01112 캐시에서는 월말 신호일 수가 1 → 약 110 으로 돌아오는지 센다.
+6. `.RF_DIAG` 가 산출 폴더에 어떻게 남는지 확인한다(셀 엔진 끝부분 · 워커) — 판정 전 점검 8~9번이 그 파일을 읽는다.
+7. /simplify → 커밋(운영 파일 2개 + 시험 1개) → 이 표 갱신.
+
 ## 환경 메모(11-11 22:1x)
 
 - 레인 슬롯 gpu1 = 2601.04602(THGNN) 측정 중 · 밤 체인 00:03 · 아침 체인 07:10.
