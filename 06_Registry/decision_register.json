@@ -4642,7 +4642,29 @@
       "decided_at": "2026-11-11T22:04:22+0900",
       "note": "도훈 2026-11-11 21:1x: \"검증도 올려\"(총괄 세션은 '지금은 유지'를 권고했고 한도 소모 증가를 알린 뒤의 선택). 적용 = 06_Registry/rf_fidelity_axes.json 필수 3축 model opus → fable(xhigh 그대로) · .claude/agents/judge.md model opus → fable(max 그대로) · ops/rf_fidelity_fanout.sh 가 Fable 축에 한도 폴백(opus/max)을 싣는다 — 판독형 축은 필수 축이라 한도로 죽으면 병합 판정이 unverifiable 이 되기 때문. Judge 는 세션 에이전트라 폴백 배선이 없다 — Fable 한도로 스폰이 실패하면 세션이 model 인자로 opus 를 지정해 다시 띄운다. 검사 = test_rf_fanout_limit_fallback.sh(신설 21 · 수정 전 러너에서 11 빨강) · test_rf_llm_fallback.sh E4 · E4m · E5 · test_llm_single_entry.sh G. 볼 것 = LLM-LANE-FABLE-GENERATION-20261111 과 같다(새 논문 10편 뒤 논문당 감사 기각 재구현 횟수 · 기준 4.1) + 주간 Fable 사용량.",
       "registered_at": "2026-11-11T22:04:20+0900"
+    },
+    {
+      "id": "AEPM-CASH-RETURN-CD91-SCOPE-20261112",
+      "title": "현금 수익 = CD91 을 어디에 적용하나 — AEPM 설계에만 두나 · 지금 측정 계약에도 넣나",
+      "status": "resolved",
+      "opened_at": "2026-11-12T00:06:25+0900",
+      "options": [
+        "AEPM 설계에만 — 현금을 스스로 정하는 첫 모형을 등록할 때 측정 축 새 판으로 함께 넣는다 · 현 측정 계약(현금 수익 0 · 권위 Sharpe 무위험 기준 0) 불변",
+        "지금 측정 계약에도 — 바로 새 측정 축 판을 열고 재측정한다(초과수익 기준 · 배당 · 대조군 · 새 판을 지금 정한다)"
+      ],
+      "recommendation": "AEPM 설계에만(Q 권고) — 진행 중인 판 2 구축과 기존 등급 비교를 흔들지 않는다. 현금에 이자를 주면 함께 정해야 할 것 넷 (지표를 CD91 초과수익 기준으로 · 주식 배당 반영 여부 · 같은 β 현금 사본에도 같은 이자 · 측정 축 새 판)을 그때 한 번에 정한다",
+      "default_until_decided": "현 측정 계약 그대로 — 현금 수익 0(reinforcement/rf_axes.R · 하네스가 레그 수익에 Σw 를 곱한다) · 권위 Sharpe 무위험 기준 0(SHARPE-STANDARD-RF-CD91-20261106)",
+      "blocks": [],
+      "owner": "dohoon",
+      "source": "2026-11-11~12 평가 세션(Qvest 멀티팩터 평가 → AEPM 구상 조언) — 도훈 '현금도 나의 데이터로 넣어버리면 어떨까' · '현금은 CD91 금리를 수익률로 쓰면 될거 같아' → Q 가 측정 계약의 현 처리(현금 수익 0 · rf 0)와 함께 바뀌어야 할 것을 설명하고 적용 범위를 물음",
+      "decision": "AEPM 설계에만 — 현금 수익 = CD91(전 거래일 금리 · 문서 표준 환산 규칙 rf_d = (1 + y/100)^(1/252) − 1 그대로). 현 측정 계약(현금 수익 0 · 권위 Sharpe 무위험 기준 0)은 바꾸지 않는다. 적용 시점 = 현금을 스스로 정하는 첫 모형을 등록할 때 측정 축 새 판과 함께. 그때 함께 정할 것 = 지표의 CD91 초과수익 기준 · 주식 배당 반영 여부 · 같은 β 현금 사본의 현금 수익",
+      "decided_by": "dohoon",
+      "decided_at": "2026-11-12T00:06:26+0900",
+      "note": "AEPM(AI-Native Quantitative Equity Multi-Factor Portfolio Management)은 구상 단계다 — 청사진 문서는 아직 없다. 도훈 구상 원문과 Q 조언 요지 = 기억 카드 project-aepm-vision-ai-native-20261111 · 선행 설계 = 04_Research/01_reports/factor_spine_design_20261111/README.md(결정 D1~D6 대기). 배당: 하네스 · 벤치 코드에서 배당 처리를 찾지 못했다(가격 수익 · 공표 KOSPI200 가격 지수로 보인다 — 원자료 생성 단계까지 추적한 확정은 아님).",
+      "registered_at": "2026-11-12T00:06:25+0900",
+      "recorded_by": "Q (평가 세션 — Qvest 멀티팩터 평가 · AEPM 구상 조언 · 2026-11-11~12)",
+      "evidence": "채팅 응답 2026-11-12 \"AEPM 설계에만\" — 직전 Q 질문 = 'CD91 현금 수익을 어디에 적용할지: AEPM 설계에만(권고) / 지금 측정 계약에도'"
     }
   ],
-  "last_updated": "2026-11-11T22:04:24+0900"
+  "last_updated": "2026-11-12T00:06:27+0900"
 }
