@@ -1,6 +1,6 @@
 {
  "schema": "session_resume_v1",
- "updated_at": "2026-11-10T23:02:34+0900",
+ "updated_at": "2026-11-11T11:42:24+0900",
  "operations": [
   {
    "id": "OP-20261015-MSM-A",
@@ -551,7 +551,7 @@
    "goal": "전수점검 결론(A 미산출 = 생성 편중 · 시행 소진 · 기준점 부재 · 정지)에 따라 1계층의 일하는 순서를 바꿔 계약 경로 A 를 낸다 — 설계 README §4 의 순서와 완료 기준",
    "status": "in_progress",
    "started_at": "2026-11-10T10:27:03+0900",
-   "updated_at": "2026-11-10T23:02:34+0900",
+   "updated_at": "2026-11-11T11:42:24+0900",
    "steps": [
     {
      "id": "S0",
@@ -602,7 +602,7 @@
      "updated_at": "2026-11-10T12:13:47+0900"
     }
    ],
-   "next_action": "새 세션에서 S1 — 코어 v1 출시(RELEASES.json) + P1 상설 자격 P1S01 등록 · standing-measure(엔진 신호를 표준 롱온리 구성으로 지금의 팩터 DB 위에서 새로 잰다) → 기저 풀(round.sh - p4-pool)에 자격 엔진이 생기면 강화 사슬 1호(p4-check · p4-register · p4-design · p4-step-open …). 레인은 도훈이 재가동. 설계 README §3 · §4(11-10 오후 개정)",
+   "next_action": "리서치 체인 착수(설계 README §4 순서 1 · 새 세션): ① 코어 v1 출시 기록 04_Research/programs/_lib/round_core/RELEASES.json ② P1 상설 판 등록 — bash 04_Research/programs/_lib/round_core/round.sh 04_Research/programs/P1_RETURN/P1S01_standing_qualification standing-check → check · draft · reviewed → 철학 Superfan P1 수령 뒤 register → 판단 T1 ③ 매시 37분 틱(Qvest_StandingBoard)이 scan → standing-measure → standing-report 를 잇는지 확인(standing-status) ④ bash round.sh - p4-pool 자격 ≥ 1 이면 첫 강화 사슬 판 설계 · p4-check · p4-register. P2R05 는 등록본 보존 · 뒤로(측정 시작 때 재핀). 남은 데이터 일 = 세 책 적재 · 고아 Excel(/automation 인스턴스) 정리.",
    "context_files": [
     "04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/README.md",
     "04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/findings_ledger.md",
@@ -695,6 +695,18 @@
     {
      "at": "2026-11-10T23:02:34+0900",
      "text": "11-10 밤 추가 완료: 강화 사슬 무인 틱 구축(b8527a169 · 열린 사슬 0 → 무음) · 꺼진 작업 판정 직접 조회(df0f08cba) · 레인 시작 관문 11-13 19:10 + 1슬롯 적용(c8008713a). 남은 것: ① 도훈 — 절차서 1단계 붙여넣기(StandingBoard · 레인 켜기 포함 · 아직 미실행) ② 11-13 19:10 뒤 레인 재가동 확인(저널 slots_tick · slot_launched gpu1 — THGNN 재개부터) ③ 첫 사슬 등록 뒤 무인 틱 첫 실제 동작 관찰(틱이 오래 돌면 상설 판 틱이 건너뛰어짐 — 별도 예약 작업 분리는 도훈 결정) ④ 코어 v1 출시 기록 + P1S01 등록 ⑤ 구성 어댑터 2종 등재 · R 이식성 위반 38건(미수리)."
+    },
+    {
+     "at": "2026-11-11T10:01:49+0900",
+     "text": "11-11 10:05 인계: 주간 한도 0% 초기화(도훈) → 레인 시작 관문 해제(1슬롯 유지). 진행 중 = 데이터 자가 복구(08:22~ · 퀀티 단계는 다른 기기 로그인으로 2회 밀려 실패) + 퀀티 Update_File 단독 수급(09:58~). 끝나면: ① ensure_data_current.sh 후보판(같은 영업일 재시도 규칙 · --retry) 교체 ② --retry 로 적재 · 하류 복구 → rawdata/benchmark 11-10 확인 ③ Qvest_StandingBoard.bat 에 data_selfheal_tick.sh 삽입 ④ 시험 2종 · 커밋 ⑤ 밤 층 실패 16건 분류 · 회귀 수리(서브에이전트 진행) ⑥ 도훈 지시 '리서치 체인 돌려보자' = 코어 v1 출시 기록 → P1S01 상설 판 등록 → 기저 풀 → 첫 강화 사슬(새 세션 · /qvest ①)."
+    },
+    {
+     "at": "2026-11-11T11:42:23+0900",
+     "text": "11-11 11:45: 가격 적재 끝(RAWDATA · 벤치 2026-11-10 · 신선도 감사 stale 0 · 리프레시 배리어 free). 그 실행의 r2 실패 = Consensus_update.xlsx 가 도훈 수동 수급 중이라 열리지 않음 — 남은 세 책(Universe_Support · Consensus · Investor_Act · 패널 11-06)은 도훈 수급 뒤 단계 한정 실행(QVEST_DR_MODE=selfheal QVEST_DR_ONLY_STAGES=ingest,universe,krf,fdb QVEST_DR_SKIP_BATTERY=1 QVEST_REFRESH_TG=0 QVEST_DR_REPORT_TG=0 bash 02_Infrastructure/data/daily_refresh.sh)으로 싣는다. 레인 = 11:38 THGNN 검증 재개(1슬롯). 기저 풀 = 엔진 12 · 자격 0(factor_db_stale · 상설 미통과). 기록 = 설계 README §10.8."
+    },
+    {
+     "at": "2026-11-11T11:42:24+0900",
+     "text": "다음: 리서치 체인 착수(설계 README §4 순서 1 · 새 세션): ① 코어 v1 출시 기록 04_Research/programs/_lib/round_core/RELEASES.json ② P1 상설 판 등록 — bas"
     }
    ]
   }
