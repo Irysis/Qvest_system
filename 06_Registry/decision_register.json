@@ -4503,7 +4503,27 @@
       "decided_at": null,
       "note": null,
       "registered_at": "2026-11-11T14:12:39+0900"
+    },
+    {
+      "id": "QW-SELFHEAL-SESSION-ENSURE-20261111",
+      "title": "자가 복구가 수급 전에 퀀티 세션을 확인하고 죽어 있으면 한 번 재로그인할지",
+      "status": "resolved",
+      "opened_at": "2026-11-11T14:17:44+0900",
+      "options": [
+        "그렇게 한다 — 복구 계획에 퀀티 단계가 있을 때 리프레시 직전에 세션 확인 · 죽어 있으면 드라이버 -LoginOnly 1회",
+        "지금대로 — 로그인 창이 보일 때만 로그인(밤 체인의 Update_File 수급은 로그인 없음)"
+      ],
+      "recommendation": "그렇게 한다 — 세션이 죽었는데 로그인 창이 안 보이면 복구가 헛돈다(11-11 00:18 · 07:27 실측). 로그인에 실패한 날은 다시 시도하지 않게 해 계정 잠금을 막는다.",
+      "default_until_decided": "지금대로",
+      "blocks": [],
+      "owner": "dohoon",
+      "source": "11-11 퀀티 자동 수급 실패 원인 조사(설계 README §10.8) — 밤 · 아침 실행이 20초 만에 'session kicked' · 자동 경로가 세션을 되살리지 않음",
+      "decision": "그렇게 한다 — 자가 복구가 수급 전에 퀀티 세션을 먼저 확인하고, 죽어 있으면 한 번 재로그인한다",
+      "decided_by": "dohoon",
+      "decided_at": "2026-11-11T14:17:45+0900",
+      "note": "도훈 2026-11-11: \"자가 복구가 수급 전에 퀀티 세션을 먼저 확인하고, 죽어 있으면 한 번 재로그인하게 해줘.\" 구현 = ops/qw_session_ensure.sh(드라이버 -LoginOnly 1회 · 로그인 실패한 날은 재시도 없음 · 끄기 QVEST_QW_SESSION_ENSURE=0) + ops/ensure_data_current.sh 4a(계획에 퀀티 단계가 있을 때만 · 결과와 무관하게 복구 진행). 밤 체인의 Update_File 수급(-SkipLogin · 10-16 결정)은 그대로다.",
+      "registered_at": "2026-11-11T14:17:44+0900"
     }
   ],
-  "last_updated": "2026-11-11T14:12:40+0900"
+  "last_updated": "2026-11-11T14:17:46+0900"
 }

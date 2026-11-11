@@ -299,6 +299,23 @@ _kill_tree() {   # $1 = MSYS pid — 자손(MSYS) 전부 + 각자의 윈도 트�
   for p in $all; do wp="$(cat "/proc/$p/winpid" 2>/dev/null)"; [ -n "$wp" ] && taskkill //F //T //PID "$wp" >/dev/null 2>&1; done
   for p in $all; do kill -KILL "$p" 2>/dev/null; done
 }
+# ── 4a. 퀀티 세션 확인 (2026-11-11 도훈 "자가 복구가 수급 전에 퀀티 세션을 먼저 확인하고, 죽어 있으면 한 번 재로그인하게 해줘"
+#       · 결정 QW-SELFHEAL-SESSION-ENSURE-20261111) ──
+#   왜: 밤 체인의 Update_File 수급은 로그인 클릭을 하지 않고(-SkipLogin), [1pre] 벤치 수급은 로그인 창이 보일 때만 로그인한다.
+#     세션이 죽었는데 로그인 창이 안 보이면 수급이 20초 만에 끊기고 복구가 헛돈다(11-11 00:18 · 07:27 실측).
+#   무엇: 계획에 퀀티 단계가 있을 때만(QW_BEHIND = 1) ops/qw_session_ensure.sh 를 한 번 부른다 — 살아 있으면 아무것도 안 하고,
+#     죽어 있으면 드라이버 -LoginOnly(앱에 저장된 자격 · 1회). 로그인에 실패한 날은 도우미가 다시 시도하지 않는다(계정 잠금 방지).
+#   결과와 무관하게 복구는 진행한다(다른 단계는 퀀티와 무관 · 실패는 사후 감사가 그대로 보고한다). 끄기 = QVEST_QW_SESSION_ENSURE=0.
+if [ "$QW_BEHIND" = "1" ]; then
+  QSE_SH="${QVEST_EDC_QSE:-$BASE/02_Infrastructure/ops/qw_session_ensure.sh}"
+  if [ -f "$QSE_SH" ]; then
+    _qse_out="$(bash "$QSE_SH" 2>&1)"; _qse_rc=$?
+    _log "퀀티 세션 확인(수급 전) rc=$_qse_rc · $(printf '%s' "$_qse_out" | tail -n 1 | tr '\t' ' ')"
+    [ "$_qse_rc" = "3" ] && _log "   ⚠ 세션을 되살리지 못했다 — 수급 단계는 실패할 것이다(단말 로그인 확인 · .cache/qw_session_ensure.json)"
+  else
+    _log "퀀티 세션 확인 도우미 없음($QSE_SH) — 건너뜀"
+  fi
+fi
 _log "stale=$PRE_STALE — daily_refresh.sh 자가 복구 실행 · 계획 ${HEAL_PLAN} (${HEAL_WHY}) · 상한 ${HEAL_TIMEOUT_S}s"
 _launch_mark="$(mktemp "${TMPDIR:-/tmp}/qm_edc_launch_XXXX")"; touch -d "@$(( $(date +%s) - 1 ))" "$_launch_mark" 2>/dev/null   # 이번 실행 뒤에 쓰인 상태만 '보고됨'으로 읽는다
 printf '%s %s\n' "$AS_OF" "$(_now_epoch)" > "$HEAL_MARK" 2>/dev/null || true   # 3b 재시도 규칙의 기준 시각

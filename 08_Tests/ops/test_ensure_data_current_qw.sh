@@ -156,6 +156,38 @@ grep -qx "2026-10-20|2026-10-19|퀀티 10-19 ✓|False" "$T/qwcur.out" && ok "D2
 grep -qx "2026-10-06|2026-10-02|퀀티 10-02 ✓|False" "$T/qwcur.out" && ok "D3 대체공휴일 다음 날 → ✓(헛경보 없음)" || ng "D3" "$(sed -n 3p "$T/qwcur.out")"
 grep -q "^2028-01-04|2027-12-30|퀀티 ?(year_not_covered:2028)|False" "$T/qwcur.out" && ok "D4 휴장일 미수록 해 → '퀀티 ?(year_not_covered)' — 0 으로 접지 않는다 · 부팅은 수급하지 않는다(오프라인)" || ng "D4" "$(sed -n 4p "$T/qwcur.out")"
 
+echo "=== E. 수급 전 퀀티 세션 확인(11-11 · 결정 QW-SELFHEAL-SESSION-ENSURE-20261111) ==="
+# 세션 확인 도우미 스텁: 불린 시점에 리프레시가 이미 불렸는지(before | after)를 적고 STUB_QSE_RC 로 끝난다
+mk_qse(){ cat > "$SB/02_Infrastructure/ops/qw_session_ensure.sh" <<EOF
+[ -f "$SBM/refresh_calls" ] && echo after >> "$SBM/qse_calls" || echo before >> "$SBM/qse_calls"
+printf 'QSE\tstate=stub\talive=%s\tkicks=0\n' "\${STUB_QSE_ALIVE:-True}"
+exit "\${STUB_QSE_RC:-0}"
+EOF
+}
+qse_n(){ local n=0; [ -f "$SB/qse_calls" ] && n=$(wc -l < "$SB/qse_calls"); echo $((n+0)); }
+mk_sandbox; mk_qse; set_bench 2026-10-15; rm -f "$SB/qse_calls"
+r=$(STUB_ADVANCE=2026-10-16 run_edc 2026-10-17)
+[ "${r%%|2026*}" = "0|1|refreshed_current" ] && [ "$(qse_n)" = "1" ] && [ "$(cat "$SB/qse_calls")" = "before" ] && grep -q '퀀티 세션 확인(수급 전) rc=0' "$T/edc.log" \
+  && ok "E1 퀀티 미갱신 → 세션 확인 1회 · 리프레시보다 먼저 · 그 뒤 리프레시" || ng "E1" "$r qse=$(qse_n) order=$(cat "$SB/qse_calls" 2>/dev/null)"
+mk_sandbox; mk_qse; set_bench 2026-10-16; rm -f "$SB/qse_calls"; r=$(run_edc 2026-10-17)
+[ "${r%%|2026*}" = "0|0|already_current" ] && [ "$(qse_n)" = "0" ] && ok "E2 퀀티 최신 → 세션 확인을 부르지 않는다(단말을 건드리지 않는다)" || ng "E2" "$r qse=$(qse_n)"
+mk_sandbox; mk_qse; set_bench 2026-10-15; rm -f "$SB/qse_calls"
+r=$(STUB_QSE_RC=3 STUB_QSE_ALIVE=False run_edc 2026-10-17)
+[ "${r%%|stale*}" = "3|1" ] && [ "$(qse_n)" = "1" ] && grep -q '세션을 되살리지 못했다' "$T/edc.log" \
+  && ok "E3 세션 확인 실패(rc 3) → 경고를 남기고 복구는 그대로 진행(다른 단계는 퀀티와 무관) · 사후 판정은 낡음" || ng "E3" "$r qse=$(qse_n)"
+mk_sandbox; set_bench 2026-10-15; r=$(STUB_ADVANCE=2026-10-16 run_edc 2026-10-17)
+[ "${r%%|2026*}" = "0|1|refreshed_current" ] && grep -q '세션 확인 도우미 없음' "$T/edc.log" && ok "E4 도우미가 없는 설치 → 건너뛰고 복구 진행(종전 동작)" || ng "E4" "$r"
+MUT2="$T/edc_mut2.sh"
+"$PYV" - "$EDC" "$MUT2" <<'PYM'
+import io, sys
+s = io.open(sys.argv[1], encoding="utf-8", newline="").read()
+a = '_qse_out="$(bash "$QSE_SH" 2>&1)"; _qse_rc=$?'
+assert s.count(a) == 1, s.count(a)
+io.open(sys.argv[2], "w", encoding="utf-8", newline="").write(s.replace(a, '_qse_out=""; _qse_rc=0'))
+PYM
+mk_sandbox "$MUT2"; mk_qse; set_bench 2026-10-15; rm -f "$SB/qse_calls"; r=$(STUB_ADVANCE=2026-10-16 run_edc 2026-10-17)
+[ -s "$MUT2" ] && [ "$(qse_n)" = "0" ] && ok "M2 [돌연변이] 호출을 뗀 사본 → 세션 확인 0회(E1 은 공허하지 않다)" || ng "M2" "$r qse=$(qse_n)"
+
 echo ""
 echo "결과: PASS=$PASS FAIL=$FAIL"
 printf '{"test":"ensure_data_current_qw","pass":%d,"fail":%d,"total":%d}\n' "$PASS" "$FAIL" "$((PASS+FAIL))"
