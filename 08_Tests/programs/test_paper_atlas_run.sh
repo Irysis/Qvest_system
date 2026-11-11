@@ -7,7 +7,23 @@ SB="$(mktemp -d)"; command -v cygpath >/dev/null 2>&1 && SB="$(cygpath -m "$SB")
 mkdir -p "$SB/02_Infrastructure/programs" "$SB/02_Infrastructure/ops" "$SB/06_Registry" "$SB/.cache/scheduler_logs"
 cp "$REPO"/02_Infrastructure/programs/*.R "$SB/02_Infrastructure/programs/"
 cp "$REPO/02_Infrastructure/ops/paper_atlas_run.sh" "$REPO/02_Infrastructure/ops/paper_atlas_prompt.md" "$SB/02_Infrastructure/ops/"
-cp "$REPO/06_Registry/research_programs.json" "$SB/06_Registry/"
+# 픽스처 등록부(11-11 재조준) — 운영 등록부를 복사하면 그날의 재료 큐 상태가 시험 전제('일감 0')를 정한다
+#   (10-14~20 큐에 논문이 차서 ②가 빨개지고, ①의 남은 작업 폴더가 ③의 job.json 을 가렸다 — nightly_triage_20261111 (a) 5행).
+#   시험이 원하는 상태를 직접 만든다: 프로그램 셋 · 재료 큐 · 소비 기록 · 미분류 보류 전부 비어 있음. pr_validate 를 통과해야 ③의 pr_enqueue 가 쓴다.
+cat > "$SB/06_Registry/research_programs.json" <<'JSON'
+{
+  "schema": "research_programs_v1",
+  "version": 1,
+  "target_spec": {"note": "test fixture"},
+  "measurement_contract": {"items": []},
+  "paper_routing": {"unrouted": []},
+  "programs": [
+    {"id": "P1_RETURN", "status": "ready", "blocked_by": [], "queue": [], "consumed": []},
+    {"id": "P2_DEFENSE", "status": "ready", "blocked_by": [], "queue": [], "consumed": []},
+    {"id": "P3_CONSTRUCTION", "status": "ready", "blocked_by": [], "queue": [], "consumed": []}
+  ]
+}
+JSON
 PASS=0; FAIL=0
 ok(){ PASS=$((PASS+1)); echo "  [ok]   $1"; }
 ng(){ FAIL=$((FAIL+1)); echo "  [FAIL] $1"; }

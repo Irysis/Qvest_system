@@ -252,7 +252,33 @@ chk("K2 선택 방어 문장", grepl("선택 방어", prep_card_digest(rC$card)$
 chk("K3 노출 방어 문장", grepl("노출 방어", prep_card_digest(rD1$card)$controls))
 chk("K3b 방어 없음 문장 · 시장 대비 비율이 실린다", grepl("방어 없음", prep_card_digest(rN1$card)$controls) &&
       grepl("시장보다 덜 빠진 위기 0%", prep_card_digest(rN1$card)$controls, fixed = TRUE))
-chk("K4 위기 줄에 크기+노출 짝 포착률이 붙는다", all(grepl("크기·노출 짝 [0-9]", prep_card_digest(rB$card)$lines)))
+## K4 재조준(11-11) — b330260ac(10-17 도훈 "같은 텍스트가 계속 들어가면 별로")가 '크기·노출 짝 N' 을 줄마다 쓰지 않고
+##   섹션 머리 1번 '(괄호 = 크기·노출 짝 대조)' + 줄마다 값만 괄호로 옮겼다(nightly_triage_20261111 (a) 12행).
+##   같은 성질을 지금 구조에서 잰다: ① 독자가 괄호의 뜻을 머리에서 읽는다 ② 위기 줄마다 그 위기의 짝 대조 하락노출이 실린다
+##   (값 = 카드 controls$size_exposure_matched$per_crisis 의 같은 정점 · 표시 형식 그대로) ③ 반대 방향 — 대조가 없으면 머리 범례도 괄호 값도 없다.
+dB <- prep_card_digest(rB$card)
+pcB <- as.data.table(rB$card$controls$size_exposure_matched$per_crisis)
+crB <- as.data.table(rB$card$crises)
+expB <- paste0(" (", vapply(pcB$control_dd_capture[match(as.Date(crB$peak_date), as.Date(pcB$peak_date))], prep_fmt_ratio, character(1)), ")")
+chk("K4 위기 줄에 크기+노출 짝 하락노출이 붙는다 — 머리 범례 '(괄호 = 크기·노출 짝 대조)' + 줄마다 그 위기의 짝 값",
+    grepl("(괄호 = 크기·노출 짝 대조)", dB$lines_heading, fixed = TRUE) && length(dB$lines) == nrow(crB) && nrow(crB) >= 2L &&
+      !anyNA(match(as.Date(crB$peak_date), as.Date(pcB$peak_date))) &&
+      all(mapply(function(l, e) grepl(e, l, fixed = TRUE), dB$lines, expB)) && all(grepl(" \\([-−]?[0-9]+\\.[0-9]+\\)", dB$lines)),
+    sprintf("(머리=%s · 줄=%s)", dB$lines_heading, paste(dB$lines, collapse = " | ")))
+## K4c 합성 세계의 위기 4번은 대칭이라 짝 값이 모두 같다 — 줄과 위기의 짝이 어긋나도 K4 는 못 가른다.
+##   카드 사본의 per_crisis 값만 위기마다 다르게(0.11 · 0.22 · …) 바꿔 '그 위기의 값'이 그 줄에 실리는지 잰다(정점 역순으로 넣어 위치 짝이 아니라 정점 짝을 요구).
+cK <- rB$card; pcK <- as.data.table(cK$controls$size_exposure_matched$per_crisis)
+pcK <- pcK[order(-as.numeric(as.Date(peak_date)))]; pcK[, control_dd_capture := seq_len(.N) * 0.11]
+cK$controls$size_exposure_matched$per_crisis <- pcK
+dK <- prep_card_digest(cK)
+expK <- paste0(" (", vapply(pcK$control_dd_capture[match(as.Date(crB$peak_date), as.Date(pcK$peak_date))], prep_fmt_ratio, character(1)), ")")
+chk("K4c 위기마다 짝 값이 다르면 각 줄에 그 위기(같은 정점)의 값이 실린다",
+    length(unique(expK)) == nrow(crB) && length(dK$lines) == nrow(crB) && all(mapply(function(l, e) grepl(e, l, fixed = TRUE), dK$lines, expK)),
+    sprintf("(기대=%s · 줄=%s)", paste(expK, collapse = ","), paste(dK$lines, collapse = " | ")))
+dB0 <- prep_card_digest(bc_card(rB$S, rB$B, cfg = bcfg))
+chk("K4b 대조 미제공 카드 → 머리 범례 없음 · 줄에 괄호 값 없음(빈 범례를 내지 않는다)",
+    length(dB0$lines) >= 2L && !grepl("괄호", dB0$lines_heading, fixed = TRUE) && !any(grepl(" \\([-−]?[0-9]+\\.[0-9]+\\)", dB0$lines)),
+    sprintf("(머리=%s · 줄=%s)", dB0$lines_heading, paste(dB0$lines, collapse = " | ")))
 chk("K5 대조 미제공 카드 → '대조 없음'", grepl("대조 없음", prep_card_digest(bc_card(rB$S, rB$B, cfg = bcfg))$controls))
 chk("K6 창 선택이 귀속 창을 따른다(시험 창 문장도 라벨을 낸다)", grepl("크기 방어", prep_card_digest(rB$card, "test")$controls))
 

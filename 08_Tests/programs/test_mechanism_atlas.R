@@ -51,7 +51,16 @@ writeLines(toJSON(list(v2), auto_unbox = TRUE, null = "null"), st)
 chk("추출 판(version)이 다르면 새로 쌓인다", ma_ingest(st, path = ap)$added == 1L)
 
 cat("\n=== C. 일감 목록(ma_pending) ===\n")
-rp <- tempfile(fileext = ".json"); file.copy(pr_path(), rp)
+## 픽스처 등록부(11-11 재조준) — 운영 등록부를 복사하면 그날의 큐가 시험을 정한다: 운영 P1 큐 논문이 65편(분류 시점 · 11-11 12시 78편)이라
+##   새 논문이 ma_pending(10) 상한 밖으로 밀려 C2 가 빨개졌다(nightly_triage_20261111 (a) 6행). 빈 큐 셋을 직접 만든다.
+rp <- tempfile(fileext = ".json")
+writeLines(toJSON(list(schema = "research_programs_v1", version = 1L, target_spec = list(note = "test fixture"),
+                       measurement_contract = list(items = list()), paper_routing = list(unrouted = list()),
+                       programs = lapply(c("P1_RETURN", "P2_DEFENSE", "P3_CONSTRUCTION"), function(id)
+                         list(id = id, status = "ready", blocked_by = list(), queue = list(), consumed = list()))),
+                  auto_unbox = TRUE, pretty = TRUE), rp)
+chk("C0 픽스처 등록부가 스키마 검사를 통과한다(빈 큐)", length(pr_validate(pr_load(path = rp))) == 0L &&
+      length(ma_pending(10L, registry_path = rp, atlas_path = ap)) == 0L)
 pr_enqueue("P2_DEFENSE", list(key = "axv:2401.00001", kind = "paper", title = "done one", engine = "defense"), path = rp)
 pr_enqueue("P1_RETURN", list(key = "axv:2401.99999", kind = "paper", title = "new one", engine = "return"), path = rp)
 pe <- ma_pending(10L, registry_path = rp, atlas_path = ap)
