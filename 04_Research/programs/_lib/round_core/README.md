@@ -17,7 +17,7 @@
   - 진행 중 라운드(P2R05)의 핀 51개 파일은 그 라운드가 끝날 때까지 수정하지 않는다.
 - **판은 불변이다.** 출시된 판은 고치지 않고, 바꿀 일이 생기면 새 판(v2)을 만든다.
   - 라운드는 판과 매니페스트 md5 를 핀으로 건다(`rc_core_manifest`).
-  - *v1 은 아직 개발 중이며 출시 전이다.*
+  - 출시 기록 = `RELEASES.json`(v1 11-11 13:44 · v2 11-11 — 아래 '판 라우팅 · v2'). 사양의 `core_version` 이 그 라운드 · 판 · 사슬의 코어 판을 고른다.
 - **속도 조치는 결과 동일 실증이 채택 조건이다**(`PERFORMANCE.md`). 실행 시간은 `.cache/round_core/perf/<round>.jsonl` 에 남는다.
 
 ## 사용 (P1 라운드 예)
@@ -65,13 +65,24 @@ round.sh <판> superfan-mark --codes a,b --kind pass|daily --p2 <id> --t2 <id>  
 
 - 입구 수리(11-10): 방향 층은 호출마다 `direction` 인자로 가른다 — `"registry"` | `"defensive"` 문자열 상수 = `factor_db_static`(engine_native 허용 시 함께 허용) · 인자 없음 · `"ic_asof"` · 판정 불가 값 = `factor_db_asof`. 결합용 뷰 `fc_load_month(s)` · `fc_daily` 도 같은 규칙으로 본다. 레인 산출이 팩터 DB 수리 전 측정이어도(`contracts/factor_db_vintage.R::fdv_stale = TRUE`) 입구에서 빼지 않고 표식만 남긴다(열 `factor_db_vintage` = stale | current | na — 상설 측정이 지금의 팩터 DB 위에서 새로 잰다 · 시험은 `RC_FDV_LEDGER` 로 임시 원장). 낡은 측정의 소비는 A 자격 관문과 P4 기저 풀(등급으로 들어오는 경로)이 막는다. 자격 통과 목록 읽기 = `rc_standing_qualified(program)`.
 
+## 판 라우팅 · v2 (2026-11-11 · 판단 T1 C-20261111-001 · 002 · 도훈 결정 P4-BASE-POOL-GRADE-PATH-TAU-20261111 = (나))
+
+- **라우팅**: `round.sh`(`rc_core_of`) · `02_Infrastructure/programs/chain_tick.R`(`.ct_core_version`)가 사양(`round_spec.json` · `chain_spec.json`)의 `core_version` 으로 코어 판 디렉터리를 고른다. 표식 없는 사양 = v1 · 사양 없는 호출(`round.sh - …` · 사양 만들기 전) = `RC_CORE_DEFAULT`, 없으면 `RELEASES.json` 의 마지막 출시 판(출시 때만 항목을 더한다). 한 프로세스에는 판 하나만 적재한다(사슬 틱 `list` 는 판이 다른 사슬을 자식 프로세스로). 새 라운드 · 판 · 사슬은 적재한 코어의 `RC_VERSION` 을 사양에 적는다(`rc_init_*` · `rc_p4_chain_new`).
+- **v1 그대로 도는 것**: P1S01 판 1(사양 `core_version: v1` · 핀 31 · 매니페스트 e70ac0af). 판정 규칙 · 생성 함수(`rc_p1_cell_spec`)는 v2 와 같다 — 판정 경로는 p4.R 과 무관.
+- **v2 에서 바뀐 것(그 밖 = v1 과 같은 동작 · 시험 = `08_Tests/programs/test_round_core_v2.R` + v1 시험의 v2 경로 실행)**:
+  1. 기저 풀 자격 = **P1 상설 판 통과만**(결정 (나)) — 전 기간 권위 등급 A/B 경로를 뺐다(사슬 기저를 시험 창 정보로 고르던 길 · 철학 C-20261111-016 · pit.md C1 D-E). `grade` 는 참고 열 · 등급 경로 사유 `rule_change_beneficiary` · `rule_change_unknown` 은 풀에서 쓰지 않는다(A 자격 관문의 같은 이름 보류는 그대로).
+  2. 상설 행 = **칸(code) 단위**(T1 C-001) — `rc_standing_qualified` 가 통과 칸마다 구성 판독(`rc_standing_construction` · 처치 축 = P4 블록 어휘의 칸 축 · 비교 = `rc_p4_spec_diff`)을 싣고, 풀은 표준 구성 칸만 같은 엔진 행에 합친다. 처치 칸(E3 꼴)은 `standing:<판>:<code>` 행으로 따로 두고 같은 엔진 등록부 행의 레인 꼬리표(구현 의심 · 감사)를 이어받는다. 그 행의 기저 칸 사양 = 통과 칸 사양 그대로(md5 = 상설 원장) · 구성 판독 불가 = `construction_unknown`(자격 없음). 풀 md5 에 `standing_code` · `construction` 이 들어간다.
+  3. 부호 층 간접 호출(P1S01 격리 점검 R-2) — 입구 정적 검사가 `align_factor_direction` · `compute_rolling_ic_all` 을 식 나무의 기호 참조(함수 값 · 별칭 · `$` · `::`) · 간접 호출 문자열(do.call · match.fun · get 류)까지 본다(`rc_standing_orient_refs`). 레인 엔진 47개의 판정은 v1 과 같다(11-11 대조).
+  4. GPU 임대(점검 S-2 · WP3) — 상설 측정 · 사슬 측정이 `rc_gpu_guard` 를 지난다: 레인 정본 판별(`rf_replication_slots.py classify`)이 gpu 면 레인 측정 0(`status` 의 live claim 없음) + GPU 임대(`qv_lock.R::gpu_lease_acquire`)를 잡은 뒤에만 재고 끝나면 놓는다. 못 잡으면 원장 무기록(`gpu_wait` · CLI 종료 4 · 다음 틱 재개). cpu 엔진 = 그대로.
+  5. CLI 가 자기 판의 `load.R` 을 적재한다(`round_core/v2/load.R`) · `round.sh -` 가 저장소 맨 위에 `-/results` 를 만들지 않는다.
+
 ## P4 강화 사슬 (p4_chain · v1/p4.R · v10.2 · 2026-11-10)
 
 한 사슬 = 기저 엔진 1개에서 출발해 **한 걸음에 가설 하나 · 칸 하나 · 블록 유형 하나**씩 얹는 순차 루프(사슬형 — 스윕 아님). 규칙(채택 규칙 · 예산 · 생성기 판 핀)은 사슬 판 `chain_spec.json`(스키마 `rc_p4_chain_v1`)에 한 번 등록하고, 걸음은 추가 전용 원장 `chain_steps.jsonl`(앞 줄 md5 사슬)에 흐른다. 루프가 고쳐 쓰는 것은 생성기(`06_Registry/rx_generator.json` · 본문 `04_Research/programs/P4_ASSEMBLY/_generator/g<n>/*.md`)뿐이고, 판정 규칙을 바꾸려면 새 사슬 판을 등록한다.
 
 ```r
 source("04_Research/programs/_lib/round_core/v1/load.R")
-pool <- rc_p4_base_pool()                               # 등록부 kind = engine + 상설 자격 → 자격(상설 통과 ∨ 권위 등급 A/B) · 제외 사유 코드
+pool <- rc_p4_base_pool()                               # 등록부 kind = engine + 상설 자격 → 자격(v2 = 상설 통과만 · 칸 단위 · 권위 등급 = 참고 열 — 결정 (나)) · 제외 사유 코드
 gap  <- rc_p4_gap("<산출 폴더>")                         # 보는 창 A 하한별 값 · 문턱 · 여유 · 병목(시험 창 값 없음)
 rc_p4_base_cell_spec("<풀 key>", pool, out_path = "<f>.json")   # 기저 칸 사양 = P1 표준 구성 생성기(rc_p1_cell_spec) 그대로 · 논문 메타 = rc_standing_paper
 rc_p4_chain_new("<사슬 디렉터리>", "P4C01_<이름>", base_key = "<풀 key>", pool,   # base_cell_spec 생략 = 위 도우미가 <사슬>/base_cell_spec.json 을 만든다
@@ -158,5 +169,5 @@ round.sh - p4-generator-review [--out f]                                   # 블
 
 ## 다음
 - 측정 서버 `ms_submit` 연결(WP2) — 상설 측정(`standing-measure`)도 서버가 생기면 그쪽을 먼저 쓴다.
-- P1 상설 자격(WP5) — 코어 · 시험 · P1S01 사양 완료 · **등록은 원 세션**(P2R05 종료 또는 WP3 쓰기 잠금 · v1 출시 · WP2 재핀 뒤).
-- v1 출시(RELEASES.json — 아직 파일 없음 · 출시 전 매니페스트 확정 필요).
+- P1 상설 자격(WP5) — P1S01 판 1 등록(11-11 15:12 · 코어 v1) · 측정은 도훈 '파일럿부터'(L1-CHAIN-PILOT-FIRST-20261111)로 `tick_hold` 보류 중.
+- 출시: v1 = 11-11 13:44 · v2 = 11-11(RELEASES.json). 출시본 대조 검사(디렉터리 매니페스트 ≠ 출시 값이면 실패)는 아직 없다 — 지금 보증은 사양 핀(rc_pins_mismatches)뿐.

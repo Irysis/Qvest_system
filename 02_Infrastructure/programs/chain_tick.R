@@ -3,7 +3,8 @@
 ##   호출자: 02_Infrastructure/ops/chain_tick.sh(오케스트레이터) · 02_Infrastructure/ops/chain_gen_run.sh(config gen_timeout_sec 만)
 ##   ★이 파일은 사슬 원장(chain_steps.jsonl)에 쓰지 않는다 — 원장은 round.sh 명령으로만 바뀐다. 쓰는 곳 = 틱 장부(.cache/chain_tick/) ·
 ##     생성기 작업 폴더(open/*.txt · prompt.md) · 걸음 칸 사양(<사슬>/cells/k<k>.json — 열기 전 한 번 · 원장이 이미 참조하면 거부).
-##   판정 규칙은 갖지 않는다 — 다음 행동을 고르는 조건은 코어(04_Research/programs/_lib/round_core/v1/p4.R)의 거부 조건과 같은 식으로 원장에서 읽는다.
+##   판정 규칙은 갖지 않는다 — 다음 행동을 고르는 조건은 코어(04_Research/programs/_lib/round_core/<판>/p4.R · 판 = 사슬 사양 core_version — 11-11 판 라우팅)의
+##   거부 조건과 같은 식으로 원장에서 읽는다.
 ##   CLI: Rscript chain_tick.R <명령> [인자]
 ##     config [key]                         설정(06_Registry/chain_tick.json · CT_CFG) 판독 — key 를 주면 그 값만 · 판독 불가 = 종료 2
 ##     plan <사슬 디렉터리>                  다음 행동 한 줄 "ACTION<TAB>k<TAB>reason<TAB>detail"(판독 실패도 broken 으로 종료 0)
@@ -41,11 +42,28 @@ CT_ACTIONS <- c("skip", "broken", "close_stuck", "blocked", "measure_base", "wai
 .ct_now <- function() { n <- Sys.getenv("CT_NOW", ""); if (nzchar(n)) as.POSIXct(n, format = "%Y-%m-%d %H:%M:%S") else Sys.time() }
 .ct_abs <- function(p, root) { p <- gsub("\\\\", "/", p); if (grepl("^([A-Za-z]:|/)", p)) p else file.path(root, p) }
 .ct_rel <- function(p, root) { p <- gsub("\\\\", "/", p); r <- paste0(root, "/"); if (startsWith(tolower(p), tolower(r))) substring(p, nchar(r) + 1L) else p }
-.ct_load_core <- function(root, code_root = .ct_code_root()) {
+## 코어 판 라우팅(11-11 · 코어 v2 출시 — round.sh rc_core_of 와 같은 규칙): 사슬 판 chain_spec.json 의 core_version · 표식 없는 판 = v1 ·
+##   사슬 없는 호출 = RC_CORE_DEFAULT, 없으면 round_core/RELEASES.json 의 마지막 출시 판. 한 프로세스에는 판 하나만 적재한다
+##   (list 는 적재한 판과 다른 사슬을 자식 프로세스 plan 으로 돌린다). 판은 불변 — 바뀌는 것은 사양이 가리키는 판뿐이다.
+.ct_core_version <- function(chain_dir = NULL, root = .ct_root(), code_root = .ct_code_root()) {
+  if (length(chain_dir) == 1L && !is.na(chain_dir) && nzchar(chain_dir)) {
+    f <- file.path(.ct_abs(chain_dir, root), "chain_spec.json")
+    if (file.exists(f)) { v <- tryCatch(jsonlite::fromJSON(f, simplifyVector = FALSE)$core_version, error = function(e) NULL)
+                          return(if (is.character(v) && length(v) == 1L && grepl("^v[0-9]+$", v)) v else "v1") }
+  }
+  d <- Sys.getenv("RC_CORE_DEFAULT", ""); if (grepl("^v[0-9]+$", d)) return(d)
+  rf <- file.path(code_root, "04_Research/programs/_lib/round_core/RELEASES.json")
+  vs <- tryCatch(vapply(jsonlite::fromJSON(rf, simplifyVector = FALSE)$releases,
+                        function(r) if (identical(r$status, "released") && is.character(r$version)) r$version else NA_character_, ""), error = function(e) character(0))
+  vs <- vs[!is.na(vs)]; if (length(vs)) vs[length(vs)] else "v1"
+}
+.ct_load_core <- function(root, code_root = .ct_code_root(), version = .ct_core_version(NULL, root, code_root)) {
   if (exists("rc_p4_steps_verify", mode = "function") && exists("rx_validate", mode = "function")) return(invisible(TRUE))
   Sys.setenv(QM_ROOT = root)                                                     # 코어 rc_root() = QM_ROOT 우선 — 계획기 루트와 같게
   suppressPackageStartupMessages({ library(jsonlite); library(data.table) })
-  invisible(capture.output(suppressMessages(source(file.path(code_root, "04_Research/programs/_lib/round_core/v1/load.R")))))
+  lf <- file.path(code_root, "04_Research/programs/_lib/round_core", version, "load.R")
+  if (!file.exists(lf)) stop("코어 판 ", version, " 없음: ", lf)
+  invisible(capture.output(suppressMessages(source(lf))))
   if (!exists("rx_validate", mode = "function")) invisible(capture.output(suppressMessages(source(file.path(code_root, "02_Infrastructure/programs/rx_round.R")))))
   invisible(TRUE)
 }
@@ -118,8 +136,8 @@ ct_backoff_active <- function(sd) {
   u <- as.POSIXct(b$until, format = "%Y-%m-%d %H:%M:%S"); !is.na(u) && .ct_now() < u
 }
 .ct_max_fails <- function() if (exists("RC_STANDING_MAX_FAILS")) as.integer(RC_STANDING_MAX_FAILS) else {
-  ## 코어 상수(standing.R::RC_STANDING_MAX_FAILS)를 적재 없이 읽는다 — 사본 숫자를 두지 않는다
-  f <- file.path(.ct_code_root(), "04_Research/programs/_lib/round_core/v1/standing.R")
+  ## 코어 상수(standing.R::RC_STANDING_MAX_FAILS)를 적재 없이 읽는다 — 사본 숫자를 두지 않는다(판 = 라우팅 기본 판 · 11-11)
+  f <- file.path(.ct_code_root(), "04_Research/programs/_lib/round_core", .ct_core_version(), "standing.R")
   l <- grep("^RC_STANDING_MAX_FAILS <- ", readLines(f, encoding = "UTF-8", warn = FALSE), value = TRUE)
   v <- suppressWarnings(as.integer(sub("L.*$", "", sub("^RC_STANDING_MAX_FAILS <- ", "", l[1])))); if (is.na(v)) stop("RC_STANDING_MAX_FAILS 판독 불가"); v }
 
@@ -287,11 +305,17 @@ if (sys.nframe() == 0L) {
   if (identical(cmd, "backoff-set")) { cat(ct_backoff_set(SD, .ct_or(a[2], "usage_limit")), "\n", sep = ""); quit(save = "no", status = 0L) }
   if (identical(cmd, "backoff-active")) { cat(if (ct_backoff_active(SD)) "yes" else "no", "\n", sep = ""); quit(save = "no", status = 0L) }
   if (identical(cmd, "reset")) { ct_reset(SD, a[2]); cat("reset ", a[2], " — 장부의 생성 차단 · 연속 실패 · 판정 오류를 지웠다(원장 무접촉)\n", sep = ""); quit(save = "no", status = 0L) }
-  .ct_load_core(ROOT)
+  CV <- .ct_core_version(if (cmd %in% c("plan", "prompt", "compile", "abandon-reason", "notify") && length(a) >= 2L) a[2] else NULL, ROOT)
+  .ct_load_core(ROOT, version = CV)
   switch(cmd,
     plan = { p <- tryCatch(ct_plan(a[2], ROOT, SD), error = function(e) .ct_out("broken", reason = "plan_error", detail = conditionMessage(e))); cat(.ct_line(p), "\n", sep = "") },
-    list = { for (d in ct_chains(ROOT)) { p <- tryCatch(ct_plan(d, ROOT, SD), error = function(e) .ct_out("broken", reason = "plan_error", detail = conditionMessage(e)))
-               cid <- basename(d); cat(.ct_rel(d, ROOT), "\t", .ct_line(p), "\t", .ct_or(ct_state_read(SD, cid)$last_served_at, "-"), "\n", sep = "") } },
+    list = { self <- file.path(.ct_code_root(), "02_Infrastructure/programs/chain_tick.R")
+             for (d in ct_chains(ROOT)) {
+               dv <- .ct_core_version(d, ROOT)
+               line <- if (identical(dv, CV)) .ct_line(tryCatch(ct_plan(d, ROOT, SD), error = function(e) .ct_out("broken", reason = "plan_error", detail = conditionMessage(e))))
+                       else { o <- tryCatch(suppressWarnings(system2("Rscript", c(shQuote(self), "plan", shQuote(d)), stdout = TRUE, stderr = FALSE)), error = function(e) character(0))
+                              o <- o[nzchar(trimws(o))]; if (length(o)) gsub("\r", "", o[length(o)]) else .ct_line(.ct_out("broken", reason = "plan_error", detail = paste0("판 ", dv, " 자식 plan 무응답"))) }
+               cid <- basename(d); cat(.ct_rel(d, ROOT), "\t", line, "\t", .ct_or(ct_state_read(SD, cid)$last_served_at, "-"), "\n", sep = "") } },
     prompt = { r <- ct_prompt(a[2], a[3], ROOT); if (!isTRUE(r$ok)) die(10L, "reject ", r$code); cat("ok\n") },
     compile = { r <- tryCatch(ct_compile(a[2], a[3], a[4], ROOT), error = function(e) .ct_rej("error", conditionMessage(e)))
                 if (!isTRUE(r$ok)) die(10L, "reject ", r$code, " ", r$msg); cat("ok ", r$msg, "\n", sep = "") },

@@ -20,9 +20,29 @@ ROOT=${RC_ROOT_POSIX:-/c/Users/99922/OneDrive/Quant_Module_Moltbot}
 export QM_ROOT=${RC_ROOT_WIN:-C:/Users/99922/OneDrive/Quant_Module_Moltbot}
 cd "$ROOT" || exit 2
 RD="${1:?round_dir}"; ST="${2:?stage}"; shift 2
-CORE=$ROOT/04_Research/programs/_lib/round_core/v1
+## 코어 판 라우팅(11-11 · 코어 v2 출시 — 판단 T1 C-20261111-002 대안 (a) · 판은 불변): 라운드 · 상설 판 · 사슬 사양의 core_version 으로 코어 판을 고른다.
+##   사양(round_spec.json · chain_spec.json)에 core_version 이 없으면 v1(그 표식 전의 판) · 사양 없는 호출('-' · 사양을 만들기 전) = RC_CORE_DEFAULT,
+##   없으면 RELEASES.json 의 마지막 출시 판(출시 때만 항목을 더한다). 고른 판 디렉터리에 driver.R 이 없으면 종료 2.
+rc_core_of() {
+  local f v=""
+  if [ "$RD" != "-" ]; then
+    for f in "$ROOT/$RD/round_spec.json" "$ROOT/$RD/chain_spec.json"; do
+      [ -f "$f" ] || continue
+      v=$(grep -oE '"core_version"[[:space:]]*:[[:space:]]*"v[0-9]+"' "$f" | head -n 1 | sed -E 's/.*"(v[0-9]+)"$/\1/'); v=${v:-v1}; break
+    done
+  fi
+  if [ -z "$v" ]; then
+    v=${RC_CORE_DEFAULT:-$(grep -oE '"version"[[:space:]]*:[[:space:]]*"v[0-9]+"' "$ROOT/04_Research/programs/_lib/round_core/RELEASES.json" 2>/dev/null | tail -n 1 | sed -E 's/.*"(v[0-9]+)"$/\1/')}
+    v=${v:-v1}
+  fi
+  printf '%s\n' "$v"
+}
+CV=$(rc_core_of)
+CORE=$ROOT/04_Research/programs/_lib/round_core/$CV
+[ -f "$CORE/driver.R" ] || { echo "[round.sh] 코어 판 $CV 없음($CORE) — 사양 core_version · RC_CORE_DEFAULT 확인" >&2; exit 2; }
 DRV="$CORE/driver.R"
-STATE=$ROOT/.cache/round_core/state; mkdir -p "$STATE" "$ROOT/$RD/results"
+STATE=$ROOT/.cache/round_core/state; mkdir -p "$STATE"
+[ "$RD" != "-" ] && mkdir -p "$ROOT/$RD/results"            # '-'(사양 없는 호출)는 결과 폴더를 만들지 않는다(11-11 — 저장소 맨 위 '-/results' 잔재)
 TAG=$(basename "$RD")
 sentinel() { echo "status=$2 rc=$3 at=$(date +%F' '%T) ${4:-}" > "$STATE/$TAG.$1"; }
 barrier() { bash $ROOT/02_Infrastructure/ops/refresh_barrier.sh wait 7200 60 | sed "s/^/[배리어] /"; return "${PIPESTATUS[0]}"; }

@@ -1,6 +1,6 @@
 {
  "schema": "q_judgment_ledger_v1",
- "updated_at": "2026-11-11T16:06:12+0900",
+ "updated_at": "2026-11-11T17:28:21+0900",
  "judgments": [
   {
    "id": "J-20261016-001",
@@ -1508,6 +1508,52 @@
    "status": "open",
    "reviews": [],
    "supersedes": "J-20261111-009",
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261111-012",
+   "at": "2026-11-11T17:28:21+0900",
+   "op": "OP-20261110-V102-LADDER",
+   "kind": "design",
+   "summary": "[11-11 17:2x] 코어 v2 = 출시 후보로 먼저 커밋하고 RELEASES.json 출시 기록은 임시 루트 파일럿 통과 뒤에 남긴다 — 파일럿에서 결함이 나오면 출시 판을 다시 열지 않고 고친 뒤 출시한다(판은 불변). 그동안 사양 없는 호출(round.sh -)은 마지막 출시 판 v1 로 간다(소비자 0: 사슬 0 · P1S01 = v1)",
+   "rationale": "round_core 원칙 '출시된 판은 고치지 않는다'와 도훈 '파일럿부터'(L1-CHAIN-PILOT-FIRST-20261111)를 함께 지키는 순서다. v2 를 먼저 출시하고 파일럿에서 결함이 나오면 v3 를 새로 내야 하고, 파일럿은 출시 전 마지막 검증이라 그 결과가 출시 기록의 근거가 된다. v1 결과 동일 시험(485 단언 · 예상 실패 7 · 사유 기록)과 v2 시험(37/0)은 이미 통과했다.",
+   "framework_refs": [
+    "round_core README 원칙 '판은 불변' · 결정 L1-CHAIN-PILOT-FIRST-20261111 · 판단 J-20261111-010"
+   ],
+   "evidence": [
+    "08_Tests/programs/test_round_core_v2.R 37/0 · 08_Tests/programs/test_round_core_v2_v1parity.R 28/0 · 사슬 틱 42/0 · 58/0 · 상설 판 틱 24/0 · 교체 17:21:02 round.sh 218cfc07 · chain_tick.R 19f1946c"
+   ],
+   "alternatives": [
+    "(a) v2 를 지금 출시 기록 — 파일럿 결함 시 v3 필요 (b) 파일럿 뒤에 코드까지 한 번에 커밋 — 거울 루트를 HEAD 에서 만들 수 없어 작업 트리 사본을 섞어야 한다"
+   ],
+   "expectation": "파일럿 통과 뒤 같은 v2 디렉터리 매니페스트로 RELEASES.json v2 항목이 생기고 test_round_core_v2.R A3 이 그 값과 같다",
+   "confidence": 0.75,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261111-013",
+   "at": "2026-11-11T17:28:21+0900",
+   "op": "OP-20261110-V102-LADDER",
+   "kind": "design",
+   "summary": "[11-11 17:2x] 파일럿 범위 — 거울 루트(HEAD 코드 · 등록부 사본 · 등급 계약 데이터 사본 · QM_ROOT = 거울)에서 상설 판 등록 → 측정 → 판정 → 기저 풀(알려진 답 2 · v1 대조) → 사슬 등록 → 걸음 → 닫기 → 실제 선택 현실 점검 재채점 → 실제 A 자격 관문 → Judge 요청 파일(건식). 측정 = 가짜 측정기(KOSPI200 실제 월 수익 위 합성) · 상설 칸 평가의 RAWDATA 패킷 = 대역 · 그 밖(등록 규칙 · t(α) · 행동 카드 · 등급 계약 · 재채점 · 관문)은 실제",
+   "rationale": "파일럿의 목적은 실제 원장을 건드리기 전에 배관이 끝까지 이어지는지와 관문이 아는 답을 통과시키는지(기준점부터 · v10.2 ①)다. 셀 워커 실측은 DNN 칸 25~33 GB 라 레인 THGNN 측정과 겹칠 수 없고(커밋 여유 약 14 GB), 상설 칸 평가는 RAWDATA 7 GB 급 적재가 든다 — 그 두 곳만 대역으로 두고 나머지 판정 경로는 실제 계약으로 돈다. 앞선 소방 훈련 시험(test_round_candidate_gate.R)은 재채점을 건식 대역으로 뒀다 — 여기서는 실제 sr_regrade 를 태운다.",
+   "framework_refs": [
+    "lean-loop v10.2 ① 기준점부터 · research-program SKILL §0-1 ① · 판단 J-20261111-010 · 기억 카드 main-pc-commit-limit"
+   ],
+   "evidence": [
+    "08_Tests/scenarios/run_l1_pilot_v2.sh · 08_Tests/scenarios/test_scn_l1_pilot_v2.R"
+   ],
+   "alternatives": [
+    "(a) 실측 셀 워커 1칸(가벼운 엔진) — 레인 측정 중 커밋 여유 약 14 GB 로 가능하나 측정 시간이 길고 판정 경로 검증엔 같은 정보 (b) 재채점도 건식 대역 — 관문 앞 실제 경로를 지나지 못한다"
+   ],
+   "expectation": "합성 양성(걸음 1)이 실제 재채점 뒤 A 로 남고 실제 관문이 judge_request.eligible.json 을 쓴다 · 알려진 답 2건은 v1 = 틀린 답 · v2 = 바른 답 · 막힘 경로는 원장 무기록",
+   "confidence": 0.6,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
    "superseded_by": null
   }
  ],
