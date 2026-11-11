@@ -91,7 +91,25 @@ if (file.exists(.lab_f) && file.exists(.bm_f) &&
     b[, date := as.Date(date)][, ym := format(date, "%Y%m")]
     mk <- b[, .(bm_m = prod(1 + bm_ret) - 1), by = ym]
     m  <- merge(u[, .(ym, Category)], mk, by = "ym")[!is.na(bm_m)]
-    ck("G0 현장 병합 비어있지 않음 (0 을 결론으로 쓰지 않음)", nrow(m) > 300L)
+    ## G0 재도출(2026-11-11): 구 문턱 'nrow(m) > 300' 은 1990~ 439개월 패널(08-08) 전제의 임의값이었다. 11-06 D1 A(MSM-ASOF-SWITCH)로
+    ##   통합 신호가 as-of 첫날(2004-01)부터로 잘려 275개월이 됐고(의도된 변경) 이 줄만 날짜로 빨개졌다. 지키려는 성질은 그대로 —
+    ##   '병합이 비었거나 라벨 월이 떨어져 나간 상태를 결론으로 쓰지 않는다'. 임의 개월 수 대신 정확한 관계로 잰다:
+    ##   ① 병합이 비지 않았다 ② 벤치가 덮는 구간의 라벨 월이 하나도 빠지지 않고 병합에 있다 ③ 라벨 월에 구멍이 없다(첫 달~마지막 달 연속).
+    .g0_span <- function(a, b) (as.integer(substr(b, 1, 4)) - as.integer(substr(a, 1, 4))) * 12L +
+      as.integer(substr(b, 5, 6)) - as.integer(substr(a, 5, 6)) + 1L
+    .g0_ok <- function(lab_ym, bm_ym, merged_ym) {
+      lab_ym <- sort(unique(lab_ym)); bm_ym <- sort(unique(bm_ym))
+      if (!length(lab_ym) || !length(bm_ym) || !length(merged_ym)) return(FALSE)
+      need <- lab_ym[lab_ym >= bm_ym[1] & lab_ym <= bm_ym[length(bm_ym)]]
+      length(need) > 0L && !length(setdiff(need, merged_ym)) && length(lab_ym) == .g0_span(lab_ym[1], lab_ym[length(lab_ym)])
+    }
+    .bm_ok_ym <- mk[!is.na(bm_m)]$ym
+    ck("G0 현장 병합 비어있지 않음 (0 을 결론으로 쓰지 않음) — 벤치가 덮는 라벨 월 전부 병합에 있고 라벨 월에 구멍 없음",
+       .g0_ok(u$ym, .bm_ok_ym, m$ym))
+    .lab_u <- sort(unique(u$ym)); .mid <- .lab_u[ceiling(length(.lab_u) / 2)]
+    ck("G0m [대조] 빈 병합 · 병합에서 한 달 빠짐 · 라벨 월 구멍 — 셋 다 불통과(G0 는 공허하지 않다)",
+       !.g0_ok(u$ym, .bm_ok_ym, character(0)) && !.g0_ok(u$ym, .bm_ok_ym, setdiff(m$ym, .mid)) &&
+         !.g0_ok(setdiff(u$ym, .mid), .bm_ok_ym, setdiff(m$ym, .mid)))
     on <- m$Category %in% c("CRISIS", "CAUTION")
     g0  <- label_eligibility(on, m$bm_m < 0)
     g5  <- label_eligibility(on, m$bm_m < -0.05)
