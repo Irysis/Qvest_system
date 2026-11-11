@@ -127,6 +127,25 @@ chk("B2 'YYYY-MM' 문자열 주입 → 검출", "2011-08" %in% dp_scan_dates(bad
 bad3 <- KA; bad3$performance$annual <- rbind(as.data.table(KA$performance$annual), data.table(year = "2009-01-02", strategy = 0, bench = 0, active = 0, n_days = 1L), fill = TRUE)
 chk("B3 표 안 'YYYY-MM-DD' 주입 → 검출", "2009-01-02" %in% dp_scan_dates(bad3, TAU))
 chk("B4 파일명류 숫자(20090601)는 날짜로 보지 않는다(거짓 양성 없음)", !length(dp_scan_dates(list(x = "run_20090601_1234"), TAU)))
+## B5 (2026-11-11) — BMP 밖 문자(수학 기호 · 이모지) 뒤의 'YYYY-MM-DD' 도 그 날짜 그대로 뽑는다.
+##   왜: regmatches 를 TRE 색인 위에서 쓰면(perl 없음) 앞선 BMP 밖 문자 수만큼 창이 밀려 엉뚱한 조각을 뽑는다(r-portability 금칙 ⑥) —
+##   τ_D 뒤 날짜가 날짜 모양이 아닌 조각이 돼 검출에서 빠지거나 as.Date 가 죽는다. 'YYYY-MM' 줄은 처음부터 perl 이었고 이 줄만 빠져 있었다.
+nb <- paste0(strrep(intToUtf8(0x1D6FC), 6L), " 급락 2009-06-15 참고")
+chk("B5 BMP 밖 문자 6개 뒤 'YYYY-MM-DD' → 그 날짜 그대로 검출", "2009-06-15" %in% dp_scan_dates(list(x = nb), TAU))
+.dp_src <- paste(readLines("02_Infrastructure/contracts/diagnosis_packet.R", encoding = "UTF-8", warn = FALSE), collapse = "\n")
+.dp_from <- '3[01])", s, perl = TRUE))[[1]]'; .dp_to <- '3[01])", s))[[1]]'
+.dp_hits <- lengths(regmatches(.dp_src, gregexpr(.dp_from, .dp_src, fixed = TRUE)))
+.dp_i0 <- regexpr("\ndp_scan_dates <- function(x, tau) {", .dp_src, fixed = TRUE)
+.dp_i1 <- regexpr("\n  unique(bad)\n}", .dp_src, fixed = TRUE)
+chk("B5m-pre 돌연변이 준비 — 치환 대상 1곳 · 함수 본문 위치 확인", .dp_hits == 1L && .dp_i0 > 0L && .dp_i1 > .dp_i0,
+    sprintf("(hits %d · i0 %d · i1 %d)", .dp_hits, .dp_i0, .dp_i1))
+.dp_body <- sub(.dp_from, .dp_to, substr(.dp_src, .dp_i0 + 1L, .dp_i1 + nchar("\n  unique(bad)\n}") - 1L), fixed = TRUE)
+.dp_mut_env <- new.env(parent = globalenv()); eval(parse(text = .dp_body, encoding = "UTF-8"), envir = .dp_mut_env)
+.dp_mut <- tryCatch(.dp_mut_env$dp_scan_dates(list(x = nb), TAU), error = function(e) "ERR")
+chk("B5m [돌연변이] 그 줄의 perl = TRUE 를 뗀 사본은 그 날짜를 못 뽑는다(B5 는 공허하지 않다)", !("2009-06-15" %in% .dp_mut),
+    sprintf("(사본 결과: %s)", paste(.dp_mut, collapse = ",")))
+chk("B5n BMP 안 문자만 있으면 사본도 뽑는다(돌연변이가 다른 곳을 깨뜨린 게 아니다)",
+    "2009-06-15" %in% tryCatch(.dp_mut_env$dp_scan_dates(list(x = "급락 2009-06-15 참고"), TAU), error = function(e) "ERR"))
 
 cat("\n=== C. 내용 — 항등식 · 귀속 합 · 성분 ===\n")
 sx <- as.data.table(KA$exposure$summary)
@@ -158,7 +177,8 @@ chk("D3 저장 왕복 — schema · τ_D · 귀속 라벨 보존", identical(rt$
 cat("\n=== E. 측정 축 ALL_HYG(MC1 · 10-13 전환) — 직접 읽는 raw 에 위생 멤버십을 켠다 ===\n")
 ## 같은 세계 · 유니버스만 ALL_HYG 로 신고 · RAW 에 위생 표식 3열(0) — 수리 전 dp_build 는 위생을 끈 raw 로 짝 대조를 불러 'HYG 없음'으로 멈췄다
 PH <- write_world(WA, HA, file.path(TD, "H"))
-RH <- as.data.table(arrow::read_parquet(PH$raw)); RH[, `:=`(AdminStock = 0, UnfaithfulDisc = 0)]
+## 2026-11-11: mmap = FALSE — 메모리 매핑으로 읽은 파일은 Windows 에서 같은 경로로 다시 쓸 수 없다(오류 1224 · arrow 26 에서 E 진입 전에 죽었다)
+RH <- as.data.table(arrow::read_parquet(PH$raw, mmap = FALSE)); RH[, `:=`(AdminStock = 0, UnfaithfulDisc = 0)]
 arrow::write_parquet(RH, PH$raw)
 for (f in c("01_strategy_spec.json", "00_manifest.json")) {
   j <- fromJSON(file.path(PH$art, f), simplifyVector = FALSE)

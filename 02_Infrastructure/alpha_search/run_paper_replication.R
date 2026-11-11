@@ -464,7 +464,7 @@ source(file.path(.RP_INFRA, "contracts", "measurement_axis.R"))   # MC1 · MC3 �
 #     그 팩터를 쓰지 않은 칸을 낡음으로 묶지 않게 한다. 사양이 없거나(논문 엔진) 팩터 DB 를 따로 읽을 수 있는 부품이 있으면 NA(= 알 수 없음 ·
 #     닿은 것으로 · 보수). stale_at_measure 도 같은 선언으로 판정한다(기록과 소비자 판정이 어긋나지 않게).
 .rp_fdv_stamp <- function(out_dir, run_id, code_root = .RP_ROOT, data_root = code_root, spec_path = NULL) {
-  rid <- regmatches(as.character(run_id), regexpr("[0-9]{8}_[0-9]{6}", as.character(run_id)))
+  rid <- regmatches(as.character(run_id), regexpr("[0-9]{8}_[0-9]{6}", as.character(run_id), perl = TRUE))
   t0 <- if (length(rid)) as.POSIXct(rid, format = "%Y%m%d_%H%M%S", tz = "Asia/Seoul") else as.POSIXct(NA)
   base <- list(schema = "rp_factor_db_vintage_stamp_v1", contract = "02_Infrastructure/contracts/factor_db_vintage.R",
                measured_at = if (is.na(t0)) NA_character_ else format(t0, "%Y-%m-%dT%H:%M:%S+0900"),

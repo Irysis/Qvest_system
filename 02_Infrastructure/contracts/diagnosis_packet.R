@@ -63,7 +63,7 @@ dp_scan_dates <- function(x, tau) {
     if (is.list(v)) { for (z in v) walk(z); return(invisible()) }
     if (is.character(v)) {
       for (s in v[!is.na(v)]) {
-        d <- regmatches(s, gregexpr("(19|20)\\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])", s))[[1]]
+        d <- regmatches(s, gregexpr("(19|20)\\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])", s, perl = TRUE))[[1]]
         if (length(d)) { dd <- suppressWarnings(as.Date(d)); b <- d[!is.na(dd) & dd > tau]; bad <<- c(bad, b) }
         m <- regmatches(s, gregexpr("(?<![0-9-])(19|20)\\d{2}-(0[1-9]|1[0-2])(?![0-9-])", s, perl = TRUE))[[1]]
         if (length(m)) bad <<- c(bad, m[m > tau_ym])
