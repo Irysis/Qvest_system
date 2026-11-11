@@ -16,7 +16,7 @@
 #==============================================================================
 set -uo pipefail
 BASE="${QM_ROOT:-${CLAUDE_PROJECT_DIR:-$PWD}}"
-SRC="$BASE/02_Infrastructure/ops/_sched_failure_classify.sh"
+SRC="${QVEST_TEST_CLASSIFY_SRC:-$BASE/02_Infrastructure/ops/_sched_failure_classify.sh}"   # 스테이징 검증 = 후보 경로
 [ -f "$SRC" ] || { echo "FAIL: 분류기 없음 $SRC"; exit 1; }
 
 TMP=$(mktemp -d)
@@ -66,6 +66,20 @@ AUTH_LOG="$TMP/auth.log"
   echo "API Error: 401 OAuth access token has expired"
 } > "$AUTH_LOG"
 eq "rc=124 인데 로그에 401 → auth_expired 우선" "auth_expired" "$(sched_classify_failure 124 "$AUTH_LOG")"
+
+# (2026-11-11) 새 CLI 문구 — "API Error: 401" 이 붙지 않는 인증 실패. 실사고: 레인 토큰이 폐기돼 실호출이
+#   "Failed to authenticate: OAuth token revoked. …" 를 냈는데 구판 분류기는 exit_1(원인 미분류)을 냈다.
+for pair in "토큰 폐기|Failed to authenticate: OAuth token revoked. Please log in again or contact support." \
+            "세션 만료|Failed to authenticate: OAuth session expired and could not be refreshed. Please log in again."; do
+  nm="${pair%%|*}"; msg="${pair#*|}"; NL="$TMP/auth_new_$((PASS+FAIL)).log"
+  { echo "2026-11-11T07:10:00+09:00 [router] start paper router"; echo "$msg"; } > "$NL"
+  eq "rc=1 + 새 인증 실패 문구($nm) → auth_expired" "auth_expired" "$(sched_classify_failure 1 "$NL")"
+  REVOKED_LOG="$NL"
+done
+eq "autorecovers(auth_expired) = no(사람 조치)" "no" "$(sched_failure_autorecovers auth_expired)"
+NOAUTH_LOG="$TMP/noauth.log"
+{ echo "2026-11-11T07:10:00+09:00 [router] start paper router"; echo "Error: failed to parse the model response"; } > "$NOAUTH_LOG"
+eq "rc=1 + 인증과 무관한 실패 문구 → exit_1 그대로(잠식 없음)" "exit_1" "$(sched_classify_failure 1 "$NOAUTH_LOG")"
 
 eq "rc=0 → ok"        "ok"       "$(sched_classify_failure 0   "$EMPTY_LOG")"
 eq "rc=1 → exit_1"    "exit_1"   "$(sched_classify_failure 1   "$EMPTY_LOG")"
@@ -174,6 +188,27 @@ else
     ng "별칭 제거 돌연변이를 검사가 잡아야 함(검출력)" "2 아님" "$M2"
   else
     ok "돌연변이(별칭표 제거) → streak='$M2' 로 계측 단절, 검사가 잡는다"
+  fi
+fi
+
+echo "── ④c 위반 주입: 새 인증 문구 식을 지우면 폐기 토큰이 미분류로 돌아가는가 ──"
+MUT3="$TMP/mutant3.sh"
+"${QVEST_PY:-python}" - "$SRC" "$MUT3" <<'PYEOF'
+import sys
+src, dst = sys.argv[1], sys.argv[2]
+t = open(src, 'rb').read().decode('utf-8')
+old = '|Failed to authenticate|OAuth token revoked|OAuth session expired"; then'
+assert t.count(old) == 1, "인증 문구 돌연변이 앵커 없음 — 검사기가 낡았다"
+open(dst, 'wb').write(t.replace(old, '"; then', 1).encode('utf-8'))
+PYEOF
+if [ ! -s "$MUT3" ]; then
+  ng "인증 문구 돌연변이 생성" "파일 생성" "빈 파일/실패"
+else
+  M3=$(bash -c 'source "$1"; sched_classify_failure 1 "$2"' _ "$MUT3" "$REVOKED_LOG")
+  if [ "$M3" = "auth_expired" ]; then
+    ng "인증 문구 돌연변이를 검사가 잡아야 함(검출력)" "auth_expired 아님" "$M3"
+  else
+    ok "돌연변이(새 인증 문구 식 제거) → '$M3' 로 회귀, 검사가 잡는다"
   fi
 fi
 

@@ -34,7 +34,11 @@ sched_classify_failure() {
   fi
 
   # ① 인증 만료 — 사람 개입 없이는 영구 실패. 최우선 판정.
-  if printf '%s' "$tail_txt" | grep -qiE "OAuth access token has expired|Re-authenticate to continue|API Error: 401|invalid[_ ]token|unauthorized"; then
+  #   (2026-11-11) 새 CLI 는 인증 실패를 "Failed to authenticate: <사유>" 로 내고 "API Error: 401" 을 붙이지 않는다 — 실측 두 꼴:
+  #   "… OAuth token revoked. Please log in again …"(11-11 레인 토큰 폐기) · "… OAuth session expired and could not be refreshed"(10-08).
+  #   구판 식은 둘 다 놓쳐 exit_N(원인 미분류 · 재시도 3회)로 떨어뜨렸다 — 사람이 재발급해야 풀리는 실패가 미분류 경보로 나간다.
+  #   충실구현 레인의 자체 판정(rf_replication_auto.sh ENV_FAIL)은 이미 "Failed to authenticate" 를 본다 — 같은 문구로 맞춘다.
+  if printf '%s' "$tail_txt" | grep -qiE "OAuth access token has expired|Re-authenticate to continue|API Error: 401|invalid[_ ]token|unauthorized|Failed to authenticate|OAuth token revoked|OAuth session expired"; then
     echo "auth_expired"; return 0
   fi
   # ② 구독 한도 — 월 리셋으로 자동 해소 (외생 변수, 아키텍처 게이트 아님)
