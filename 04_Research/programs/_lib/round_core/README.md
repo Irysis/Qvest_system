@@ -79,6 +79,17 @@ round.sh <판> superfan-mark --codes a,b --kind pass|daily --p2 <id> --t2 <id>  
 - **라우팅 두 구현의 차이(C-20261111-035 · 오늘은 같은 답)**: `round.sh` 는 RELEASES 항목의 `status` 를 보지 않고 `round_spec.json` · `chain_spec.json` 을 읽는다 · `chain_tick.R` 은 `status = released` 만 보고 `chain_spec.json` 만 읽는다. RELEASES 는 출시 때만 항목을 더하고 사슬 틱은 사슬만 다루므로 답이 갈리지 않는다 — 출시 전 후보 항목을 RELEASES 에 넣는 일이 생기면 둘을 맞춘다.
 - **v1 판을 무인 틱에 다시 맡길 때(C-20261111-032)**: v1 상설 판(P1S01)의 측정 경로에는 GPU 관문이 없다 — torch 엔진이 든 v1 판의 `tick_hold` 를 지우면 무인 틱이 레인 · 임대 확인 없이 잰다. 그 판의 첫 측정은 한 셸에서 임대(`--holder-pid $$`) → scan · standing-measure · report → 임대 놓기로 돌리고, torch 칸 판정이 난 뒤 보류를 지운다(또는 같은 규칙의 새 판을 v2 로 등록).
 
+## v3 (2026-11-11 · 판 2 P1S02 · 설계 `04_Research/01_reports/portfolio_paper_layer_split_20261112/README.md` §6-4 · §8)
+
+- **왜**: 판 1 첫 실측정에서 포트폴리오만 내는 엔진이 입구를 통과해 측정 무효가 났고(1908.01112), 판정 지표 계산 예외가 '미시험' 판정으로 굳는 구조가 드러났다(P1S01 마감 감독 T3 C-20261111-049). 셀 경로 정합(달 스냅 · 측정 시작일 전달 — `rf_cell_engine.R` 11-11 개정)과 짝이다. v1 · v2 파일은 그대로다.
+- **v2 에서 바뀐 것**(그 밖 = v2 와 같은 동작 · 시험 = `08_Tests/programs/test_round_core_v3.R` · `test_round_core_v3_v2parity.R` · `test_round_core_v3_diag_contract.R`):
+  1. 입구 사유 셋(성과를 읽지 않는다 · 날짜별 개수는 τ_D 절단 뒤 센다) — `portfolio_only_base`(FACTORS 대입 없음) · `breadth_insufficient`(레인 점수 패널의 보는 창 신호일 중 폭 ≥ `max_names × breadth_mult` 인 날 없음 · **필요조건** · 패널 판독 불가면 막지 않는다 — 스캔 표 열 `breadth`) · `base_off_month_grid`(한 달에 신호일 2개 이상 = 주간 · 일간 신호 엔진 — 열 `grid`).
+  2. 측정 관문 `rc_standing_base_alignment`(상설 측정 · P4 사슬 측정 공용 · 기저가 엔진인 칸만) — 산출에 셀 엔진 진단 `rf_engine_diag.json::base_alignment`(규칙 `month_snap_v1`)가 없으면 `base_alignment_missing` → 기저가 점수 패널이 아니면 `base_not_score_panel` → 신호가 월말 격자 밖이면 `base_off_month_grid`. 측정 실패로 적고 판정으로 가지 않는다(옛 셀 엔진으로 잰 측정을 가르는 판 표식). 측정 기록에 정합 요약(τ_D 뒤 날짜 없음).
+  3. `rc_standing_qualified` — 같은 칸(엔진 경로 + 구성)을 여러 판이 판정했으면 판 번호가 가장 큰 판의 판정만 읽는다.
+  4. `rc_standing_judge` — 판정 지표 계산 예외(status ≠ evaluated) · 자격 NA 행은 verdict 를 남기지 않고 `eval_failed` 로 적는다(다시 평가 · `RC_STANDING_MAX_FAILS` 뒤 사람 확인). v1 · v2 는 그 행을 '미시험' 판정으로 굳혔다.
+- **알려진 한계** = `RELEASES.json` v3 항목의 `known_limits`(판 등록 점검 · 격리 교차 점검이 읽는 목록).
+- **쓰는 판**: P1S02(판 2). 사양 없는 호출(`round.sh - …`)의 기본 판 = RELEASES 의 마지막 출시 판이라 이 항목부터 v3 다.
+
 ## P4 강화 사슬 (p4_chain · v1/p4.R · v10.2 · 2026-11-10)
 
 한 사슬 = 기저 엔진 1개에서 출발해 **한 걸음에 가설 하나 · 칸 하나 · 블록 유형 하나**씩 얹는 순차 루프(사슬형 — 스윕 아님). 규칙(채택 규칙 · 예산 · 생성기 판 핀)은 사슬 판 `chain_spec.json`(스키마 `rc_p4_chain_v1`)에 한 번 등록하고, 걸음은 추가 전용 원장 `chain_steps.jsonl`(앞 줄 md5 사슬)에 흐른다. 루프가 고쳐 쓰는 것은 생성기(`06_Registry/rx_generator.json` · 본문 `04_Research/programs/P4_ASSEMBLY/_generator/g<n>/*.md`)뿐이고, 판정 규칙을 바꾸려면 새 사슬 판을 등록한다.
@@ -173,4 +184,4 @@ round.sh - p4-generator-review [--out f]                                   # 블
 ## 다음
 - 측정 서버 `ms_submit` 연결(WP2) — 상설 측정(`standing-measure`)도 서버가 생기면 그쪽을 먼저 쓴다.
 - P1 상설 자격(WP5) — P1S01 판 1 등록(11-11 15:12 · 코어 v1) · 측정은 도훈 '파일럿부터'(L1-CHAIN-PILOT-FIRST-20261111)로 `tick_hold` 보류 중.
-- 출시: v1 = 11-11 13:44 · v2 = 11-11(RELEASES.json). 출시본 대조 검사(디렉터리 매니페스트 ≠ 출시 값이면 실패)는 아직 없다 — 지금 보증은 사양 핀(rc_pins_mismatches)뿐.
+- 출시: v1 = 11-11 13:44 · v2 = 11-11 18:29 · v3 = 11-11 23:30(RELEASES.json). 출시본 대조 검사(디렉터리 매니페스트 ≠ 출시 값이면 실패)는 아직 없다 — 지금 보증은 사양 핀(rc_pins_mismatches)뿐.

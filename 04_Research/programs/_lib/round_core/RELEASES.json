@@ -187,6 +187,80 @@
         "GPU 관문은 상설 측정 · 사슬 측정만 — 레인 측정은 레인 슬롯 · 임대 규칙(rf_replication_slots.py) 그대로",
         "출시본 디렉터리 대조 검사(디렉터리 매니페스트 ≠ 출시 값이면 실패)는 아직 없다 — 보증은 사양 핀(rc_pins_mismatches)뿐"
       ]
+    },
+    {
+      "version": "v3",
+      "status": "released",
+      "released_at": "2026-11-11T23:30:50+0900",
+      "manifest_md5": "4d00113a84c55238b51988645950846d",
+      "n_files": 20,
+      "files": {
+        "cell_eval.R": "ae954a1ae2d27267d729e9854ecb763c",
+        "driver.R": "58803e07f6f1351045178c6d7ec0453a",
+        "fingerprint.sh": "8c30f49242f4f136af1880285ff3e8aa",
+        "freshness.R": "fdd1a45ee0224102c9b05ba9c05c3ddd",
+        "load.R": "a4e18af2a84dedce121303f44d3ffc99",
+        "measure_cell.R": "57977e78f8e0b66e54c555251d7a072e",
+        "metrics.R": "b3371f43d811051bcc74b23e90d50bd8",
+        "outcomes.R": "1f66e34474dc4e31ab359aa22d04dabd",
+        "p1.R": "c8dc1e32c89e8026cc43aa29203c372c",
+        "p2.R": "0635725e544e28e0ad7a213a64646c93",
+        "p3.R": "35bec8e0b362c05ab64d2bd8a764428c",
+        "p4.R": "56beb148c06f6518a409dc5b2da35d6f",
+        "pair.R": "3c6fdd9302b6016212bb16efe38f515c",
+        "pins.R": "c9881dd7542b75c3af6cdb7620a0b4db",
+        "register.R": "a5875605e9af3eefcd6e39d260c8fb8a",
+        "rules.R": "cddebbcd9852198ec17aea86c328b3b0",
+        "rules_p2.R": "6fa44ec46478f86756c79e4ed41ab45e",
+        "spec.R": "1b28f531ad5110aabb145ef2d9c73659",
+        "standing.R": "b78cbf94e761ddc14c0e8499e2f1aa6c",
+        "util.R": "65096d9b7bd594694ffd89af586ed02f"
+      },
+      "source_commit": "6e43e1158fffc37f609bf3184cf7fe93c3ece44c",
+      "released_by": "Q — 판 2(P1S02) 구축 S4(설계 04_Research/01_reports/portfolio_paper_layer_split_20261112/README.md §6-4 · §8 · BUILD_EDITION2.md S4 · 판단 Superfan T4 R-20261111-008 · T3 C-20261111-049 · C-20261111-050)",
+      "immutability": "출시된 판의 파일은 고치지 않는다(v1 · v2 · v3 모두) — 바꿀 일이 생기면 새 판(v4)",
+      "routing": "사양 core_version → round.sh rc_core_of · 02_Infrastructure/programs/chain_tick.R .ct_core_version(둘 다 v[0-9]+ 일반 판독 — v3 는 수정 없이 고른다 · 사양 없는 호출 = 이 항목이 들어간 뒤 v3)",
+      "changes_from_v2": [
+        "입구 사유 portfolio_only_base — 엔진에 FACTORS 대입이 없다(정적 검사 · 산출 대입이 아예 없으면 output_contract_unknown 그대로)",
+        "입구 사유 breadth_insufficient — 레인 점수 패널(factors_panel.parquet · Date · Ticker 만)의 보는 창(τ_D 절단 뒤) 신호일 중 폭 ≥ max_names × breadth_mult(그 판 측정 축) 인 날 없음 · 판독 불가 = 사유 없음 · 스캔 표 열 breadth · enqueue tags",
+        "입구 사유 base_off_month_grid — 같은 패널의 보는 창에서 한 달력 월에 신호일 2개 이상인 달이 있다(주간 · 일간) · 판독 불가 = 사유 없음 · 스캔 표 열 grid",
+        "측정 관문(상설 rc_standing_measure_item · P4 사슬 .rcp4_run_cell 공용 rc_standing_base_alignment) — 기저가 엔진인 칸: 진단 없음 · 규칙 ≠ month_snap_v1 = base_alignment_missing → base_kind ≠ factors = base_not_score_panel → n_superseded · n_offcal > 0 = base_off_month_grid · 측정 기록에 base_alignment 요약(last_cell_date · last_engine_date 없음 · τ_D 뒤 날짜 가림)",
+        "rc_standing_qualified — 같은 칸(엔진 경로 + 구성)을 여러 판이 판정하면 판 번호가 가장 큰 판의 판정만(미시험 판정 포함 · fail-closed)",
+        "rc_standing_judge — status ≠ evaluated · 자격 NA 행은 verdict 없이 eval_failed(다시 평가 · 상한 뒤 사람 확인) · 규칙 문서 4절 문장"
+      ],
+      "tests_at_release": [
+        {
+          "path": "08_Tests/programs/test_round_core_v3.R",
+          "pass": 68,
+          "fail": 0
+        },
+        {
+          "path": "08_Tests/programs/test_round_core_v3_v2parity.R",
+          "pass": 33,
+          "fail": 0,
+          "note": "test_round_core_v2.R(v2 → v3) + v1 코어 시험 7종(v2 출시 보정 그대로) — 예상 실패 = v2 때와 같은 7건만 · 입력 보정 = 대체 워커 · 가짜 러너의 셀 엔진 진단(파일 없을 때만 관문 비대상)"
+        },
+        {
+          "path": "08_Tests/programs/test_round_core_v3_diag_contract.R",
+          "pass": 8,
+          "fail": 0,
+          "note": "실제 셀 엔진(rf_cell_engine.R)이 쓴 진단을 측정 관문에 넣는 계약 시험 — 필드 이름 · 키 꼴 대조"
+        }
+      ],
+      "known_limits": [
+        "셀 엔진 주간 신호 미구현 — 주간 · 일간 신호 엔진은 base_off_month_grid 로 판정하지 않는다",
+        "칸 사양에 변형 스위치(engine_vars)를 싣지 않는다 — 변형 엔진은 셀 경로에서 엔진 기본 변형으로 돈다",
+        "원장 보는 창 열 확장(집중 · 숨은 현금 날 · 구간별 참여 · 귀속 · β · 방향) 미집행",
+        "breadth_insufficient 는 필요조건(레인 패널 개수 = 셀 필터 전 값) · 패널 판독 불가면 막지 않는다",
+        "레인 하네스의 월간 체결 규약이 60거래일 격자 엔진의 체결을 최대 한 달 늦춘다(설계 README §2-6)",
+        "실효 시작 규칙의 보유 수가 수치 먼지를 센다(설계 README §2-6)",
+        "P2 상설 판(방어형 레인 엔진의 길) 없음",
+        "출시본 대조 검사(디렉터리 매니페스트 ≠ 출시 값이면 실패) 없음 — 보증은 사양 핀(rc_pins_mismatches)뿐",
+        "rc_standing_qualified 최신 판 우선은 읽을 수 있는 원장만 본다 — 사슬이 끊긴 뒤 판 원장은 건너뛰므로 앞 판 통과가 되살아날 수 있다",
+        "v1 시험 test_round_core_v1_standing.R H5 = 시험 격리 결함(v1 · v2 · v3 공통 · 미수리)"
+      ],
+      "first_consumers": "P1S02_standing_qualification(P1 상설 자격 판 2) — 등록 때 이 판과 매니페스트를 핀한다",
+      "manifest_check": "R 의 rc_core_manifest(v3) 로 다시 계산한 값과 같은지 출시 직전에 확인(release 기록 커밋 메시지에 값)"
     }
   ]
 }
