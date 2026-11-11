@@ -3,7 +3,7 @@
 # 왜: 아침 체인이 매일 보내는 브리프 5종(BOOK MTM · P3 · 레짐 · FF5 · 논문 수집)은 v10 이전 계보다 — 1계층 진척(상설 판 · 기저 풀 ·
 #   강화 사슬 · 결과 원장 · 판 표식)을 매일 보여 주는 면이 없었다. 이 단계가 그 한 칸이다(8줄 이내 · 푸시 없음 · SKILL §0.4 평상 무음).
 # 원칙
-#   · 상태 출처는 기존 정본 함수(round_core v1 — rc_standing_status_lines · rc_p4_base_pool · rc_p4_status · rc_outcomes_read)와 등록부 파일.
+#   · 상태 출처는 기존 정본 함수(round_core 마지막 출시 판 — rc_standing_status_lines · rc_p4_base_pool · rc_p4_status · rc_outcomes_read)와 등록부 파일.
 #     여기서 판정을 다시 만들지 않는다. 한 칸이 실패하면 그 칸만 '판독 불가'(체인은 계속 · 종료 코드 0).
 #   · ★성과 수치를 싣지 않는다(τ_D = 2022-12-31 이후 성과 포함 — 사람 면이라도 아침 요약에는 개수 · 시각 · 상태 단어만).
 # 실행: Rscript --no-save -e 'source("02_Infrastructure/ops/morning_steps/l1_status_send.R")'   (morning_briefing.sh 가 부른다)
@@ -16,9 +16,14 @@ suppressPackageStartupMessages(library(jsonlite))
 .rd <- function(p) fromJSON(file.path(.root, p), simplifyVector = FALSE)
 .hm <- function(s) if (is.null(s) || !nzchar(s)) "?" else sub("^\\d{4}-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}).*$", "\\1-\\2 \\3:\\4", s)
 
-## round_core 정본 함수 적재(실패해도 데이터 · 판 표식 · 결정 칸은 산다)
+## round_core 정본 함수 적재(실패해도 데이터 · 판 표식 · 결정 칸은 산다) — 판 = RELEASES.json 의 마지막 출시 판(11-11 판 라우팅 · round.sh 사양 없는 호출과 같은 규칙)
+##   기저 풀 칸(④)은 그 판의 자격 규칙으로 센다(v2 = 상설 통과만 · 칸 단위 — 도훈 11-11 P4-BASE-POOL-GRADE-PATH-TAU-20261111 (나)). 판독 불가 = v1.
+.rc_ver <- tryCatch({
+  r <- fromJSON(file.path(.root, "04_Research/programs/_lib/round_core/RELEASES.json"), simplifyVector = FALSE)$releases
+  v <- vapply(r, function(x) if (identical(x$status, "released") && is.character(x$version)) x$version else NA_character_, ""); v <- v[!is.na(v)]
+  if (length(v)) v[length(v)] else "v1" }, error = function(e) "v1")
 .rc_ok <- !inherits(tryCatch(invisible(capture.output(suppressMessages(
-  source(file.path(.root, "04_Research/programs/_lib/round_core/v1/load.R"))))), error = function(e) e), "error")
+  source(file.path(.root, "04_Research/programs/_lib/round_core", .rc_ver, "load.R"))))), error = function(e) e), "error")
 
 l1_status_lines <- function() {
   L <- list()
@@ -39,7 +44,21 @@ l1_status_lines <- function() {
     if (!.rc_ok) stop("round_core 적재 실패")
     specs <- Sys.glob(file.path(.root, "04_Research/programs/*/*/round_spec.json"))
     sd <- Filter(function(p) isTRUE(tryCatch(fromJSON(p, simplifyVector = FALSE)$standing, error = function(e) FALSE)), specs)
-    if (!length(sd)) "상설 판: 미등록" else paste(vapply(dirname(sd), function(d) sub("^\\[상설\\] ", "상설 판: ", rc_standing_status_lines(d, .root)[1]), ""), collapse = " / ")
+    ## 판마다 그 판의 코어로 읽는다(11-11 판 라우팅) — 한 프로세스엔 코어 판 하나만 적재되고, 상설 상태 함수는 판의 핀(코어 판 · 매니페스트)을 대조한다.
+    ##   같은 판이면 적재한 코어로 바로, 다른 판(예: P1S01 = v1)이면 round.sh <판> standing-status(사양 core_version 라우팅) 자식 실행의 첫 줄.
+    one <- function(d) {
+      cv <- tryCatch(fromJSON(file.path(d, "round_spec.json"), simplifyVector = FALSE)$core_version, error = function(e) NULL)
+      cv <- if (is.character(cv) && length(cv) == 1L && grepl("^v[0-9]+$", cv)) cv else "v1"
+      ln <- if (identical(cv, .rc_ver)) rc_standing_status_lines(d, .root)[1] else {
+        old <- Sys.getenv(c("RC_ROOT_WIN", "RC_ROOT_POSIX"), unset = NA)
+        on.exit(for (k in names(old)) if (is.na(old[[k]])) Sys.unsetenv(k) else do.call(Sys.setenv, stats::setNames(list(old[[k]]), k)), add = TRUE)
+        Sys.setenv(RC_ROOT_WIN = .root, RC_ROOT_POSIX = sub("^([A-Za-z]):", "/\\L\\1", .root, perl = TRUE))   # round.sh 가 이 루트에서 돈다(system2 env 인자는 Windows 에서 안 먹는다)
+        o <- tryCatch(suppressWarnings(system2(qv_bash(), c(shQuote(file.path(.root, "04_Research/programs/_lib/round_core/round.sh")), shQuote(rc_rel(d, .root)), "standing-status"),
+                                               stdout = TRUE, stderr = FALSE)), error = function(e) character(0))
+        o <- o[grepl("^\\[상설\\] ", o)]; if (length(o)) o[1] else stop("판 ", basename(d), " 상태 판독 불가(", cv, ")") }
+      sub("^\\[상설\\] ", "상설 판: ", ln)
+    }
+    if (!length(sd)) "상설 판: 미등록" else paste(vapply(dirname(sd), one, ""), collapse = " / ")
   })
   ## ④ 기저 풀 — 자격 수 / 전체(정본 rc_p4_base_pool)
   L$pool <- .cell({

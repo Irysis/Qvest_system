@@ -90,6 +90,103 @@
         "선택 현실 점검 재채점의 p2 · p3 템플릿 닫기 연결은 v1 에 없다(설계 README §9) — 넣으려면 v2.",
         "MC8 선택 방어 라벨(빈칸 14) · 재시드 띠(빈칸 21)는 채택 규칙 판 v2 에서 미구현(round_core README P4 절)."
       ]
+    },
+    {
+      "version": "v2",
+      "status": "released",
+      "released_at": "2026-11-11T18:29:27+0900",
+      "manifest_md5": "f7e5ce59bb941f25ce95230306730b14",
+      "n_files": 20,
+      "files": {
+        "cell_eval.R": "7410ccd1b38785873a4a6da2b4e93769",
+        "driver.R": "497d3087e80b3255ee9ca0d90a6fabe4",
+        "fingerprint.sh": "d9401ce3a3659e7f2cced46e42f5076e",
+        "freshness.R": "15faf13e5b49d51d95e31601e8b2de1d",
+        "load.R": "5dcebe4d631a262d8094635be0a53843",
+        "measure_cell.R": "af8cfbc18aeb7ada09e67d207c53fb9f",
+        "metrics.R": "7c7612cf2ee3debd4e55d95447e14027",
+        "outcomes.R": "e3e044f360877b319d215853038fc65b",
+        "p1.R": "51ae7f2258a793abd93ec2107d35115a",
+        "p2.R": "8cef8b60509f0bd7d714517293d3389e",
+        "p3.R": "6a4ff3d6899ac75a333cf1a8635e011a",
+        "p4.R": "66bc1dfd27e46b6512eabf0088b1a63d",
+        "pair.R": "bfa2f71eb7dbe08a773e569b31dc8db6",
+        "pins.R": "1795e56f71a8bafe8c9d6cf7638779fe",
+        "register.R": "059e7c1373c63ffcc0b4b519b0d58cde",
+        "rules.R": "19a89d2c2e237fd50970653f7859e3c9",
+        "rules_p2.R": "1104140f2c0ea5a828f552ddcebf0878",
+        "spec.R": "598e742ff67ad1228ef83271c254964e",
+        "standing.R": "05a6be5263bb657521c8fde5c615c1e4",
+        "util.R": "0a0039a0de2af6d2d4cd6b016ab66030"
+      },
+      "source_commit": "c5e47b950ebf372f82d640a4269578f0dd283fea",
+      "released_by": "Q — v10.2 사다리 루프 · 파일럿 세션(재개 저널 OP-20261110-V102-LADDER S1 · 판단 J-20261111-010 · 012 · 013 · 014)",
+      "immutability": "출시된 판의 파일은 고치지 않는다(v1 · v2 모두) — 바꿀 일이 생기면 새 판(v3)",
+      "routing": "사양 core_version → round.sh rc_core_of · 02_Infrastructure/programs/chain_tick.R .ct_core_version(표식 없는 사양 = v1 · 사양 없는 호출 = RC_CORE_DEFAULT, 없으면 이 파일의 마지막 출시 판)",
+      "decisions": [
+        "P4-BASE-POOL-GRADE-PATH-TAU-20261111 = (나) 기저 자격 = 상설 판 통과만(도훈 11-11 16:09)",
+        "판단 T1 C-20261111-001(상설 행 칸 단위) · C-20261111-002(대안 (a) 코어 v2 + 판 라우팅)",
+        "P1S01 격리 점검 R-2(부호 층 간접 호출) · S-2(torch 엔진 GPU 임대)",
+        "L1-CHAIN-PILOT-FIRST-20261111(파일럿부터)"
+      ],
+      "changes_from_v1": [
+        "기저 풀 자격 = P1 상설 판 통과만 — 전 기간 권위 등급 A/B 경로 삭제(grade = 참고 열 · 풀 사유 rule_change_beneficiary · rule_change_unknown 삭제 — A 자격 관문의 같은 이름 보류는 그대로)",
+        "상설 행 = 칸(code) 단위 — rc_standing_qualified 가 구성 판독(rc_standing_construction · 처치 축 = RC_P4_KEY_BLOCKS 이름 + base_signal)을 싣고 표준 구성 칸만 같은 엔진 행에 합친다 · 처치 칸 행의 기저 칸 사양 = 통과 칸 사양 그대로(md5 = 상설 원장) · 판독 불가 = construction_unknown · 풀 md5 에 standing_code · construction",
+        "입구 정적 검사 — 부호 층 함수의 기호 참조 · 간접 호출 문자열까지(rc_standing_orient_refs)",
+        "GPU 관문 rc_gpu_guard — 상설 측정 · 사슬 측정: torch 엔진은 레인 측정 0 + GPU 임대 뒤에만 · 못 잡으면 원장 무기록(gpu_wait · CLI 종료 4)",
+        "CLI 가 자기 판 load.R 을 적재 · round.sh '-' 가 결과 폴더를 만들지 않는다 · 처방 입력에 실리는 사유 문구에 τ_D 뒤 날짜 없음"
+      ],
+      "tests_at_release": [
+        {
+          "path": "08_Tests/programs/test_round_core_v2.R",
+          "pass": 37,
+          "fail": 0
+        },
+        {
+          "path": "08_Tests/programs/test_round_core_v2_v1parity.R",
+          "pass": 28,
+          "fail": 0,
+          "note": "v1 코어 시험 7종(485 단언)을 v2 경로로 — 예상 실패 7건만(사유 = 파일 안 EXPECT)"
+        },
+        {
+          "path": "08_Tests/scenarios/test_scn_chain_tick_core.R",
+          "pass": 42,
+          "fail": 0
+        },
+        {
+          "path": "08_Tests/scenarios/test_scn_chain_tick.sh",
+          "pass": 58,
+          "fail": 0
+        },
+        {
+          "path": "08_Tests/ops/test_standing_board_run.sh",
+          "pass": 24,
+          "fail": 0
+        },
+        {
+          "path": "08_Tests/scenarios/run_l1_pilot_v2.sh",
+          "pass": 34,
+          "fail": 0,
+          "note": "거울 루트 종단 파일럿 + A 경로 소방 훈련(시나리오 27 · 실행기 경로 7) · 실제 원장 15종 md5 불변 · 실발송 0"
+        }
+      ],
+      "pilot": {
+        "at": "2026-11-11T18:26:19+0900",
+        "report": "04_Research/01_reports/l1_pilot_v2_20261111/README.md"
+      },
+      "first_consumers": [
+        "P4 강화 사슬 — 첫 사슬 판부터(사슬 사양 core_version = v2)",
+        "P1 상설 판 다음 판(P1S02 — 등록할 때 v2)"
+      ],
+      "stays_on_v1": [
+        "P1S01 판 1(core_version v1 · 핀 31 · 매니페스트 e70ac0af) — 판정 경로는 p4.R 과 무관 · 그 통과 칸은 v2 기저 풀이 칸 단위로 읽는다(11-11 읽기 확인: E2_C0 standard · E3_RX0 treatment · 1908.01112 standard)"
+      ],
+      "known_limits": [
+        "v1 시험 test_round_core_v1_standing.R H5 = 시험 격리 결함(11-11 15:12 P1S01 실제 등록 뒤 — 시험이 복사한 등록부에 실제 판이 하나 더 있다 · v1 · v2 공통 · 미수리)",
+        "MC8 선택 방어 라벨(빈칸 14) · 재시드 띠(빈칸 21)는 채택 규칙 판 v2 에서 미구현(v1 과 같음)",
+        "GPU 관문은 상설 측정 · 사슬 측정만 — 레인 측정은 레인 슬롯 · 임대 규칙(rf_replication_slots.py) 그대로",
+        "출시본 디렉터리 대조 검사(디렉터리 매니페스트 ≠ 출시 값이면 실패)는 아직 없다 — 보증은 사양 핀(rc_pins_mismatches)뿐"
+      ]
     }
   ]
 }

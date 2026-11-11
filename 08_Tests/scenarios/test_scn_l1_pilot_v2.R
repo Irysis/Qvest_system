@@ -210,7 +210,7 @@ RULES <- list(
        source = "헌장 §5 빈칸 2 · 23"))
 BUD <- list(max_steps = 4L, max_steps_source = "파일럿(걸음 4 · 시험 규모)", noise_k = 2L, noise_k_source = "체계 §4 R7(연속 2)")
 for (tr in list(c("P1", "philosophy"), c("T1", "judgment"), c("P2", "philosophy"), c("T2", "judgment")))
-  add_review(sprintf("R-PILOT-%s-%s", tr[1], CID), tr[2], tr[1], CID, sprintf("%s%s20261111_1900_%s_%s.md", SFP, if (tr[2] == "philosophy") "philosophy/" else "", tr[1], CID))
+  add_review(sprintf("R-PILOT-%s-%s", tr[1], CID), tr[2], tr[1], CID, sprintf("%s%s20261111_1900_%s_%s.md", SFP, if (tr[2] == "philosophy") "philosophy/" else "", tr[1], rc_round_tag(CID)))
 e_new <- err_of(rc_p4_chain_new(CD, CID, "engine:PILOT_Y", POOL, adoption_rules = RULES, budget = BUD, purpose = "파일럿 — 사다리 루프 종단(v2)", root = M))
 csp <- tryCatch(rc_json_read(rc_p4_spec_path(CD)), error = function(e) list())
 chk("C1", "사슬 판 만들기(기저 = 상설 표준 칸 Y · 채택 규칙 판 v2 · core_version v2)", !nzchar(e_new) && identical(csp$core_version, "v2") && identical(csp$rules_version, "p4_rules_v2"), e_new)
@@ -264,12 +264,50 @@ MOD0 <- if (file.exists(file.path(M, "06_Registry/module_catalog.json"))) md5(fi
 cl <- tryCatch(rc_p4_close(CD, note = "파일럿 — 합성 양성 1건(걸음 1)의 A 경로 소방 훈련", probes = c("파일럿 탐침 1(합성)", "파일럿 탐침 2(합성)"),
                            lessons = "파일럿 교훈(합성)", root = M, regrade = TRUE, regrade_write = TRUE,
                            philosophy_p2 = paste0("R-PILOT-P2-", CID), superfan_t2 = paste0("R-PILOT-T2-", CID), ledger = LED, review_root = RVR), error = function(e) e)
-fin <- tryCatch(rc_json_read(file.path(CD, "results", "finalize.json")), error = function(e) list())
-cand <- .rcs_str(fin$candidate$artifacts %||% fin$artifacts)
-chk("C6", "닫기 — 결과 원장 기록 · 최종 후보 = 걸음 1(마지막 채택) · finalize.json", !inherits(cl, "error") && length(fin) > 0L,
-    if (inherits(cl, "error")) conditionMessage(cl) else paste(names(fin), collapse = ","))
-cat("     finalize.json:\n"); cat(paste0("       ", strsplit(as.character(toJSON(fin, auto_unbox = TRUE, pretty = TRUE, null = "null", digits = 6)), "\n")[[1]][1:min(80, 400)], collapse = "\n"), "\n")
+fin <- tryCatch(rc_json_read(file.path(CD, "finalize.json")), error = function(e) list())   # 사람 쪽 마감 기록(사슬 폴더 · 원장엔 상태 · md5 만)
+cand <- .rcs_str(fin$candidate)
 saveRDS(list(close = if (inherits(cl, "error")) conditionMessage(cl) else cl, fin = fin), file.path(OUT, "close.rds"))
+recs <- rc_p4_steps_read(CD)
+chk("C6", "닫기 — chain_closed · 최종 후보 = 걸음 1(마지막 채택) 산출 · 시행 3(기준 칸 + 판정 걸음 2 · 포기 1 제외)",
+    !inherits(cl, "error") && identical(recs[[length(recs)]]$event, "chain_closed") && identical(cl$final$k, 1L) && identical(cand, cl$final$artifacts) &&
+      identical(as.integer(cl$finalize$n_trials), 3L), if (inherits(cl, "error")) conditionMessage(cl) else paste(cl$finalize$status, cand, cl$finalize$n_trials))
+CA <- if (is.na(cand)) NA_character_ else rc_abs(cand, M)
+au1 <- tryCatch(rc_json_read(file.path(CA, "authoritative_remeasure.json")), error = function(e) list())
+au0 <- tryCatch(rc_json_read(file.path(CA, "authoritative_remeasure.pre_selection_regrade.json")), error = function(e) list())
+src <- tryCatch(rc_json_read(file.path(CA, "selection_reality_check.json")), error = function(e) list())
+chk("C7", "실제 선택 현실 점검 재채점(selection_regrade.R · 시행 집합 3) — 측정 시점 A → 재채점 A · 관문 = reality_check · 조정 p ≤ alpha · 원본 사본 남김",
+    identical(au0$essence_grade, "A") && identical(au1$essence_grade, "A") && identical(au1$selection_gate$mode, "reality_check") && isTRUE(au1$selection_gate$ok) &&
+      isTRUE(src$pass) && identical(as.integer(src$n_trials), 3L) && isTRUE(as.numeric(src$p_adj[[basename(CA)]]) <= as.numeric(src$alpha)),
+    paste(au0$essence_grade, "→", au1$essence_grade, au1$selection_gate$reason %||% ""), ev = list(selection_gate = au1$selection_gate, p_adj = src$p_adj, S = au1$grade_v3$S))
+jr <- tryCatch(rc_json_read(file.path(CA, "judge_request.eligible.json")), error = function(e) list())
+chk("C8", "실제 A 자격 관문(round_candidate_gate.R → rf_a_eligibility) = 발행 · judge_request.eligible.json(judge_request_v2 · pending · 보류 코드 0) · 보류 파일 없음 · Judge 스폰 없음(건식)",
+    identical(fin$candidate_gate$action, "publish") && isTRUE(fin$candidate_gate$eligible) && !length(fin$candidate_gate$codes) &&
+      identical(jr$schema, "judge_request_v2") && identical(jr$status, "pending") && isTRUE(jr$a_eligibility$eligible) && !length(jr$a_eligibility$codes) &&
+      identical(jr$a_eligibility$adapter, "round_candidate_gate.R::rcg_route") && !file.exists(file.path(CA, "judge_request.held.json")),
+    paste(fin$candidate_gate$action, paste(unlist(fin$candidate_gate$codes), collapse = ",")), ev = list(judge_request = file.path(cand, "judge_request.eligible.json")))
+MOD1 <- if (file.exists(file.path(M, "06_Registry/module_catalog.json"))) md5(file.path(M, "06_Registry/module_catalog.json")) else "absent"
+chk("C9", "최종 후보 1개만 모듈 풀 등재(정본 등재기 · 거울 루트 사본 module_catalog 만 바뀜 — 실제 원장은 실행기가 md5 대조)",
+    identical(fin$module_pool$status, "registered") && !identical(MOD0, MOD1), paste(fin$module_pool$status, fin$module_pool$why %||% ""))
+OC <- tryCatch(rc_outcomes_md(rc_outcomes_path(M), "P4_ASSEMBLY"), error = function(e) paste("오류:", conditionMessage(e)))
+chk("C10", "결과 원장(거울 06_Registry/round_outcomes.jsonl) — 사슬 닫기 1줄 · 다음 탐침 2 · 설계 입력 표에 보인다",
+    file.exists(rc_outcomes_path(M)) && any(grepl(CID, OC, fixed = TRUE)), substr(paste(OC, collapse = " "), 1, 200))
+## K 핀 변경 — 등록된 상설 판의 판정 경로 핀 파일이 바뀌면 그 판은 측정 · 판정을 멈춘다(R2 — 새 판 필요) · 되돌리면 잇는다
+PINF <- file.path(M, "06_Registry/grade_v3.json"); pin0 <- readBin(PINF, "raw", file.info(PINF)$size)
+writeBin(c(pin0, charToRaw("\n")), PINF)
+kp <- err_of(rc_standing_judge(RD, M, eval_fun = eval_syn)); kp_m <- err_of(rc_standing_context(RD, M))
+writeBin(pin0, PINF); kp2 <- err_of(rc_standing_context(RD, M))
+chk("K3", "핀 변경(상설 판 판정 경로 파일 1바이트) = 판정 · 측정 맥락 거부(판정 경로 핀 불일치 — 새 판) · 되돌리면 정상",
+    grepl("핀 불일치", kp) && grepl("핀 불일치", kp_m) && !nzchar(kp2), c(substr(kp, 1, 80), substr(kp2, 1, 80)))
+## 무인 틱이 이을 열린 사슬 1개(기준 칸 측정 전) — 실행기 R6 드라이런이 계획 줄(measure_base)을 내야 한다
+CID2 <- "P4C91_pilot_open"; CD2 <- file.path(M, "04_Research/programs/P4_ASSEMBLY", CID2)
+for (tr in list(c("P1", "philosophy"), c("T1", "judgment")))
+  add_review(sprintf("R-PILOT-%s-%s", tr[1], CID2), tr[2], tr[1], CID2, sprintf("%s%s20261111_1901_%s_%s.md", SFP, if (tr[2] == "philosophy") "philosophy/" else "", tr[1], rc_round_tag(CID2)))
+POOL2 <- rc_p4_base_pool(M)
+e_c2 <- err_of({ rc_p4_chain_new(CD2, CID2, kXT, POOL2, adoption_rules = RULES, budget = BUD, purpose = "파일럿 — 무인 틱이 이을 열린 사슬(처치 칸 기저)", root = M)
+                 rc_p4_chain_register(CD2, POOL2, M, p1 = paste0("R-PILOT-P1-", CID2), t1 = paste0("R-PILOT-T1-", CID2), ledger = LED, review_root = RVR) })
+bc2 <- tryCatch(rc_json_read(file.path(CD2, "base_cell_spec.json")), error = function(e) list())
+chk("C11", "처치 칸 기저 사슬(standing:…:X_E3) 등록 — 기저 칸 사양 = 통과 칸 처치 그대로 · 열린 채 둔다(실행기 R6 사슬 틱 드라이런 대상)",
+    !nzchar(e_c2) && identical(rc_p4_steps_read(CD2)[[1]]$event, "chain_registered") && length(bc2$factors) == 1L && identical(bc2$p4$construction, "treatment"), e_c2)
 
 ## ═══ 끝 — 단계 기록(pilot_out/pilot_steps.json · 보고 근거) ═══════════════════════════════════════════
 rc_json_write(STEPS, file.path(OUT, "pilot_steps.json"))

@@ -58,7 +58,8 @@ RSH <- Sys.getenv("RC_V2_TEST_ROUND_SH", file.path(CR, "round.sh"))
 fn_txt <- { L <- readLines(RSH, encoding = "UTF-8", warn = FALSE); a <- grep("^rc_core_of\\(\\) \\{", L); b <- which(L == "}" & seq_along(L) > a)[1]
             if (length(a) == 1L && !is.na(b)) paste(L[a:b], collapse = "\n") else "" }
 chk("R0 round.sh 에 라우팅 함수 rc_core_of 가 있다", nzchar(fn_txt))
-RR <- file.path(SB, "route"); for (d in c("rv1", "rv2", "rnone", "cv2")) dir.create(file.path(RR, d), recursive = TRUE, showWarnings = FALSE)
+RR <- file.path(SB, "route"); for (d in c("rv1", "rv2", "rnone", "cv2", "cnone")) dir.create(file.path(RR, d), recursive = TRUE, showWarnings = FALSE)
+writeLines('{"schema":"rc_p4_chain_v1"}', file.path(RR, "cnone/chain_spec.json"))   # 표식 없는 사슬 사양(사슬 틱은 chain_spec.json 만 본다 — round_spec 폴더는 '사양 없음')
 writeLines('{"schema":"round_spec_v1","core_version":"v1"}', file.path(RR, "rv1/round_spec.json"))
 writeLines('{"schema":"round_spec_v1","core_version": "v2"}', file.path(RR, "rv2/round_spec.json"))
 writeLines('{"schema":"round_spec_v1"}', file.path(RR, "rnone/round_spec.json"))
@@ -77,9 +78,11 @@ chk("R2 사양 없는 호출('-' · 없는 폴더) = RELEASES 마지막 출시 �
     identical(route("-"), lastrel) && identical(route("nosuch"), lastrel) && identical(route("-", "v1"), "v1"), c(route("-"), lastrel))
 CT <- Sys.getenv("RC_V2_TEST_CHAIN_TICK", file.path(ROOT, "02_Infrastructure/programs/chain_tick.R"))
 CTE <- new.env(parent = globalenv()); sys.source(CT, envir = CTE, keep.source = FALSE)
-chk("R3 chain_tick.R .ct_core_version — 사슬 사양 v2 → v2 · 표식 없는 사양 → v1 · 사슬 없음 → 마지막 출시 판(코드 루트의 RELEASES)",
+chk("R3 chain_tick.R .ct_core_version — 사슬 사양 v2 → v2 · 표식 없는 사슬 사양 → v1 · 사슬 사양 없는 폴더 · 사슬 없음 → 마지막 출시 판(코드 루트의 RELEASES)",
     is.function(CTE$.ct_core_version) && identical(CTE$.ct_core_version(file.path(RR, "cv2"), RR, ROOT), "v2") &&
-      identical(CTE$.ct_core_version(file.path(RR, "rnone"), RR, ROOT), "v1") && identical(CTE$.ct_core_version(NULL, RR, ROOT), lastrel))
+      identical(CTE$.ct_core_version(file.path(RR, "cnone"), RR, ROOT), "v1") && identical(CTE$.ct_core_version(file.path(RR, "rnone"), RR, ROOT), lastrel) &&
+      identical(CTE$.ct_core_version(NULL, RR, ROOT), lastrel),
+    c(CTE$.ct_core_version(file.path(RR, "cnone"), RR, ROOT), CTE$.ct_core_version(file.path(RR, "rnone"), RR, ROOT), lastrel))
 chk("R4 chain_tick.R 에 v1 고정 경로가 남지 않았다(적재 · 상수 판독)", !any(grepl("round_core/v1/", readLines(CT, encoding = "UTF-8", warn = FALSE), fixed = TRUE)))
 chk("R5 v2 CLI(driver · standing · measure_cell)는 v2 load.R 을 적재한다 — v1 경로 0",
     !any(grepl("round_core/v1", unlist(lapply(c("driver.R", "standing.R", "measure_cell.R", "load.R"), function(f) readLines(file.path(RC_DIR, f), encoding = "UTF-8", warn = FALSE))), fixed = TRUE)))
