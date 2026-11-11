@@ -329,7 +329,7 @@ FAMILY_PATTERNS <- list(
   lcode <- .hi_join(d$l_code)
   if (!nzchar(lcode)) {
     # harvester와 동일 관례: 파일명에서 L-\d+ 복원 시도
-    m <- regmatches(basename(path), regexpr("L-[0-9]+", basename(path)))
+    m <- regmatches(basename(path), regexpr("L-[0-9]+", basename(path), perl = TRUE))
     lcode <- if (length(m)) m else ""
   }
   if (!nzchar(lcode)) stop("l_code 필드 부재 + 파일명 복원 실패: ", basename(path))
@@ -805,7 +805,7 @@ HI_INVALIDATION_FIELDS <- c("pit_invalid", "retracted_by")   # = lcode_schema.R:
 ## 원본 L-code 파일의 l_code 키(보충 스캔 dedup 과 같은 규칙 = .hi_raw_lcode_entry) — 못 읽으면 파일명 L-<숫자> 복원 · 그것도 없으면 ""
 .hi_raw_key <- function(p, root = QM_ROOT) {
   tryCatch(.hi_join(.hi_raw_lcode_entry(p, root)$l_code), error = function(e) {
-    m <- regmatches(basename(p), regexpr("L-[0-9]+", basename(p))); if (length(m)) m else "" })
+    m <- regmatches(basename(p), regexpr("L-[0-9]+", basename(p), perl = TRUE)); if (length(m)) m else "" })
 }
 
 # --------------------------------------------------------------------

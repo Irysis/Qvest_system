@@ -70,7 +70,7 @@ sra_ps_params <- function(cfg) {
   p <- lapply(f[c("t_window", "t_censor", "t_phase", "t_cycle", "max_chng")], eval)
   impl <- as.character(cfg$regimes$ps_bear$impl %||% "")
   for (k in names(p)) {
-    hit <- regmatches(impl, regexpr(paste0(k, " [0-9.]+"), impl))
+    hit <- regmatches(impl, regexpr(paste0(k, " [0-9.]+"), impl, perl = TRUE))
     if (length(hit) && !isTRUE(all.equal(as.numeric(sub(".* ", "", hit)), as.numeric(p[[k]]))))
       stop(sprintf("[strategy_role_asof] PS 모수 드리프트: 패키지 기본 %s=%s · strategy_role.json '%s'", k, p[[k]], hit))
   }

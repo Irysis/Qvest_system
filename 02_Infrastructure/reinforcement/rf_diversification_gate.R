@@ -45,7 +45,8 @@ suppressPackageStartupMessages({ library(data.table); library(jsonlite) })
 .rfd_abs <- function(p, root) {
   p <- sub("/+$", "", gsub("\\", "/", .rfd_chr(p), fixed = TRUE))
   if (!nzchar(p)) return("")
-  if (grepl("^[A-Za-z]:/", p) || startsWith(p, "/")) p else file.path(root, p)
+  # 절대 경로 판정 = 드라이브 · UNC · 선행 슬래시 · ~ (r-portability 금칙 ③ — startsWith(p, "/") 대신)
+  if (grepl("^([A-Za-z]:)?[/\\\\]", p) || grepl("^~", p)) p else file.path(root, p)
 }
 .rfd_read_json <- function(p) tryCatch(jsonlite::fromJSON(p, simplifyVector = FALSE), error = function(e) NULL)
 

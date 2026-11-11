@@ -204,7 +204,7 @@ rfo_static_scan <- function(file, role = c("decision", "adapter", "writer", "gua
   # 쓰기 호출의 소속 함수(최상위 `name <- function`) — 행 범위로 판정
   tops <- pd[pd$parent == 0 & pd$token == "expr", c("id", "line1", "line2", "text")]
   owner_of <- function(line) { k <- which(tops$line1 <= line & tops$line2 >= line)
-    if (!length(k)) return(""); m <- regmatches(tops$text[k[1]], regexpr("^[`]?[.A-Za-z_][.A-Za-z0-9_]*[`]?\\s*(<-|=)\\s*function", tops$text[k[1]]))
+    if (!length(k)) return(""); m <- regmatches(tops$text[k[1]], regexpr("^[`]?[.A-Za-z_][.A-Za-z0-9_]*[`]?\\s*(<-|=)\\s*function", tops$text[k[1]], perl = TRUE))
     if (length(m)) gsub("[` ]|(<-|=)\\s*function$", "", sub("\\s*(<-|=)\\s*function$", "", m)) else "" }
   g2 <- if (role %in% c("decision", "writer")) RFO_TOK_G2 else character(0)
   kids <- function(pid) { k <- pd$id[pd$parent == pid]; c(k, unlist(lapply(k, kids))) }

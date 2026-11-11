@@ -19,10 +19,10 @@ CAND_ONLY <- "--candidate-only" %in% args
 t0 <- Sys.time()
 .say <- function(...) cat("[fund-v2-produce]", sprintf(...), "\n")
 
-# 루트: 환경변수 후보를 '/' 로 고친 뒤 표식 파일로 검증(r-portability ③)
+# 루트: 환경변수 후보를 '/' 로 고친 뒤 표식 파일로 검증(r-portability ③) · 순서 = CLAUDE_PROJECT_DIR → QM_ROOT(금칙 ④ 표준 계열)
 .root_ok <- function(p) nzchar(p) && file.exists(file.path(p, "02_Infrastructure/hooks/qvest_hook_router.py"))
 ROOT <- ""
-for (cand in c(Sys.getenv("QM_ROOT"), Sys.getenv("CLAUDE_PROJECT_DIR"))) {
+for (cand in c(Sys.getenv("CLAUDE_PROJECT_DIR"), Sys.getenv("QM_ROOT"))) {
   cand <- gsub("\\\\", "/", cand)
   if (.root_ok(cand)) { ROOT <- cand; break }
   if (nzchar(cand)) .say("루트 후보 기각(표식 없음): %s", cand)

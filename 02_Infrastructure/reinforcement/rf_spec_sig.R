@@ -150,7 +150,7 @@ if (!exists("%||%")) `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L)
   cc <- .one(a$essence$cell_code);    if (!is.na(cc)) return(cc)
   ide <- .one(a$idea)
   # ★기본 regexpr 은 POSIX ERE 라 \b(단어 경계)가 없다 — 쓰면 매칭이 조용히 실패한다.
-  if (!is.na(ide)) { m <- regmatches(ide, regexpr("B[0-9]+_[0-9]+", ide))
+  if (!is.na(ide)) { m <- regmatches(ide, regexpr("B[0-9]+_[0-9]+", ide, perl = TRUE))
                      if (length(m) && nzchar(m[1])) return(m[1]) }
   if (!is.null(cells)) { n <- suppressWarnings(as.integer(a$n %||% NA_integer_))
     if (!is.na(n) && n >= 1L && n <= length(cells)) return(.one(cells[[n]]$code)) }

@@ -788,7 +788,7 @@ rf_a_eligibility <- function(entry, attempt, spec, ctx) {
     .npth <- function(p) tolower(gsub("\\\\", "/", .rfg_s1(p)))
     .all <- c(if (!is.null(entry)) list(entry), Filter(function(x) !identical(.rfg_s1(x$base_id), .bid0), ctx$entries %||% list()))
     .bfl <- function(x) Filter(function(z) .rfg_s1(z$flag) %in% .ebf, x$base_vintage_flags %||% list())
-    .zmd5 <- function(z) { s <- .rfg_s1(z$source); m <- regmatches(s, regexpr("engine_md5=[0-9a-f]{32}", s)); if (length(m)) sub("engine_md5=", "", m) else "" }
+    .zmd5 <- function(z) { s <- .rfg_s1(z$source); m <- regmatches(s, regexpr("engine_md5=[0-9a-f]{32}", s, perl = TRUE)); if (length(m)) sub("engine_md5=", "", m) else "" }
     .xmd5 <- unique(unlist(lapply(.all, function(x) vapply(.bfl(x), .zmd5, character(1))))); .xmd5 <- .xmd5[nzchar(.xmd5)]
     .md50 <- if (!is.null(entry)) rf_engine_md5(entry$engine_path, .root) else NA_character_
     .cl0 <- if (!is.null(entry)) rf_engine_clean_verified(entry$engine_path, .root, G$entry_base_clean, .md50, .xmd5) else list(ok = FALSE, why = "entry 없음")

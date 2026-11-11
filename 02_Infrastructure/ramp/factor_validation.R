@@ -77,9 +77,10 @@ build_adv20_t1 <- function(daily, at_dates = NULL, basis_reset = NULL) {
   if (is.null(basis_reset) && !.off) {
     basis_reset <- tryCatch({
       if (!exists("liq_basis_reset_points", mode = "function")) {
-        .p <- c(file.path(gsub("\\\\", "/", Sys.getenv("QM_ROOT", "")),
+        # 코드 루트 순서 = CLAUDE_PROJECT_DIR → QM_ROOT (r-portability 금칙 ④ · 표준 계열)
+        .p <- c(file.path(gsub("\\\\", "/", Sys.getenv("CLAUDE_PROJECT_DIR", "")),
                           "02_Infrastructure/data/liquidity_basis.R"),
-                file.path(gsub("\\\\", "/", Sys.getenv("CLAUDE_PROJECT_DIR", "")),
+                file.path(gsub("\\\\", "/", Sys.getenv("QM_ROOT", "")),
                           "02_Infrastructure/data/liquidity_basis.R"))
         .p <- .p[nzchar(.p) & file.exists(.p)]
         if (length(.p)) source(.p[1])

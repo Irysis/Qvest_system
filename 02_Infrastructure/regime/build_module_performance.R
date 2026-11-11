@@ -110,7 +110,7 @@ RG <- RG[!is.na(regime_lag), .(Date, regime=regime_lag)]   # legacy 정렬(보�
 })
 if (identical(.POOL_MODE, "role") && !length(.ROLE_REPS))
   stop("[build_module_performance] ★풀 모드 role 인데 역할 대표 0건 — strategy_roles.json 확인(rf_role_classify_all.R). 빈 풀로 진행하지 않는다.")
-.runid <- function(x) { m <- regmatches(x, regexpr("[0-9]{8}_[0-9]{6}_[0-9]+", x)); if (length(m)) m else NA_character_ }
+.runid <- function(x) { m <- regmatches(x, regexpr("[0-9]{8}_[0-9]{6}_[0-9]+", x, perl = TRUE)); if (length(m)) m else NA_character_ }
 .role_of <- function(id, rec = NULL) {
   if (!length(.ROLE_REPS)) return(NULL)
   if (!is.null(.ROLE_REPS[[id]])) return(.ROLE_REPS[[id]])

@@ -24,13 +24,14 @@ PR_MC_STATUS <- c("todo", "doing", "done")
 
 .pr_or <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
 
-## 쓰기 잠금 — 라이브러리는 코드 루트(QVEST_CODE_ROOT · QM_ROOT · CLAUDE_PROJECT_DIR · 작업 디렉터리)에서 찾고 세션에 한 번 적재한다
+## 쓰기 잠금 — 라이브러리는 코드 루트(QVEST_CODE_ROOT · CLAUDE_PROJECT_DIR · QM_ROOT · 작업 디렉터리 — 금칙 ④ 표준 계열)에서 찾고 세션에 한 번 적재한다
+##   (잠금 폴더는 대상 파일 경로에서 정해진다 — qv_lock_dir_for(target) · 등록부 경로 해석 .pr_root 는 이 순서와 무관)
 PR_LOCK_WAIT_S <- 60     # qv_lock 기본값(원장 임계구역은 1초 미만 — 60초는 매달린 경쟁자를 보고하는 시간 · 근거 qv_lock.py)
 PR_LOCK_STALE_S <- 600
 .pr_qv <- function() {
   e <- getOption("qv_lock.lib")
   if (is.environment(e) && exists("qv_lock_acquire", envir = e, inherits = FALSE)) return(e)
-  for (r in c(Sys.getenv("QVEST_CODE_ROOT", ""), Sys.getenv("QM_ROOT", ""), Sys.getenv("CLAUDE_PROJECT_DIR", ""), getwd())) {
+  for (r in c(Sys.getenv("QVEST_CODE_ROOT", ""), Sys.getenv("CLAUDE_PROJECT_DIR", ""), Sys.getenv("QM_ROOT", ""), getwd())) {
     if (!nzchar(r)) next
     f <- file.path(gsub("\\\\", "/", r), "02_Infrastructure/ops/qv_lock.R")
     if (file.exists(f)) {

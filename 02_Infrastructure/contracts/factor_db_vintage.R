@@ -56,7 +56,7 @@ FDV_DECL_BASIS <- "cell_spec"     # 측정 기록의 선언 팩터를 믿는 유
       return(.fdv_kst(sprintf("%s-%s-%s %s:%s:%s", substr(x, 1, 4), substr(x, 5, 6), substr(x, 7, 8), substr(x, 10, 11), substr(x, 12, 13), substr(x, 14, 15))))
     if (grepl("^[0-9]{4}-[0-9]{2}-[0-9]{2}$", x)) return(.fdv_kst(paste(x, "00:00:00")))
   }
-  m <- regmatches(x, regexec(.FDV_RX, x))[[1]]
+  m <- regmatches(x, regexec(.FDV_RX, x, perl = TRUE))[[1]]
   if (!length(m)) return(.fdv_na())
   sep <- m[3]; sec <- m[5]; frac <- m[6]; off <- m[7]
   if (strict && (!identical(sep, "T") || !nzchar(off) || nzchar(frac))) return(.fdv_na())
@@ -97,7 +97,7 @@ fdv_ledger <- function(root = NULL, path = NULL) {
 fdv_measured_at <- function(dir) {
   dir <- gsub("\\\\", "/", as.character(dir)[1])
   A <- tryCatch(jsonlite::fromJSON(file.path(dir, "authoritative_remeasure.json"), simplifyVector = FALSE), error = function(e) NULL)
-  rid <- function(s) { m <- regmatches(s, regexpr("[0-9]{8}_[0-9]{6}", s)); if (length(m)) .fdv_time(m) else .fdv_na() }
+  rid <- function(s) { m <- regmatches(s, regexpr("[0-9]{8}_[0-9]{6}", s, perl = TRUE)); if (length(m)) .fdv_time(m) else .fdv_na() }
   t <- rid(as.character(.fdv_or(A$run_id, ""))[1])
   if (is.na(t)) t <- rid(dir)
   if (is.na(t)) for (k in c("measured_at", "generated_at", "created_at")) { v <- A[[k]]; t <- .fdv_time(if (is.character(v)) v[1] else NULL); if (!is.na(t)) break }

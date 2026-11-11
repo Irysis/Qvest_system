@@ -36,7 +36,19 @@
 suppressPackageStartupMessages({ library(data.table); library(arrow); library(jsonlite) })
 args <- commandArgs(trailingOnly = TRUE)
 argv <- function(flag, default) { i <- match(flag, args); if (is.na(i) || i == length(args)) default else args[i + 1L] }
-ROOT <- argv("--root", Sys.getenv("QM_ROOT", Sys.getenv("CLAUDE_PROJECT_DIR", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")))
+# 루트(--root 없을 때): CLAUDE_PROJECT_DIR → QM_ROOT(r-portability 금칙 ④ 표준 계열) · '/' 로 고친 뒤 표식 파일로 검증(금칙 ③)
+#   · 표식 없는 후보는 기각을 알리고 다음 후보로 · 둘 다 없거나 기각이면 종전 기본 경로
+.root_ok <- function(p) nzchar(p) && file.exists(file.path(p, "02_Infrastructure/hooks/qvest_hook_router.py"))
+.env_root <- function() {
+  for (cand in c(Sys.getenv("CLAUDE_PROJECT_DIR", ""), Sys.getenv("QM_ROOT", ""))) {
+    cand <- sub("/+$", "", gsub("\\\\", "/", cand))
+    if (.root_ok(cand)) return(cand)
+    if (nzchar(cand)) message("[merged-v2] 루트 후보 기각(표식 없음): ", cand)
+  }
+  "C:/Users/99922/OneDrive/Quant_Module_Moltbot"
+}
+ROOT <- argv("--root", NA_character_)
+if (is.na(ROOT)) ROOT <- .env_root()
 V2D  <- argv("--v2-dir", file.path(ROOT, ".cache", "fundamental_v2"))
 QWD  <- argv("--qw-dir", file.path(ROOT, ".cache", "qw_fund_v2"))
 DART <- argv("--dart", file.path(ROOT, ".cache", "fundamental_dart.parquet"))

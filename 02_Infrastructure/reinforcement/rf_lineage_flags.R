@@ -170,7 +170,7 @@ rflf_contaminated_sets <- function(ledgers, root, cache = NULL) {
       f <- rflf_fids(.rflf_spec_of(a, root, cache))
       if (!length(f)) {
         src <- .rflf_chr(Filter(function(z) identical(.rflf_chr(z$flag), RFLF_FLAG_SELF), fl)[[1]]$source)
-        m <- regmatches(src, regexpr("factors=[A-Za-z0-9_+]+", src))
+        m <- regmatches(src, regexpr("factors=[A-Za-z0-9_+]+", src, perl = TRUE))
         if (length(m)) f <- sort(unique(strsplit(sub("^factors=", "", m), "+", fixed = TRUE)[[1]]))
       }
       if (length(f)) add(f) else unk <- c(unk, sprintf("%s#%s", .rflf_chr(e$base_id), .rflf_chr(a$n)))

@@ -68,9 +68,10 @@ if (!exists("seam_guard_config", mode = "function")) {
   }, error = function(e) NULL)
   .bbs_cands <- c(
     if (!is.null(.bbs_self)) file.path(.bbs_self, "seam_scale_guard.R"),
-    file.path(gsub("\\\\", "/", Sys.getenv("QM_ROOT", "")),
-              "02_Infrastructure/data/seam_scale_guard.R"),
+    # 코드 루트 순서 = CLAUDE_PROJECT_DIR → QM_ROOT (r-portability 금칙 ④ · 표준 계열)
     file.path(gsub("\\\\", "/", Sys.getenv("CLAUDE_PROJECT_DIR", "")),
+              "02_Infrastructure/data/seam_scale_guard.R"),
+    file.path(gsub("\\\\", "/", Sys.getenv("QM_ROOT", "")),
               "02_Infrastructure/data/seam_scale_guard.R"))
   .bbs_hit <- .bbs_cands[nzchar(.bbs_cands) & file.exists(.bbs_cands)]
   if (!length(.bbs_hit))
