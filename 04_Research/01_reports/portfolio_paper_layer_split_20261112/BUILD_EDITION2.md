@@ -77,7 +77,7 @@
 
 | 단계 | 상태 | 메모 |
 |---|---|---|
-| S1 셀 경로 정합 | 착수 전 | 11-11 22:1x 계획 기록 |
+| S1 셀 경로 정합 | **진행 중** | ✅ 달 스냅 순수 함수 `02_Infrastructure/reinforcement/rf_base_align.R`(`rf_base_month_snap(b, cal)` → panel · diag) + 단위 시험 `08_Tests/reinforcement/test_rf_base_align.R` 20/20(돌연변이 대조 포함). **남은 것**: ① `rf_cell_engine.R` 연결 — 후보판에서 `.load_one` 반환 직전에 `rf_base_month_snap(.b, unique(DT$Date))` 적용(캐시에는 엔진 원산출 그대로 · 스냅은 적재 뒤) · `.env$.RP_START_DATE` 주입(러너 값 · 없으면 `.START`) · `.RF_DIAG$base_alignment` 기록 ② `rf_base_cache.R` 판 올림(`RF_BASE_CACHE_VERSION` v3 · 파일 접두 `base_v3_` — 접두를 읽는 다른 코드 grep 필요) ③ 기존 시험 3종(`test_rf_cell_engine_smoke.R` · `test_rf_base_cache_key.R` · `test_rf_base_cache_seed.R`) 통과 + 월말 격자 엔진 수정 전후 비트 동일 실증 ④ 원자 교체 ⑤ 판단 T4(시작일 주입 = 측정 변경) |
 | S2 2002.06975 스케줄 | 착수 전 | |
 | S3 레인 출력 계약 | 착수 전 | 레인 gpu1 = THGNN 측정 중 |
 | S4 코어 v3 | 착수 전 | |
