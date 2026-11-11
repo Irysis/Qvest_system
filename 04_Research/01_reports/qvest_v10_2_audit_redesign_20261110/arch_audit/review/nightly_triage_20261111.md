@@ -54,3 +54,25 @@
 3. 4: `06_Registry/layer_bottleneck_map.md`(09-24 깨진 글자 · 보관된 지도의 부활) 삭제 또는 복원 결정. 삭제하면 시험이 SKIP 분기로 간다.
 4. 14: INV01~13 재계산 뒤 재핀.
 5. 리프레시 잠금이 잡혀 있는 동안 측정했다(벤치 · 국면 파일은 오늘 08:24 · 09:21 에 갱신). 13 의 275개월은 그 영향이 아니라 2004 절단 때문이다.
+
+## (e) 11-11 낮 후속 — (d) 처분 결과 (총괄 직접 재실행으로 확인)
+
+| # | 스위트 | 처분 | 결과(총괄 재실행) | 커밋 |
+|---|---|---|---|---|
+| 4 | hooks/test_map_freshness_content.R | 죽은 지도 파일(`06_Registry/layer_bottleneck_map.md` — 퇴역한 디렉터 산출물) 삭제 → 시험의 '보관됨' 건너뜀 분기 | rc 0 · skipped 1 | `774ddadc5` |
+| 5 | programs/test_paper_atlas_run.sh | 운영 등록부 복사 → 빈 큐 픽스처 | 5/0 | `599b63247` |
+| 6 | programs/test_mechanism_atlas.R | 같은 픽스처 + C0 | 12/0 | `599b63247` |
+| 7 | reinforcement/test_rf_fidelity_audit.R | 샌드박스에 생산 `.slot_book_lock` 정의 적재 + D7d · D8b(잠금이 실제로 잡힌다) | 69/0 | `b07d72f1c` |
+| 8 | ops/test_rf_audit_not_run_blocks_open.R (C4) | 호출 줄 형식 갱신 + C4b(종료 코드가 실제로 소비된다) | 41/0 | `b07d72f1c` |
+| 9 | reinforcement/test_rf_weight_arms_explore.R | E1 을 픽스처 원장으로 + 반대 방향 E6 | 9/0 | `599b63247` |
+| 10 | ops/test_orphan_run_scan.py | **생산 수리** — 스캐너 창을 날짜순으로(`ops/orphan_run_scan.py`) + 창 축 단언 · 실 저장소 축은 창을 사건일까지 | 10/0 (시스템 · venv) | `74031cc2c` |
+| 11 · 15 · 16 | book/test_book_rebalance_preflight.py · data/test_global_macro_ingest.py · data/test_qw_ext_ingest.py | 기존 관용구(venv 재실행 · 실패는 닫힘)를 세 스위트에 | 18/0 · 10/0 · 9/0 (시스템 파이썬) | `2dce53a36` |
+| 12 | contracts/test_matched_controls.R (K4) | 지금 출력 구조(머리글 범례 + 줄별 값) + K4b · K4c | 69/0 | `599b63247` |
+| 13 | contract_regression/test_label_eligibility_gate.R (G0) | 임의 개월 수(> 300) → 병합의 정확한 관계 + G0m | 23/0 | `57fc53761` |
+
+- 원인 정정 1건: 10 의 실 저장소 단언이 빨갰던 직접 원인은 이름순 창이 아니라 **날짜 경과**였다(08-22 사건은 30일 창에 어떤 정렬로도 안 들어온다). 이름순 창 결함은 실재하고(30일 창 안 런 구간 — 이름순 1 · 날짜순 6) 새 픽스처 축이 판별한다.
+- 양성 대조는 스위트마다 서브에이전트가 임시 사본에서 실행했고(커밋 메시지에 기록), 총괄은 수리본의 통과와 삭제 줄(단언 약화 없음)을 확인했다.
+- 사고 1건(기록): 9 의 돌연변이 실행이 운영 `.cache/reinforce_auto_log.jsonl` 에 가짜 2줄(11:54:01 · weight_arms)을 남겼다 — 줄을 지우지 않고 정정 줄(`log_correction` · 12:05:40)을 덧붙였다. 원인 = 그 시험의 E2 · E3 이 운영 루트에서 픽커를 부르는 기존 구조 + 돌연변이 사본 주입.
+- **아직 빨간 것(3)**: 1 `test_r_portability.R`(신규 위반 36 — 11-11 에 핀 대상 두 파일의 2건만 먼저 수리 `c537f673e`) · 2 `test_cluster_power.R`(다른 세션의 미커밋 팩터 등록부) · 14 `test_inv13_beta_asof.R`(INV 재계산 대기 — 의도된 빨강).
+- 조사에서 나온 별도 발견: (i) 생산 국면 라벨 자격 관문의 현재 판정 = 무자격(−5% 축 · n=273 · lift 1.99 · p 0.0634) — 2계층 레인 `label_gate = block` 과 만나면 재개 때 멈춘다(2계층 재개 전 결정 항목). (ii) `data/test_fred_availability.py` 는 시스템 파이썬에서 G · H 축을 SKIP 으로 적는다(표준 라이브러리 전용 설계 · 건너뜀은 결과에 기재됨 — 손대지 않음). (iii) 주간 층 스위트는 11-08 환경 전환 뒤 점검되지 않았다 — `contracts/test_diagnosis_packet.R` 이 E 구간에서 죽고 있던 것을 11-11 에 발견 · 수리(`c537f673e`).
+- 동결(SUSPENDED) 기계의 삭제 결정 대기: `hooks/research_continuity_guard.sh` · `axiom/continuity_gate.py` · 그 시험 3개(`test_map_freshness_content.R` · `test_continuity_w3_director_freeze.py` · `test_continuity_marker_identity.py` E2E 절).
