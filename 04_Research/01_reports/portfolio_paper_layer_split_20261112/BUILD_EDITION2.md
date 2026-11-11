@@ -19,6 +19,23 @@
 - 감독: 서브에이전트는 opus · Superfan 백그라운드 · 통과 판정 = 판단 T2 + 철학 P2 즉시.
 - 커밋: 작업 단위마다 그 경로만 · 공유 등록부는 커밋 직전 diff 재확인.
 
+## 세션 사이 파일 경계(11-11 23:0x — 판 2 를 목표로 하는 세션이 둘이다)
+
+판 2 를 목표로 하는 세션이 둘 떠 있다 — 이 세션(local_ffde0db1 · 도훈 '이어서 시작')과 총괄 세션이 띄운 local_d1e1cc26('정식 구동 — 사다리 루프 재개'). 어느 세션이 맡을지는 도훈 답 대기(기본 = 이 세션 계속). **한 파일은 한 세션만 쓴다.**
+
+| 묶음 | 파일 | 쓰는 세션 | 상태 |
+|---|---|---|---|
+| S1 셀 경로 정합 | `02_Infrastructure/reinforcement/rf_cell_engine.R` · `rf_base_cache.R` · `rf_base_align.R` · `08_Tests/reinforcement/test_rf_base_align.R` · `test_rf_base_cache_key.R` | **이 세션** | 함수 · 시험 커밋됨 · 운영 파일은 후보판 단계(미교체) |
+| S2 시드 엔진 스케줄 | `04_Research/strategies/RP_AUTO_2002_06975/engine.R` · `FIDELITY.json` | **이 세션**(S1 뒤) | 손대지 않음 |
+| S3 레인 출력 계약 | `02_Infrastructure/ops/rf_replication_auto.sh` · 감사 프롬프트 · 레인 검증기 | 비어 있음 | 손대지 않음 — 다른 세션이 맡아도 S1 과 파일이 겹치지 않는다 |
+| S4 코어 v3 | `04_Research/programs/_lib/round_core/v3/` · `RELEASES.json` · v3 시험 | 비어 있음 | 손대지 않음 — S1 과 파일이 겹치지 않는다 |
+| S5~S7 판 2 등록 · 측정 · 1908 | `04_Research/programs/P1_RETURN/P1S02_*` · 판 2 원장 · `RP_AUTO_CLEAN_1908_01112/engine.R` | 비어 있음 | S1 · S3 · S4 가 끝나야 시작할 수 있다 |
+| 이 폴더 | `04_Research/01_reports/portfolio_paper_layer_split_20261112/` | **이 세션** | 다른 세션은 읽기만 · 고칠 것이 있으면 메시지로 |
+| 공유 등록부 | 판단 원장 · 재개 저널 · 결정 기록부 | 쓰는 순간에만 · 커밋 직전 diff 확인 | 정본 CLI 로만 쓴다 |
+
+- 이 세션의 맥락은 한도에 가깝다(96%). 도훈께 '새 세션에서 / 여기서 계속'을 여쭌 상태다. 새 세션이 전부 이어받는 쪽으로 정해지면 S1 은 '이어 하기' 7단계(아래)부터 그대로 넘긴다 — 후보판 생성기와 원본 md5 가 이 폴더 `staging/` 에 있다.
+- 나눠서 간다면 경계는 위 표대로다: 이 세션 = S1 · S2, 다른 세션 = S3 · S4. S5 부터는 한 세션이 한다.
+
 ## 작업 순서와 설계 결정
 
 ### S1. 셀 경로 정합 (`rf_cell_engine.R` · `rf_base_cache.R`)
