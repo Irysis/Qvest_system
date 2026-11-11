@@ -1095,8 +1095,9 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
                portfolio_alpha_t = es$essence$portfolio_alpha_t_nw_lag3,
                selection_type = selection_type,   # ★리터럴 "chain" 이던 자리(2026-09-23 P0-01) — 채점과 같은 값을 적는다
                source_paper = .sp_url,
-               next_probe = list("강화 프로세스 축 1 (멀티팩터/비중방법론/리스크오버레이 중 논문 후속연구가 가리키는 축)",
-                                 "실투형 변환(long-only·≤25종·15bps) 시 신호 보존율 측정"))
+               # v10.2(11-11): 구 고정 격자 강화 문구('강화 프로세스 축 1 …')를 사다리 루프의 다음 단계로 — 이 문구가 부팅 `Last:` 줄에 실린다
+               next_probe = list("상설 판(P1 자격)이 표준 롱온리 구성(long-only·≤25종·15bps)으로 새로 잰다 — 통과하면 기저 풀",
+                                 "기저 풀에 들면 강화 사슬(P4)의 기저 — 한 걸음 = 가설 하나 · 칸 하나"))
   }, error = function(e) { cat("[replication] L-code 실패(비치명):", conditionMessage(e), "\n"); NULL })
 
   # ---- 11. 라우팅: A → A 자격 관문(P0-13) / 미달 → 강화 원장 ----
