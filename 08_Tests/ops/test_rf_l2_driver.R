@@ -60,7 +60,10 @@ JL <- file.path(S, ".cache/jlog.jsonl")
 Sys.setenv(QVEST_L2_RUNNER = file.path(S, "stubs/runner.R"), QVEST_L2_BUILDER = file.path(S, "stubs/builder.R"),
            QVEST_RF_CLAIM = file.path(S, ".cache/reinforce_auto.claim"), QVEST_L2_CLAIM = file.path(S, ".cache/rf_l2_auto.claim"),
            QVEST_RF_CONFIG = file.path(S, "06_Registry/reinforce_auto_config.json"), QVEST_RP_JLOG = JL,
-           QVEST_L2_NOTIFY = "0", QVEST_TG_DRY_RUN = "1", QVEST_L2_REQUEST = file.path(S, "06_Registry/l2_unit_request.json"))
+           QVEST_L2_NOTIFY = "0", QVEST_TG_DRY_RUN = "1", QVEST_L2_REQUEST = file.path(S, "06_Registry/l2_unit_request.json"),
+           # 리프레시 배리어 격리(2026-11-11) — 레인이 운영 잠금(/tmp/qm_daily_refresh.lock · qm_rawdata_writer.lock)을 읽지 않게 모래상자 경로를 준다.
+           #   운영에서 writer 잠금이 걸린 동안(리프레시 · 수리 대기) 이 시험이 halt_refresh_lock 으로 A 절부터 멈췄다(11-11 실측) — 잴 것은 레인 동작이지 운영 잠금 상태가 아니다.
+           QM_REFRESH_LOCKDIR = file.path(S, ".cache/qm_daily_refresh.lock"), QM_RAWDATA_WRITER_LOCKDIR = file.path(S, ".cache/qm_rawdata_writer.lock"))
 run <- function(extra = character(0)) { o <- suppressWarnings(system2("Rscript", c(shQuote(DRV), sprintf("--root=%s", S), extra), stdout = TRUE, stderr = TRUE)); attr(o, "status") %||% 0L; o }
 events <- function() { if (!file.exists(JL)) return(character(0)); vapply(readLines(JL, warn = FALSE), function(l) tryCatch(fromJSON(l)$event, error = function(e) ""), character(1)) }
 led <- function() fromJSON(file.path(S, "06_Registry/reinforce_ledger_l2.json"), simplifyVector = FALSE)
