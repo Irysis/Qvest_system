@@ -10,7 +10,7 @@ PY <- file.path(ROOT, ".venv_qvest_ml/Scripts/python.exe"); if (!file.exists(PY)
 TOOL <- file.path(ROOT, "02_Infrastructure/programs/session_resume.py")
 TMP <- normalizePath(tempfile("sr_"), winslash = "/", mustWork = FALSE); dir.create(TMP)
 ST <- file.path(TMP, "session_resume.json")
-Sys.setenv(QVEST_SESSION_RESUME_PATH = ST, PYTHONUTF8 = "1")   # Windows 의 system2(env=) 는 동작하지 않는다 — 프로세스 환경으로 넘긴다
+Sys.setenv(QVEST_SESSION_RESUME_PATH = ST, PYTHONUTF8 = "1")   # Windows 에선 system2 의 env 인자가 동작하지 않는다 — 프로세스 환경으로 넘긴다
 run <- function(...) {
   out <- suppressWarnings(system2(PY, c("-X", "utf8", shQuote(TOOL), ...), stdout = TRUE, stderr = TRUE))
   list(out = out, rc = if (is.null(attr(out, "status"))) 0L else attr(out, "status"))

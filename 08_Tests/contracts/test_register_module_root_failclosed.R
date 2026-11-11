@@ -19,8 +19,17 @@
 # 실행: QM_ROOT=<루트> Rscript --no-environ 08_Tests/contracts/test_register_module_root_failclosed.R
 #==============================================================================
 suppressPackageStartupMessages(library(jsonlite))
-ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
-ROOT <- gsub("\\\\", "/", ROOT)   # 백슬래시 루트(파이썬 미러 등) — 자식 스크립트 문자열 속 \U 즉사 방지(다른 검사들과 같은 처리)
+# 루트 = 시험 러너 self-first(r-portability ④-b) — 자기 위치 → CLAUDE_PROJECT_DIR → QM_ROOT → 운영 리터럴 · 후보마다 표지 검증
+.self <- tryCatch({ a <- commandArgs(trailingOnly = FALSE); f <- sub("^--file=", "", a[grepl("^--file=", a)])
+  if (length(f)) { f <- gsub("\\\\", "/", f[1]); if (!grepl("^([A-Za-z]:)?/", f)) f <- file.path(gsub("\\\\", "/", getwd()), f); f } else "" },
+  error = function(e) "")
+ROOT <- ""
+for (.c in c(if (nzchar(.self)) dirname(dirname(dirname(.self))) else "", Sys.getenv("CLAUDE_PROJECT_DIR", ""), Sys.getenv("QM_ROOT", ""),
+             "C:/Users/99922/OneDrive/Quant_Module_Moltbot")) {
+  .c <- gsub("\\\\", "/", .c)
+  if (nzchar(.c) && file.exists(file.path(.c, "02_Infrastructure/hooks/qvest_hook_router.py"))) { ROOT <- .c; break }
+}
+if (!nzchar(ROOT)) { cat("  FAIL 루트 해석 실패 — 표지 부재\n"); quit(status = 1L) }   # 백슬래시 루트(파이썬 미러 등) — 자식 스크립트 문자열 속 \U 즉사 방지(다른 검사들과 같은 처리)
 PASS <- 0L; FAIL <- 0L
 ok <- function(m) { PASS <<- PASS + 1L; cat("  OK  ", m, "\n") }
 ng <- function(m, why = "") { FAIL <<- FAIL + 1L; cat("  FAIL", m, if (length(why) && any(nzchar(why))) paste0(" — ", paste(why, collapse = " | ")) else "", "\n") }

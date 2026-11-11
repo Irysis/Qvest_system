@@ -30,8 +30,8 @@ suppressPackageStartupMessages({ library(data.table); library(jsonlite); library
 }
 .sd <- .script_dir()
 PROJ <- ""
-for (.c in c(Sys.getenv("QM_ROOT", ""), Sys.getenv("CLAUDE_PROJECT_DIR", ""),
-             if (nzchar(.sd)) file.path(.sd, "..", "..") else "", getwd())) {
+for (.c in c(if (nzchar(.sd)) file.path(.sd, "..", "..") else "",       # self-first(r-portability ④-b)
+             Sys.getenv("CLAUDE_PROJECT_DIR", ""), Sys.getenv("QM_ROOT", ""), getwd())) {
   .c <- gsub("\\\\", "/", .c)
   if (nzchar(.c) && file.exists(file.path(.c, .MARKER))) { PROJ <- .c; break }
 }

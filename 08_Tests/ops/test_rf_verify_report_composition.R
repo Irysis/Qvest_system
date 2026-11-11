@@ -51,7 +51,7 @@ first <- sub("\n.*$", "", m)
 if (grepl(TITLE, first, fixed = TRUE) && grepl(paste0("대상: ", TITLE), m, fixed = TRUE)) ok("2 논문명 무절삭 — 표제 · 대상 줄에 원제 그대로") else ng("2 논문명", first)
 if (grepl("팩터 분석 — 알파 유의성(진단)", m, fixed = TRUE) && grepl("진단이다", m, fixed = TRUE) &&
     (grepl("파마-맥베스(", m, fixed = TRUE) || grepl("산출 안 됨", m, fixed = TRUE))) ok("3 팩터 분석 섹션 — 파마-맥베스(또는 미산출 사유) · 진단 표기") else ng("3 팩터 분석 섹션")
-fm_line <- regmatches(m, regexpr("파마-맥베스\\([^\n]*", m))
+fm_line <- regmatches(m, regexpr("파마-맥베스\\([^\n]*", m, perl = TRUE))
 if (!length(fm_line) || (grepl("★유의|비유의", fm_line) && !grepl("\\[[^]]*[ABCD]\\]", fm_line))) ok("3b 유의 표시 = ★유의/비유의(등급 글자 A~D 없음)") else ng("3b", fm_line)
 b <- tryCatch(fromJSON(file.path(art, "analysis_basis.json")), error = function(e) list())
 if (length(b$basis)) ok(sprintf("3c 분석 근거 기록 — basis %s · status %s", b$basis %||% "NA", b$status %||% "NA")) else ng("3c 분석 근거 json 없음")

@@ -249,7 +249,7 @@ if (!nzchar(PY)) {
 } else {
   run_harvest <- function() {
     old <- Sys.getenv("PYTHONUTF8", unset = NA)
-    Sys.setenv(PYTHONUTF8 = "1")   # system2(env=) 금지(r-portability ①) — setenv + 복원
+    Sys.setenv(PYTHONUTF8 = "1")   # system2 의 env 인자 금지(r-portability ①) — setenv + 복원
     on.exit({ if (is.na(old)) Sys.unsetenv("PYTHONUTF8") else Sys.setenv(PYTHONUTF8 = old) }, add = TRUE)
     out <- suppressWarnings(system2(PY, c(shQuote(HARV), "--project-dir", shQuote(SBP)), stdout = TRUE, stderr = TRUE))
     list(rc = attr(out, "status") %||% 0L, out = out)

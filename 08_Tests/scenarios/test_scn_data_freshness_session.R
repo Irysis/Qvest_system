@@ -39,7 +39,7 @@ chk <- function(lbl, cond, det = "") { ok <- isTRUE(cond); if (ok) PASS <<- PASS
   cat(sprintf("  %s %s%s\n", if (ok) "ok  " else "FAIL", lbl, if (!ok && nzchar(det)) paste0(" — ", det) else "")) }
 
 TMP <- gsub("\\\\", "/", tempfile("scn_fresh_")); dir.create(TMP)
-on.exit(unlink(TMP, recursive = TRUE, force = TRUE), add = TRUE)
+invisible(reg.finalizer(globalenv(), function(e) unlink(TMP, recursive = TRUE, force = TRUE), onexit = TRUE))   # 최상위 on.exit 은 Rscript 에서 미발화(r-portability ②)
 EMPTY_ENV <- file.path(TMP, "empty.Renviron"); writeLines("", EMPTY_ENV)
 
 ## 모래상자 하나 — today · 각 소스 최신일 · 달력 끝 · 휴장일 등록부 유무

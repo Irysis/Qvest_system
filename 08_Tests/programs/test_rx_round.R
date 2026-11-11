@@ -126,7 +126,7 @@ chk("E3 도구 상자: 설명문 수치 가림(<stat>) 작동", grepl("<stat>", 
 eng <- readLines(file.path(ROOT, "02_Infrastructure/reinforcement/rf_cell_engine.R"), encoding = "UTF-8")
 i <- grep("\\.OV_BUILTIN <- c\\(", eng)[1]
 src <- paste(eng[i:(i + 2L)], collapse = " ")
-eb <- regmatches(src, gregexpr('"[a-z_]+"', src))[[1]]; eb <- gsub('"', "", eb)
+eb <- regmatches(src, gregexpr('"[a-z_]+"', src, perl = TRUE))[[1]]; eb <- gsub('"', "", eb)
 chk("E4 오버레이 빌트인 목록 = 엔진 정본(드리프트 없음)", setequal(eb, .RX_OV_BUILTIN), paste(setdiff(union(eb, .RX_OV_BUILTIN), intersect(eb, .RX_OV_BUILTIN)), collapse = ","))
 chk("E5 작업 디렉터리가 R6 성과 경로 정규식에 걸리면 거부", err(rx_paths("P2_DEFENSE", "R1_essence_check", ROOT)$lane("analyst")))
 chk("E6 정상 라운드 경로는 04_Research/programs 아래", grepl("/04_Research/programs/P2_DEFENSE/R1/lane_analyst$", rx_paths("P2_DEFENSE", "R1", ROOT)$lane("analyst")))

@@ -56,7 +56,7 @@ if (fl %in% c("A", "B")) {
     rr <- tryCatch(fromJSON("06_Registry/strategy_roles.json", simplifyVector = FALSE)$entries, error = function(e) NULL)
     rr <- Filter(function(e) length(unlist(e$pool_rep_roles)) > 0L, rr %||% list())
     cat_mods <- tryCatch(fromJSON("06_Registry/module_catalog.json", simplifyVector = FALSE)$modules, error = function(e) list())
-    .runid <- function(x) { m <- regmatches(x, regexpr("[0-9]{8}_[0-9]{6}_[0-9]+", x)); if (length(m)) m else NA_character_ }
+    .runid <- function(x) { m <- regmatches(x, regexpr("[0-9]{8}_[0-9]{6}_[0-9]+", x, perl = TRUE)); if (length(m)) m else NA_character_ }
     role_bad <- character(0)
     for (id in names(mp$modules)[is_role]) {
       e <- rr[[id]]

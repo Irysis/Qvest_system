@@ -13,7 +13,7 @@ TOOL <- file.path(ROOT, "02_Infrastructure/programs/q_judgment_ledger.py")
 SR <- file.path(ROOT, "02_Infrastructure/programs/session_resume.py")
 TMP <- normalizePath(tempfile("qjl_"), winslash = "/", mustWork = FALSE); dir.create(TMP)
 LG <- file.path(TMP, "q_judgment_ledger.json"); ST <- file.path(TMP, "session_resume.json")
-Sys.setenv(QVEST_JUDGMENT_LEDGER_PATH = LG, QVEST_SESSION_RESUME_PATH = ST, PYTHONUTF8 = "1")   # Windows system2(env=) 미동작 — 프로세스 환경으로
+Sys.setenv(QVEST_JUDGMENT_LEDGER_PATH = LG, QVEST_SESSION_RESUME_PATH = ST, PYTHONUTF8 = "1")   # Windows 에선 system2 의 env 인자가 미동작 — 프로세스 환경으로
 run <- function(..., tool = TOOL) {
   out <- suppressWarnings(system2(PY, c("-X", "utf8", shQuote(tool), ...), stdout = TRUE, stderr = TRUE))
   list(out = out, rc = if (is.null(attr(out, "status"))) 0L else attr(out, "status"))

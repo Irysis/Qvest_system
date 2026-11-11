@@ -13,8 +13,16 @@
 #     일치 검사(GUARD) 발화 M1 · M5g(고르기만 바꾸면 빌드가 멈춘다) — M1b · M5~M7 은 GUARD 를 함께 꺼서 원래 검사를 본다
 #==============================================================================
 suppressPackageStartupMessages({ library(data.table); library(jsonlite) })
-root <- gsub("\\\\", "/", Sys.getenv("QM_ROOT", Sys.getenv("CLAUDE_PROJECT_DIR", "")))
-if (!nzchar(root)) stop("QM_ROOT 미설정")
+# 루트 = 시험 러너 self-first(r-portability ④-b) — 자기 위치 → CLAUDE_PROJECT_DIR → QM_ROOT · 후보마다 표지 검증
+.self <- tryCatch({ a <- commandArgs(trailingOnly = FALSE); f <- sub("^--file=", "", a[grepl("^--file=", a)])
+  if (length(f)) { f <- gsub("\\\\", "/", f[1]); if (!grepl("^([A-Za-z]:)?/", f)) f <- file.path(gsub("\\\\", "/", getwd()), f); f } else "" },
+  error = function(e) "")
+root <- ""
+for (.c in c(if (nzchar(.self)) dirname(dirname(dirname(.self))) else "", Sys.getenv("CLAUDE_PROJECT_DIR", ""), Sys.getenv("QM_ROOT", ""))) {
+  .c <- gsub("\\\\", "/", .c)
+  if (nzchar(.c) && file.exists(file.path(.c, "02_Infrastructure/data/build_kr_factor_returns.R"))) { root <- .c; break }
+}
+if (!nzchar(root)) stop("루트 해석 실패 — 표지(02_Infrastructure/data/build_kr_factor_returns.R) 부재")
 BUILDER <- file.path(root, "02_Infrastructure/data/build_kr_factor_returns.R")
 pass <- 0L; fail <- 0L
 ok <- function(cond, msg) {

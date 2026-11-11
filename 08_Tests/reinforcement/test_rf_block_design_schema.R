@@ -109,8 +109,8 @@ if (length(.act5) >= 2L) {
 
 cat("\n=== C. kind 가 실재 arm 으로 해석되는가 ===\n")
 esrc <- paste(readLines("02_Infrastructure/reinforcement/rf_cell_engine.R", warn = FALSE), collapse = "\n")
-.bi <- regmatches(esrc, regexpr('\\.OV_BUILTIN <- c\\([^)]*\\)', esrc))
-BUILTIN <- if (length(.bi)) unlist(regmatches(.bi, gregexpr('"[^"]+"', .bi))) else character(0)
+.bi <- regmatches(esrc, regexpr('\\.OV_BUILTIN <- c\\([^)]*\\)', esrc, perl = TRUE))
+BUILTIN <- if (length(.bi)) unlist(regmatches(.bi, gregexpr('"[^"]+"', .bi, perl = TRUE))) else character(0)
 BUILTIN <- gsub('"', '', BUILTIN)
 armdir <- "02_Infrastructure/reinforcement/overlay_arms"
 FILES <- sub("[.]R$", "", basename(list.files(armdir, pattern = "[.]R$")))

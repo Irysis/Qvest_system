@@ -36,7 +36,17 @@ ok <- function(m) { PASS <<- PASS + 1L; cat("  PASS ", m, "\n") }
 ng <- function(m, d = "") { FAIL <<- FAIL + 1L; cat("  FAIL ", m, if (nzchar(d)) paste0(" :: ", d) else "", "\n") }
 chk <- function(m, cond, d = "") if (isTRUE(cond)) ok(m) else ng(m, d)
 
-ROOT <- sub("/+$", "", gsub("\\", "/", Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot"), fixed = TRUE))
+# 루트 = 시험 러너 self-first(r-portability ④-b) — 자기 위치 → CLAUDE_PROJECT_DIR → QM_ROOT → 운영 리터럴 · 후보마다 표지 검증
+.self <- tryCatch({ a <- commandArgs(trailingOnly = FALSE); f <- sub("^--file=", "", a[grepl("^--file=", a)])
+  if (length(f)) { f <- gsub("\\", "/", f[1], fixed = TRUE); if (!grepl("^([A-Za-z]:)?/", f)) f <- file.path(gsub("\\", "/", getwd(), fixed = TRUE), f); f } else "" },
+  error = function(e) "")
+ROOT <- ""
+for (.c in c(if (nzchar(.self)) dirname(dirname(dirname(.self))) else "", Sys.getenv("CLAUDE_PROJECT_DIR", ""), Sys.getenv("QM_ROOT", ""),
+             "C:/Users/99922/OneDrive/Quant_Module_Moltbot")) {
+  .c <- sub("/+$", "", gsub("\\", "/", .c, fixed = TRUE))
+  if (nzchar(.c) && file.exists(file.path(.c, "02_Infrastructure/hooks/qvest_hook_router.py"))) { ROOT <- .c; break }
+}
+if (!nzchar(ROOT)) stop("[test_cleaner_inject_len_worst] 루트 해석 실패 — 표지 부재")
 source(file.path(ROOT, "02_Infrastructure/ops/qv_bash.R"))   # bare "bash" 금지(금칙 ⑦ · 11-07) — WSL 있는 PC 에선 System32 bash 가 PATH 보다 먼저 잡힌다
 SWEEP <- file.path(ROOT, "02_Infrastructure/ops/weekly_cleaner_sweep.R")
 HOOK <- file.path(ROOT, "02_Infrastructure/hooks/axiom_context_inject.sh")

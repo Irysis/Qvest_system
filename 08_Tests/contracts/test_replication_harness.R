@@ -185,7 +185,7 @@ if (length(ct_def) == 1L) {
 } else ng(sprintf("⑦ .rp_construction_type 정의 %d건 — 파생 helper 가 러너에 없거나 중복", length(ct_def)))
 # 배선 — helper 가 있어도 emit 호출이 안 넘기면 키워드 추론이 다시 산다
 rp_txt <- paste(readLines(rp_src, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
-emit_blk <- regmatches(rp_txt, regexpr("emit_lcode\\(mode = \"paper_replication\"[^}]*", rp_txt))
+emit_blk <- regmatches(rp_txt, regexpr("emit_lcode\\(mode = \"paper_replication\"[^}]*", rp_txt, perl = TRUE))
 if (length(emit_blk) == 1L && grepl("construction_type\\s*=", emit_blk) && grepl("mechanism_hypothesis\\s*=", emit_blk))
   ok("⑦ emit_lcode 호출에 construction_type·mechanism_hypothesis 명시 전달") else
   ng("⑦ emit_lcode 호출이 두 축을 안 넘긴다 — 키워드 추론 폴백 부활")

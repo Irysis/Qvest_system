@@ -233,7 +233,7 @@ pay <- function(n) { p <- file.path(TMP, sprintf("pay%d.json", n))
   an <- lapply(seq_len(n), function(i) list(key = sprintf("k%d", i), rule = "errs", text = sprintf("Error in probe_%d(x) : 정본 발신기 건식 양성 대조 항목 %d", i, i),
                                            count = 1L, first_seen = "2026-10-17T19:00:00", last_seen = "2026-10-17T19:00:00", reopened = 0L))
   jsonlite::write_json(list(at = "2026-10-17T19:00:00", mute = TRUE, groups = list(list(component = "alpha", name = "A", anomalies = an))), p, auto_unbox = TRUE); p }
-noti <- function(script, p) { Sys.setenv(QVEST_TG_DRY_RUN = "1", QM_ROOT = ROOT); on.exit(Sys.unsetenv("QVEST_TG_DRY_RUN"))   # Windows 의 system2(env=) 는 Rscript 에 안 먹는다 — 자식은 Sys.setenv 를 물려받는다
+noti <- function(script, p) { Sys.setenv(QVEST_TG_DRY_RUN = "1", QM_ROOT = ROOT); on.exit(Sys.unsetenv("QVEST_TG_DRY_RUN"))   # Windows 에선 system2 의 env 인자가 Rscript 에 안 먹는다 — 자식은 Sys.setenv 를 물려받는다
   suppressWarnings(system2("Rscript", c("--no-environ", shQuote(script), shQuote(p)), stdout = TRUE, stderr = FALSE)) }
 o1 <- noti(NOTI, pay(1L)); o2 <- noti(NOTI, pay(2L))
 chk("⑭ 정본 발신기 건식 — 이상 1건 · 2건 payload 둘 다 'SFN alpha ok'", any(o1 == "SFN\talpha\tok") && any(o2 == "SFN\talpha\tok"), paste(c(o1, o2), collapse = " | "))

@@ -82,7 +82,7 @@ chk("S18 이름 없는 목록 = 등록 기록의 chain_id 로 이름을 정한�
 p4 <- file.path(ROOT, "04_Research/programs/_lib/round_core/v1/p4.R")
 if (file.exists(p4)) {
   pt <- paste(readLines(p4, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
-  rx <- regmatches(pt, regexpr('RC_P4_FORBIDDEN_METRIC_RX <- "[^"]+"', pt))
+  rx <- regmatches(pt, regexpr('RC_P4_FORBIDDEN_METRIC_RX <- "[^"]+"', pt, perl = TRUE))
   chk("S19 금지 지표 규칙 = p4.R RC_P4_FORBIDDEN_METRIC_RX 사본", length(rx) == 1L && identical(sub('^.*<- "', "", sub('"$', "", rx)), E$RXG_SC_FORBIDDEN_RX))
   chk("S20 p4.R 원장 기록 필드(step_open: block_type · changed_axes · generator_version / step_result: table · decision · reasons · r7 / base_measured: metrics)",
       all(vapply(c('event = "step_open"', "block_type = block_type", "changed_axes = as.list", "generator_version = generator_version",

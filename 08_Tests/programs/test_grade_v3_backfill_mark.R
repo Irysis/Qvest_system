@@ -15,9 +15,14 @@
 # 실행: Rscript 08_Tests/programs/test_grade_v3_backfill_mark.R
 #==============================================================================
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
-ROOT <- Sys.getenv("QM_ROOT", "")
-if (!nzchar(ROOT) || !file.exists(file.path(ROOT, "02_Infrastructure/programs/grade_v3_backfill.R"))) ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", "")
-if (!nzchar(ROOT) || !file.exists(file.path(ROOT, "02_Infrastructure/programs/grade_v3_backfill.R"))) ROOT <- getwd()
+# 루트 = 시험 러너 self-first(r-portability ④-b) — 자기 위치 → CLAUDE_PROJECT_DIR → QM_ROOT → 작업 디렉터리 · 후보마다 표지 검증
+.self <- tryCatch({ a <- commandArgs(trailingOnly = FALSE); f <- sub("^--file=", "", a[grepl("^--file=", a)])
+  if (length(f)) { f <- gsub("\\\\", "/", f[1]); if (!grepl("^([A-Za-z]:)?/", f)) f <- file.path(gsub("\\\\", "/", getwd()), f); f } else "" },
+  error = function(e) "")
+ROOT <- getwd()
+for (.c in c(if (nzchar(.self)) dirname(dirname(dirname(.self))) else "", Sys.getenv("CLAUDE_PROJECT_DIR", ""), Sys.getenv("QM_ROOT", ""))) {
+  if (nzchar(.c) && file.exists(file.path(.c, "02_Infrastructure/programs/grade_v3_backfill.R"))) { ROOT <- .c; break }
+}
 ROOT <- gsub("\\\\", "/", ROOT)
 SRC <- file.path(ROOT, "02_Infrastructure/programs/grade_v3_backfill.R")
 PASS <- 0L; FAIL <- 0L

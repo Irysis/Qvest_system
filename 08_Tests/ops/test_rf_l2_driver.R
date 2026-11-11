@@ -11,7 +11,17 @@
 #==============================================================================
 suppressPackageStartupMessages({ library(jsonlite) })
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
-ROOT <- sub("/+$", "", gsub("\\", "/", Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot"), fixed = TRUE))
+# 루트 = 시험 러너 self-first(r-portability ④-b) — 자기 위치 → CLAUDE_PROJECT_DIR → QM_ROOT → 운영 리터럴 · 후보마다 표지 검증
+.self <- tryCatch({ a <- commandArgs(trailingOnly = FALSE); f <- sub("^--file=", "", a[grepl("^--file=", a)])
+  if (length(f)) { f <- gsub("\\", "/", f[1], fixed = TRUE); if (!grepl("^([A-Za-z]:)?/", f)) f <- file.path(gsub("\\", "/", getwd(), fixed = TRUE), f); f } else "" },
+  error = function(e) "")
+ROOT <- ""
+for (.c in c(if (nzchar(.self)) dirname(dirname(dirname(.self))) else "", Sys.getenv("CLAUDE_PROJECT_DIR", ""), Sys.getenv("QM_ROOT", ""),
+             "C:/Users/99922/OneDrive/Quant_Module_Moltbot")) {
+  .c <- sub("/+$", "", gsub("\\", "/", .c, fixed = TRUE))
+  if (nzchar(.c) && file.exists(file.path(.c, "02_Infrastructure/hooks/qvest_hook_router.py"))) { ROOT <- .c; break }
+}
+if (!nzchar(ROOT)) stop("[test_rf_l2_driver] 루트 해석 실패 — 표지 부재")
 DRV <- file.path(ROOT, "02_Infrastructure/ops/rf_l2_auto.R")
 PASS <- 0L; FAIL <- 0L
 ok <- function(m) { PASS <<- PASS + 1L; cat("  OK  ", m, "\n") }

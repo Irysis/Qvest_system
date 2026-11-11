@@ -52,7 +52,7 @@ CFG <- sa_config(ROOT, CFG_SRC)
 # ── 독립 경로(검사 쪽 정본 적재 — 계약의 .SA_DEP 와 별개 환경) ──
 IND <- new.env(parent = globalenv())
 with_root <- function(expr) {
-  old <- c(QM_ROOT = Sys.getenv("QM_ROOT", NA), CLAUDE_PROJECT_DIR = Sys.getenv("CLAUDE_PROJECT_DIR", NA)); owd <- getwd()
+  old <- c(CLAUDE_PROJECT_DIR = Sys.getenv("CLAUDE_PROJECT_DIR", NA), QM_ROOT = Sys.getenv("QM_ROOT", NA)); owd <- getwd()
   on.exit({ for (k in names(old)) if (is.na(old[[k]])) Sys.unsetenv(k) else do.call(Sys.setenv, setNames(list(old[[k]]), k)); setwd(owd) }, add = TRUE)
   Sys.setenv(QM_ROOT = ROOT, CLAUDE_PROJECT_DIR = ROOT); setwd(ROOT); force(expr)
 }

@@ -101,6 +101,18 @@ Windows R은 `/mnt/c/...`를 **현재 드라이브 기준** `C:/mnt/c/...`로 �
 - ★ 참고: 금칙 ④의 원 근거("`~/.Renviron`이 QM_ROOT를 고정해 export로 못 덮는다")는 **R 한정**이다. 쉘에서는 `export QM_ROOT`가 정상 동작하므로 그 논거는 쉘 resolver에 그대로 전이되지 않는다.
 - 강제: `08_Tests/hooks/test_resolve_project_marker.sh`가 이 분기를 **양방향으로** 검사한다(hooks=CPD 우선 ∧ ops=QM_ROOT 우선). 한쪽만 검사하면 "둘을 통합" 리팩터가 조용히 통과한다.
 
+#### ④-c 의도된 예외 3건 (2026-11-11 — 검사기에는 걸리지만 고치면 안전장치가 깨진다)
+
+검사기는 파일 안에서 두 환경 변수 이름이 처음 나오는 순서만 본다. 아래 세 파일은 그 판정에 걸리지만 설계가 의도된 것이다 — baseline 에 `<파일>:4` 로 등재한다(사유 = 이 표 · baseline 의 `exception_note_20261111`). 새 예외를 더할 때도 같은 형식(지금 동작 · 고치지 않는 이유 · 강제하는 시험)을 남긴다.
+
+| 파일 | 지금 동작 | 고치지 않는 이유 |
+|---|---|---|
+| `contracts/register_module.R` | 데이터 루트 = `QM_ROOT` 만 본다. 못 찾으면 멈춘다(`CLAUDE_PROJECT_DIR` 로 내려가지 않는다) | 2026-09-25 샌드박스 검사가 운영 루트로 새어 `RP_FIX_*` 4개를 운영에 쓴 사고의 수리(P0-14)다. `08_Tests/contracts/test_register_module_root_failclosed.R` C2 · C3 가 이 순서를 강제한다 |
+| `contracts/remeasure_from_holdings.R` | 자기 위치 → `QM_ROOT` → `CLAUDE_PROJECT_DIR` | 루트 절대 경로가 PIT 표식 비교 키(`.rfh_path_key`)와 배치 기록에 들어간다. 세션에서는 두 변수의 철자가 다르다(`G:/…` 대 `C:/Users/…` — 같은 폴더의 정션) → 순서를 바꾸면 원장의 절대 경로와 키가 어긋나 표식이 조용히 빠진다. 키를 루트 철자와 무관하게 만든 뒤에 표준 계열로 옮긴다 |
+| `ops/weekly_cleaner_sweep.R` | 데이터 루트 = `QM_ROOT` 하나(검사기가 잡은 `CLAUDE_PROJECT_DIR` 는 샌드박스용 저장 · 복원 코드다) | 삭제 기능이 있는 스윕이다. `08_Tests/ops/test_weekly_worktree_prune.R` 은 자식 R 안에서 `QM_ROOT` 만 픽스처로 바꾼다 — `CLAUDE_PROJECT_DIR` 를 먼저 보게 하면 그 시험의 스윕이 실제 저장소를 쓴다. 시험과 함께 바꿀 때만 고친다 |
+
+같은 날 금칙 ③ 예외 1건(`08_Tests/contracts/test_register_module_root_failclosed.R:3`)도 등재했다 — 선행 `/` 리터럴 두 줄이 **시험의 대상**이다(`config.R` 에 실제로 있는 운영 리터럴을 가짜 운영 루트로 바꾸는 치환 패턴 · 돌연변이가 되살리는 구판 후보 목록). 문자열을 쪼개 조립하면 검사기에 안 잡히지만 그것은 사각을 이용하는 것이라 쓰지 않는다.
+
 #### ④-b 예외: **테스트 러너는 self-first** (2026-08-02) — 이 계약의 단일 정본
 
 위 ④는 *공유 resolver*(프로덕션 소비자)의 규칙이다. **테스트 러너·검사 배터리에는 정반대 규칙이 적용된다: 후보 1순위 = 스크립트 자신의 위치**(R `--file=` dirname / Python `__file__` / bash `BASH_SOURCE`), env는 그 뒤. 표지 검증은 tier마다 그대로 건다(self도 예외 아님 — 표지 없는 위치의 사본은 기각).
