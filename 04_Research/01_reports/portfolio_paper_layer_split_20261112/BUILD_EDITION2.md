@@ -19,7 +19,25 @@
 - 감독: 서브에이전트는 opus · Superfan 백그라운드 · 통과 판정 = 판단 T2 + 철학 P2 즉시.
 - 커밋: 작업 단위마다 그 경로만 · 공유 등록부는 커밋 직전 diff 재확인.
 
-## 세션 사이 파일 경계(11-11 23:0x — 판 2 를 목표로 하는 세션이 둘이다)
+## 인계(11-11 밤 — 판 2 구축 소유가 새 세션으로 넘어갔다 · 여기부터 읽는다)
+
+- **결정**: 도훈 "새 세션으로 이관"(질문 = 판 2 구축은 어느 세션이 맡을까요 · 앞의 "이어서 시작"을 대체) — 재개 저널 `OP-20261110-V102-LADDER` 22:20:51 로그 · 커밋 `d2dc68f42`. 판 2(P1S02) 구축 전체(S1~S7) = 새 세션 `local_d1e1cc26`. 분류 세션 `local_ffde0db1` 은 구축을 멈췄다.
+- **쓰기 권한**: 이 문서 · 진행표 · `staging/` · 같은 폴더 `README.md` 를 포함해 판 2 구축에 쓰는 파일은 이제 새 세션이 쓴다. 분류 세션의 마지막 쓰기는 이 절을 넣은 커밋이다.
+- **분류 세션이 남긴 것**(전부 main · 미푸시):
+  - `526d72f12` 이 문서(계획 · 설계 결정) · 판단 J-20261111-029(달 스냅)
+  - `71801c87d` `02_Infrastructure/reinforcement/rf_base_align.R` + `08_Tests/reinforcement/test_rf_base_align.R`(20/20 · 돌연변이 대조 포함) — 셀 엔진에는 아직 연결하지 않았다
+  - `de255e1ae` `staging/make_s1_candidates.py`(후보판 생성기) · `staging/s1_*.patch`
+- **운영 파일은 그대로다**(인계 때 md5 재확인): `rf_cell_engine.R` · `rf_base_cache.R` 둘 다 아래 'S1 이어 하기'에 적힌 원본 md5 와 같다. `rf_replication_auto.sh` · 엔진 파일 · 코어 · 등록 사양은 손대지 않았다. 판 1 `tick_hold` 유지.
+- **이어 갈 자리** = 아래 'S1 이어 하기' 1번(시험의 접두 기대값)부터. 후보판은 생성기로 다시 만든다(분류 세션 스크래치 사본은 쓰지 않는다).
+- **S1 이 다른 단계와 맞물리는 계약**(후보판 기준 · 운영에는 아직 없다):
+  - 기저 캐시: `RF_BASE_CACHE_VERSION = "rf_base_cache_v3"` · 파일 접두 `base_v3_`. 접두를 읽는 다른 코드는 `08_Tests/reinforcement/test_rf_base_cache_key.R` 뿐이다(11-11 확인).
+  - 정렬 진단: `.RF_DIAG$base_alignment[[<기저 엔진 폴더명>]]` = `rule`(`month_snap_v1`) · `n_engine_dates` · `n_cell_dates` · `n_identity` · `n_moved` · `n_superseded` · `n_dropped_tail` · `max_lag_td` · `median_lag_td` · `start_injected` · `start`. ★`.RF_DIAG` 가 산출 폴더에 저장되는 경로는 아직 확인하지 않았다('이어 하기' 6번) — 코어 v3 나 판정 전 점검이 이 값을 읽게 하려면 그것부터 확인한다.
+  - 폭 배수의 정본: `02_Infrastructure/worktask/constraint_defaults.json::measurement_axis.epochs.<epoch>.effective_start.breadth_mult`. 읽기는 `02_Infrastructure/contracts/measurement_axis.R::ma_epoch()$effective_start$breadth_mult`. 코어 v3 의 `breadth_insufficient` 는 숫자를 직접 쓰지 않고 이 값을 읽는다.
+- **검토가 남은 판단**: J-20261111-025(설계 보강) · J-20261111-029(달 스냅) — 판단 T4 미검토. 시작일 주입은 측정 변경이라 원자 교체 전에 T4 를 받는다('이어 하기' 2번).
+- **열린 설계 문제**: S7 점수 패널의 대상(시장상관 상위 50 그대로인가 · 적격 종목 전체인가) · 판 1 을 닫는 법과 기저 풀의 최신 판 우선 규칙(S4 · S5).
+- 이 문서의 '승인과 범위'(설계 §8 의 2 → 3 → 4)는 분류 세션이 받은 것이다. 범위 밖 3건(카탈로그 3종 · 추정기 축 · 노출 규칙과 P2 상설 판)은 누가 맡든 도훈께 따로 여쭌다.
+
+## (대체됨 · 사료) 세션 사이 파일 경계 — 11-11 22:20 소유 변경 직전에 적은 것
 
 판 2 를 목표로 하는 세션이 둘 떠 있다 — 이 세션(local_ffde0db1 · 도훈 '이어서 시작')과 총괄 세션이 띄운 local_d1e1cc26('정식 구동 — 사다리 루프 재개'). 어느 세션이 맡을지는 도훈 답 대기(기본 = 이 세션 계속). **한 파일은 한 세션만 쓴다.**
 
@@ -45,7 +63,7 @@
 - 상수 · 유효 기간이 없다. 신호의 나이는 구조상 한 달 미만이다. s ≤ d 만 쓰므로 PIT 방향은 안전하다.
 - 월말 거래일에 신호를 내는 엔진(월간 · 분기 · 연간)은 항등 사상이다 → 수정 전후 비트 동일(채택 조건).
 - 60거래일 격자(1908.01112): 신호마다 그 달 월말로 옮겨진다(지연 0~약 21거래일). 주간 · 일간 엔진: 달마다 마지막 신호 하나.
-- README §6-3 은 '다음 신호까지 이월 + 신고 주기로 만료'를 적었다(Superfan C-041). 달 스냅으로 바꾼 이유: 그 형식은 분기 · 연간 엔진의 사이 달에 묵은 신호를 다시 적용해 결과를 바꾸고(비트 동일이 깨진다) 만료 모수가 남는다. 달 스냅은 모수가 0 이다. README 를 이 규칙으로 고친다.
+- README §6-3 은 '다음 신호까지 이월 + 신고 주기로 만료'를 적었다(Superfan C-041). 달 스냅으로 바꾼 이유: 그 형식은 분기 · 연간 엔진의 사이 달에 묵은 신호를 다시 적용해 결과를 바꾸고(비트 동일이 깨진다) 만료 모수가 남는다. 달 스냅은 모수가 0 이다. README §6-3 은 인계 때(11-11) 이 규칙으로 고쳤다.
 
 **(b) 시작일 주입 — 측정 변경.**
 - `.load_one` 의 기저 엔진 환경에 `.RP_START_DATE` 를 넣는다(러너가 준 값 · 없으면 칸 고정 축 시작일).
@@ -94,7 +112,7 @@
 
 | 단계 | 상태 | 메모 |
 |---|---|---|
-| S1 셀 경로 정합 | **진행 중** | ✅ 달 스냅 순수 함수 `02_Infrastructure/reinforcement/rf_base_align.R`(`rf_base_month_snap(b, cal)` → panel · diag) + 단위 시험 `08_Tests/reinforcement/test_rf_base_align.R` 20/20(돌연변이 대조 포함). **남은 것**: ① `rf_cell_engine.R` 연결 — 후보판에서 `.load_one` 반환 직전에 `rf_base_month_snap(.b, unique(DT$Date))` 적용(캐시에는 엔진 원산출 그대로 · 스냅은 적재 뒤) · `.env$.RP_START_DATE` 주입(러너 값 · 없으면 `.START`) · `.RF_DIAG$base_alignment` 기록 ② `rf_base_cache.R` 판 올림(`RF_BASE_CACHE_VERSION` v3 · 파일 접두 `base_v3_` — 접두를 읽는 다른 코드 grep 필요) ③ 기존 시험 3종(`test_rf_cell_engine_smoke.R` · `test_rf_base_cache_key.R` · `test_rf_base_cache_seed.R`) 통과 + 월말 격자 엔진 수정 전후 비트 동일 실증 ④ 원자 교체 ⑤ 판단 T4(시작일 주입 = 측정 변경) |
+| S1 셀 경로 정합 | **진행 중**(인계됨 — 새 세션이 '이어 하기' 1번부터) | ✅ 달 스냅 순수 함수 `02_Infrastructure/reinforcement/rf_base_align.R`(`rf_base_month_snap(b, cal)` → panel · diag) + 단위 시험 `08_Tests/reinforcement/test_rf_base_align.R` 20/20(돌연변이 대조 포함). **남은 것**: ① `rf_cell_engine.R` 연결 — 후보판에서 `.load_one` 반환 직전에 `rf_base_month_snap(.b, unique(DT$Date))` 적용(캐시에는 엔진 원산출 그대로 · 스냅은 적재 뒤) · `.env$.RP_START_DATE` 주입(러너 값 · 없으면 `.START`) · `.RF_DIAG$base_alignment` 기록 ② `rf_base_cache.R` 판 올림(`RF_BASE_CACHE_VERSION` v3 · 파일 접두 `base_v3_` — 접두를 읽는 다른 코드 grep 필요) ③ 기존 시험 3종(`test_rf_cell_engine_smoke.R` · `test_rf_base_cache_key.R` · `test_rf_base_cache_seed.R`) 통과 + 월말 격자 엔진 수정 전후 비트 동일 실증 ④ 원자 교체 ⑤ 판단 T4(시작일 주입 = 측정 변경) |
 | S2 2002.06975 스케줄 | 착수 전 | |
 | S3 레인 출력 계약 | 착수 전 | 레인 gpu1 = THGNN 측정 중 |
 | S4 코어 v3 | 착수 전 | |
