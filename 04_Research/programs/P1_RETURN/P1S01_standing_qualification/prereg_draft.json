@@ -3,13 +3,13 @@
   "program": "P1_RETURN",
   "round_id": "P1S01_standing_qualification",
   "status": "draft",
-  "draft_version": 1,
-  "drafted_at": "2026-11-11T13:33:09+0900",
+  "draft_version": 3,
+  "drafted_at": "2026-11-11T14:48:05+0900",
   "core": {
     "version": "v1",
     "manifest_md5": "e70ac0af48a8bfa0f37b8c65b0cddb14"
   },
-  "spec_md5": "52d8eeccabafbd1be2624e935ea1d13c",
+  "spec_md5": "c54411a290a0828ba992323834e6a8a9",
   "spec": {
     "schema": "round_spec_v1",
     "program": "P1_RETURN",
@@ -47,7 +47,8 @@
           "adapted"
         ],
         "orientation_admit": [
-          "engine_native"
+          "engine_native",
+          "factor_db_static"
         ],
         "long_leg_window": "visible",
         "exclude_combination": true,
@@ -135,18 +136,52 @@
       "Q 는 시험 창(2023~) 성과를 본 상태다 — 판정 규칙은 보는 창 열만 쓴다(코어 검사 rc_rules_test_window_use · 시험 창 α 는 보고 전용).",
       "Q 는 시드와 같은 사양(E2 · E3 × 활성 epoch — P2R03 · P2R04 RX0 칸)의 보는 창 결과를 본 상태다 — 규칙 · 문턱은 P1R01 승계로 고정(재량 없음).",
       "레인 산출(재료 큐 인계 항목 · 충실도 감사 판정)을 본 상태다 — 입구 규칙은 성과 수치(인계 등급 · PORT_t · CR)를 읽지 않는다(시험 B6 · B7 음성 대조).",
-      "방향 층 정책(engine_native 만 허용)은 엔진 코드의 정적 특성(정본 커넥터 · 부호 층 사용)으로만 정했다 — 성과와 무관.",
+      "방향 층 정책(허용 = engine_native · factor_db_static — 등록부 방향 상수로만 부르는 커넥터 · 결합용 뷰 호출은 11-10 수리로 engine_native 와 함께 허용 · scan.orientation_admit 에 명시)은 엔진 코드의 정적 특성(정본 커넥터 · 부호 층 사용)으로만 정했다 — 성과와 무관.",
       "(11-11 등록 전 고지) Q 는 11-10 v10.2 전수점검에서 이 계보(2002.06975) 저장 기록의 등급 분포(종합점수 · 근접 후보 · 시행 관문 — 전 기간 등급 포함)를 본 상태다 — 규칙 · 문턱은 P1R01 승계 그대로이고(재량 없음) 입구 규칙은 성과 수치를 읽지 않는다.",
-      "(11-11 등록 전 고지) 입구의 방향 층 판정은 11-10 배선 감사(정적 코드 검사 · 설계 README §5-4 ④)에서 고쳐졌다 — 등록부 방향 상수(direction = \"registry\" | \"defensive\")로만 커넥터 · 결합용 뷰를 부르는 엔진 = factor_db_static(engine_native 허용 시 함께 허용) · 팩터 DB 수리 전 레인 측정은 입구에서 빼지 않고 표식(factor_db_vintage = stale)만 남긴다. Q 는 등록 전 입구 미리보기(scan --dry-run · 11-11 13:27 · 51 디렉터리 · 통과 1 — 사유 코드만 · 성과 수치 없음)를 본 상태이며, 미리보기 뒤 입구 규칙을 바꾸지 않았다."
+      "(11-11 등록 전 고지) 입구의 방향 층 판정은 11-10 배선 감사(정적 코드 검사 · 설계 README §5-4 ④)에서 고쳐졌다 — 등록부 방향 상수(direction = \"registry\" | \"defensive\")로만 커넥터 · 결합용 뷰를 부르는 엔진 = factor_db_static(engine_native 허용 시 함께 허용) · 팩터 DB 수리 전 레인 측정은 입구에서 빼지 않고 표식(factor_db_vintage = stale)만 남긴다. Q 는 등록 전 입구 미리보기(scan --dry-run · 11-11 13:27 · 51 디렉터리 · 통과 1 — 사유 코드만 · 성과 수치 없음)를 본 상태이며, 미리보기 뒤 입구 규칙을 바꾸지 않았다.",
+      "(11-11 등록 전 고지) Q 는 시드 E3 와 같은 사양(P2R04 E3 RX0)의 전 기간 재채점 기록이 있다는 것을 안다(11-10 전수점검 · 값은 여기 적지 않는다) — 그 지식이 첫 사슬 기저 선택에 들어가지 않게, 첫 사슬 기저 규칙을 판정 전에 결론 범위에 적었다.",
+      "(11-11 등록 전 고지) 등록 전 감독 리뷰 둘이 정보 경계 뒤 값을 우연히 읽었다고 리뷰 머리에 적었다(규약 §13-2 · 둘 다 도전 근거에서 뺌) — 판단 T1(R-20261111-001: factor_db/DIRECTION_POLICY.md §6 항목 7 의 E3 계보 전 기간 등급 표기 · 요인 알파 t · 재개 저널 출력의 BOOK_0001 2026 일별 성과) · 철학 P1(R-20261111-002: 설계 README §1 · §8 의 전 기간 등급 집계)."
     ],
     "conclusion_scope": [
       "자격 엔진 목록 = P4 수익 엔진 후보(활성 측정 축 · 같은 epoch 비교만). 자격 ≠ 권위 등급 · Judge · BOOK.",
       "미달 = 표준 구성(롱온리 ≤25종 EW · 15bps · 활성 축)에서 이 규칙 미달 — 논문 기전 전체의 기각이 아니다(충실구현 등급은 레인 기록).",
       "입구 제외(사유 코드) = 측정하지 않음 — 판정이 아니다. 정책이 바뀌면(새 판) 다시 볼 수 있다.",
-      "구 epoch(all_hyg_2000_v1) P1R01 판정은 그대로 남는다 — 활성 epoch 의 E2 · E3 자격은 P1S01 시드 판정으로 본다."
+      "구 epoch(all_hyg_2000_v1) P1R01 판정은 그대로 남는다 — 활성 epoch 의 E2 · E3 자격은 P1S01 시드 판정으로 본다.",
+      "자격 = 수익 엔진 자격(보는 창 β-통제 알파 ∧ 강세 참여 하한 — 헌장 원칙 5 · 6 쪽). 위기 방어 · 꾸준함(헌장 §5 빈칸 18 — 낙폭 경로 · 회복)은 판정하지 않는다 — 통과를 철학 적합으로 보고하지 않는다(위기 하락노출은 보고 열 · 방어는 P4 사슬 몫).",
+      "시드 E2 · E3 = 같은 계보(2002.06975) 두 구성 — 독립 엔진 둘로 세지 않는다(헌장 빈칸 17). 시드 자격은 같은 epoch 재판정이지 새 기저가 아니다. 첫 강화 사슬의 단독 기저는 2002.06975 계보 밖 상설 자격 엔진이다(11-11 판정 전 기록) — 이 계보는 엔진 결합(blend) 블록의 상대로만 쓴다.",
+      "E3 = 조립 칸(엔진 + as-of IC 정렬 DB 팩터 3 · entropy · 순위 버퍼) · 계보 시행에서 고른 칸이다 — E3 자격은 선택 보정 전 값이고 엔진 기저 자격이 아니다.",
+      "학습 난수가 있는 엔진(E2 · E3 의 DNN)의 자격 = 시드 미결(재시드 띠 미측정 — 헌장 빈칸 21). 소형주 착시(유동성 구간 귀속) · 크기 짝 선택 알파 = 미측정.",
+      "판 1 원장의 보는 창 열 = t(α) · 연 α · β · PORT_t · 월 수 · 상승 포착 중앙값 · CAGR · 위기 하락노출(중앙 · 최악 · 수)이고, P4 기저 풀은 이 가운데 상승 포착 중앙값만 읽는다 — 집중(빈칸 1) · 숨은 현금 날 · 강세 구간별 참여(빈칸 7 · 24) · MC8 귀속 · 하락/상승 β · 팩터 방향 값은 원장에 없다(판 2). 그동안 통과 엔진은 철학 P2 가 진단 패킷(results/<code>/visible/)으로 판독하고, 사슬 판 등록은 그 판독 없이 기저를 받지 않는다.",
+      "통과 목록을 받는 기저 풀(round_core v1/p4.R)에 알려진 결함 둘 — 상설 통과를 엔진 경로로 합친다(E3 통과가 맨 엔진 자격으로 붙는다) · 등급 경로가 전 기간 권위 등급으로 기저 자격을 준다(τ_D) — 이 있다. 이 판의 판정과는 무관하고, 고칠 때까지 사슬 판을 등록하지 않는다(결정 기록부 P4-BASE-POOL-GRADE-PATH-TAU-20261111)."
     ],
-    "changes_after_review": [],
-    "changes_after_superfan": [],
+    "changes_after_review": [
+      "격리 교차 점검 v1(prereg_draft_review_v1.md · revise · 필수 1) 필수 F-1: 초안 v1 뒤 13:48 다른 세션 커밋 e66d9f0aa 가 핀 파일 run_paper_replication.R 를 바꿔 핀 1건 불일치 → 초안 v2 를 다시 만든다(그 파일은 문자열 두 줄 · 측정 무영향 — 커밋 서술).",
+      "권고 R-3 반영(초안 v2 에서 4개 · 점검 v2 권고 R-6 뒤 v3 에서 5개 더): pins.files = 모든 상설 항목 측정 · 입구가 거치는 rf_base_cache.R · replication_harness.R · backtest_result_contract.R · validation/lookahead_detector.R + 판정 입력(월 수익 CSV)을 쓰는 contracts/save_bt_result.R + 모든 칸이 적재하는 rf_rebalance.R(시드 E3 순위 버퍼) + 처치 · 방향 경로 factor_db/factor_db_connector.R · portfolio/weight_catalog.R · factor_db/factor_combinable.R(7일 변경 3 · 1 · 4회 — 지금 핀 26개가 7일 22커밋이라 더해도 정지 증분이 작다는 점검 v2 실측). 제외 = contracts/audit_bt_result.R(감사 표만 덧붙임 · 판정 입력 아님) · reinforcement/rf_sleeve.R(defense_sleeve 가 없는 칸에선 무동작 — 이 판의 칸은 전부 없음).",
+      "격리 교차 점검 v2(prereg_draft_review_v2.md · ok · 필수 0) 권고 R-6(핀 범위 · 제외 근거 문장 오류 — rf_rebalance.R 은 7일 0회) · R-7(결론 범위 9번째 줄 '…만 넘긴다'가 원장 열과 다름 → 실제 열로) 반영으로 초안 v3. R-8(도전 응답 7건을 등록 전 커밋) = 등록 직전 고정 대상 커밋에 판단 원장을 싣는다.",
+      "권고 R-2 · 선택 S-1 · S-2: DESIGN §3-2 '1801 교훈 층 제외' 문장을 직접 호출 · $ · :: 형태로 좁히고(간접 호출은 충실도 감사가 받친다 · 코어 수리는 판 2) · §3-1 P2R05 md5 를 11-08 재핀 뒤 값으로 · §6 GPU 임대 문장을 실제(상설 측정은 임대를 잡지 않는다)로 고쳤다.",
+      "권고 R-1 · R-4 · R-5: 등록 전 다른 세션에 핀 동결 질의 · 등록 직전 핀 전체 git status 확인 · 직전 틱 종료 직후 한 창에서 등록 → 커밋."
+    ],
+    "changes_after_superfan": [
+      "판단 T1(R-20261111-001) C-20261111-003 · 철학 P1(R-20261111-002) C-20261111-015: 결론 범위에 '자격 ≠ 철학 적합' · '같은 계보 두 구성 · 첫 사슬 기저 = 계보 밖 엔진' · 'E3 = 조립 칸 · 선택 보정 전' · '시드 미결 · 소형주 착시 미측정' 을 더했다(판정 규칙 불변).",
+      "철학 P1 C-20261111-013 · C-20261111-014: 원장 보는 창 열 확장(집중 · 현금 날 · 구간별 참여 · 귀속 · β · 방향)은 코어 변경이라 판 2 로 — 결론 범위에 미집행을 공시하고 통과 즉시 P2 가 진단 패킷을 판독한다.",
+      "판단 T1 C-20261111-001 · 철학 P1 C-20261111-016: 기저 풀 결함(엔진 경로 합침 · 등급 경로 τ_D)은 코어 p4.R 변경 — 출시된 v1 을 다시 열지 않고 사슬 등록 전 P4 정정 묶음으로 · 등급 경로의 형태는 도훈 결정(P4-BASE-POOL-GRADE-PATH-TAU-20261111) · 그때까지 사슬 판 등록 없음.",
+      "판단 T1 C-20261111-002: 핀 집합이 움직이는 위험 — 등록 전 다른 세션에 동결 질의 · 등록 뒤 핀 파일 · 코어 편집 = 새 판(P1S02 · 이미 판정한 엔진은 rejudge_prior_editions = false 로 원장에 남는다)을 기대 비용으로 적는다.",
+      "철학 P1 note C-20261111-017 · 판단 T1 note C-20261111-005: 방향 층 허용 집합을 scan.orientation_admit 에 명시(engine_native · factor_db_static — 실효 집합 불변)하고 노출 4번째 줄을 실효 정책으로 고쳤다."
+    ],
+    "pins": {
+      "files": [
+        "02_Infrastructure/reinforcement/rf_base_cache.R",
+        "02_Infrastructure/replication/replication_harness.R",
+        "02_Infrastructure/contracts/backtest_result_contract.R",
+        "02_Infrastructure/validation/lookahead_detector.R",
+        "02_Infrastructure/contracts/save_bt_result.R",
+        "02_Infrastructure/reinforcement/rf_rebalance.R",
+        "02_Infrastructure/factor_db/factor_db_connector.R",
+        "02_Infrastructure/portfolio/weight_catalog.R",
+        "02_Infrastructure/factor_db/factor_combinable.R"
+      ],
+      "basis": "pins.R:1 '핀 = 판정에 닿는 전체' — 격리 교차 점검 v1 권고 R-3 · v2 권고 R-6. 모든 상설 항목 측정(기저 신호 캐시 키 · 레인 하네스 · 산출 계약 · 판정 입력 월 수익 CSV 를 쓰는 save_bt_result.R · 모든 칸이 적재하는 rf_rebalance.R)과 입구 pit_static 판정(lookahead_detector.R), 처치 · 방향 경로(정본 커넥터 · 비중 카탈로그 · 결합용 뷰 — 시드 E3 와 factor_db_static 엔진의 측정). 제외 = audit_bt_result.R(감사 표만) · rf_sleeve.R(방어 슬리브 없는 칸에서 무동작)."
+    },
     "tests": [
       "08_Tests/programs/test_round_core_v1_standing.R",
       "08_Tests/programs/test_round_core_v1_flow.R"
@@ -231,7 +266,7 @@
     "files": [
       {
         "path": "02_Infrastructure/alpha_search/run_paper_replication.R",
-        "md5": "65580501de324926a01682a06d05f4d8"
+        "md5": "6fe62365ee4b277b37d308ea8a21cb98"
       },
       {
         "path": "02_Infrastructure/backtest_harness.R",
@@ -240,6 +275,10 @@
       {
         "path": "02_Infrastructure/config.R",
         "md5": "6ec23fe8f355f362b05125be0d154605"
+      },
+      {
+        "path": "02_Infrastructure/contracts/backtest_result_contract.R",
+        "md5": "d1d6f81deb61d7145a20b79fbf355b4c"
       },
       {
         "path": "02_Infrastructure/contracts/behavior_card.R",
@@ -270,6 +309,10 @@
         "md5": "113e9efc3abeb1b06ac37fa07a9293fd"
       },
       {
+        "path": "02_Infrastructure/contracts/save_bt_result.R",
+        "md5": "d724252b67e51612ab91f346bc240425"
+      },
+      {
         "path": "02_Infrastructure/contracts/tilt_attribution.R",
         "md5": "54a200bafc3cd7ff99a7d0742094a15b"
       },
@@ -278,16 +321,44 @@
         "md5": "290303835afa1cc2f76bc4f898ec6493"
       },
       {
+        "path": "02_Infrastructure/factor_db/factor_combinable.R",
+        "md5": "077bf8f4e3e89bb09e6b0c82ecef585d"
+      },
+      {
+        "path": "02_Infrastructure/factor_db/factor_db_connector.R",
+        "md5": "fcf7e5296ac33569b6e184b6c3755bec"
+      },
+      {
         "path": "02_Infrastructure/ops/rf_cell_worker.R",
         "md5": "522f7fe2dd6c42c09bcfee4a7f109d23"
+      },
+      {
+        "path": "02_Infrastructure/portfolio/weight_catalog.R",
+        "md5": "3944fdee95305f664dd864915d4dc396"
       },
       {
         "path": "02_Infrastructure/reinforcement/rf_axes.R",
         "md5": "861cd5ea2079a8b0bc6c07293a5538ca"
       },
       {
+        "path": "02_Infrastructure/reinforcement/rf_base_cache.R",
+        "md5": "f6fef4f9eee6adfb007b0e1d97668f9f"
+      },
+      {
         "path": "02_Infrastructure/reinforcement/rf_cell_engine.R",
         "md5": "26993a0411bf1c1132df9962578dfb8d"
+      },
+      {
+        "path": "02_Infrastructure/reinforcement/rf_rebalance.R",
+        "md5": "d94bdf3a73f4e15e9041de5ea48120f2"
+      },
+      {
+        "path": "02_Infrastructure/replication/replication_harness.R",
+        "md5": "d0b94e14bc5e579060e0efaf684a232e"
+      },
+      {
+        "path": "02_Infrastructure/validation/lookahead_detector.R",
+        "md5": "044f3ff17c39ca1f1aa756e5cced5a9f"
       },
       {
         "path": "02_Infrastructure/worktask/constraint_defaults.json",

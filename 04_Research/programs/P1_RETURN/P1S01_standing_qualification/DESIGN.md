@@ -38,7 +38,7 @@
 | 사유 | 왜 제외하나(기전) |
 |---|---|
 | `implementation_suspect` · `audit_not_passed` | 1801.01777 사례 — 1차 A 는 미신고 동적 부호 층(감사 misdeclared)에서 나왔고 재구현은 F · A 원천 미분리. 감사가 받지 않은 구현의 자격은 논문 엔진의 자격이 아니다. 꼬리표를 못 읽어도 제외(실패 = 닫힘) |
-| `dynamic_sign`(방향 층) | 신호 방향을 데이터가 시점마다 다시 정하는 층 — 자격 t(α) 가 엔진 기전이 아니라 부호 타이밍에서 나올 수 있다(1801). 판정 = R 파서 토큰(주석 · 문자열 제외): 정본 커넥터 `load_month_factors`/`load_daily_factors`(as-of IC 3단 부호) → `factor_db_asof` · `align_factor_direction`/`compute_rolling_ic_all` 호출 또는 부호 층 식별자 → `orientation_layer`. **기본 = engine_native 만**(9절 결정 대기 1) |
+| `dynamic_sign`(방향 층) | 신호 방향을 데이터가 시점마다 다시 정하는 층 — 자격 t(α) 가 엔진 기전이 아니라 부호 타이밍에서 나올 수 있다(1801). 판정 = R 파서 토큰(주석 · 문자열 제외): 정본 커넥터 `load_month_factors`/`load_daily_factors`(as-of IC 3단 부호) → `factor_db_asof` · `align_factor_direction`/`compute_rolling_ic_all` 호출 또는 부호 층 식별자 → `orientation_layer`. **허용 = engine_native · factor_db_static**(11-10 수리 · 사양 orientation_admit 에 명시 — 아래 '입구 수리' 절 · factor_db_asof 허용은 9절 결정 대기 1) |
 | `long_leg_absent`(순방향 층) | 보는 창 신호일 중 롱 레그(비중 > 0)가 없는 날 = 시계열 방향 · 현금 타이밍. 표준 구성(상위 25 · 롱온리)은 그날 엔진이 숏하려는 종목을 사거나(가중치 = 점수) 비게 된다 — 롱온리로 쓸 수 없는 신호다. 실례: 2411.13555 보는 창 394/1124일 |
 | `combination` | 단일 논문 엔진이 아니다 — 결합은 P4 · 결합 규칙(SKILL §2-0)과 도훈 확인 |
 | `not_routed` | 라우터 v5 가 P1(수익) 재료로 분류한 것만(10-14 '재료 배정 기본값 P1 폐지') |
@@ -70,9 +70,9 @@
 ## 6. 예산 · 시행 회계
 - 칸 = 시드 2 + 레인 인계마다 1(규칙상 상한 없음 · `scan --max N` 은 운영 상한).
 - family_root = paper_key · n_family = max(계보 앞선 사전등록 · 상설 원장 회계 최댓값, 레인 측정 수(대표 + 변형 — REPLICATION-ALL-METHODS)) + 1. 같은 논문의 재구현 엔진은 앞선 상설 항목 위에 +1(시험 H3).
-- 측정 = 엔진 신호 1회(기저 캐시: 같은 엔진 md5 · 같은 데이터 판본이면 재사용) + 표준 구성. ~~DNN 엔진은 GPU 임대 규칙(WP3) 아래서.~~ → 11-11 정정(격리 교차 점검 S-2 · 판단 T1 note C-20261111-004): 상설 측정 경로(standing.R · round.sh · standing_board_run.sh · rf_cell_worker.R)는 GPU 임대를 잡지 않는다 — torch 엔진(2002.06975 DNN)은 CUDA 가 있으면 레인(gpu1)과 같은 GPU 를 함께 쓴다(RTX 4080 SUPER 16 GB · 11-11 13:4x 레인 THGNN 약 4.2 GB 사용 · 속도만 나눈다 · RAM 여유 약 11.8 GB = 셀 워커 1개 정점 약 7.5 GB). 임대를 붙이는 것은 판 2 · 코어 v2 몫.
+- 측정 = 엔진 신호 1회(기저 캐시: 같은 엔진 md5 · 같은 데이터 판본이면 재사용) + 표준 구성. ~~DNN 엔진은 GPU 임대 규칙(WP3) 아래서.~~ → 11-11 정정(격리 교차 점검 S-2 · 판단 T1 note C-20261111-004): 상설 측정 경로(standing.R · round.sh · standing_board_run.sh · rf_cell_worker.R)는 GPU 임대를 잡지 않는다 — torch 엔진(2002.06975 DNN)은 CUDA 가 있으면 레인(gpu1)과 같은 GPU 를 함께 쓴다(RTX 4080 SUPER 16 GB · 11-11 13:4x 레인 THGNN 약 4.2 GB 사용 · 속도만 나눈다 · RAM 여유 약 11.8 GB ≥ 셀 워커 1개 정점 약 7.5 GB — 13:4x 시점 관측값). 임대를 붙이는 것은 판 2 · 코어 v2 몫.
 
-## 7. 노출(τ_D) — 사양 `exposures` 와 같다
+## 7. 노출(τ_D) — 요약(정본 = 사양 `exposures` 8줄 · 11-11 등록 전 고지 4줄 포함)
 - Q 는 시험 창(2023~) 성과를 본 상태다 — 판정 규칙은 보는 창 열만(코어 검사) · 시험 창 α 는 보고 전용.
 - Q 는 시드와 같은 사양(E2 · E3 × 활성 epoch — P2R03 · P2R04 RX0)의 보는 창 결과를 본 상태다 — 규칙 · 문턱은 P1R01 승계 고정(재량 없음).
 - 레인 산출(재료 큐 인계 · 감사 판정)을 본 상태다 — 입구 규칙은 성과 수치를 읽지 않는다.
@@ -85,9 +85,9 @@
 - 원장(추가 전용 · md5 사슬)이 판정 단일 출처다. 보고 = 통과 엔진마다 push 1통 · 미달 · 미시험 = 일 요약 1통(무음). Superfan = 등록 때 T1 · P1 1회 · 통과 즉시 T2 · P2 · 미달 일 묶음(규약 §11-1 · §12).
 - **11-11 등록 전 기록 — 통과 목록을 P4 가 받는 규칙(판정 전 · 판단 T1 R-20261111-001 · 철학 P1 R-20261111-002 반영)**
   - 첫 강화 사슬의 단독 기저 = **2002.06975 계보 밖** 상설 자격 엔진(새 계보 — research-program SKILL §0-1 ② · 설계 README §1-2 ① · §1-3). 시드 E2 · E3(같은 계보 두 구성 · 헌장 빈칸 17)는 엔진 결합(blend) 블록의 상대로만 쓴다. 계보 밖 자격이 0 이면 다음 일은 공급이다(레인 순서 · §9-2 인계 소급 · factor_db_asof 엔진의 등록부 방향 재검증 — 전수 · 기계 규칙으로, 미리보기 이름으로 고르지 않는다).
-  - 기저는 **상설 판 통과 행만**(standing_qualified = TRUE) 받는다 — 등급 경로(전 기간 권위 등급) 기저는 τ_D 문제라 쓰지 않는다(철학 C-20261111-016 · 결정 P4-BASE-POOL-GRADE-PATH-TAU-20261111).
-  - 사슬 판 등록 전에 기저 풀(round_core v1/p4.R) 정정이 먼저다: ① 상설 행을 칸(code) 단위로 · 처치가 든 칸(E3 꼴)은 맨 엔진 행에 합치지 않는다(T1 C-20261111-001) ② 등급 경로의 형태(결정 대기). 출시된 v1 을 다시 열지 않고 코어 v2(판 라우팅 포함 · T1 C-20261111-002 대안 (a)) 또는 v1 정정 + 이 판의 새 판(P1S02)으로 — 어느 쪽이든 이 판의 이미 판정한 항목은 원장에 남는다.
-  - 사슬 1호 채택 규칙에는 집중(N4 `worst_name_contrib_deep_vis`)을 필수로 싣고, 기저의 진단 패킷 판독(집중 · 현금 날 · MC8 귀속 · 하락/상승 β · 강세 구간별 참여 · CDaR)을 사슬 판 철학 P1 의 입력으로 준다(철학 C-20261111-013 · 014 의 판 2 이전 완화).
+  - **도훈 결정 전까지** 사슬 기저는 상설 판 통과 행만(standing_qualified = TRUE) 본다 — 등급 경로(전 기간 권위 등급) 기저는 τ_D 문제라 쓰지 않는다(철학 C-20261111-016 · 결정 P4-BASE-POOL-GRADE-PATH-TAU-20261111 의 결정 전 기본값 · 결정은 (가)(나)(다) 가운데 도훈).
+  - 사슬 판 등록 전에 기저 풀(round_core v1/p4.R) 정정이 먼저다: ① 상설 행을 칸(code) 단위로 · 처치가 든 칸(E3 꼴)은 맨 엔진 행에 합치지 않는다(T1 C-20261111-001) ② 등급 경로의 형태(결정 대기). 출시된 v1 은 다시 열지 않는다 — 정정은 코어 v2(판 라우팅 포함 · T1 C-20261111-002 대안 (a))로 낸다. (예외로 v1 을 고치는 길을 고르면 v1 매니페스트가 바뀌어 이 판은 핀 불일치로 멈추고 새 판 P1S02 가 필요하다 — 그 선택은 출시 원칙의 예외로 따로 기록한다.) 어느 쪽이든 이 판의 이미 판정한 항목은 원장에 남는다.
+  - 사슬 1호 채택 규칙에는 집중(p4.R 지표 `worst_name_contrib_deep_vis` — 꼬리표 N4)을 필수로 싣고, 기저의 진단 패킷 판독(집중 · 현금 날 · MC8 귀속 · 하락/상승 β · 강세 구간별 참여 · CDaR)을 사슬 판 철학 P1 의 입력으로 준다(철학 C-20261111-013 · 014 의 판 2 이전 완화).
 
 ## 9. 결정 대기(원 세션 · 필요하면 도훈)
 1. **방향 층 정책**: 기본 = `engine_native` 만(정본 커넥터 as-of IC 정렬 · 엔진 부호 층 제외 — 1801 교훈 · 안전한 기본값). 대안 = C13 표준 as-of 정렬(`factor_db_asof`) 허용 — 팩터 DB 를 쓰는 레인 엔진(현재 8개)이 들어온다. 고정 방향 재표현(1801 재구현처럼 등록부 정적 부호로 되돌림)은 지금 정적 판정으로는 `orientation_layer` 로 묶여 제외된다 — 인계에 '방향 고정' 기계 표식을 싣는 레인 변경이 대안.
@@ -97,7 +97,7 @@
    - ✅ 11-11 해소: 도훈 `CHAIN-AUTOMATION-STANDING-BOARD-AND-TICK-20261110` → 예약 작업 `Qvest_StandingBoard`(매시 37분 · 11-11 08:16 등록) = `ops/data_selfheal_tick.sh` → `ops/standing_board_run.sh --send`(scan → 대기 있음 ∧ 배리어 열림이면 standing-measure → standing-report) → `ops/chain_tick.sh`.
 5. **등록부 재료 소비 표식**: 상설 판정 엔진의 P1 재료 큐 항목을 소비로 옮기는 것은 쓰기 잠금(WP3) 뒤(지금 상설 코드는 등록부를 읽기만 한다).
 - 11-11 상태: 1 = 기본값 유지(engine_native + 11-10 수리의 factor_db_static · `factor_db_asof` 허용은 미결 — 바꾸면 새 판) · 2 · 3 · 5 = 미결(이번 판 범위 밖 · 막지 않는다).
-6. **(11-11 새) 판 2 후보 — 코어 변경이 필요한 것**(등록 전 감독 · 점검 지적 · 판정 규칙 불변): 원장 보는 창 열 확장(유효 종목 수 · 깊은 위기 한 종목 기여 · 현금 날 · MC8 귀속 · 노출 평균 · 하락/상승 β · 강세 구간별 참여와 강세 수 · CDaR · Calmar · 팩터 방향 값 · 학습 난수 꼬리표 — 철학 C-013 · C-014) · 부호 층 간접 호출 판정(격리 R-2) · 처치 경로 · 팩터 DB 접근 파일 핀(R-3 나머지) · torch 엔진 GPU 임대(S-2) · 크기 짝 선택 알파 보고 열(철학 N3) · q_uc 문턱의 정본 참조(`behavior_card.json::uc_floor` — 철학 N4).
+6. **(11-11 새) 판 2 후보 — 코어 변경이 필요한 것**(등록 전 감독 · 점검 지적 · 판정 규칙 불변): 원장 보는 창 열 확장(유효 종목 수 · 깊은 위기 한 종목 기여 · 현금 날 · MC8 귀속 · 노출 평균 · 하락/상승 β · 강세 구간별 참여와 강세 수 · CDaR · Calmar · 팩터 방향 값 · 학습 난수 꼬리표 — 철학 C-013 · C-014) · 부호 층 간접 호출 판정(격리 R-2) · 처치 경로 · 팩터 DB 접근 파일 핀(R-3 나머지) · torch 엔진 GPU 임대(S-2) · 크기 짝 선택 알파 보고 열(철학 note C-20261111-019) · q_uc 문턱의 정본 참조(`behavior_card.json::uc_floor` — 철학 note C-20261111-020).
 7. **(11-11 새) 도훈 결정 `P4-BASE-POOL-GRADE-PATH-TAU-20261111`**: 기저 풀 등급 경로(전 기간 권위 등급 B 이상)가 사슬 기저를 시험 창 정보로 고른다(철학 C-016 · pit.md C1 2026-09-23 D-E · lean-loop τ_D) — (가) 보는 창 S 띠로 · (나) 상설 통과만 · (다) 꼬리표. CLAUDE.md 파이프라인 문구('기저 풀 = 상설 통과 ∪ 등급 B 이상')와 닿는다.
 
 ## 10. 등록 순서(원 세션 — 이 에이전트는 등록하지 않는다)
@@ -123,6 +123,7 @@
 | 노출 고지 | 4줄 | + 2줄(11-10 전수점검 등급 분포 열람 · 입구 수리와 11-11 미리보기) | 공개 — 규칙 불변 |
 | 판정 경로 핀(코어 · 계약 · 설정 파일) | 10-20 worktree 미리보기 | 11-11 `draft` 가 다시 계산(코어 v1 매니페스트 e70ac0af · 등급 v3.4 · 팩터 DB 판 표식 반영 판) | 측정 시작 때의 운영 판 — 등록 뒤 바뀌면 그 판은 멈춘다(새 판) |
 | 초안 v1 → v2 | v1(13:33 · 029bcae4) | v2 — 13:48 다른 세션 커밋 `e66d9f0aa`(run_paper_replication.R · L-code 다음 탐침 문구 두 줄 · 측정 무영향)로 v1 핀 1건이 어긋남(격리 점검 F-1) | 재핀(규칙 불변) |
-| 핀 범위 `pins.files` | 기본 18 + 엔진 + 칸 사양 2 + 행동 카드 사본 = 22 | + 4(rf_base_cache.R · replication_harness.R · backtest_result_contract.R · validation/lookahead_detector.R) = 26 | 격리 점검 R-3 일부 — 모든 상설 항목 측정 · 입구 pit_static 이 거친다. 제외 = 시드 E3 처치 경로(factor_db_connector.R · weight_catalog.R · rf_rebalance.R)와 결합용 뷰(factor_combinable.R): 7일 변경 1~4회라 판 전체 정지(R-1)가 잦아진다 · E3 는 등록 직후 첫 측정 틱에서 재므로 등록 ~ E3 측정 사이 이 파일들의 git 변경 유무를 첫 판정 때 기록한다 |
+| 초안 v2 → v3 | v2(14:16 · d7720f29 · 격리 점검 v2 = ok · 필수 0) | v3 — 점검 v2 권고 R-6(핀 +5) · R-7(결론 범위 9번째 줄 = 원장의 실제 보는 창 열) 반영 · R-8(도전 응답 7건을 등록 전 커밋) | 재핀 · 문장 정정(규칙 불변) |
+| 핀 범위 `pins.files` | 기본 18 + 엔진 + 칸 사양 2 + 행동 카드 사본 = 22 | 초안 v2: + 4(rf_base_cache.R · replication_harness.R · backtest_result_contract.R · validation/lookahead_detector.R) = 26 → 초안 v3: + 5(contracts/save_bt_result.R · reinforcement/rf_rebalance.R · factor_db/factor_db_connector.R · portfolio/weight_catalog.R · factor_db/factor_combinable.R) = 31 | 격리 점검 v1 R-3 · v2 R-6 — pins.R:1 '핀 = 판정에 닿는 전체'. save_bt_result.R 은 판정 입력(월 수익 CSV)을 쓰고(run_paper_replication.R:68 · :832) rf_rebalance.R 은 모든 칸이 적재한다(rf_cell_engine.R:44 · 시드 E3 순위 버퍼). v2 의 제외 근거 '7일 1~4회'는 rf_rebalance.R 에 대해 틀렸다(실측 0회 · 마지막 09-21) — 정정. 처치 · 방향 경로 3개(7일 3 · 1 · 4회)도 넣었다: 지금 핀 26개가 7일 22커밋이라 정지 증분이 작다(v2 점검 실측). 제외 = contracts/audit_bt_result.R(감사 표만 덧붙임 · 판정 입력 아님) · reinforcement/rf_sleeve.R(defense_sleeve 없는 칸에서 무동작 — 이 판 칸 전부). |
 | 방향 층 허용 표기 | `orientation_admit: [engine_native]`(코드가 factor_db_static 으로 넓혀 읽음) | `[engine_native, factor_db_static]` 명시 | 실효 집합 불변(미리보기 51 · 통과 1 그대로) — 등록 문서만 읽어도 받는 범위가 읽히게(철학 N1 · T1 N2) |
 | 결론 범위 · 노출 | 4줄 · 6줄 | 10줄 · 8줄 | 감독 지적 반영(사양 `changes_after_superfan` · `changes_after_review`) — 판정 규칙 불변 |
