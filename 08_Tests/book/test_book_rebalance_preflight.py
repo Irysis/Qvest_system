@@ -30,6 +30,23 @@ import subprocess
 import sys
 import tempfile
 
+# ── (2026-11-11) 해석기 자기해결 — 배터리(run_all_hooks.sh)는 pandas · pyarrow 없는 시스템 파이썬으로 돈다.
+#   없으면 venv 로 다시 실행한다(SKIP 하지 않는다 — SKIP 은 통과와 겉보기가 같다). 패턴 = data/test_qw_fund_v2_ingest.py.
+try:
+    import pandas as _pd_probe  # noqa: F401
+    import pyarrow as _pa_probe  # noqa: F401
+except ImportError:
+    _venv = ""
+    for _cand in (os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..")),
+                  os.environ.get("CLAUDE_PROJECT_DIR", ""), os.environ.get("QM_ROOT", "")):
+        _p = os.path.join(_cand.replace("\\", "/"), ".venv_qvest_ml", "Scripts", "python.exe") if _cand else ""
+        if _p and os.path.exists(_p):
+            _venv = _p
+            break
+    if _venv and os.environ.get("_QVEST_VENV_REEXEC") != "1":
+        sys.exit(subprocess.call([_venv, "-X", "utf8", os.path.abspath(__file__)] + sys.argv[1:], env=dict(os.environ, _QVEST_VENV_REEXEC="1")))
+    raise
+
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
