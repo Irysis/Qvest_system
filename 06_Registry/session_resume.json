@@ -1,6 +1,6 @@
 {
  "schema": "session_resume_v1",
- "updated_at": "2026-11-11T16:09:27+0900",
+ "updated_at": "2026-11-11T18:40:32+0900",
  "operations": [
   {
    "id": "OP-20261015-MSM-A",
@@ -551,7 +551,7 @@
    "goal": "전수점검 결론(A 미산출 = 생성 편중 · 시행 소진 · 기준점 부재 · 정지)에 따라 1계층의 일하는 순서를 바꿔 계약 경로 A 를 낸다 — 설계 README §4 의 순서와 완료 기준",
    "status": "in_progress",
    "started_at": "2026-11-10T10:27:03+0900",
-   "updated_at": "2026-11-11T16:09:27+0900",
+   "updated_at": "2026-11-11T18:40:32+0900",
    "steps": [
     {
      "id": "S0",
@@ -564,20 +564,23 @@
     {
      "id": "S1",
      "title": "P2R05 를 등록본 보존 후 뒤로 · round_core v1 출시(RELEASES.json) · P1 상설 자격 P1S01 등록",
-     "status": "in_progress",
-     "note": "도훈 11-11 16:09 결정 P4-BASE-POOL-GRADE-PATH-TAU-20261111 = (나) 기저 자격 = 상설 판 통과만(권위 등급 = 참고 열) — 구현은 파일럿 세션의 코어 v2 P4 정정 묶음(next ⓐ ②)에서 코드 · CLAUDE.md 파이프라인 문구 · SKILL §0-1 ② · round_core README P4 절을 같은 날 맞춘다. 그 전까지 v1 코드엔 등급 경로가 남아 사슬 판 등록 보류.",
+     "status": "done",
+     "note": "11-11 마감: 코어 v1 출시(d10a95697) · P1S01 판 1 등록(e26717ab7 · fd3ef649 · tick_hold 보류) · P4 정정 묶음 = 코어 v2(c5e47b950 출시 후보 → 3c667a3f1 출시 · 매니페스트 f7e5ce59 · 기저 자격 = 상설 통과만(결정 (나)) · 칸 단위 · 부호 층 간접 · GPU 관문 · 판 라우팅 round.sh · chain_tick.R · 아침 상태 l1_status_send.R) · 문구 CLAUDE.md · SKILL §0-1 ② · README · 등록부 P4 목적",
      "artifacts": [
+      "04_Research/programs/_lib/round_core/RELEASES.json",
       "stage_artifacts/programs/P1_RETURN/P1S01_standing_qualification/prereg.json"
      ],
-     "updated_at": "2026-11-11T16:09:27+0900"
+     "updated_at": "2026-11-11T18:40:30+0900"
     },
     {
      "id": "S2",
      "title": "A 경로 소방 훈련 — 합성 양성 1건이 측정 → 등급 → 자격 관문 → Judge 요청까지(프로그램 칸 경로 A 자격 관문 수리 포함)",
-     "status": "pending",
-     "note": "",
-     "artifacts": [],
-     "updated_at": null
+     "status": "done",
+     "note": "11-11 18:37 임시 거울 루트 파일럿 + A 경로 소방 훈련 통과(HEAD 3c667a3f1 · 시나리오 27/0 · 실행기 8/0 · 실제 원장 15종 md5 불변 · 실발송 0) — 합성 양성 측정 A → 실제 선택 현실 점검 재채점 A(조정 p 0.0005 · 시행 3) → 실제 A 자격 관문 발행 → judge_request.eligible.json(건식) · 알려진 답 2건 v1 = 틀린 답 · v2 = 바른 답 · 텔레그램 1통(정정 포함)",
+     "artifacts": [
+      "04_Research/01_reports/l1_pilot_v2_20261111/README.md"
+     ],
+     "updated_at": "2026-11-11T18:40:31+0900"
     },
     {
      "id": "S3",
@@ -604,7 +607,7 @@
      "updated_at": "2026-11-10T12:13:47+0900"
     }
    ],
-   "next_action": "★도훈 11-11 15:38 '파일럿부터'(L1-CHAIN-PILOT-FIRST-20261111) — P1S01 판 1 은 등록(e26717ab7 · fd3ef649)된 채 판 폴더 tick_hold(원 세션 15:45)로 보류 · 측정 0. 해제 조건 셋 다: ① 임시 원장 파일럿 + A 경로 소방 훈련 통과 ② 06_Registry/factor_db_vintage.json 의 FACTOR-DB-INV-PANEL-RECOMPUTE-20261111 completed_at ③ GPU 임대 확보 + 레인 측정 0. 다음 리서치 체인 세션(새 세션)이 할 일 = ⓐ P4 정정 묶음을 코어 v2 로(round_core/v2 = v1 복사 + 수리 · round.sh CORE · standing.R CLI 의 v1 고정 경로 · chain_tick.R:48 · :122 를 사양 core_version 으로 고르는 판 라우팅 · v1 결과 동일 시험): 기저 풀 상설 행을 칸(code) 단위로 · 처치 칸(E3 꼴)은 맨 엔진 행에 합치지 않음(T1 C-20261111-001) · 등급 경로 = 결정 P4-BASE-POOL-GRADE-PATH-TAU-20261111(미결이면 기본값 = 상설 통과만) · 부호 층 간접 호출(R-2) · torch GPU 임대 ⓑ 파일럿(임시 루트 — RC_ROOT_POSIX · RC_SA_ROOT · R_ENVIRON_USER 로 QM_ROOT 를 그 루트로 · 첫 줄 단정): 상설 판 → 기저 풀 → 사슬 등록 → 걸음 → 닫기 → 선택 현실 점검 재채점 → A 자격 관문 → Judge 요청(건식)까지, 합성 양성 1건 + 알려진 답 사례 2(같은 엔진 경로 두 칸 중 처치 칸만 통과 = 맨 엔진 자격 없음 · 등급 경로 전 기간 등급 기저 = 자격 없음) — v1 에서는 두 사례가 실패해야 정답 · v2 에서 통과. 시험 근거 08_Tests/scenarios/test_scn_l1_chain_e2e.R · test_round_core_v1_p4_chain.R. 시각 = THGNN 레인 측정 중이면 RAM 확인 뒤 · 00:03 · 07:10 창 피함. ⓒ 통과 뒤 실제 측정 순서: 재계산 완료 → GPU 임대(python -X utf8 02_Infrastructure/ops/qv_lock.py lease acquire --holder P1S01_standing --purpose ... ) + 레인 측정 0 → tick_hold 삭제 → :37 틱(또는 standing_board_run.sh --send 1회) · DNN 시드 지속 25~33 GB(기억 카드 main-pc-ram) → 판정 뒤 통과 = 판단 T2 + 철학 P2 즉시 · superfan-mark · 미달 = 일 묶음 · 첫 판정 때 git log 0232aec81.. -- 02_Infrastructure/contracts/audit_bt_result.R 02_Infrastructure/reinforcement/rf_sleeve.R 를 note. ⓓ 첫 사슬 = 2002.06975 계보 밖 상설 자격 엔진(1908.01112 가 통과하면) · 채택 규칙 v2 + N4 필수 · noise_k 2(체계 §4 R7) · max_steps = trial_budget.R rc 근거 · 철학 P1 · 판단 T1 → p4-check → p4-register → chain_tick.sh --dry-run. ⓔ 기다림 비용 규칙(C-20261111-022 수용): 돌이킬 수 없는 단계 앞에서 배리어 · 임대 · 레인 측정 · 판 표식 진행 중 수리 · 엔진 RAM · 공유 기록(설계 README §10.8)을 먼저 본다.",
+   "next_action": "★11-11 18:4x 파일럿 통과(보고서 04_Research/01_reports/l1_pilot_v2_20261111/README.md · 재현 PILOT_OUT=<저장소 밖> bash 08_Tests/scenarios/run_l1_pilot_v2.sh) · 코어 v2 출시(RELEASES.json f7e5ce59). P1S01 판 1(v1)은 tick_hold 보류 유지 — 해제 조건 ① 파일럿 ✅ ② 06_Registry/factor_db_vintage.json 의 FACTOR-DB-INV-PANEL-RECOMPUTE-20261111 completed_at(18:28 현재 항목 없음 · 총괄 세션 대기 작업이 레인 측정 끝난 뒤 시작 · 2.5~3시간) ③ GPU 임대 + 레인 측정 0(THGNN 2601.04602 · 11-12 07~09시 종료 추정). 다음 세션 순서: ⓐ 세 조건 확인(python -X utf8 02_Infrastructure/ops/qv_lock.py lease status --json · python -X utf8 02_Infrastructure/ops/rf_replication_slots.py status --line · bash 02_Infrastructure/ops/refresh_barrier.sh status · factor_db_vintage.json) ⓑ python -X utf8 02_Infrastructure/ops/qv_lock.py lease acquire --holder P1S01_standing --purpose 'P1S01 상설 첫 측정' --holder-pid <측정 셸 pid> → 04_Research/programs/P1_RETURN/P1S01_standing_qualification/tick_hold 삭제 → :37 틱(또는 bash 02_Infrastructure/ops/standing_board_run.sh --send 1회) · 00:03 · 07:10 창 회피 · DNN 시드 지속 25~33 GB(커밋 여유 확인 FreeVirtualMemory) ⓒ 판정 뒤 통과 = 판단 T2 + 철학 P2 즉시 · superfan-mark · 미달 = 일 묶음 · 첫 판정 때 git log 0232aec81.. -- 02_Infrastructure/contracts/audit_bt_result.R 02_Infrastructure/reinforcement/rf_sleeve.R 를 note ⓓ 판정 뒤 bash 04_Research/programs/_lib/round_core/round.sh - p4-pool(v2 — key 열에 P1S01_E3_RX0 가 standing:… 처치 행으로 따로 나와야 C-20261111-001 반증 충족) → 첫 사슬 = 2002.06975 계보 밖 상설 자격 엔진(1908.01112 가 통과하면) · 사슬 사양 core_version v2 · 채택 규칙 v2 + N4 필수 · noise_k 2 · max_steps = trial_budget.R rc 근거 · 철학 P1 · 판단 T1 → p4-check → p4-register → chain_tick.sh --dry-run ⓔ 후속(작음): 08_Tests/programs/test_round_core_v1_standing.R H5 시험 격리 결함(P1S01 실제 등록 뒤 빨강 · 판 목록을 자기 판으로 걸러야) · 판단 Superfan T4 · T3(J-20261111-012~015) 도전 응답",
    "context_files": [
     "04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/README.md",
     "04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/findings_ledger.md",
@@ -737,6 +740,18 @@
     {
      "at": "2026-11-11T16:09:27+0900",
      "text": "S1 → in_progress · 도훈 11-11 16:09 결정 P4-BASE-POOL-GRADE-PATH-TAU-20261111 = (나) 기저 자격 = 상설 판 통과만(권위 등급 = 참고 열) — 구현은 파일럿 세션의 코어 v2 P4 정정 묶음(next ⓐ ②)에서 코드 · CLAUDE.md 파이프라인 문구 · SKILL §0-1 ② · round_core README P4 절을 같은 날 맞춘다. 그 전까지 v1 코드엔 등급 경로가 남아 사슬 판 등록 보류."
+    },
+    {
+     "at": "2026-11-11T18:40:30+0900",
+     "text": "S1 → done · 11-11 마감: 코어 v1 출시(d10a95697) · P1S01 판 1 등록(e26717ab7 · fd3ef649 · tick_hold 보류) · P4 정정 묶음 = 코어 v2(c5e47b950 출시 후보 → 3c667a3f1 출시 · 매니페스트 f7e5ce59 · 기저 자격 = 상설 통과만(결정 (나)) · 칸 단위 · 부호 층 간접 · GPU 관문 · 판 라우팅 round.sh · chain_tick.R · 아침 상태 l1_status_send.R) · 문구 CLAUDE.md · SKILL §0-1 ② · README · 등록부 P4 목적"
+    },
+    {
+     "at": "2026-11-11T18:40:31+0900",
+     "text": "S2 → done · 11-11 18:37 임시 거울 루트 파일럿 + A 경로 소방 훈련 통과(HEAD 3c667a3f1 · 시나리오 27/0 · 실행기 8/0 · 실제 원장 15종 md5 불변 · 실발송 0) — 합성 양성 측정 A → 실제 선택 현실 점검 재채점 A(조정 p 0.0005 · 시행 3) → 실제 A 자격 관문 발행 → judge_request.eligible.json(건식) · 알려진 답 2건 v1 = 틀린 답 · v2 = 바른 답 · 텔레그램 1통(정정 포함)"
+    },
+    {
+     "at": "2026-11-11T18:40:32+0900",
+     "text": "다음: ★11-11 18:4x 파일럿 통과(보고서 04_Research/01_reports/l1_pilot_v2_20261111/README.md · 재현 PILOT_OUT=<저장소 밖> bash 08_Tests/scena"
     }
    ]
   }

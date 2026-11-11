@@ -1,0 +1,205 @@
+[
+  {
+    "id": "S0",
+    "name": "거울 등록부에 파일럿 레인 인계 3건(writer pr_save · 검사 통과)",
+    "ok": true,
+    "detail": "",
+    "evidence": []
+  },
+  {
+    "id": "S1",
+    "name": "상설 판 골격(v2 · core_version v2 · 시드 3 = 맨 엔진 X · 처치 X · 맨 엔진 Y)",
+    "ok": true,
+    "detail": "",
+    "evidence": []
+  },
+  {
+    "id": "S2",
+    "name": "상설 판 등록(rc_register — 점검 · 철학 P1 영수증 · 핀 · 거울 등록부) · 사전등록 코어 판 v2",
+    "ok": true,
+    "detail": "",
+    "evidence": []
+  },
+  {
+    "id": "S3",
+    "name": "스캔 — 시드 3 넣음(레인 비움 · 입구 규칙)",
+    "ok": true,
+    "detail": "P1S90_X_E2 P1S90_X_E3 P1S90_Y_E2",
+    "evidence": []
+  },
+  {
+    "id": "S4",
+    "name": "측정 — 대기 3칸 모두 원장 measure ok · 지문 동일(GPU 관문 = 실제 판별 · cpu 엔진)",
+    "ok": true,
+    "detail": "TRUE TRUE TRUE",
+    "evidence": []
+  },
+  {
+    "id": "S5",
+    "name": "판정(등록 규칙 실제 적용 · t(α) = 계약) — 통과 = X_E3(처치) · Y_E2(표준) · 미달 = X_E2(맨 엔진)",
+    "ok": true,
+    "detail": "P1S90_X_E3 treatment P1S90_Y_E2 standard",
+    "evidence": []
+  },
+  {
+    "id": "S6",
+    "name": "구성 판독 — X_E3 = treatment(factors · weighting · rebalance) · Y_E2 = standard",
+    "ok": true,
+    "detail": "P1S90_X_E3 treatment weighting,factors,rebalance P1S90_Y_E2 standard ",
+    "evidence": []
+  },
+  {
+    "id": "S7",
+    "name": "보고(건식) — 통과 push 2 · 일 요약 1(미달) · 발송 안 함",
+    "ok": true,
+    "detail": "pass 2 · fail 1 · sent FALSE",
+    "evidence": []
+  },
+  {
+    "id": "B1",
+    "name": "사례 1(처치 칸만 통과) — 맨 엔진 행 engine:PILOT_X 자격 없음 · 처치 칸 행(standing:…:X_E3 · treatment)은 따로 자격",
+    "ok": true,
+    "detail": "engine:PILOT_Y TRUE standing:P1S90_pilot:P1S90_X_E3 TRUE engine:PILOT_X FALSE engine:PILOT_Z FALSE",
+    "evidence": []
+  },
+  {
+    "id": "B2",
+    "name": "사례 2(등급 경로) — engine:PILOT_Z(권위 등급 B · 상설 통과 없음) 자격 없음 · 등급은 참고 열",
+    "ok": true,
+    "detail": "",
+    "evidence": []
+  },
+  {
+    "id": "B3",
+    "name": "대조 — engine:PILOT_Y(표준 칸 Y_E2 통과) = 같은 엔진 행에 합쳐 자격",
+    "ok": true,
+    "detail": "",
+    "evidence": []
+  },
+  {
+    "id": "B4",
+    "name": "v1 = 틀린 답(정답 대조) — 같은 거울 원장에서 engine:PILOT_X(처치 칸 합침) · engine:PILOT_Z(등급 경로)가 자격 TRUE",
+    "ok": true,
+    "detail": "engine:PILOT_X TRUE P1S90_X_E3 engine:PILOT_Y TRUE P1S90_Y_E2 engine:PILOT_Z TRUE NA",
+    "evidence": []
+  },
+  {
+    "id": "B5",
+    "name": "처치 칸 행의 기저 칸 사양 = 통과 칸 사양 그대로(처치 축 3 · same_construction TRUE)",
+    "ok": true,
+    "detail": "",
+    "evidence": []
+  },
+  {
+    "id": "C1",
+    "name": "사슬 판 만들기(기저 = 상설 표준 칸 Y · 채택 규칙 판 v2 · core_version v2)",
+    "ok": true,
+    "detail": "",
+    "evidence": []
+  },
+  {
+    "id": "C2",
+    "name": "사슬 판 등록(감독 영수증 P1 · T1 · 원장 첫 줄)",
+    "ok": true,
+    "detail": "",
+    "evidence": []
+  },
+  {
+    "id": "C3",
+    "name": "기준 칸 측정(k = 0 · 가짜 측정기 · 실제 판 표식 · 보는 창 지표 = 실제 행동 카드)",
+    "ok": true,
+    "detail": "measured  ",
+    "evidence": []
+  },
+  {
+    "id": "C4",
+    "name": "걸음 1(비중 블록) — 열기 · 측정 · 판정 = 채택(실제 보는 창 지표 · 등록 규칙)",
+    "ok": true,
+    "detail": " measured accept ",
+    "evidence": []
+  },
+  {
+    "id": "K1",
+    "name": "막힘 4종(배리어 잠김 · 데이터 낡음 · 판 표식 진행 중 · GPU 대기) = 재지 않는다 · 원장 무기록 · 러너 호출 0",
+    "ok": true,
+    "detail": " barrier_held data_stale vintage_in_progress gpu_wait 6 6",
+    "evidence": []
+  },
+  {
+    "id": "C5",
+    "name": "막힘이 풀리면 잇는다 — 걸음 2(리밸 블록) 측정 · 판정 = 기각(개선 없음)",
+    "ok": true,
+    "detail": "measured reject ",
+    "evidence": []
+  },
+  {
+    "id": "K2",
+    "name": "측정 실패 2회 → step_measure_failed 2줄 → 포기(기각 · 산출 없음) — 사슬 계속",
+    "ok": true,
+    "detail": " failed failed ",
+    "evidence": []
+  },
+  {
+    "id": "C6",
+    "name": "닫기 — chain_closed · 최종 후보 = 걸음 1(마지막 채택) 산출 · 시행 3(기준 칸 + 판정 걸음 2 · 포기 1 제외)",
+    "ok": true,
+    "detail": "done stage_artifacts/replication/pilot/P4C90_pilot_k1_n2 3",
+    "evidence": []
+  },
+  {
+    "id": "C7",
+    "name": "실제 선택 현실 점검 재채점(selection_regrade.R · 시행 집합 3) — 측정 시점 A → 재채점 A · 관문 = reality_check · 조정 p ≤ alpha · 원본 사본 남김",
+    "ok": true,
+    "detail": "A → A 조정 p 0.0005 <= alpha 0.05 · 시행 3 · 요구 t 2.06",
+    "evidence": {
+      "selection_gate": {
+        "mode": "reality_check",
+        "ok": true,
+        "reason": "조정 p 0.0005 <= alpha 0.05 · 시행 3 · 요구 t 2.06"
+      },
+      "p_adj": {
+        "P4C90_pilot_k0_n1": 0.011494,
+        "P4C90_pilot_k1_n2": 0.0005,
+        "P4C90_pilot_k2_n3": 0.026987
+      },
+      "S": 1.28
+    }
+  },
+  {
+    "id": "C8",
+    "name": "실제 A 자격 관문(round_candidate_gate.R → rf_a_eligibility) = 발행 · judge_request.eligible.json(judge_request_v2 · pending · 보류 코드 0) · 보류 파일 없음 · Judge 스폰 없음(건식)",
+    "ok": true,
+    "detail": "publish ",
+    "evidence": {
+      "judge_request": "stage_artifacts/replication/pilot/P4C90_pilot_k1_n2/judge_request.eligible.json"
+    }
+  },
+  {
+    "id": "C9",
+    "name": "최종 후보 1개만 모듈 풀 등재(정본 등재기 · 거울 루트 사본 module_catalog 만 바뀜 — 실제 원장은 실행기가 md5 대조)",
+    "ok": true,
+    "detail": "registered 등급 A — 등급 floor 통과 등재",
+    "evidence": []
+  },
+  {
+    "id": "C10",
+    "name": "결과 원장(거울 06_Registry/round_outcomes.jsonl) — 사슬 닫기 1줄 · 다음 탐침 2 · 설계 입력 표에 보인다",
+    "ok": true,
+    "detail": "- **P4C90_pilot** (P4_ASSEMBLY · 칸 3 · 변형 3 · 목표 축 판독 signal) — 사슬 P4C90_pilot — 걸음 3(채택 1 · 기각 1 · 포기 1) · 최종 후보 걸음 1 · 위기 하락 포착 — 엔진 대비 비악화 · 시장 대비 시장 이하   - 해석: 파일럿 — 합성 양성 1건(걸음 1)의 A 경로 소방 훈련   -",
+    "evidence": []
+  },
+  {
+    "id": "K3",
+    "name": "핀 변경(상설 판 판정 경로 파일 1바이트) = 판정 · 측정 맥락 거부(판정 경로 핀 불일치 — 새 판) · 되돌리면 정상",
+    "ok": true,
+    "detail": "[round_core standing] 판정 경로 핀 불일치(R2) — 새 판 등록이 필요하다:\n핀 파일 md5 변경: 06_Registry/g ",
+    "evidence": []
+  },
+  {
+    "id": "C11",
+    "name": "처치 칸 기저 사슬(standing:…:X_E3) 등록 — 기저 칸 사양 = 통과 칸 처치 그대로 · 열린 채 둔다(실행기 R6 사슬 틱 드라이런 대상)",
+    "ok": true,
+    "detail": "",
+    "evidence": []
+  }
+]

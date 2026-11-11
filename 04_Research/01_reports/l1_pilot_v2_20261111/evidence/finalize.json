@@ -1,0 +1,116 @@
+{
+  "schema": "rc_p4_finalize_v1",
+  "audience": "사람 쪽(전기간 · 시험 창 포함 가능) — 처방 · 리뷰 레인 열람 금지",
+  "at": "2026-11-11T18:36:57+0900",
+  "closing_id": "ddebb857388f12e900c44ae09e51c604",
+  "candidate": "stage_artifacts/replication/pilot/P4C90_pilot_k1_n2",
+  "trials": {
+    "C:/Users/User/AppData/Local/Temp/claude/594eba70e8c297ec/09c9a4ca-382f-40c6-b542-7eaf2d6ea9ba/scratchpad/pilot_final/mirror/stage_artifacts/replication/pilot/P4C90_pilot_k0_n1": "stage_artifacts/replication/pilot/P4C90_pilot_k0_n1",
+    "C:/Users/User/AppData/Local/Temp/claude/594eba70e8c297ec/09c9a4ca-382f-40c6-b542-7eaf2d6ea9ba/scratchpad/pilot_final/mirror/stage_artifacts/replication/pilot/P4C90_pilot_k1_n2": "stage_artifacts/replication/pilot/P4C90_pilot_k1_n2",
+    "C:/Users/User/AppData/Local/Temp/claude/594eba70e8c297ec/09c9a4ca-382f-40c6-b542-7eaf2d6ea9ba/scratchpad/pilot_final/mirror/stage_artifacts/replication/pilot/P4C90_pilot_k2_n3": "stage_artifacts/replication/pilot/P4C90_pilot_k2_n3"
+  },
+  "n_abandoned": 1,
+  "expected": {
+    "n_trials": 3,
+    "ids": ["P4C90_pilot_k0_n1", "P4C90_pilot_k1_n2", "P4C90_pilot_k2_n3"]
+  },
+  "same_base_chains": [],
+  "same_base_unreadable": [],
+  "write": true,
+  "result": {
+    "status": "ok",
+    "grade_before": "A",
+    "grade_after": "A",
+    "gate_ok": true,
+    "reason": "조정 p 0.0005 <= alpha 0.05 · 시행 3 · 요구 t 2.06",
+    "benefits_from_rule_change": false,
+    "measured_grade": "A",
+    "check": {
+      "schema": "selection_reality_check_v1",
+      "version": "sb1",
+      "method": "romano_wolf_stepdown_maxT_stationary_bootstrap",
+      "n_obs": 322,
+      "n_trials": 3,
+      "trial_ids": [
+        "P4C90_pilot_k0_n1",
+        "P4C90_pilot_k1_n2",
+        "P4C90_pilot_k2_n3"
+      ],
+      "dropped_zero_variance": [],
+      "candidate": "P4C90_pilot_k1_n2",
+      "candidate_t": 6.34973279682046,
+      "p_adj_candidate": 0.000499750124937531,
+      "alpha": 0.05,
+      "pass_reality_check": true,
+      "pass": true,
+      "required_t": 2.05865427381728,
+      "effective_independent_trials": 2.56959855421743,
+      "p_adj": {
+        "P4C90_pilot_k0_n1": 0.011494,
+        "P4C90_pilot_k1_n2": 0.0005,
+        "P4C90_pilot_k2_n3": 0.026987
+      },
+      "t": {
+        "P4C90_pilot_k0_n1": 2.508786,
+        "P4C90_pilot_k1_n2": 6.349733,
+        "P4C90_pilot_k2_n3": 1.995733
+      },
+      "resamples": 2000,
+      "mean_block": 7,
+      "nw_lag": 3,
+      "seed": 20261110,
+      "pbo": {
+        "status": "ok",
+        "pbo": 0.00155400155400155,
+        "partitions": 16,
+        "combinations": 12870,
+        "logit_median": 1.09861228866811,
+        "statistic": "active_sharpe",
+        "role": "diagnostic",
+        "flag_above": 0.05,
+        "flagged": false
+      },
+      "date_from": "2000-01-31",
+      "date_to": "2026-10-30",
+      "fill": {
+        "trials_filled": 0,
+        "max_fill_frac": 0
+      },
+      "set_hash": "7218f5e057783fd18036df71b2897010",
+      "computed_at": "2026-11-11T18:36:49+0900",
+      "block_sensitivity": {
+        "half": {
+          "mean_block": 4,
+          "p_adj_candidate": 0.000499750124937531
+        },
+        "double": {
+          "mean_block": 14,
+          "p_adj_candidate": 0.000499750124937531
+        }
+      }
+    },
+    "written": true
+  },
+  "candidate_gate": {
+    "status": "evaluated",
+    "action": "publish",
+    "eligible": true,
+    "codes": [],
+    "path": "stage_artifacts/replication/pilot/P4C90_pilot_k1_n2/judge_request.eligible.json",
+    "strategy_id": "P4C90_pilot_k1",
+    "spec_path": "04_Research/programs/P4_ASSEMBLY/P4C90_pilot/measure/k1.spec.json"
+  },
+  "module_pool": {
+    "status": "registered",
+    "code": "registered",
+    "why": "등급 A — 등급 floor 통과 등재"
+  },
+  "ledger_finalize": {
+    "status": "done",
+    "regrade_status": "ok",
+    "candidate_gate": "evaluated",
+    "module_pool": "evaluated",
+    "n_trials": 3,
+    "write": true
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "schema": "rc_p4_chain_v1",
+  "program": "P4_ASSEMBLY",
+  "chain_id": "P4C90_pilot",
+  "core_version": "v2",
+  "rules_version": "p4_rules_v2",
+  "purpose": "파일럿 — 사다리 루프 종단(v2)",
+  "tau_d": "2022-12-31",
+  "tau_d_source": "06_Registry/behavior_card.json::tau_d(정보 경계 τ_D · 채택 규칙 · 설계 입력은 그 이전만)",
+  "base": {
+    "key": "engine:PILOT_Y",
+    "pool_md5": "b110cfc8bd980cb253138a50c719fc38",
+    "engine_path": "04_Research/strategies/RP_AUTO_PILOT_Y/engine.R",
+    "cell_spec": "04_Research/programs/P4_ASSEMBLY/P4C90_pilot/base_cell_spec.json",
+    "cell_spec_md5": "29b60f2f031e43063e6291e6aeb53cf8",
+    "artifacts": "stage_artifacts/replication/pilot_standing/P1S90_Y_E2"
+  },
+  "adoption": {
+    "rules": [
+      {
+        "id": "improve",
+        "type": "threshold",
+        "label": "보는 창 S 개선",
+        "metric": "dS_vis",
+        "op": ">=",
+        "value_ref": "04_Research/programs/P3_CONSTRUCTION/P3R03_advanced_construction/prereg.json::final_selection_rule.tie_eps",
+        "source": "P3R03 tie_eps 승계(파일럿)"
+      },
+      {
+        "id": "uc_floor",
+        "type": "threshold",
+        "label": "상승 포착 하한",
+        "metric": "uc_vis",
+        "op": ">=",
+        "value_ref": "06_Registry/behavior_card.json::uc_floor",
+        "source": "헌장 §2"
+      },
+      {
+        "id": "crisis_no_worse",
+        "type": "threshold",
+        "label": "위기 하락 포착 비악화",
+        "metric": "d_dd_capture_median_vis",
+        "op": "<=",
+        "value": 0,
+        "basis": "정의 — 비악화 = 부모 이하",
+        "source": "정의"
+      },
+      {
+        "id": "bull_segments",
+        "type": "threshold",
+        "label": "강세 구간별 참여(N1)",
+        "metric": "uc_seg_ok_share_vis",
+        "op": ">",
+        "value_ref": "06_Registry/behavior_card.json::majority_share",
+        "source": "헌장 §5 빈칸 4 · 7 · 24"
+      },
+      {
+        "id": "deep_crisis",
+        "type": "threshold",
+        "label": "깊은 위기 과반 비악화(N2)",
+        "metric": "deep_crisis_nonworse_share_vis",
+        "op": ">",
+        "value_ref": "06_Registry/behavior_card.json::majority_share",
+        "source": "헌장 §5 빈칸 2 · 23"
+      }
+    ],
+    "decision": "accept = 모든 채택 규칙이 참(미측정 = 기각)"
+  },
+  "budget": {
+    "max_steps": 4,
+    "max_steps_source": "파일럿(걸음 4 · 시험 규모)",
+    "noise_k": 2,
+    "noise_k_source": "체계 §4 R7(연속 2)"
+  },
+  "generator": {
+    "id": "g1",
+    "files": {
+      "step.md": "300604cce81658742c34cbae7bdbf9b0"
+    }
+  },
+  "final_rule": "last_accepted"
+}

@@ -1,0 +1,196 @@
+{
+  "status": "OK",
+  "run_id": "RP_20261111_183603_P4C90pilotk1n2",
+  "strategy_id": "P4C90_pilot_k1_n2",
+  "metric_type": "backtested",
+  "grade_scheme": "grade_v3",
+  "essence_grade": "A",
+  "selection_type": "sweep",
+  "n_trials_cumulative": 2,
+  "measurement_regime": {
+    "selection_type": "sweep",
+    "n_trials_cumulative": 2,
+    "n_trials_basis": "round_cells",
+    "exec_price": "close_t1",
+    "exec_price_basis": "argument",
+    "cost_model_version": "pilot_synthetic"
+  },
+  "measurement_axis": {
+    "epoch": "all_hyg_px1000_2000_v1"
+  },
+  "pilot": {
+    "synthetic": true,
+    "alpha": 0.012,
+    "beta": 0.75,
+    "sd": 0.02,
+    "seed": 201
+  },
+  "dsr": 0.999999962406321,
+  "essence": {
+    "dsr": 0.999999962406321
+  },
+  "grade_v3": {
+    "status": "ok",
+    "schema": "grade_v3_v1",
+    "grade": "A",
+    "S": 1.28,
+    "S_B": 0.3485,
+    "rules_version": "v3.4",
+    "crisis_def": "lt_first_passage",
+    "cr_notch_basis": "normal",
+    "mc8": {
+      "status": "no_universe",
+      "label": null,
+      "share_beats_size_exposure": null,
+      "median_placebo_p": null
+    },
+    "band": "A",
+    "notch": 0,
+    "notch_a": false,
+    "blocked_by": [
+      "cr:strong_without_selection(NA)"
+    ],
+    "floors": {
+      "port_t": true,
+      "calmar": true,
+      "cagr": true,
+      "sharpe": true
+    },
+    "bench": {
+      "calmar": 0.1431,
+      "cagr": 0.0783,
+      "mdd": 0.5469,
+      "sharpe": 0.4091
+    },
+    "cr": {
+      "overall": "strong",
+      "test": "normal",
+      "visible": "strong",
+      "n_crisis": 8,
+      "dd_capture_median": 0.5208,
+      "dd_capture_worst": 0.6997,
+      "uc_median": 1.2269,
+      "cdar": 0.254,
+      "controls": "not_provided"
+    },
+    "oos": {
+      "tau_d": "2022-12-31",
+      "gate": true,
+      "parts": {
+        "test_window_cr_not_weak": true,
+        "test_window_calmar_vs_bench": true
+      },
+      "pass_oos": 0.4783,
+      "pass_min": 0.5,
+      "pass_life": 0.7805,
+      "S_is": 1.2415,
+      "S_oos": 0.635,
+      "retention_calmar": 2.9455,
+      "retention_sharpe": 1.0752,
+      "components": [
+        "test_window_cr_not_weak",
+        "test_window_calmar_vs_bench"
+      ],
+      "parts_all": {
+        "test_window_cr_not_weak": true,
+        "rolling36_pass_oos": false,
+        "test_window_calmar_vs_bench": true
+      },
+      "calmar_tw": 1.5064,
+      "bench_calmar_tw": 0.9096
+    },
+    "parity_max_abs": 5.10702591327572e-15,
+    "nav_source": "contract",
+    "fa_notch": 0,
+    "fa": {
+      "status": "ok",
+      "enabled": true,
+      "eligible": true,
+      "applied": false,
+      "why_not": [
+        "already_A"
+      ],
+      "t_min": 9.0547,
+      "t_min_model": "FF6",
+      "test_all_pos": true,
+      "n_months": 322,
+      "nw_lag": 3,
+      "tau_d": "2022-12-31",
+      "models": {
+        "FF3": {
+          "t": 9.4931,
+          "alpha_ann": 0.1443,
+          "n": 304,
+          "test_alpha_ann": 0.1033,
+          "test_n": 46
+        },
+        "Carhart4": {
+          "t": 9.2312,
+          "alpha_ann": 0.1416,
+          "n": 304,
+          "test_alpha_ann": 0.1044,
+          "test_n": 46
+        },
+        "FF5": {
+          "t": 9.2948,
+          "alpha_ann": 0.1473,
+          "n": 292,
+          "test_alpha_ann": 0.1153,
+          "test_n": 46
+        },
+        "FF6": {
+          "t": 9.0547,
+          "alpha_ann": 0.1448,
+          "n": 292,
+          "test_alpha_ann": 0.1201,
+          "test_n": 46
+        }
+      },
+      "factor_md5": "6bdbf0bd63e7586e8c71108eb263578f",
+      "factor_vintage": "kr_factor_returns_vintages/6bdbf0bd63e7.parquet",
+      "factor_epoch": "all_hyg_px1000_2000_v1",
+      "record_epoch": "all_hyg_px1000_2000_v1",
+      "error": null
+    }
+  },
+  "reasons": "v3: S 1.280 · B 경계 0.349 · 띠 A · CR strong(시험 창 normal) · 노치 +0 · A 아님 사유 cr:strong_without_selection(NA) | v921 NA: ",
+  "dsr_gate_applied": false,
+  "selection_gate": {
+    "mode": "reality_check",
+    "ok": true,
+    "reason": "조정 p 0.0005 <= alpha 0.05 · 시행 3 · 요구 t 2.06"
+  },
+  "selection_check": {
+    "version": "sb1",
+    "n_trials": 3,
+    "n_obs": 322,
+    "candidate_t": 6.34973279682046,
+    "p_adj_candidate": 0.000499750124937531,
+    "alpha": 0.05,
+    "required_t": 2.05865427381728,
+    "effective_independent_trials": 2.56959855421743,
+    "pbo": 0.00155400155400155,
+    "pbo_role": "diagnostic",
+    "pbo_flagged": false,
+    "set_hash": "7218f5e057783fd18036df71b2897010",
+    "expected_n_trials": 3,
+    "expected_n_ids": 3,
+    "n_dropped_zero_variance": 0
+  },
+  "selection_regrade": {
+    "at": "2026-11-11T18:36:51+0900",
+    "tool": "02_Infrastructure/programs/selection_regrade.R",
+    "decision": "decision_register DSR-GATE-FORM-20261110",
+    "rules_version": "v3.4",
+    "prior_essence_grade": "A",
+    "prior_md5": "7fa5051a4ae10f1192f778c8d72205a2",
+    "prior_dsr_gate_applied": false,
+    "measured_at": null,
+    "measured_before_rule_change": false,
+    "measured_grade": "A",
+    "measured_grade_source": "prior_essence_grade(첫 재채점)",
+    "benefits_from_rule_change": false,
+    "check_file": "selection_reality_check.json",
+    "history": []
+  }
+}
