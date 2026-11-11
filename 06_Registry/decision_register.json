@@ -4571,7 +4571,31 @@
       "registered_at": "2026-11-11T20:35:40+0900",
       "recorded_by": "Q (P1S01 측정 세션 local_5ea99f84)",
       "evidence": "채팅 응답 2026-11-11 20:3x \"네 제안 수용할게\" — 직전 Q 답변 = 예측 · 배분 정의 제안(4분법 표 포함)"
+    },
+    {
+      "id": "LLM-LANE-FABLE-GENERATION-20261111",
+      "title": "1계층 리서치의 LLM 호출 가운데 고품질 추론이 필요한 곳에 최신 Fable 을 쓸지 · 어디에 쓸지",
+      "status": "resolved",
+      "opened_at": "2026-11-11T20:58:30+0900",
+      "options": [
+        "만드는 쪽 두 레인만 Fable — 충실구현 구현 에이전트(replication) · 강화 사슬 생성기(chain_generator). 검증 쪽(충실도 감사 6축 · 코드 감사 · 리뷰어 · 감독관 · Judge · Superfan)은 Opus 유지 · 사양 실행은 Sonnet 유지",
+        "검증 쪽까지 Fable — 위에 더해 충실도 감사 판독형 3축 · Judge",
+        "현행 유지 — 10-13 D12(Fable 미사용)"
+      ],
+      "recommendation": "만드는 쪽 두 레인만 — 근거: 레인 저널 10-20~11-11(구현 = opus/max) 논문 7편 · 구현 실행 44회 중 감사 기각 재구현 29회 · 기각 재구현 없이 끝난 논문 0편 → 구현 에이전트의 1차 충실도가 1계층의 병목. 생성기는 걸음당 1회라 호출이 적고 가설의 질이 사슬의 성패를 정한다. 검증 쪽은 다른 계열이 감사한다는 원칙(policy_20260923 기록)과 병렬 호출의 한도 소모(11-10 Fable 병렬 17개 한도 소진) 때문에 Opus 로 둔다.",
+      "default_until_decided": "현행 유지 — 10-13 D12(Fable 미사용)",
+      "blocks": [
+        "lane:replication",
+        "lane:chain_generator"
+      ],
+      "owner": "dohoon",
+      "source": "11-11 도훈 지시 '1계층 리서치에서 LLM 호출 파트에서 고품질 추론이 필요해서 최신 페이블 적용하면 리서치 퀄리티가 향상될 영역 있는지 확인해보고 적용시켜줘'",
+      "decision": "만드는 쪽 두 레인만 Fable — 충실구현 구현 에이전트(replication) · 강화 사슬 생성기(chain_generator). 검증 쪽(충실도 감사 6축 · 코드 감사 · 리뷰어 · 감독관 · Judge · Superfan)은 Opus 유지 · 사양 실행은 Sonnet 유지",
+      "decided_by": "dohoon",
+      "decided_at": "2026-11-11T20:58:31+0900",
+      "note": "도훈 2026-11-11 20:0x: \"1계층 리서치에서 LLM 호출 파트에서 고품질 추론이 필요해서 최신 페이블 적용하면 리서치 퀄리티가 향상될 영역 있는지 확인해보고 적용시켜줘\". ★도훈이 정한 것은 '찾아서 적용한다'까지이고, 어느 레인인지는 총괄 세션(Q)이 조사해 골랐다(Q 해석) — 넓히거나 줄이는 것은 도훈 결정. 적용 = 06_Registry/reinforce_auto_config.json llm.lanes.replication.model opus → fable · llm.lanes.chain_generator 신설(fable/max) · ops/chain_gen_run.sh 가 Fable 한도 폴백(opus/max)을 싣는다. 별칭 fable 이 푼 모델 = claude-fable-5-2(무인 인증 실호출 확인). 볼 것 = 새 논문 10편 뒤 논문당 감사 기각 재구현 횟수(기준 29/7 = 4.1) · 줄지 않으면 되돌린다. 검사 = test_rf_llm_fallback.sh E3 · E3b · E3m2 · test_llm_lane_wiring.sh C6c · C6d · test_llm_single_entry.sh G · test_scn_chain_gen_guard.sh F · M4.",
+      "registered_at": "2026-11-11T20:58:30+0900"
     }
   ],
-  "last_updated": "2026-11-11T20:35:43+0900"
+  "last_updated": "2026-11-11T20:58:32+0900"
 }

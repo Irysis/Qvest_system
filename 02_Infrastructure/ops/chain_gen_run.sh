@@ -1,14 +1,18 @@
 #!/usr/bin/env bash
 #==============================================================================
-# chain_gen_run.sh — 강화 사슬 다음 걸음 설계(생성기 LLM) 1회 · 무인 LLM 러너(계약 대상) · v1 2026-11-10
+# chain_gen_run.sh — 강화 사슬 다음 걸음 설계(생성기 LLM) 1회 · 무인 LLM 러너(계약 대상) · v1 2026-11-10 · v1.1 2026-11-11(Fable 한도 폴백)
 #
 # 결정: CHAIN-AUTOMATION-STANDING-BOARD-AND-TICK-20261110(도훈 11-10). 호출자 = 02_Infrastructure/ops/chain_tick.sh 뿐.
 # 사용: chain_gen_run.sh <WDIR> [사슬 디렉터리(저장소 상대 — 가드 탐침용)]
 #   입력 <WDIR>/prompt.md(chain_tick.R prompt) · <WDIR> 네 파일(round.sh <사슬> p4-workdir 가 τ_D 검사로 만든 것)
-#   출력 <WDIR>/out.md(최종 응답) · <WDIR>/gen_result.json {rc · reason · model}
+#   출력 <WDIR>/out.md(최종 응답) · <WDIR>/gen_result.json {rc · reason · model · fell_back} · 한도 폴백이 돌았으면 1차 출력 = <WDIR>/out.md.primary
 #   종료 0 산출 · 3 한도 · 4 인증 · 5 가드 탐침 실패(LLM 호출 안 함) · 6 시간 초과 · 1 그 밖
 # 실행 방식 = rx_lane.sh 와 같다(청정 레인 QVEST_CLEAN_LANE=1 · QVEST_CLEAN_WDIR=<WDIR> · 도구 Read/Glob/Grep 만 · 자동 커밋/푸시 끔 · cwd = 저장소 루트
 #   — 세션 훅 arm_gen_read_guard.sh(R5 성과 경로 · R6 허용 목록 밖 = block)가 이 호출에도 그대로 걸린다). 단일 진입 = rf_llm_env.sh::rf_llm_agent_run.
+# ★한도 폴백(2026-11-11 도훈 "최신 페이블 적용" · decision_register LLM-LANE-FABLE-GENERATION-20261111): 생성기가 Fable 계열로 해석되면
+#   rf_llm_resolve 가 싣는 폴백(설정 llm.fable_limit_fallback · 기본 opus/max)을 그대로 넘긴다 — Fable 한도 문구가 나오면 폴백 모델로 처음부터 1회 다시 돈다
+#   (도훈 09-17 "fable 한도 소진하면 opus 5 최대 effort 로 진행" · 읽기 전용 레인이라 치울 반쪽 산출물이 없다). Opus 계열로 해석되면 폴백은 비어 있다
+#   (한도면 종료 3 으로 물러난다 — 종전 그대로). 폴백까지 한도여도 종료 3 이다.
 # ★LLM 을 부르기 전에 가드 탐침(양성 대조)을 돈다 — 성과 파일 · 사슬 측정 파일 · 루트 표기 3꼴(G: · C: 접합점 · 역슬래시)이 block, 작업 폴더 파일이 통과여야 한다.
 #   하나라도 어긋나면 claude 를 부르지 않는다(경계가 실제로 걸린다는 증거 없이 생성기를 띄우지 않는다).
 # 경보는 이 러너가 내지 않는다(정체 잠금만 예외) — 원인 분류를 종료 코드로 돌려주고 틱이 원인 하나 = 하루 한 통으로 낸다.
@@ -59,7 +63,7 @@ CLAUDE_BIN="${CLAUDE_BIN:-$(command -v claude || echo /c/Users/99922/AppData/Roa
 ROOT="${ROOT:-$BASE}"
 . "$BASE/02_Infrastructure/ops/rf_llm_env.sh"
 rf_llm_resolve chain_generator "${QVEST_CG_MODEL:-}" "${QVEST_CG_EFFORT:-}"
-LLM_FALLBACK_MODEL=""                        # 폴백 미탑재(rx_lane.sh 와 같다 — 한도면 물러난다)
+# 폴백 = rf_llm_resolve 가 정한 그대로 둔다(Fable 계열이면 설정 llm.fable_limit_fallback · Opus 계열이면 없음 — 머리말 '한도 폴백')
 [ -x "$CLAUDE_BIN" ] || { log "claude CLI not found ($CLAUDE_BIN)"; exit 1; }
 source "$(dirname "${BASH_SOURCE[0]:-$0}")/_sched_failure_classify.sh" 2>/dev/null || true
 if command -v sched_check_credentials >/dev/null 2>&1; then
@@ -101,8 +105,9 @@ _guard_probe "$WDIR" || { log "가드 탐침 실패 — claude 호출 안 함"; 
 
 # -- 생성기 1회(단일 진입 · 청정 표식 · 읽기 3도구) — 시간제한 = 설정 gen_timeout_sec · 환경 QVEST_RUN_TIMEOUT 이 덮는다 --
 _run_claude(){
+  local _fbm="${LLM_FALLBACK_MODEL:-}"; [ -n "${1:-}" ] && _fbm=""   # 모델을 지정해 다시 부를 때는 폴백을 싣지 않는다(같은 모델로의 재실행 방지)
   QVEST_SKIP_AUTO_COMMIT=1 QVEST_SKIP_AUTO_PUSH=1 \
-  QVEST_CLEAN_LANE=1 QVEST_CLEAN_WDIR="$WDIR" RF_CLAUDE_BIN="$CLAUDE_BIN" LLM_MODEL="${1:-$LLM_MODEL}" LLM_FALLBACK_MODEL="" \
+  QVEST_CLEAN_LANE=1 QVEST_CLEAN_WDIR="$WDIR" RF_CLAUDE_BIN="$CLAUDE_BIN" LLM_MODEL="${1:-$LLM_MODEL}" LLM_FALLBACK_MODEL="$_fbm" \
     rf_llm_agent_run "$WDIR/prompt.md" "$WDIR/out.md" "${QVEST_RUN_TIMEOUT:-$GEN_TMO}" \
       --permission-mode default \
       --allowed-tools "Read,Glob,Grep" \
@@ -110,11 +115,12 @@ _run_claude(){
       --add-dir "$WDIR"
   rc=$?
 }
-log "claude 호출 시작 model=$LLM_MODEL effort=$LLM_EFFORT"
+log "claude 호출 시작 model=$LLM_MODEL effort=$LLM_EFFORT fallback=${LLM_FALLBACK_MODEL:-none}/${LLM_FALLBACK_EFFORT:-none}"
 # 알림 창 기준점 — 이 시각 이후 산출만 이 런의 것으로 본다(완주 알림 블록이 넘긴다)
 _NOTIFY_SINCE=$(date +%s)
 _run_claude ""
 log "claude -p exit=$rc"
+[ "${LLM_FELL_BACK:-0}" = "1" ] && log "한도 폴백 — $LLM_MODEL 한도 문구 → ${LLM_USED_MODEL:-?}/${LLM_USED_EFFORT:-?} 로 처음부터 1회 재실행(1차 출력 = out.md.primary)"
 reason="ok"
 if [ "$rc" -ne 0 ]; then
   reason="exit_$rc"
@@ -128,7 +134,7 @@ _RS="$BASE/02_Infrastructure/ops/research_run_notify.R"
 if [ -f "$_RS" ] && [ "${QVEST_RUN_NOTIFY:-0}" = "1" ]; then
   QM_ROOT="$BASE" Rscript --no-save "$_RS" "chain_gen" 0 0 "SAME" "$rc" "" "${_NOTIFY_SINCE:-}" >> "$LOG" 2>&1 || log "완주 알림 실패(비치명)"
 fi
-printf '{"rc":%s,"reason":"%s","model":"%s"}\n' "$rc" "$reason" "${LLM_USED_MODEL:-?}" > "$WDIR/gen_result.json"
+printf '{"rc":%s,"reason":"%s","model":"%s","fell_back":%s}\n' "$rc" "$reason" "${LLM_USED_MODEL:-?}" "${LLM_FELL_BACK:-0}" > "$WDIR/gen_result.json"
 log "끝 rc=$rc reason=$reason"
 case "$reason" in
   ok) exit 0 ;;

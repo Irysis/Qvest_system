@@ -11,9 +11,12 @@
 #   C. 해석 — 새로 배선한 5 레인이 rf_llm_resolve 를 부르고 설정 lane 이름과 일치한다
 #   (P0-M1 2026-09-24: 레인 호출이 rf_llm_env.sh::rf_llm_agent_run 단일 진입으로 모였다 — B 의 주입 좌표를
 #    그 한 곳으로 옮겼고 C8 이 5 레인의 경유를 본다. 미경유 전수 검사 = test_llm_single_entry.sh)
+#   (v10.2 2026-11-11 도훈 지시 "최신 페이블 적용" · decision_register LLM-LANE-FABLE-GENERATION-20261111: C6 에 사슬 생성기 레인 · C6c 를
+#    "fable 0" → "fable = 지정 2 레인뿐" 으로 옮겼다 · C6d 돌연변이. 스테이징 검증 = QVEST_TEST_LLM_CFG=<후보 설정>)
 set -uo pipefail
 ROOT="${QM_ROOT:-C:/Users/99922/OneDrive/Quant_Module_Moltbot}"
 PY="${QVEST_PY:-$ROOT/.venv_qvest_ml/Scripts/python.exe}"; [ -x "$PY" ] || PY=python
+CFG_LIVE="${QVEST_TEST_LLM_CFG:-$ROOT/06_Registry/reinforce_auto_config.json}"   # 운영 설정(스테이징 검증 = 후보 설정 경로)
 P=0; F=0
 ok(){ P=$((P+1)); echo "  OK   $1"; }
 ng(){ F=$((F+1)); echo "  FAIL $1 — ${2:-}"; }
@@ -81,24 +84,30 @@ out4=$(scan "$T" | tr -d '\r' | grep paper_router || true)
 #   alpha_search_queue · mode_queue_research · factor_deep_recheck 는 v10 퇴역 러너 — 설정 lanes 에서 빠졌고(D12)
 #   스크립트도 2026-11-10 삭제됐다(PRUNE-EXTRA-DELETIONS-20261110). 배선 검사는 살아 있는 두 레인에 대해 잰다.
 echo "=== C. 레인 해석기 호출 · 설정 lane 일치 (v10.01 D12 편성) ==="
-for pair in paper_router_run.sh:paper_router paper_atlas_run.sh:paper_atlas; do
+for pair in paper_router_run.sh:paper_router paper_atlas_run.sh:paper_atlas chain_gen_run.sh:chain_generator; do
   f="${pair%%:*}"; lane="${pair#*:}"
   if grep -q "^rf_llm_resolve $lane " "$OPS/$f"; then ok "C $f → rf_llm_resolve $lane"; else ng "C $f" "rf_llm_resolve $lane 부재"; fi
 done
-lanes=$("$PY" -c "import io,json;c=json.loads(io.open(r'$ROOT/06_Registry/reinforce_auto_config.json','rb').read().decode('utf-8'));print(' '.join(sorted((c.get('llm') or {}).get('lanes',{}).keys())))" | tr -d '\r')
+lanes=$("$PY" -c "import io,json,sys;c=json.loads(io.open(sys.argv[1],'rb').read().decode('utf-8'));print(' '.join(sorted((c.get('llm') or {}).get('lanes',{}).keys())))" "$CFG_LIVE" | tr -d '\r')
 # D12 편성(개선안 §10.4 · 2026-10-13 도훈): 판단 = opus · 지시 수행 = sonnet · fable 미사용. 퇴역 레인은 설정에 남지 않는다.
 miss=""
-for l in replication fidelity_audit overlay_audit cleaner_distill paper_router paper_atlas analyst prescriber reviewer steward factor_definer coder report_writer; do
+for l in replication chain_generator fidelity_audit overlay_audit cleaner_distill paper_router paper_atlas analyst prescriber reviewer steward factor_definer coder report_writer; do
   case " $lanes " in *" $l "*) ;; *) miss="$miss $l" ;; esac
 done
-[ -z "$miss" ] && ok "C6 설정 llm.lanes 에 D12 편성 13 레인 등재" || ng "C6 설정 누락" "$miss"
+[ -z "$miss" ] && ok "C6 설정 llm.lanes 에 편성 14 레인 등재(D12 13 + 사슬 생성기)" || ng "C6 설정 누락" "$miss"
 stale=""
 for l in b1_design b5_design lcode_mechanism overlay_propose grid_propose alpha_search_queue mode_queue_research factor_deep_recheck; do
   case " $lanes " in *" $l "*) stale="$stale $l" ;; esac
 done
 [ -z "$stale" ] && ok "C6b 퇴역 레인 설정 잔존 0" || ng "C6b 퇴역 레인이 설정에 남았다" "$stale"
-fab=$("$PY" -c "import io,json;c=json.loads(io.open(r'$ROOT/06_Registry/reinforce_auto_config.json','rb').read().decode('utf-8'));L=(c.get('llm') or {}).get('lanes',{});print(' '.join(sorted(k for k,v in L.items() if 'fable' in str((v or {}).get('model','')).lower())))" | tr -d '\r')
-[ -z "$fab" ] && ok "C6c fable 배정 레인 0(D12 — Opus 로 대체)" || ng "C6c fable 레인 잔존" "$fab"
+fable_lanes_of(){ "$PY" -c "import io,json,sys;c=json.loads(io.open(sys.argv[1],'rb').read().decode('utf-8'));L=(c.get('llm') or {}).get('lanes',{});print(' '.join(sorted(k for k,v in L.items() if 'fable' in str((v or {}).get('model','')).lower())))" "$1" | tr -d '\r'; }
+# (v10.2 2026-11-11 도훈 지시 · LLM-LANE-FABLE-GENERATION-20261111) Fable = 만드는 쪽 두 레인뿐 — 그 밖은 D12 그대로(판단 opus · 사양 실행 sonnet)
+FAB_WANT="chain_generator replication"
+fab=$(fable_lanes_of "$CFG_LIVE")
+[ "$fab" = "$FAB_WANT" ] && ok "C6c fable 배정 = 지정 2 레인(chain_generator · replication)뿐" || ng "C6c fable 배정 레인" "[$fab] (기대 [$FAB_WANT])"
+"$PY" -c "import io,json,sys;c=json.loads(io.open(sys.argv[1],'rb').read().decode('utf-8'));c['llm']['lanes']['paper_router']['model']='fable';io.open(sys.argv[2],'w',encoding='utf-8').write(json.dumps(c,ensure_ascii=False))" "$CFG_LIVE" "$T/cfg_fab_mut.json"
+fabm=$(fable_lanes_of "$T/cfg_fab_mut.json")
+[ "$fabm" != "$FAB_WANT" ] && printf '%s' "$fabm" | grep -q paper_router && ok "C6d [돌연변이] 지정 밖 레인을 fable 로 바꾼 설정은 C6c 가 잡는다" || ng "C6d 판별력" "[$fabm]"
 c7=0
 for f in paper_router_run.sh paper_atlas_run.sh chain_gen_run.sh; do
   bash -n "$OPS/$f" || { ng "C7 문법 $f"; c7=1; }

@@ -15,12 +15,18 @@
 #   해석 · fable 0 · 폴백 0 — 목록은 설정에서 재도출) · E3c(퇴역 레인 = 해석기 기본값 llm.model/effort 낙하) · E3m(E3b 돌연변이).
 #   A·C 절 합성 픽스처의 Opus 레인 이름을 퇴역 b1_design → 살아 있는 fidelity_audit 로 바꿨다(합성값 · 거동 불변).
 #   Fable 한도 폴백 기제(A~C)는 그대로 잰다. 롤백 태그 pre-v10.01-prescription-20261013
+# (v10.2 2026-11-11) 도훈 지시 "1계층 리서치 LLM 호출 중 고품질 추론이 필요한 곳에 최신 페이블 적용"(decision_register LLM-LANE-FABLE-GENERATION-20261111)에 맞춰
+#   E3 · E3b · E3m 을 옮겼다: 구판 "fable 0 · 폴백 0" → E3(편성표 14 레인 — 만드는 쪽 replication · chain_generator = fable/max + 폴백 opus/max) ·
+#   E3b(Fable 은 지정 레인 FABLE_LANES 에만 · Fable 레인은 폴백 필수 · 그 밖 레인은 폴백 없음 — 목록은 설정에서 재도출) · E3m(지정 밖 fable · 암묵값) ·
+#   E3m2(폴백을 끈 돌연변이). 재는 성질은 같다 — 운영 설정이 채택된 편성과 일치하고, 편성 밖 Fable · 폴백 없는 Fable 이 생기면 잡는다.
+#   스테이징 검증: QVEST_TEST_LLM_CFG=<후보 설정> 을 주면 운영 설정 대신 그 파일을 잰다.
 #==============================================================================
 set -uo pipefail
 ROOT="${QM_ROOT:-C:/Users/99922/OneDrive/Quant_Module_Moltbot}"
 cd "$ROOT" || exit 1
 PY="${QVEST_PY:-$ROOT/.venv_qvest_ml/Scripts/python.exe}"
 export QVEST_PY="$PY"
+LIVE_CFG="${QVEST_TEST_LLM_CFG:-$ROOT/06_Registry/reinforce_auto_config.json}"   # 운영 설정(스테이징 검증 = 후보 설정 경로)
 PASS=0; FAIL=0
 ok(){ printf '  OK   %s\n' "$1"; PASS=$((PASS+1)); }
 ng(){ printf '  FAIL %s — %s\n' "$1" "${2:-}"; FAIL=$((FAIL+1)); }
@@ -182,9 +188,9 @@ except Exception:
 print(';'.join(bad))
 PYE
 }
-w=$(pin_check "$ROOT/06_Registry/reinforce_auto_config.json" "$ROOT/06_Registry/rf_fidelity_axes.json" | tr -d '\r')
+w=$(pin_check "$LIVE_CFG" "$ROOT/06_Registry/rf_fidelity_axes.json" | tr -d '\r')
 [ -z "$w" ] && ok "E1 운영 설정·팬아웃 축 전부 별칭(fable/opus/sonnet) — 항상 최신 모델" || ng "E1 모델 ID 고정" "$w"
-"$PY" - "$ROOT/06_Registry/reinforce_auto_config.json" "$T/cfg_pinned.json" <<'PYM'
+"$PY" - "$LIVE_CFG" "$T/cfg_pinned.json" <<'PYM'
 import io, json, sys
 c = json.loads(io.open(sys.argv[1], 'rb').read().decode('utf-8'))
 c['llm']['lanes']['replication']['model'] = 'claude-fable-5-1'
@@ -193,45 +199,52 @@ PYM
 w=$(pin_check "$T/cfg_pinned.json" "$T/none.json" | tr -d '\r')
 printf '%s' "$w" | grep -q "llm.lanes.replication.model=claude-fable-5-1" \
   && ok "E2 [돌연변이] replication 을 ID 로 고정하면 검사가 잡는다" || ng "E2" "[$w]"
-unset QVEST_RF_CONFIG
+if [ -n "${QVEST_TEST_LLM_CFG:-}" ]; then export QVEST_RF_CONFIG="$LIVE_CFG"; else unset QVEST_RF_CONFIG; fi   # 평소 = 해석기의 기본 경로(운영 설정)를 그대로 탄다
 ## ★2026-09-23 도훈 지시 "무인실행에서 LLM 개입부 모두 opus max" — 구판 E3 는 운영 설정의 replication = fable 을 단정했다.
 ##   정책이 바뀌었으므로 운영 설정 단정은 **전 레인 opus/max · opus 레인엔 폴백 미부착**으로 옮긴다.
 ##   Fable 폴백 기제 자체는 위 C 절(합성 픽스처)이 계속 잰다 — 운영 상태를 빌리지 않는다.
 ## ★(v10.01 2026-10-13) D12(도훈 채택) 역할별 재배정 — 판단(판독·분석·처방·리뷰·감사·감독) = Opus · 명확한 사양 실행(코딩·분류·요약) =
 ##   Sonnet · Fable 미사용. 퇴역 레인 키 8종은 llm.lanes 에서 빠져 해석기 기본값(llm.model/effort = opus/max)으로 떨어진다.
 ##   정신은 그대로다 — 운영 설정의 모든 레인이 **명시값**으로 해석되고 fable(따라서 한도 폴백)이 없다.
-D12="replication=opus/max fidelity_audit=opus/xhigh overlay_audit=opus/xhigh cleaner_distill=sonnet/high paper_router=sonnet/high
-     paper_atlas=opus/xhigh analyst=opus/max prescriber=opus/max reviewer=opus/max steward=opus/max factor_definer=opus/xhigh
-     coder=sonnet/high report_writer=sonnet/medium"
+## ★(v10.2 2026-11-11) 도훈 지시 "최신 페이블 적용"(decision_register LLM-LANE-FABLE-GENERATION-20261111) — 만드는 쪽 두 레인(replication · chain_generator)만
+##   Fable(별칭 · 한도 폴백 opus/max). 검증(감사 · 리뷰 · 감독) = Opus · 사양 실행 = Sonnet 은 D12 그대로다. 편성표 셋째 칸 = 실리는 폴백(없으면 none).
+PLAN="replication=fable/max/opus:max chain_generator=fable/max/opus:max fidelity_audit=opus/xhigh/none overlay_audit=opus/xhigh/none
+      cleaner_distill=sonnet/high/none paper_router=sonnet/high/none paper_atlas=opus/xhigh/none analyst=opus/max/none prescriber=opus/max/none
+      reviewer=opus/max/none steward=opus/max/none factor_definer=opus/xhigh/none coder=sonnet/high/none report_writer=sonnet/medium/none"
 _e3_bad=""; _e3_n=0
-for _p in $D12; do
+for _p in $PLAN; do
   _l="${_p%%=*}"; _want="${_p#*=}"; _e3_n=$((_e3_n+1))
   rf_llm_resolve "$_l" "" ""
-  [ "$LLM_MODEL/$LLM_EFFORT/${LLM_FALLBACK_MODEL:-none}" = "$_want/none" ] || _e3_bad="$_e3_bad $_l=$LLM_MODEL/$LLM_EFFORT/${LLM_FALLBACK_MODEL:-none}(기대 $_want/none)"
+  _got="$LLM_MODEL/$LLM_EFFORT/${LLM_FALLBACK_MODEL:-none}${LLM_FALLBACK_MODEL:+:$LLM_FALLBACK_EFFORT}"
+  [ "$_got" = "$_want" ] || _e3_bad="$_e3_bad $_l=$_got(기대 $_want)"
 done
-[ -z "$_e3_bad" ] && ok "E3 운영 설정 해석 = D12 편성 ${_e3_n} 레인(판단 opus · 사양 실행 sonnet · fable 0) · 폴백 미부착" || ng "E3" "$_e3_bad"
+[ -z "$_e3_bad" ] && ok "E3 운영 설정 해석 = 11-11 편성 ${_e3_n} 레인(만드는 쪽 2 = fable + 폴백 opus/max · 판단 opus · 사양 실행 sonnet)" || ng "E3" "$_e3_bad"
 # E3b — 목록을 설정에서 재도출한다(편성표 밖 레인이 새로 생겨도 같은 규율을 받는다). $1 = 설정 → 위반 목록(없으면 빈 줄)
 _lanes_of(){ "$PY" -c "import io,json,sys
 c=json.loads(io.open(sys.argv[1],'rb').read().decode('utf-8'))
 for k,v in sorted(((c.get('llm') or {}).get('lanes') or {}).items()):
     v=v if isinstance(v,dict) else {}
     print('%s|%s|%s'%(k,v.get('model') or '',v.get('effort') or ''))" "$1" | tr -d '\r'; }
-lane_policy_check(){   # 암묵값(model/effort 미기재) · 해석 불일치 · fable · 폴백 부착
+FABLE_LANES=" replication chain_generator "   # Fable 을 쓰기로 정한 레인(도훈 11-11 · LLM-LANE-FABLE-GENERATION-20261111) — 여기 없는 레인의 fable 은 위반
+lane_policy_check(){   # 암묵값(model/effort 미기재) · 해석 불일치 · 지정 밖 fable · Fable 레인의 폴백 부재 · 그 밖 레인의 폴백 부착
   local cfg="$1" bad="" l m e
   while IFS='|' read -r l m e; do
     [ -n "$l" ] || continue
     if [ -z "$m" ] || [ -z "$e" ]; then bad="$bad $l:implicit($m/$e)"; continue; fi
     QVEST_RF_CONFIG="$cfg" rf_llm_resolve "$l" "" ""
     [ "$LLM_MODEL/$LLM_EFFORT" = "$m/$e" ] || bad="$bad $l:resolved=$LLM_MODEL/$LLM_EFFORT(설정 $m/$e)"
-    rf_llm_is_fable "$LLM_MODEL" && bad="$bad $l:fable"
-    [ -z "$LLM_FALLBACK_MODEL" ] || bad="$bad $l:fallback=$LLM_FALLBACK_MODEL"
+    if rf_llm_is_fable "$LLM_MODEL"; then
+      case "$FABLE_LANES" in *" $l "*) ;; *) bad="$bad $l:fable" ;; esac
+      { [ -n "$LLM_FALLBACK_MODEL" ] && ! rf_llm_is_fable "$LLM_FALLBACK_MODEL"; } || bad="$bad $l:no_fallback"
+    else
+      [ -z "$LLM_FALLBACK_MODEL" ] || bad="$bad $l:fallback=$LLM_FALLBACK_MODEL"
+    fi
   done < <(_lanes_of "$cfg")
   printf '%s' "$bad"
 }
-LIVE_CFG="$ROOT/06_Registry/reinforce_auto_config.json"
 _n_cfg=$(_lanes_of "$LIVE_CFG" | grep -c '|')
 w=$(lane_policy_check "$LIVE_CFG")
-[ -z "$w" ] && [ "${_n_cfg:-0}" -ge 1 ] && ok "E3b 설정 llm.lanes 의 모든 레인(${_n_cfg}) — 명시 model/effort 그대로 해석 · fable 0 · 폴백 부착 0" || ng "E3b" "n=$_n_cfg [$w]"
+[ -z "$w" ] && [ "${_n_cfg:-0}" -ge 1 ] && ok "E3b 설정 llm.lanes 의 모든 레인(${_n_cfg}) — 명시 model/effort 그대로 해석 · Fable 은 지정 레인만(폴백 필수) · 그 밖 레인 폴백 0" || ng "E3b" "n=$_n_cfg [$w]"
 # E3c — 퇴역 레인(D12 키 삭제 8종)은 설정에 없고 해석기 기본값으로 떨어진다(alpha_search_queue 등 스크립트가 남은 레인 포함)
 _gm=$("$PY" -c "import io,json,sys
 c=json.loads(io.open(sys.argv[1],'rb').read().decode('utf-8')); l=c.get('llm') or {}
@@ -252,9 +265,14 @@ c['llm']['lanes']['coder'].pop('effort', None)          # 다른 레인의 effor
 io.open(sys.argv[2], 'w', encoding='utf-8').write(json.dumps(c, ensure_ascii=False))
 PYM
 w=$(lane_policy_check "$T/cfg_lane_mut.json")
-if printf '%s' "$w" | grep -q "paper_router:fable" && printf '%s' "$w" | grep -q "paper_router:fallback=" && printf '%s' "$w" | grep -q "coder:implicit"; then
-  ok "E3m [돌연변이] 레인 하나를 fable 로 · 다른 레인의 effort 를 지우면 E3b 검사가 잡는다(fable 폴백 부착까지)"
+if printf '%s' "$w" | grep -q "paper_router:fable" && printf '%s' "$w" | grep -q "coder:implicit"; then
+  ok "E3m [돌연변이] 지정 밖 레인 하나를 fable 로 · 다른 레인의 effort 를 지우면 E3b 검사가 잡는다"
 else ng "E3m" "[$w]"; fi
+# E3m2 — 돌연변이: 폴백 스위치를 끄면 Fable 레인 둘이 폴백 없이 뜬다 → E3b 검사가 잡는가
+w=$(QVEST_LLM_FALLBACK=off lane_policy_check "$LIVE_CFG")
+if printf '%s' "$w" | grep -q "replication:no_fallback" && printf '%s' "$w" | grep -q "chain_generator:no_fallback"; then
+  ok "E3m2 [돌연변이] 폴백을 끄면 Fable 레인 둘의 폴백 부재를 E3b 검사가 잡는다"
+else ng "E3m2" "[$w]"; fi
 
 #── G. (선택) 실모델 별칭 확인 — RF_LLM_LIVE=1 일 때만. 한도를 조금 쓴다 ─────────────────────
 echo "=== G. 실모델 별칭 (RF_LLM_LIVE=1 일 때만) ==="

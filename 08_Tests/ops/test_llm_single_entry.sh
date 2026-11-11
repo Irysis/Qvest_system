@@ -14,7 +14,8 @@
 #   D. rf_llm_agent_run 이 두 표식을 claude 프로세스에 싣는다(1차·폴백 둘 다) · 호출자 셸로 새지 않는다 · 표식 삭제 돌연변이 red
 #   E. `_run_claude` 레인 4종 — 함수 본문을 가짜 claude 로 태워 표식·stdin 프롬프트·모델·재지정 시 폴백 미탑재 확인
 #   F. rf_llm_agent_run 을 부르는 파일은 호출 전에 rf_llm_env.sh 를 읽는다(명령 없음 = 조용한 무실행 방지)
-#   G. (2차 09-25) 한도 폴백 배선 — 허용 목록(이관 전 호출자 3) 밖은 LLM_FALLBACK_MODEL="" (구판 동작 보존) · 돌연변이 red
+#   G. (2차 09-25) 한도 폴백 배선 — 허용 목록(폴백을 싣기로 정한 호출자) 밖은 LLM_FALLBACK_MODEL="" (구판 동작 보존) · 돌연변이 red
+#      (2026-11-11: 허용 목록에 chain_gen_run.sh — 생성기 = Fable · 한도면 opus 로 다시 돈다. 거동 검사 = 08_Tests/scenarios/test_scn_chain_gen_guard.sh F 절)
 #      (E5·E6 = `_run_claude` 기본 호출이 Fable 로 해석돼도 --fallback-model 미탑재 · 되살린 돌연변이 red)
 # 격리: 쓰기는 mktemp 디렉터리뿐. 실 claude 는 부르지 않는다(가짜 실행 파일).
 #==============================================================================
@@ -226,7 +227,9 @@ echo "--- G. 한도 폴백 배선 — 허용 목록 밖 호출자는 LLM_FALLBAC
 # 폴백을 싣는 호출자 = 이관 전부터 이 함수를 쓰던 셋(반쪽 산출물 청소 훅 rf_llm_before_fallback 또는 감사 레인).
 # P0-M1 이관 레인은 구판처럼 폴백 없이 뜬다 — 새 호출자는 둘 중 하나를 명시적으로 골라야 한다.
 # (v10.01 2026-10-13) rf_b5_design.sh 퇴역 — 허용 목록에서 뺐다. 직접 레인 돌연변이 표본 = cleaner_distill_run.sh(구 rf_b1_design.sh)
-FB_ALLOW="rf_replication_auto.sh,rf_overlay_audit.sh"
+# (v10.2 2026-11-11) chain_gen_run.sh 편입 — 도훈 지시 "최신 페이블 적용"(decision_register LLM-LANE-FABLE-GENERATION-20261111)으로 생성기가 Fable 이 됐다.
+#   도훈 09-17 "fable 한도 소진하면 opus 최대 effort 로" 가 이 레인에도 걸린다. 읽기 전용 레인이라 반쪽 산출물 청소 훅은 필요 없다(1차 출력 = out.md.primary).
+FB_ALLOW="rf_replication_auto.sh,rf_overlay_audit.sh,chain_gen_run.sh"
 cat > "$T/g_scan.py" <<'PYG'
 import io, os, re, sys
 ops = sys.argv[1]; allow = set(sys.argv[2].split(','))
@@ -256,7 +259,11 @@ for fn in sorted(os.listdir(ops)):
 print('SEEN=%d' % seen)
 print('BAD=' + ' '.join(bad))
 PYG
-g="$("$PY" "$(winp "$T/g_scan.py")" "$(winp "$OPS")" "$FB_ALLOW" 2>&1 | tr -d '\r')"
+GOPS="$OPS"   # 스테이징 검증(QVEST_LSE_OVERLAY): 후보 사본을 얹은 ops 사본으로 잰다
+if [ -n "$OVERLAY" ] && [ -d "$OVERLAY/02_Infrastructure/ops" ]; then
+  GOPS="$T/gops_overlay"; mkdir -p "$GOPS"; cp "$OPS"/*.sh "$GOPS/"; cp "$OVERLAY"/02_Infrastructure/ops/*.sh "$GOPS/"
+fi
+g="$("$PY" "$(winp "$T/g_scan.py")" "$(winp "$GOPS")" "$FB_ALLOW" 2>&1 | tr -d '\r')"
 gs="$(printf '%s\n' "$g" | sed -n 's/^SEEN=//p')"; gb="$(printf '%s\n' "$g" | sed -n 's/^BAD=//p')"
 [ "${gs:-0}" -ge 4 ] 2>/dev/null && ok "G1 호출 지점 ${gs}곳을 본다(검사기 생존)" || ng "G1 호출 지점" "seen=${gs:-?} — $g"
 [ -z "$gb" ] && [ -n "$gs" ] && ok "G2 허용 목록 밖 호출자 전부 폴백 미탑재" || ng "G2 폴백 배선" "위반=[$gb]"
