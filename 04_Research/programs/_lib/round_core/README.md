@@ -75,6 +75,9 @@ round.sh <판> superfan-mark --codes a,b --kind pass|daily --p2 <id> --t2 <id>  
   3. 부호 층 간접 호출(P1S01 격리 점검 R-2) — 입구 정적 검사가 `align_factor_direction` · `compute_rolling_ic_all` 을 식 나무의 기호 참조(함수 값 · 별칭 · `$` · `::`) · 간접 호출 문자열(do.call · match.fun · get 류)까지 본다(`rc_standing_orient_refs`). 레인 엔진 47개의 판정은 v1 과 같다(11-11 대조).
   4. GPU 임대(점검 S-2 · WP3) — 상설 측정 · 사슬 측정이 `rc_gpu_guard` 를 지난다: 레인 정본 판별(`rf_replication_slots.py classify`)이 gpu 면 레인 측정 0(`status` 의 live claim 없음) + GPU 임대(`qv_lock.R::gpu_lease_acquire`)를 잡은 뒤에만 재고 끝나면 놓는다. 못 잡으면 원장 무기록(`gpu_wait` · CLI 종료 4 · 다음 틱 재개). cpu 엔진 = 그대로.
   5. CLI 가 자기 판의 `load.R` 을 적재한다(`round_core/v2/load.R`) · `round.sh -` 가 저장소 맨 위에 `-/results` 를 만들지 않는다.
+- **아직 없는 것(판단 Superfan T4 C-20261111-030 · 11-11)**: 결정 (나)의 둘째 절 — "방어형(P2 라우팅) 레인 엔진의 길은 P2 상설 판(규칙 한 번 등록)으로 따로 연다" — 은 v2 에 없다. 기저 풀은 P1_RETURN 상설 원장만 읽는다(`v2/standing.R::rc_standing_qualified(program = "P1_RETURN")` · `v2/p4.R::rc_p4_base_pool`). 지금 방어형 인계 엔진(1)이 기저가 될 길은 0 이다 — P2 상설 판 설계 = 다음 리서치 체인 세션(재개 저널 OP-20261110-V102-LADDER next ⓕ · P1S01 측정 조건을 기다리는 11-12 오전 창).
+- **라우팅 두 구현의 차이(C-20261111-035 · 오늘은 같은 답)**: `round.sh` 는 RELEASES 항목의 `status` 를 보지 않고 `round_spec.json` · `chain_spec.json` 을 읽는다 · `chain_tick.R` 은 `status = released` 만 보고 `chain_spec.json` 만 읽는다. RELEASES 는 출시 때만 항목을 더하고 사슬 틱은 사슬만 다루므로 답이 갈리지 않는다 — 출시 전 후보 항목을 RELEASES 에 넣는 일이 생기면 둘을 맞춘다.
+- **v1 판을 무인 틱에 다시 맡길 때(C-20261111-032)**: v1 상설 판(P1S01)의 측정 경로에는 GPU 관문이 없다 — torch 엔진이 든 v1 판의 `tick_hold` 를 지우면 무인 틱이 레인 · 임대 확인 없이 잰다. 그 판의 첫 측정은 한 셸에서 임대(`--holder-pid $$`) → scan · standing-measure · report → 임대 놓기로 돌리고, torch 칸 판정이 난 뒤 보류를 지운다(또는 같은 규칙의 새 판을 v2 로 등록).
 
 ## P4 강화 사슬 (p4_chain · v1/p4.R · v10.2 · 2026-11-10)
 

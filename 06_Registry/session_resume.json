@@ -1,6 +1,6 @@
 {
  "schema": "session_resume_v1",
- "updated_at": "2026-11-11T18:40:32+0900",
+ "updated_at": "2026-11-11T18:55:08+0900",
  "operations": [
   {
    "id": "OP-20261015-MSM-A",
@@ -551,7 +551,7 @@
    "goal": "전수점검 결론(A 미산출 = 생성 편중 · 시행 소진 · 기준점 부재 · 정지)에 따라 1계층의 일하는 순서를 바꿔 계약 경로 A 를 낸다 — 설계 README §4 의 순서와 완료 기준",
    "status": "in_progress",
    "started_at": "2026-11-10T10:27:03+0900",
-   "updated_at": "2026-11-11T18:40:32+0900",
+   "updated_at": "2026-11-11T18:55:08+0900",
    "steps": [
     {
      "id": "S0",
@@ -607,7 +607,7 @@
      "updated_at": "2026-11-10T12:13:47+0900"
     }
    ],
-   "next_action": "★11-11 18:4x 파일럿 통과(보고서 04_Research/01_reports/l1_pilot_v2_20261111/README.md · 재현 PILOT_OUT=<저장소 밖> bash 08_Tests/scenarios/run_l1_pilot_v2.sh) · 코어 v2 출시(RELEASES.json f7e5ce59). P1S01 판 1(v1)은 tick_hold 보류 유지 — 해제 조건 ① 파일럿 ✅ ② 06_Registry/factor_db_vintage.json 의 FACTOR-DB-INV-PANEL-RECOMPUTE-20261111 completed_at(18:28 현재 항목 없음 · 총괄 세션 대기 작업이 레인 측정 끝난 뒤 시작 · 2.5~3시간) ③ GPU 임대 + 레인 측정 0(THGNN 2601.04602 · 11-12 07~09시 종료 추정). 다음 세션 순서: ⓐ 세 조건 확인(python -X utf8 02_Infrastructure/ops/qv_lock.py lease status --json · python -X utf8 02_Infrastructure/ops/rf_replication_slots.py status --line · bash 02_Infrastructure/ops/refresh_barrier.sh status · factor_db_vintage.json) ⓑ python -X utf8 02_Infrastructure/ops/qv_lock.py lease acquire --holder P1S01_standing --purpose 'P1S01 상설 첫 측정' --holder-pid <측정 셸 pid> → 04_Research/programs/P1_RETURN/P1S01_standing_qualification/tick_hold 삭제 → :37 틱(또는 bash 02_Infrastructure/ops/standing_board_run.sh --send 1회) · 00:03 · 07:10 창 회피 · DNN 시드 지속 25~33 GB(커밋 여유 확인 FreeVirtualMemory) ⓒ 판정 뒤 통과 = 판단 T2 + 철학 P2 즉시 · superfan-mark · 미달 = 일 묶음 · 첫 판정 때 git log 0232aec81.. -- 02_Infrastructure/contracts/audit_bt_result.R 02_Infrastructure/reinforcement/rf_sleeve.R 를 note ⓓ 판정 뒤 bash 04_Research/programs/_lib/round_core/round.sh - p4-pool(v2 — key 열에 P1S01_E3_RX0 가 standing:… 처치 행으로 따로 나와야 C-20261111-001 반증 충족) → 첫 사슬 = 2002.06975 계보 밖 상설 자격 엔진(1908.01112 가 통과하면) · 사슬 사양 core_version v2 · 채택 규칙 v2 + N4 필수 · noise_k 2 · max_steps = trial_budget.R rc 근거 · 철학 P1 · 판단 T1 → p4-check → p4-register → chain_tick.sh --dry-run ⓔ 후속(작음): 08_Tests/programs/test_round_core_v1_standing.R H5 시험 격리 결함(P1S01 실제 등록 뒤 빨강 · 판 목록을 자기 판으로 걸러야) · 판단 Superfan T4 · T3(J-20261111-012~015) 도전 응답",
+   "next_action": "★11-11 19:0x 파일럿 통과(보고서 04_Research/01_reports/l1_pilot_v2_20261111/README.md · 재현 PILOT_OUT=<저장소 밖> bash 08_Tests/scenarios/run_l1_pilot_v2.sh) · 코어 v2 출시(RELEASES.json f7e5ce59 · 판단 Superfan T4 통과 R-20261111-004). P1S01 판 1(v1)은 tick_hold 보류 유지 — 해제 조건 ① 파일럿 ✅ ② 06_Registry/factor_db_vintage.json 의 FACTOR-DB-INV-PANEL-RECOMPUTE-20261111 completed_at(18:28 현재 항목 없음 · 총괄 세션 대기 작업이 레인 측정 끝난 뒤 시작 · 2.5~3시간) ③ GPU 임대 + 레인 측정 0(THGNN 2601.04602 · 11-12 07~09시 종료 추정). 다음 세션 순서: ⓐ 세 조건 확인(python -X utf8 02_Infrastructure/ops/qv_lock.py lease status --json · python -X utf8 02_Infrastructure/ops/rf_replication_slots.py status --line · bash 02_Infrastructure/ops/refresh_barrier.sh status · factor_db_vintage.json) ⓑ ★C-20261111-032 수용 — P1S01 은 v1 이라 측정 경로에 GPU 관문이 없다: tick_hold 는 그대로 둔 채 한 셸(배경 실행 1개)에서 python -X utf8 02_Infrastructure/ops/qv_lock.py lease acquire --holder P1S01_standing --purpose 'P1S01 상설 첫 측정' --holder-pid $$ → bash 04_Research/programs/_lib/round_core/round.sh 04_Research/programs/P1_RETURN/P1S01_standing_qualification scan → standing-measure → standing-report --send → lease release --holder P1S01_standing · 00:03 · 07:10 창 회피 · DNN 시드 지속 25~33 GB(시작 전 FreeVirtualMemory) · 첫 실측정은 파일럿이 대역으로 둔 길(셀 워커 · torch · RAWDATA 칸 평가)을 처음 지난다 — 끝까지 지켜본다 · E2 · E3 판정이 난 뒤에 tick_hold 삭제(대안 = 같은 규칙의 P1S02 를 v2 로 등록 — 측정 0 이라 잃는 판정 0 · GPU 관문 내장) ⓒ 판정 뒤 통과 = 판단 T2 + 철학 P2 즉시 · superfan-mark · 미달 = 일 묶음 · 첫 판정 때 git log 0232aec81.. -- 02_Infrastructure/contracts/audit_bt_result.R 02_Infrastructure/reinforcement/rf_sleeve.R 를 note ⓓ 판정 뒤 bash 04_Research/programs/_lib/round_core/round.sh - p4-pool(기본 = v2 — key 열에 P1S01_E3_RX0 가 standing:… 처치 행으로 따로) → 첫 사슬 = 2002.06975 계보 밖 상설 자격 엔진(1908.01112 가 통과하면) · 사슬 사양 core_version v2 · 채택 규칙 v2 + N4 필수 · noise_k 2 · max_steps = trial_budget.R rc 근거 · 철학 P1 · 판단 T1 → p4-check → p4-register → chain_tick.sh --dry-run ⓔ 후속(작음): 08_Tests/programs/test_round_core_v1_standing.R H5 시험 격리 결함(P1S01 실제 등록 뒤 빨강) ⓕ ★C-20261111-030 수용 — 결정 (나) 둘째 절 'P2 상설 판(방어형 레인 엔진의 길)' 설계 = 다음 리서치 체인 세션 담당 · 시점 = P1S01 조건을 기다리는 11-12 오전 창(측정 없이 할 수 있는 일) · v2 기저 풀은 P1_RETURN 원장만 읽는다 — 방어형 인계 엔진 1이 기저가 될 길 0(round_core README '판 라우팅 · v2' 절)",
    "context_files": [
     "04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/README.md",
     "04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/findings_ledger.md",
@@ -752,6 +752,10 @@
     {
      "at": "2026-11-11T18:40:32+0900",
      "text": "다음: ★11-11 18:4x 파일럿 통과(보고서 04_Research/01_reports/l1_pilot_v2_20261111/README.md · 재현 PILOT_OUT=<저장소 밖> bash 08_Tests/scena"
+    },
+    {
+     "at": "2026-11-11T18:55:08+0900",
+     "text": "다음: ★11-11 19:0x 파일럿 통과(보고서 04_Research/01_reports/l1_pilot_v2_20261111/README.md · 재현 PILOT_OUT=<저장소 밖> bash 08_Tests/scena"
     }
    ]
   }

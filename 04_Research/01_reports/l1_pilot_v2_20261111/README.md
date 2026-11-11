@@ -18,7 +18,8 @@
 
 - **거울 루트**: 저장소 HEAD 의 코드 · 등록부(`git archive` — `CLAUDE.md` · `02_Infrastructure` · `04_Research/programs` · `00_Lawbook` · `06_Registry`) + 등급 계약 데이터 사본 4개(`.cache/benchmark.parquet` · 요인 수익 3). `QM_ROOT` = `CLAUDE_PROJECT_DIR` = `RC_SA_ROOT` = 거울 · `R_ENVIRON_USER` = 빈 파일(첫 줄 단정) · 잠금 · GPU 임대 · 레인 상태 = 임시 경로.
 - **진짜(정본 코드 그대로)**: 상설 판 등록(`rc_register` — 점검 기록 · 철학 P1 영수증 · 핀) · 스캔 · 판정(등록 규칙 적용 · t(α) = β-통제 알파 계약 · 상승 포착 = 행동 카드) · 구성 판독 · 기저 풀 · 사슬 판 검사 · 등록(감독 영수증) · 걸음 열기 검사 · 걸음 판정(보는 창 지표 · 채택 규칙 판 v2) · 막힘 판정 · 포기 · 닫기 · **선택 현실 점검 재채점(`selection_regrade.R`)** · **A 자격 관문(`round_candidate_gate.R` → `rf_a_eligibility`)** · 모듈 풀 등재기 · 결과 원장 · `round.sh` · `chain_tick.sh`(드라이런).
-- **대역**: ① 측정기 — 셀 워커 대신 KOSPI200 실제 월 수익 위 합성 수익(r = α + β·bm + ε)을 계약 함수(`build_metrics` · `build_benchmark_compare`)로 산출물화하고, 측정 시점 등급은 실제 등급 계약(`gv3_score_dir`)이 낸다. ② 상설 칸 평가의 RAWDATA 패킷(`dp_build` · `mc_card` — 7 GB 급 적재) 대신 같은 행동 카드의 보는 창 지표. ③ 영수증 리뷰 파일은 합성(거울 판단 원장 사본에만). ④ Judge 스폰 없음(요청 파일까지 = 건식).
+- **대역**: ① 측정기 — 셀 워커 대신 KOSPI200 실제 월 수익 위 합성 수익(r = α + β·bm + ε)을 계약 함수(`build_metrics` · `build_benchmark_compare`)로 산출물화하고, 측정 시점 등급은 실제 등급 계약(`gv3_score_dir`)이 낸다. ② 상설 칸 평가의 RAWDATA 패킷(`dp_build` · `mc_card` — 7 GB 급 적재) 대신 같은 행동 카드의 보는 창 지표 · 축 감사(`rc_axis_audit`)는 ok 로 고정. ③ 영수증 리뷰 파일은 합성(거울 판단 원장 사본에만). ④ Judge 스폰 없음(요청 파일까지 = 건식). ⑤ R 쪽 측정 호출의 데이터 지문 · 신선도 · 배리어 · GPU 판정은 주입(막힘 경로는 그 주입을 바꿔 본다 — 실제 판정기는 실행기 R8(거울 배리어) · v2 시험(G1~G5 GPU 관문 · 신선도 시험)에서 따로). ⑥ 상설 판 등록은 git 커밋 검사 · 시험 실행을 끈 채(`check_git = FALSE` · `run_tests = FALSE` — 거울은 git 저장소가 아니다). ⑦ P1S01(v1) 사본은 `check`(판 라우팅 · 핀 계산)만 — v1 판의 측정 · 판정은 거울에서 돌리지 않았다. (판단 Superfan T3 C-20261111-034 · 11-11)
+- 그래서 이 파일럿이 **보이지 않은 것**: 실제 셀 워커(`rf_cell_worker.R` → `run_paper_replication`) · torch 엔진 · RAWDATA 칸 평가 패킷 · v1 판의 실측정 경로 — 내일 P1S01 첫 실측정이 이 길을 처음 지난다(그래서 그 측정은 한 셸에서 임대를 쥔 채 손으로 돌린다 — 재개 저널 next ⓑ).
 - 왜 대역인가: DNN 칸 측정은 지속 25~33 GB 라 레인 THGNN 측정(12.8 GB)과 겹칠 수 없고(커밋 상한 55.8 GB), 파일럿의 목적은 판정 경로 배관과 관문의 양성 대조다.
 
 ## 알려진 답 2건 — v1 = 틀린 답 · v2 = 바른 답(같은 거울 원장)
@@ -58,4 +59,4 @@
 ## 실제 측정(보류 해제) — 아직
 
 해제 조건(셋 다): ① 파일럿 통과 ✅ ② `06_Registry/factor_db_vintage.json` 의 `FACTOR-DB-INV-PANEL-RECOMPUTE-20261111` `completed_at` — **항목 없음(재계산 시작 전)** ③ GPU 임대 + 레인 측정 0 — **레인 THGNN 측정 중(11-11 18:28 기준 6.8시간 · 11-12 07~09시 종료 추정)** · 임대 free.
-→ `tick_hold` 유지(판단 `J-20261111-015`). 다음 세션: 재계산 완료 확인 → `python -X utf8 02_Infrastructure/ops/qv_lock.py lease acquire --holder P1S01_standing --purpose "P1S01 상설 첫 측정" --holder-pid <pid>` + 레인 측정 0 → `tick_hold` 삭제 → 측정 창(00:03 · 07:10 회피 · DNN 시드 지속 25~33 GB).
+→ `tick_hold` 유지(판단 `J-20261111-015`). 다음 세션(판단 Superfan C-20261111-032 수용 — P1S01 은 v1 이라 측정 경로에 GPU 관문이 없다): 재계산 완료 · 레인 측정 0 확인 → **`tick_hold` 는 그대로 둔 채** 한 셸에서 임대(`python -X utf8 02_Infrastructure/ops/qv_lock.py lease acquire --holder P1S01_standing --purpose "P1S01 상설 첫 측정" --holder-pid $$`) → `round.sh <P1S01> scan` · `standing-measure` · `standing-report --send` → 임대 놓기 → E2 · E3(torch) 판정이 난 뒤에 `tick_hold` 삭제(또는 같은 규칙의 새 판 P1S02 를 v2 로 등록 — 측정 0 이라 잃는 판정 0) · 측정 창 = 00:03 · 07:10 회피 · DNN 시드 지속 25~33 GB.
