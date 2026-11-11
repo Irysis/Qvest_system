@@ -4523,7 +4523,29 @@
       "decided_at": "2026-11-11T14:17:45+0900",
       "note": "도훈 2026-11-11: \"자가 복구가 수급 전에 퀀티 세션을 먼저 확인하고, 죽어 있으면 한 번 재로그인하게 해줘.\" 구현 = ops/qw_session_ensure.sh(드라이버 -LoginOnly 1회 · 로그인 실패한 날은 재시도 없음 · 끄기 QVEST_QW_SESSION_ENSURE=0) + ops/ensure_data_current.sh 4a(계획에 퀀티 단계가 있을 때만 · 결과와 무관하게 복구 진행). 밤 체인의 Update_File 수급(-SkipLogin · 10-16 결정)은 그대로다.",
       "registered_at": "2026-11-11T14:17:44+0900"
+    },
+    {
+      "id": "L1-CHAIN-PILOT-FIRST-20261111",
+      "title": "리서치 체인(v10.2 사다리 루프)을 실제 원장으로 돌리기 전에 임시 원장 파일럿과 A 경로 소방 훈련을 먼저 할지",
+      "status": "resolved",
+      "opened_at": "2026-11-11T15:48:09+0900",
+      "options": [
+        "파일럿부터 — 임시 루트에서 상설 판 → 기저 풀 → 강화 사슬 → 닫기 → 선택 현실 점검 → A 자격 관문까지 한 번 돌리고(합성 양성 포함) 통과한 뒤 실제 측정",
+        "실제 운영 그대로 — 파일럿 없이 등록된 판을 바로 측정"
+      ],
+      "recommendation": "파일럿부터 — 사다리 루프 1항(기준점부터 · 관문은 아는 답을 한 번 통과시킨 뒤에 믿는다). 실제 첫 측정은 레인 측정과 수급 계열 재계산 때문에 어차피 11-12 오전 뒤라 일정 손실이 없다.",
+      "default_until_decided": "실제 운영 그대로",
+      "blocks": [
+        "item:P1S01_standing_measure"
+      ],
+      "owner": "dohoon",
+      "source": "11-11 도훈 질문 '지금 실행 중인 리서치체인은 파일럿 테스트지?' 에 총괄 세션이 올린 선택지",
+      "decision": "파일럿부터",
+      "decided_by": "dohoon",
+      "decided_at": "2026-11-11T15:48:10+0900",
+      "note": "도훈 2026-11-11 15:38: \"파일럿부터\". 그 시점에 리서치 세션은 이미 P1S01 을 실제로 등록했다(15:12 · e26717ab7 — 대기 요청을 읽기 전) → 등록본은 그대로 두고 실측정만 멈춘다: 판 폴더 보류 파일 04_Research/programs/P1_RETURN/P1S01_standing_qualification/tick_hold (ops/standing_board_run.sh 판 단위 보류 · 3cf58e200). 해제 조건 = 파일럿 통과 + 수급 계열 재계산 completed_at + GPU 임대. 파일럿 실행 · 통과 판단 · 보류 해제 = 리서치 체인 세션.",
+      "registered_at": "2026-11-11T15:48:09+0900"
     }
   ],
-  "last_updated": "2026-11-11T14:17:46+0900"
+  "last_updated": "2026-11-11T15:48:11+0900"
 }
