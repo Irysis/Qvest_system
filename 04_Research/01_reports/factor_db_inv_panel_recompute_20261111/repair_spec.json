@@ -1,0 +1,14 @@
+{
+  "schema": "factor_subset_repair_spec/v1",
+  "decision": "FACTOR-DB-INV-PANEL-RECOMPUTE-20261111",
+  "title": "수급 계열 재계산(투자자 패널 99종목 이력 보충 반영)",
+  "why": "도훈 2026-11-11 '빨간 시험 3건 이 세션에서 해결해'. 결함: 저장된 팩터 DB 의 수급 계열(INV01~INV13)은 투자자 패널에 99종목 이력이 보충되기 전의 패널로 만들어져 있다 — 08_Tests/factor_db/test_inv13_beta_asof.R A1(새로 지은 값 = 저장 값) · B2 가 그 차이를 잡는다(예: INV13 21일 행 수 새 3460 대 저장 3394 · 값 차이 최대 0.13). 코드 결함이 아니라 입력 패널이 바뀐 뒤 재계산하지 않은 것이다(11-10 커밋 7028345c4 가 '의도된 빨강 — INV01~13 재계산 필요'로 기록).",
+  "targets_source": "factor_registry.json 의 category = investor_flow 15팩터 전부(INV01~INV12 + INV13 세 지평). 모두 빌더의 investor 모듈 하나가 같은 투자자 패널에서 만든다 — 패널이 바뀌었으므로 모듈 산출 전체가 대상이다.",
+  "targets": [
+    "INV01_Foreign_NetBuy_20d", "INV02_Foreign_NetBuy_60d", "INV03_Inst_NetBuy_20d", "INV04_Inst_NetBuy_60d",
+    "INV05_Foreign_Momentum", "INV06_Inst_Momentum", "INV07_Retail_Contrarian", "INV08_Foreign_Inst_Agreement",
+    "INV09_Flow_Persistence", "INV10_Smart_Money_Flow", "INV11_Foreign_Concentration", "INV12_Supply_Demand_Imbalance",
+    "INV13_Foreign_Resid_Individual_21d", "INV13_Foreign_Resid_Individual_63d", "INV13_Foreign_Resid_Individual_126d"
+  ],
+  "modules": ["investor"]
+}
