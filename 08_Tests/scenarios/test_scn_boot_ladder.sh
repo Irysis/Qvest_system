@@ -10,7 +10,8 @@
 #   결과 원장 = round_core v1/outcomes.R(격리 줄 제외 · 열린 탐침 = probe_consumed 에 없는 ref)
 # 시나리오: a 판·사슬 없음 · b 등록 판(항목 2 · 통과 1 · 대기 1) + 미등록 사양 · c 열린 사슬 + 닫힌 사슬 + tick_hold + 생성 차단 ·
 #   d 틱 꺼짐 / 설정 손상 · e 깨진 원장 → '?' · f 결과 원장(열린 탐침 · 격리 줄 · Last 꼬리)
-# 돌연변이: M1 '사전등록 정본 있음' 조건 제거 → b red · M2 끊긴 원장을 빈 항목으로 접기 → e red
+#   bh 등록 판에 tick_hold(세션 보류 · 2026-11-11 도훈 "파일럿부터") → 그 판에 '·보류'
+# 돌연변이: M1 '사전등록 정본 있음' 조건 제거 → b red · M2 끊긴 원장을 빈 항목으로 접기 → e red · M3 판 보류 판독 제거 → bh red
 # 격리: 임시 루트만(운영 루트 · 운영 등록부 · .cache 쓰기 0 · R 0).
 # 후보판 이음새: BOOT_LADDER_SRC=<boot_lean.sh 사본>(운영 교체 전 검사)
 # 요약: 마지막 줄 {"test":"boot_ladder","pass":N,"fail":N,"total":N}
@@ -56,8 +57,9 @@ shutil.copy(STD, os.path.join(P, "04_Research/programs/_lib/round_core/v1/standi
 def spec(prog, rid, standing, rid_in=None):
     w("04_Research/programs/%s/%s/round_spec.json" % (prog, rid),
       json.dumps({"schema": "round_spec_v1", "program": prog, "round_id": rid_in or rid, "standing": standing}, indent=2, ensure_ascii=False))
-if SC in ("b", "e", "f"):
+if SC in ("b", "bh", "e", "f"):
     spec("P1_RETURN", "P1S01_board", True)                      # 등록(사전등록 정본 있음)
+    if SC == "bh": w("04_Research/programs/P1_RETURN/P1S01_board/tick_hold", "시험 보류\n")   # 세션 보류(standing_board_run.sh tick_hold)
     spec("P1_RETURN", "P1S02_draft", True)                      # 미등록(사전등록 정본 없음)
     spec("P2_DEFENSE", "P2R01_plain", False)                    # 상설 아님
     spec("P2_DEFENSE", "P2S09_misnamed", True, rid_in="OTHER")  # round_id ≠ 디렉터리 = 판 아님
@@ -118,6 +120,7 @@ run a; expect "a 판·사슬 없음" a "사다리: 상설 판 0 · 사슬 0 · �
 [ "$(grep -c '' "$T/out_a.txt")" = "8" ] && ok "a2 출력 8줄 그대로" || bad "a2 줄 수" "$(grep -c '' "$T/out_a.txt")"
 case "$(last_of a)" in *"원장 다음 탐침"*) bad "a3 Last" "원장 없는데 탐침 꼬리";; Last:*) ok "a3 원장 없음 → Last 꼬리 없음";; *) bad "a3 Last" "Last 줄 없음";; esac
 run b; expect "b 등록 판 + 미등록 사양" b "사다리: 상설 판 1(P1S01 항목 2·통과 1·대기 1·3h 전 / P1S02 미등록) · 사슬 0 · 틱 켜짐 · 결과 원장 없음(첫 닫기 전) · $FDV"
+run bh; expect "bh 등록 판 보류(tick_hold) → ·보류 표시" bh "사다리: 상설 판 1(P1S01 항목 2·통과 1·대기 1·3h 전 ·보류 / P1S02 미등록) · 사슬 0 · 틱 켜짐 · 결과 원장 없음(첫 닫기 전) · $FDV"
 run c; expect "c 열린 사슬(보류 · 생성 차단) + 닫힌 사슬" c "사다리: 상설 판 0 · 사슬 1(C1_open k2 step_open 5h 전 ·보류) · 닫힘 1 · ★생성 차단 1 · 틱 켜짐 · 결과 원장 없음(첫 닫기 전) · $FDV"
 run d; expect "d 틱 꺼짐" d "사다리: 상설 판 0 · 사슬 0 · 틱 꺼짐 · 결과 원장 없음(첫 닫기 전) · $FDV"
 run d2; expect "d2 틱 설정 손상 → ?" d2 "사다리: 상설 판 0 · 사슬 0 · 틱 ? · 결과 원장 없음(첫 닫기 전) · $FDV"
@@ -143,6 +146,8 @@ mutate M1 'if not os.path.isfile(R("stage_artifacts","programs",prog,rid,"prereg
   "사다리: 상설 판 1(P1S01 항목 2·통과 1·대기 1·3h 전 / P1S02 미등록) · 사슬 0 · 틱 켜짐 · 결과 원장 없음(첫 닫기 전) · $FDV"
 mutate M2 'return "?(원장 사슬 끊김)"' 'return {"n":0,"q":0,"p":0,"age":None}' e \
   "사다리: 상설 판 1(P1S01 ?(원장 사슬 끊김) / P1S02 미등록) · 사슬 0 · 틱 켜짐 · 결과 원장 ?(판독 불가) · $FDV"
+mutate M3 'hold=" ·보류" if os.path.exists(os.path.join(d,"tick_hold")) else ""          #' 'hold=""          #' bh \
+  "사다리: 상설 판 1(P1S01 항목 2·통과 1·대기 1·3h 전 ·보류 / P1S02 미등록) · 사슬 0 · 틱 켜짐 · 결과 원장 없음(첫 닫기 전) · $FDV"
 
 echo "=== 계약 ==="
 if grep -nE 'subprocess|os\.system|Popen' <(sed -n '/^def _OUTCOMES(/,/^o\.append(S(PROGRAMS/p' "$T/block.py" | grep -v '^#'); then bad "C1 사다리 블록" "프로세스 호출"; else ok "C1 사다리 블록 = 프로세스 호출 0"; fi

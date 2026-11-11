@@ -362,7 +362,7 @@ def DECISIONS():
 # ⑥-c 사다리(v10.2 · 2026-11-11 도훈 "qvest 부팅 시퀀스도 v10.2 에 대응되게") — Programs 줄 꼬리 ' | 사다리: …'. 새 줄을 만들지 않는다(8줄 계약).
 #   **읽기만**(R 0 · 쓰기 0). 정의는 실행기와 같다 — 하나라도 어긋나면 부팅과 틱이 다른 판 · 사슬을 본다:
 #   상설 판 = 02_Infrastructure/ops/standing_board_run.sh '등록된 상설 판' 절(사양 "standing": true · 최상위 round_id = 디렉터리 이름 ·
-#     stage_artifacts/programs/<program>/<round_id>/prereg.json 존재 — 없으면 '미등록'). 항목 상태 = round_core v1/standing.R::rc_standing_items 사건 의미
+#     stage_artifacts/programs/<program>/<round_id>/prereg.json 존재 — 없으면 '미등록' · 판 폴더 tick_hold = 보류 표시). 항목 상태 = round_core v1/standing.R::rc_standing_items 사건 의미
 #     (enqueue 가 항목을 만들고 measure · verdict 가 붙는다 · 통과 = verdict.qualify true · 대기 = .rcs_pending · 실패 상한 = 코어 상수 RC_STANDING_MAX_FAILS 를
 #     소스에서 읽는다 — 못 읽으면 '대기 ?'). 원장 사슬(schema · prev = 앞 줄 md5)이 끊겼으면 코어가 읽기를 거부하므로 '?(원장 사슬 끊김)'.
 #   강화 사슬 = 02_Infrastructure/ops/chain_tick.sh 0단계(P4_ASSEMBLY/<사슬>/chain_spec.json · '_' 폴더 제외 · 원장 첫 줄 chain_registered ·
@@ -415,7 +415,8 @@ def _LD_BOARDS():
         tag=rid.split("_")[0]
         if not os.path.isfile(R("stage_artifacts","programs",prog,rid,"prereg.json")): un.append(tag); continue   # 등록 전(사전등록 정본 없음)
         b=S(lambda: _LD_BOARD(R("stage_artifacts","programs",prog,rid,"standing_ledger.jsonl"),mf),"?(원장 판독 불가)")
-        reg.append("%s %s"%(tag,b if isinstance(b,str) else "항목 %d·통과 %d·대기 %s%s"%(b["n"],b["q"],b["p"],"" if b["age"] is None else "·"+HH(b["age"])+" 전")))
+        hold=" ·보류" if os.path.exists(os.path.join(d,"tick_hold")) else ""          # 세션 보류(standing_board_run.sh — 그 판의 무인 틱이 멈춰 있다 · 2026-11-11)
+        reg.append("%s %s%s"%(tag,b if isinstance(b,str) else "항목 %d·통과 %d·대기 %s%s"%(b["n"],b["q"],b["p"],"" if b["age"] is None else "·"+HH(b["age"])+" 전"),hold))
     parts=reg+["%s 미등록"%x for x in un]+(["사양 판독 불가 %d"%ur] if ur else [])
     return "상설 판 %d%s"%(len(reg),"(%s)"%" / ".join(parts) if parts else "")
 def _LD_CHAINS():
