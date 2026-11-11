@@ -1,6 +1,6 @@
 {
  "schema": "q_judgment_ledger_v1",
- "updated_at": "2026-11-11T20:02:24+0900",
+ "updated_at": "2026-11-11T21:11:50+0900",
  "judgments": [
   {
    "id": "J-20261016-001",
@@ -1718,6 +1718,98 @@
    ],
    "expectation": "판 2(코어 v2 위 · 시드 판정 뒤)에서 직접 포트폴리오 기저의 폭 판정을 계약 면제와 맞추거나 입구에서 거르면 1908 은 새 항목으로 다시 잴 수 있다 · 그 전까지 1908 은 기저 풀 자격 없음",
    "confidence": 0.8,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261111-021",
+   "at": "2026-11-11T21:11:37+0900",
+   "op": "OP-20261110-V102-LADDER",
+   "kind": "design",
+   "summary": "[11-11 21:1x] 직접 포트폴리오 엔진 33개를 4분법(도훈 결정 PAPER-CONTRIBUTION-LAYER-TAXONOMY-20261111)으로 분류 — 판독 규칙 = 부품별 교체 시험의 코드 판독판(논문 기여 · 표준 · 외생) · 입력 = 엔진 코드 구조 + FIDELITY 신고 + 라우터 프로그램 · 성과 필드 미열람 · 결과 = 기대수익 예측 23 · 구성 규칙/위험 예측 6 · 노출 규칙 2 · 결합형 1 · 결합 1(브리프의 3분류 A/B/C 는 대조 열로만)",
+   "rationale": "브리프는 3분류로 출발했지만 작업 중(20:35) 도훈 결정이 4분법으로 났다 — 결정 뒤 재논의하지 않고 결정문을 정본으로 삼았다(재개 저널도 '분류표 유형 열(4분법)로 확인'을 적었다). 산출 모양(PORTFOLIO 대입)은 대상 선정에만 쓰고 분류 입력으로 쓰지 않았다. 규칙을 기계적으로 두려고 부품마다 판독 조건을 표로 고정했고(README 3절), 인계 기록이 있는 7개에서 라우터 프로그램과 주 기여가 7/7 맞는지로 대조했다. 판독 근거는 FIDELITY 신고와 비중 대입 줄(표에 줄 번호)이고 등급 · PORT_t · 수익 · 위기 방어 필드는 스크립트 허용 목록 밖이다.",
+   "framework_refs": [
+    "decision_register PAPER-CONTRIBUTION-LAYER-TAXONOMY-20261111 · lean-loop.md 정보 경계 τ_D · pit.md C1 D-E(자동 선정에 평가 창 결과 미사용)"
+   ],
+   "evidence": [
+    "04_Research/01_reports/portfolio_paper_layer_split_20261112/README.md 3절 · 4절 · classification.json · scripts/build_classification.py · data/engine_static.json"
+   ],
+   "alternatives": [
+    "(가) 브리프대로 3분류만 — 결정과 어긋난다 (나) 등급으로 '기여가 실재하는 층'을 판별 — τ_D 위반 · 사후 선택"
+   ],
+   "expectation": "총괄 · 측정 세션이 분류표 4분법 열로 결정 반영을 확인한다 · 구판 엔진을 새 축에서 다시 재도 주 기여 판독은 유지된다(구조 판독이라) · 신호일당 종목 수 열만 바뀐다",
+   "confidence": 0.75,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261111-022",
+   "at": "2026-11-11T21:11:37+0900",
+   "op": "OP-20261110-V102-LADDER",
+   "kind": "design",
+   "summary": "[11-11 21:1x] 측정 계약 정합 권고 = 실효 시작 규칙 문구 불변 + (1) 레인 출력 계약: 예측형 엔진은 PORTFOLIO 와 함께 선정 전 후보 점수 패널 (2) 판 2 판정 경로: 셀 엔진의 기저 신호 as-of 정렬 + 측정 시작일 주입 (3) 판 2 입구 사유 2개(portfolio_only_base · breadth_insufficient) — '면제 확장'(셀 경로도 portfolio_only 로 통과)은 비권고",
+   "rationale": "1908.01112 측정 무효의 원인이 폭 하나가 아니라 셋임을 확인했다 — ① 후보 = 엔진 보유뿐 ② 60거래일 격자와 셀 엔진 월말 격자가 110일 중 1일만 겹친다(기저 캐시 날짜 개수) ③ 셀 경로가 .RP_START_DATE 를 엔진에 넘기지 않아 레인 격자와 공통 신호일이 0 이다(같은 엔진의 두 캐시 날짜 대조 · 캐시 적중 여부에 따라 기저 패널이 달라진다). 면제 확장은 ①만 덮어 신호일 하루짜리 측정이 유효로 통과한다. 폭이 넓은 포트폴리오 전용 엔진은 규칙을 통과하되 비중을 점수로 읽어 동점(거래대금 순) · 시총 순 · 최적화 선호 순으로 상위 25종을 뽑는다(rf_axes.R rf_select_top · 엔진 비중 대입 줄) — 오류가 안 나는 형태라 입구 사유가 필요하다. 셀 경로는 이미 FACTORS 를 PORTFOLIO 보다 먼저 읽으므로(rf_cell_engine.R:139-144 · rf_base_cache.R:233-236) 점수 계약은 측정 계약 파일을 고치지 않고 선다. 격자는 엔진마다 월말 격자 점수를 따로 요구하는 대신 소비 쪽 as-of 정렬을 골랐다 — 주간 엔진(약 1,400 신호일 중 154일만 읽힘)도 같이 풀리고 엔진 재작업이 없다. 실행은 전부 시드 E2 · E3 판정 뒤다(standing-status 측정 대기 2 확인 · 판 1 입구 건식 스캔 = 통과 1908.01112 하나).",
+   "framework_refs": [
+    "MC3-EFFECTIVE-START-B(문구 불변) · superfan_protocol 13-1절 T4 · lean-loop.md v10.2 '막지 않는다' · 메모리: 침묵 실패 · 계기가 재기 쉬운 것을 잰다"
+   ],
+   "evidence": [
+    "04_Research/01_reports/portfolio_paper_layer_split_20261112/README.md 2절 · 6절 · scripts/count_base_cache.R · scripts/cmp_two_caches.R · data/cache_counts.json · data/p1s01_scan_dryrun.json"
+   ],
+   "alternatives": [
+    "(나) 면제 확장 — 규칙 뜻 변경 · 1신호일 측정 통과 (다) 입구 차단만 — 예측형 12개가 기저 후보에서 계속 빠진다 (라) 엔진이 폭만 보고 — 후보는 그대로 (격자 대안) 엔진이 월말 격자 점수를 따로 낸다 — 엔진마다 재작업 · 주간 엔진 미해결"
+   ],
+   "expectation": "판 2 에서 1908.01112 가 점수 패널 + as-of 정렬로 월말 신호일 100개 이상을 얻고 폭 50 이상인 날이 생겨 판정까지 간다(통과 여부는 모른다) · 월말 격자 엔진(2002.06975)은 as-of 정렬 전후 기저 패널이 비트 동일하다 · 어긋나면 이 권고를 철회한다",
+   "confidence": 0.7,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261111-023",
+   "at": "2026-11-11T21:11:38+0900",
+   "op": "OP-20261110-V102-LADDER",
+   "kind": "no_escalation",
+   "summary": "[11-11 21:1x] 도훈 결정(dr_open) 추가 상신 없음 — 권고안이 실효 시작 규칙(MC3-EFFECTIVE-START-B)의 뜻을 바꾸지 않는다 · 면제 확장을 고르는 경우와 '논문 구성 측정에는 점수 패널이 있어도 규칙 미적용'(레인 쪽)이 필요해질 때만 안건으로 올린다",
+   "rationale": "권고 3건은 레인 출력 계약(산출 추가) · 판 2 판정 경로(기저 신호 정렬) · 판 2 입구 사유다 — 목표 · 고정 축 · 등급 문턱 · BOOK 이 아니다(운영 모델 10-15: 프로세스 결함은 Q 가 고친다). 판 2 등록 자체가 초안 · 격리 점검 · 철학 P1 · 판단 T1 을 지난다. 레인 쪽 부수 문제(보유가 후보의 절반을 넘는 구성이 점수 패널과 함께 오면 레인에서 never_met)는 지금 해당 엔진이 0 이다(점수 병행 12개는 분위 40% 이하이거나 전 종목 보유로 '폭 측정 불가' 표식). 측정 경로에 규칙을 더하는 안이라 판단 T4 를 붙였다.",
+   "framework_refs": [
+    "q_autonomy_decision_framework(상신 대상 = 목표 · 축 · BOOK · 사양 · 비용/정책 · dohoon_decision · 사전등록 예외) · 메모리 feedback-operating-model-q-runs-dohoon-decides-20261015"
+   ],
+   "evidence": [
+    "04_Research/01_reports/portfolio_paper_layer_split_20261112/README.md 6-1절 · 6-5절"
+   ],
+   "alternatives": [
+    "지금 dr_open 으로 (가)~(라)를 올린다 — 권고가 규칙 뜻 불변이라 불필요한 상신(과잉 신중)"
+   ],
+   "expectation": "T4 가 '규칙 뜻 변경 없음' 판독에 이견이 없으면 상신 없이 판 2 설계로 간다 · 이견이면 dr_open 으로 올린다",
+   "confidence": 0.7,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261111-024",
+   "at": "2026-11-11T21:11:50+0900",
+   "op": "OP-20261110-V102-LADDER",
+   "kind": "candidate_selection",
+   "summary": "[11-11 21:1x] 비중 카탈로그 등재 후보 = 규칙 2(2202.10721 혼합분포 ES 위험 예산 · 2604.16773 위상 위험 패리티) + 추정기 1(2411.08864 등방 상관) · 이미 등재 1(1810.08384) · 보류 4(1109.3488 다목적 진화 · 2001.04185 감속 · 2011.05381 다특성 정책 · 2601.04602 상관 예측) — 겹침 대조는 구조만 봤다(성과 미사용)",
+   "rationale": "카탈로그 58항목(실제로 쓰이는 arm 38 — weight_catalog_arms 로 확인 · 색인 무변경)과 부품별로 대조했다. 위험 패리티 계열은 변동성 기여 · 꼬리 계열은 CVaR 최소화라 '꼬리 척도로 맞추는 위험 예산'이 없다 · 나무 계열(HRP · NCO)은 계층 이분할이라 최소 신장 나무 분할-복제와 다르다 · 추정기 목록(sample · ledoit_wolf · lw_nls · gerber_rmt · OGK)에 등방 상관이 없다(검색 0건). 보류 사유는 어댑터 입력 미비(직전 비중 · 특성 패널 · 포지션 상태)와 계산 환경(torch)이다. 레인 엔진 2편(1810.08384 · 2604.16773)에 감사 미통과 · 구현 의심 꼬리표가 있어 어댑터는 논문 원문에서 쓴다(선례 = 10-15 EigenCleanMarkowitz). 등재 실행은 시드 판정 뒤다 — 시드 칸 E3 가 카탈로그 arm(lean:entropy)을 써서 weight_catalog.json 재생성이 측정에 닿는다.",
+   "framework_refs": [
+    "reinforce SKILL 3절 도구 상자 · weight_catalog.R 설계 규약 ② ④ · 하드코딩 금지(수치는 논문 값 · 한국 롱온리 사상은 신고)"
+   ],
+   "evidence": [
+    "04_Research/01_reports/portfolio_paper_layer_split_20261112/README.md 5절 · 06_Registry/weight_catalog.json(읽기) · 06_Registry/method_registry.json(읽기)"
+   ],
+   "alternatives": [
+    "포트폴리오를 내는 논문 전부를 카탈로그에 — 도훈 결정이 기각한 (가)안 · 예측 논문의 알파 원천이 빠진 채 배분만 들어간다"
+   ],
+   "expectation": "등재 때 검증기의 '가장 가까운 기존 arm' 거리가 0 이 아니다(새 규칙) · 왜도 위험 패리티는 25종 사상(슬리브 묶음 또는 공통 점프 요인)을 신고해야 등재된다 · 거리가 0 에 가까우면 후보에서 뺀다",
+   "confidence": 0.65,
    "status": "open",
    "reviews": [],
    "supersedes": null,
