@@ -9,7 +9,7 @@
 #==============================================================================
 set -uo pipefail
 ROOT="${QM_ROOT:-C:/Users/99922/OneDrive/Quant_Module_Moltbot}"; ROOT="${ROOT//\\//}"
-RUNNER="$ROOT/02_Infrastructure/ops/standing_board_run.sh"
+RUNNER="${QVEST_TEST_SBR_SRC:-$ROOT/02_Infrastructure/ops/standing_board_run.sh}"     # 검사 주입 = 교체 전 후보판을 같은 검사로 잰다
 P=0; F=0
 ok(){ P=$((P+1)); printf '  OK    %s\n' "$1"; }
 ng(){ F=$((F+1)); printf '  FAIL  %s — %s\n' "$1" "${2:-}"; }
@@ -108,6 +108,28 @@ m=$(mut fresh 'grep -q "status=judged_data_stale" "$sent"' 'false') && { o=$(STU
 ' "$BASH" "$m" 2>&1)
   ! printf '%s' "$o" | grep -q "데이터 신선도 미달" && ok "10b 뮤턴트(센티널 판독 제거) 검출 — 표시 사라짐" || ng "10b 뮤턴트 미검출" ""; }
 rm -f "$T/.cache/round_core/state/P1S99_t.standing"
+
+# ── 11. 세션 보류(tick_hold · 2026-11-11 도훈 "파일럿부터") — 판 폴더에 tick_hold 가 있으면 그 판은 scan · 측정 · 보고를 하지 않는다 ─────
+HOLD="$T/04_Research/programs/P1_RETURN/P1S99_t/tick_hold"
+printf '파일럿 통과 뒤 해제(시험)\n둘째 줄은 출력하지 않는다\n' > "$HOLD"
+NLOG0=$(ls "$T/.cache/scheduler_logs"/standing_board_*.log 2>/dev/null | wc -l)
+rm -f "$CALLS"; o=$(STUB_PENDING=$'P1S99_x\n' go); rc=$?
+NLOG1=$(ls "$T/.cache/scheduler_logs"/standing_board_*.log 2>/dev/null | wc -l)
+{ [ "$rc" = "0" ] && [ ! -f "$CALLS" ] && printf '%s' "$o" | grep -q "P1S99_t: 보류(tick_hold — 파일럿 통과 뒤 해제(시험)) — 이번 틱 건너뜀" \
+  && ! printf '%s' "$o" | grep -q "둘째 줄" && [ "$NLOG0" = "$NLOG1" ] && [ ! -d "$T/.cache/standing_board_run.lock" ]; } \
+  && ok "11 보류 = round.sh 미호출(scan · 측정 · 보고 없음) · 사유 첫 줄만 한 줄로 알림 · rc 0 · 잠금 · 로그 없음" || ng "11 보류" "rc=$rc calls=$(cat "$CALLS" 2>/dev/null) out=$o"
+o=$(go --dry-run)
+{ printf '%s' "$o" | grep -q "등록된 판 0 · 보류 1" && printf '%s' "$o" | grep -q "P1S99_t: 보류(tick_hold" && ! printf '%s' "$o" | grep -q "P1S99_t: scan"; } \
+  && ok "11b 드라이런이 보류 판을 보여준다(등록된 판 0 · 보류 1)" || ng "11b 드라이런 보류" "$o"
+: > "$HOLD"; o=$(go); printf '%s' "$o" | grep -q "P1S99_t: 보류(tick_hold) — 이번 틱 건너뜀" && ok "11c 빈 보류 파일 = 사유 없이 알림" || ng "11c 빈 보류 파일" "$o"
+mkspec P1_RETURN P1S95_z P1S95_z true; mkpre P1_RETURN P1S95_z          # 판 둘 — 하나만 보류
+rm -f "$CALLS"; o=$(STUB_PENDING="" go); got=$(cat "$CALLS" 2>/dev/null)
+{ printf '%s' "$got" | grep -q "P1S95_z scan" && printf '%s' "$got" | grep -q "P1S95_z standing-report" && ! printf '%s' "$got" | grep -q "P1S99_t" \
+  && printf '%s' "$o" | grep -q "P1S99_t: 보류(tick_hold)"; } && ok "11d 보류는 그 판만 — 다른 판은 그대로 돈다" || ng "11d 판 둘" "got=[$got] out=$o"
+m=$(mut hold 'if [ -e "$d/tick_hold" ]; then' 'if false; then') && { rm -f "$CALLS"; STUB_PENDING="" "$BASH" "$m" >/dev/null 2>&1
+  grep -q "P1S99_t scan" "$CALLS" 2>/dev/null && ok "11e 뮤턴트(보류 검사 제거) 검출 — 보류한 판이 돌았다" || ng "11e 뮤턴트 미검출" "$(cat "$CALLS" 2>/dev/null)"; }
+rm -f "$HOLD"; rm -f "$CALLS"; o=$(STUB_PENDING="" go); got=$(cat "$CALLS" 2>/dev/null)
+{ printf '%s' "$got" | grep -q "P1S99_t scan" && ! printf '%s' "$o" | grep -q "보류"; } && ok "11f 보류 파일을 지우면 다음 틱부터 다시 돈다" || ng "11f 해제" "got=[$got] out=$o"
 
 echo
 echo "합계: 통과 $P · 실패 $F"

@@ -11,6 +11,9 @@
 # 등록된 판 = 04_Research/programs/*/*/round_spec.json 중 "standing": true 이고 사양의 round_id = 디렉터리 이름이며
 #   사전등록 정본(<RC_SA_ROOT|ROOT>/stage_artifacts/programs/<program>/<round_id>/prereg.json)이 있는 것. 등록 전 판은 건너뛴다.
 #   판이 없으면 조용히 0 종료(출력 · 로그 없음).
+# 세션 보류(2026-11-11 · 도훈 "파일럿부터"): 판 폴더에 tick_hold 파일이 있으면 그 판은 이번 틱에 scan · 측정 · 보고를 하지 않는다
+#   (강화 사슬 틱의 <사슬>/tick_hold 와 같은 뜻 — 등록본은 그대로 두고 무인 틱만 멈춘다 · 파일을 지우면 다음 틱부터 다시 돈다).
+#   파일 첫 줄 = 사유(출력에 120자까지). 보류된 판은 한 줄로 알린다(조용히 넘어가지 않는다). 손으로 부르는 round.sh 는 막지 않는다.
 #
 # 사용: bash 02_Infrastructure/ops/standing_board_run.sh [--dry-run] [--send]
 #   --dry-run  무엇을 할지만 출력(round.sh · R 미호출 · 잠금 · 로그 없음 · 배리어 상태만 읽는다)
@@ -32,7 +35,7 @@ DRY=0; SEND=0
 for a in "$@"; do case "$a" in --dry-run) DRY=1 ;; --send) SEND=1 ;; *) echo "usage: standing_board_run.sh [--dry-run] [--send]" >&2; exit 2 ;; esac; done
 
 # ── 등록된 상설 판 찾기 ──────────────────────────────────────────────────────
-BOARDS=()
+BOARDS=(); HELD=()
 for sp in "$ROOT"/04_Research/programs/*/*/round_spec.json; do
   [ -f "$sp" ] || continue
   grep -Eq '"standing"[[:space:]]*:[[:space:]]*true' "$sp" || continue
@@ -41,9 +44,14 @@ for sp in "$ROOT"/04_Research/programs/*/*/round_spec.json; do
   prog=$(sed -n 's/^  "program"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$sp" | head -n 1)
   [ -n "$prog" ] || prog=$(basename "$(dirname "$d")")
   [ -f "$SA_ROOT/stage_artifacts/programs/$prog/$rid/prereg.json" ] || continue        # 등록 전
+  if [ -e "$d/tick_hold" ]; then HELD+=("${d#"$ROOT"/}"); continue; fi                  # 세션 보류 — 이 판은 건너뛴다
   BOARDS+=("${d#"$ROOT"/}")
 done
-[ "${#BOARDS[@]}" -eq 0 ] && exit 0
+[ "${#BOARDS[@]}" -eq 0 ] && [ "${#HELD[@]}" -eq 0 ] && exit 0
+hold_line() {       # $1 = 판 경로(ROOT 기준) → "<판>: 보류(tick_hold[ — 사유])"
+  local w; w=$(head -n 1 "$ROOT/$1/tick_hold" 2>/dev/null | tr -d '\r' | cut -c1-120)
+  printf '%s: 보류(tick_hold%s)' "$1" "${w:+ — $w}"
+}
 
 barrier_state() {   # 출력 = state(free|stale|self|held|missing) · rc 0 = 진행 · 10 = 막음
   if [ ! -f "$RB" ]; then echo missing; return 10; fi
@@ -69,12 +77,16 @@ lock_holder() {     # 살아 있는 보유자 pid(또는 'fresh-empty') — 없�
 if [ "$DRY" = "1" ]; then
   bs=$(barrier_state); brc=$?
   h=$(lock_holder)
-  echo "[상설 정기 · 드라이런] 등록된 판 ${#BOARDS[@]} · 배리어 ${bs:-?}($([ "$brc" = "0" ] && echo 열림 || echo 잠김)) · 잠금 ${h:-없음}"
-  for b in "${BOARDS[@]}"; do
+  echo "[상설 정기 · 드라이런] 등록된 판 ${#BOARDS[@]} · 보류 ${#HELD[@]} · 배리어 ${bs:-?}($([ "$brc" = "0" ] && echo 열림 || echo 잠김)) · 잠금 ${h:-없음}"
+  for b in ${HELD[@]+"${HELD[@]}"}; do echo "[드라이런] $(hold_line "$b") — 건너뜀"; done
+  for b in ${BOARDS[@]+"${BOARDS[@]}"}; do
     echo "[드라이런] $b: scan → pending(입구 통과 대기 항목) → $([ "$brc" = "0" ] && echo "대기 있으면 standing-measure" || echo "배리어 잠김 — standing-measure 건너뜀") → standing-report$([ "$SEND" = "1" ] && echo " --send" || echo "(드라이런)")"
   done
   exit 0
 fi
+
+for b in ${HELD[@]+"${HELD[@]}"}; do echo "[상설 정기] $(hold_line "$b") — 이번 틱 건너뜀"; done
+[ "${#BOARDS[@]}" -eq 0 ] && exit 0
 
 # ── 잠금 ─────────────────────────────────────────────────────────────────────
 mkdir -p "$ROOT/.cache"
