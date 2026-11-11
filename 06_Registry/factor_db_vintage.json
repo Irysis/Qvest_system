@@ -89,6 +89,32 @@
       "decision": "FACTOR-DB-DEBT-LINE-PERIOD-ALIGN-20261110(도훈 11-10 '옛 차입 줄 섞임 — 여기서 고쳐줘')",
       "note": "차입 두 줄 기간 완비(병합기가 한 줄만 있는 기간의 없는 줄을 0 행으로 · 병합 표 · 분기 표) + AC24 둘 다 없음 = NA — 영향 23팩터 전 기간 재계산 11-10 19:03 '성공'(442달 · 다시 돌린 달 0 · IC · 대응표 · 결합용 뷰 rc 0) · 이번 달(202611) 바꿔 끼움 19:06. 완료 시각은 11-11 에 기입했다 — 수리 사슬은 11-10 19:06 에 끝났는데 원장에 완료 시각이 적히지 않아 '진행 중'으로 남아 있었다(그동안 범위에 닿는 측정이 전부 낡음으로 읽혔다).",
       "evidence": "04_Research/01_reports/factor_db_debt_lines_align_20261110/{README.md,repair_spec.json,chain_state.json(step done · result ok · at 2026-11-10T19:06:08)} · .cache/scheduler_logs/factor_subset_repair_20261110_140631.json(result 성공 · months_total 442 · redo_left 없음 · ic_rc 0 · parity_rc 0 · combinable_rc 0)"
+    },
+    {
+      "id": "FACTOR-DB-INV-PANEL-RECOMPUTE-20261111",
+      "completed_at": "2026-11-11T19:28:00+09:00",
+      "scope": {
+        "factors": [
+          "INV01_Foreign_NetBuy_20d",
+          "INV02_Foreign_NetBuy_60d",
+          "INV03_Inst_NetBuy_20d",
+          "INV04_Inst_NetBuy_60d",
+          "INV05_Foreign_Momentum",
+          "INV06_Inst_Momentum",
+          "INV07_Retail_Contrarian",
+          "INV08_Foreign_Inst_Agreement",
+          "INV09_Flow_Persistence",
+          "INV10_Smart_Money_Flow",
+          "INV11_Foreign_Concentration",
+          "INV12_Supply_Demand_Imbalance",
+          "INV13_Foreign_Resid_Individual_21d",
+          "INV13_Foreign_Resid_Individual_63d",
+          "INV13_Foreign_Resid_Individual_126d"
+        ]
+      },
+      "decision": "FACTOR-DB-INV-PANEL-RECOMPUTE-20261111(도훈 11-11 '빨간 시험 3건 이 세션에서 해결해' — INV13 시험의 해소 = 수급 계열 재계산)",
+      "note": "투자자 패널에 99종목 이력(2023-05-17~)이 보충된 뒤 수급 계열 15팩터를 다시 계산하지 않아 저장값이 옛 패널 기준이었다 — 영향 달 42개(202305~지난달) + 이번 달 재계산 완료 · 잃은 쓰기 없음 · IC 재계산 · 대응표 rc 0 · 결합용 뷰(증분) rc 0. 그 앞 달은 패널이 같아 불변(건식 실행 201906 · 202304 = 바뀐 행 0).",
+      "evidence": "04_Research/01_reports/factor_db_inv_panel_recompute_20261111/repair_spec.json · 08_Tests/factor_db/test_inv13_beta_asof.R A1 · B2 · G:/OneDrive/Quant_Module_Moltbot/.cache/scheduler_logs/subset_worker_inv_20261111_185144.jsonl"
     }
   ]
 }
