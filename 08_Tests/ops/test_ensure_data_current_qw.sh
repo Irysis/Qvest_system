@@ -15,7 +15,7 @@ set -uo pipefail
 ROOT="${QM_ROOT:-C:/Users/99922/OneDrive/Quant_Module_Moltbot}"; ROOT="${ROOT//\\//}"
 cd "$ROOT" || exit 1
 PYV="$ROOT/.venv_qvest_ml/Scripts/python.exe"   # venv 고정(사용자 QVEST_PY = 시스템 Python312 · pandas 없음)
-EDC="$ROOT/02_Infrastructure/ops/ensure_data_current.sh"
+EDC="${QVEST_TEST_EDC_SRC:-$ROOT/02_Infrastructure/ops/ensure_data_current.sh}"   # 후보판을 운영 교체 전에 재는 이음새
 PASS=0; FAIL=0
 ok(){ printf '  OK   %s\n' "$1"; PASS=$((PASS+1)); }
 ng(){ printf '  FAIL %s — %s\n' "$1" "${2:-}"; FAIL=$((FAIL+1)); }
@@ -69,6 +69,36 @@ set_bench 2026-10-15; r=$(run_edc 2026-10-17)
 r=$(run_edc 2026-10-17)
 [ "$r" = "3|0|stale_unfixable_by_refresh|2026-10-16|1|2026-10-15|2026-10-16" ] && ok "B4 같은 거래일 두 번째 부팅 → 재시도 안 함(47분 헛리프레시 방지) · rc=3 보고" || ng "B4" "$r"
 grep -q "단말 로그인 확인" "$T/edc.log" && ok "B4b 재시도 생략 로그가 퀀티 로그인 확인을 안내" || ng "B4b 안내 문구"
+# ── (2026-11-11 도훈 "자가 복구 실행되게 배선해줘") 같은 영업일 재시도 규칙 ──
+#   퀀티 미갱신은 나중에 고쳐질 수 있는 원인 → 마지막 복구 시도 뒤 자가 복구 시간 상한(150분)이 지나면 다시 · 그 전에는 막는다 · --retry = 수동 재시도.
+#   종전 결함: 막을 때 표식 글자가 바뀌어 가드가 한 번 걸러 한 번만 막았다(세 번째 호출이 다시 리프레시).
+r=$(run_edc 2026-10-17)
+[ "$r" = "3|0|stale_unfixable_by_refresh|2026-10-16|1|2026-10-15|2026-10-16" ] && ok "B4c 같은 거래일 세 번째 호출도 재시도 안 함(한 번 걸러 한 번 다시 돌던 결함)" || ng "B4c" "$r"
+[ -s "$SB/.cache/data_currency_last_heal" ] && ok "B4d 마지막 복구 시도 시각 기록(.cache/data_currency_last_heal)" || ng "B4d 시각 기록 없음"
+_gap=$(( 150 * 60 ))
+r=$(QVEST_EDC_NOW_EPOCH=$(( $(date +%s) + _gap + 5 )) QVEST_EDC_QW_RETRY=0 run_edc 2026-10-17)
+[ "$r" = "3|0|stale_unfixable_by_refresh|2026-10-16|1|2026-10-15|2026-10-16" ] && ok "B4e 간격이 지나도 QVEST_EDC_QW_RETRY=0 이면 재시도 안 함(끄는 손잡이)" || ng "B4e" "$r"
+r=$(QVEST_EDC_NOW_EPOCH=$(( $(date +%s) + _gap + 5 )) run_edc 2026-10-17)
+[ "$r" = "3|1|stale_after_refresh|2026-10-16|1|2026-10-15|2026-10-16" ] && ok "B4f 퀀티 미갱신 · 마지막 시도 뒤 복구 상한(150분)이 지나면 같은 거래일에도 다시 시도" || ng "B4f" "$r"
+grep -q "같은 영업일 재시도" "$T/edc.log" && ok "B4g 재시도 사유를 로그에 남긴다" || ng "B4g 로그"
+r=$(run_edc 2026-10-17)
+[ "$r" = "3|0|stale_unfixable_by_refresh|2026-10-16|1|2026-10-15|2026-10-16" ] && ok "B4h 재시도 직후에는 다시 막힌다(시도마다 간격을 새로 센다)" || ng "B4h" "$r"
+rm -f "$SB/refresh_calls"
+QM_ROOT="$SBM" QVEST_PY="$PYV" RSCRIPT="$T/Rscript_stub" QVEST_KRX_TODAY=2026-10-17 STUB_ADVANCE=2026-10-16 bash "$SB/02_Infrastructure/ops/ensure_data_current.sh" --retry > "$T/edc.log" 2>&1; _rc=$?
+_n=$(wc -l < "$SB/refresh_calls" 2>/dev/null || echo 0); _v=$(sed -n 's/.*"verdict":"\([^"]*\)".*/\1/p' "$SB/.cache/data_currency_stamp.json" 2>/dev/null)
+[ "$_rc|$((_n+0))|$_v" = "0|1|refreshed_current" ] && ok "B4i --retry(사람이 원인을 고친 뒤) → 가드를 건너뛰고 다시 시도 → 최신 확보" || ng "B4i" "$_rc|$_n|$_v"
+MUT="$T/edc_mut.sh"
+"$PYV" - "$EDC" "$MUT" <<'PYM'
+import io, sys
+s = io.open(sys.argv[1], encoding="utf-8", newline="").read()
+a = ' || [ "$_prev_verdict" = "stale_unfixable_by_refresh" ]'
+assert s.count(a) == 1, s.count(a)
+io.open(sys.argv[2], "w", encoding="utf-8", newline="").write(s.replace(a, ""))
+PYM
+[ -s "$MUT" ] && ok "M1a 돌연변이 사본 생성(치환 1곳 성사)" || ng "M1a 치환 실패"
+mk_sandbox "$MUT"; set_bench 2026-10-15; run_edc 2026-10-17 >/dev/null; run_edc 2026-10-17 >/dev/null; r=$(run_edc 2026-10-17)
+[ "${r%%|stale*}" = "3|1" ] && ok "M1b [돌연변이] 표식 하나만 보는 사본 → 세 번째 호출이 다시 리프레시(종전 결함 재현 — 가드가 실제로 막고 있었다)" || ng "M1b" "$r"
+mk_sandbox; set_bench 2026-10-16
 r=$(STUB_ADVANCE=2026-10-19 run_edc 2026-10-20)
 [ "$r" = "0|1|refreshed_current|2026-10-19|0|2026-10-19|2026-10-19" ] && ok "B5 다음 거래일(10-20 · 직전 10-19) → 키가 바뀌어 다시 시도 → 최신 확보" || ng "B5" "$r"
 set_bench 2026-10-02; r=$(run_edc 2026-10-06)

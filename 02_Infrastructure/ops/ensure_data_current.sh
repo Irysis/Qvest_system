@@ -41,15 +41,18 @@
 #   ensure_data_current.sh                 # 감사 → 필요 시 refresh → 재감사
 #   ensure_data_current.sh --check-only    # 감사만 (refresh 안 함)
 #   ensure_data_current.sh --max-wait 3600 # 진행 중 refresh 대기 상한(초, 기본 2400)
+#   ensure_data_current.sh --retry         # 같은 영업일 재시도 가드를 건너뛰고 다시 복구(원인을 고친 뒤 · 수동)
 #==============================================================================
 set -uo pipefail
 
 CHECK_ONLY=0
+FORCE_RETRY=0
 MAX_WAIT="${QVEST_EDC_MAX_WAIT:-2400}"     # 기본 40분 — 실측 완주 47분 중 잔여를 덮는 값
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --check-only) CHECK_ONLY=1 ;;
     --max-wait)   shift; MAX_WAIT="${1:-2400}" ;;
+    --retry)      FORCE_RETRY=1 ;;   # 사람이 원인을 고친 뒤(예: 퀀티 재로그인) — 같은 영업일 재시도 가드를 건너뛴다
     *) echo "[edc] 알 수 없는 인자: $1" >&2 ;;
   esac
   shift
@@ -71,6 +74,8 @@ REFRESH_SH="$BASE/02_Infrastructure/data/daily_refresh.sh"
 AUDIT_R="$BASE/02_Infrastructure/ops/morning_steps/freshness_audit.R"
 LOCKDIR="/tmp/qm_daily_refresh.lock"
 STAMP="$BASE/.cache/data_currency_stamp.json"
+HEAL_MARK="$BASE/.cache/data_currency_last_heal"   # "<as_of> <epoch>" — 마지막으로 자가 복구를 실제로 띄운 시각(3b 재시도 규칙이 읽는다)
+_now_epoch() { case "${QVEST_EDC_NOW_EPOCH:-}" in ""|*[!0-9]*) date +%s ;; *) printf "%s\n" "$QVEST_EDC_NOW_EPOCH" ;; esac; }   # 시험용 시각 주입
 RSCRIPT="${RSCRIPT:-Rscript}"
 mkdir -p "$BASE/.cache" 2>/dev/null || true
 
@@ -203,17 +208,42 @@ fi
 #   리프레시를 반복하는 것은 비용만 태우고 "고쳤다"는 착시만 만든다.
 # ★단 **조용히 넘어가지 않는다** — 고쳐지지 않은 항목을 매번 로그에 남기고 rc=3 을 준다.
 #   "재시도 안 함"이 "문제 없음"으로 읽히면 이 저장소가 반복해 데인 그 계통이다.
-if [ -f "$STAMP" ]; then
+# ★(2026-11-11 도훈 "자가 복구 실행되게 배선해줘") 재시도 규칙을 둘로 가른다:
+#   ① 리프레시로 안 고쳐지는 항목(생산자 없음 등) — 종전대로 같은 영업일에는 다시 돌지 않는다.
+#      (종전 결함: 막을 때 표식을 stale_unfixable_by_refresh 로 바꿔 쓰는데 가드는 stale_after_refresh 만 봐서, 한 번 걸러 한 번 다시 돌았다.)
+#   ② 퀀티 미갱신(벤치 최신일 < 직전 거래일) — 나중에 고쳐질 수 있는 원인이다(단말 재로그인 · 원격 값 도착). 마지막 복구 시도 뒤
+#      자가 복구 시간 상한(QVEST_EDC_HEAL_TIMEOUT_MIN · 기본 150분 — 한 번의 복구가 쓸 수 있는 최대 시간)이 지나면 같은 영업일에도 다시 시도한다.
+#      그 전에는 막는다(부팅 직후 · 아침 브리핑처럼 붙어 있는 호출이 연달아 퀀티 단말을 두드리지 않게). 끄기 = QVEST_EDC_QW_RETRY=0.
+#      낮 시간 호출 지점 = ops/data_selfheal_tick.sh(예약 작업 Qvest_StandingBoard 매시 37분).
+#   ③ --retry — 사람이 원인을 고친 뒤 수동으로: 가드를 건너뛴다.
+RETRY_GAP_S="${QVEST_EDC_QW_RETRY_GAP_S:-$(( ${QVEST_EDC_HEAL_TIMEOUT_MIN:-150} * 60 ))}"
+if [ -f "$STAMP" ] && [ "$FORCE_RETRY" != "1" ]; then
   _prev_as_of="$(sed -n 's/.*"as_of":"\([^"]*\)".*/\1/p' "$STAMP" 2>/dev/null)"
   _prev_verdict="$(sed -n 's/.*"verdict":"\([^"]*\)".*/\1/p' "$STAMP" 2>/dev/null)"
-  if [ "$_prev_as_of" = "$AS_OF" ] && [ "$_prev_verdict" = "stale_after_refresh" ]; then
-    _log "⚠ as_of=$AS_OF 는 이미 리프레시했으나 stale=$PRE_STALE 잔존 — **재시도하지 않음**"
-    _log "   (리프레시로 고쳐지지 않는 항목이다. 생산자 배선을 봐야 한다: qepm/observability/morning_freshness_latest.json 의 stale_items)"
+  if [ "$_prev_as_of" = "$AS_OF" ] && { [ "$_prev_verdict" = "stale_after_refresh" ] || [ "$_prev_verdict" = "stale_unfixable_by_refresh" ]; }; then
+    _retry=0; _gap="-"
+    if [ "$QW_BEHIND" = "1" ] && [ "${QVEST_EDC_QW_RETRY:-1}" != "0" ]; then
+      _lh_as_of=""; _lh_ep=""
+      [ -f "$HEAL_MARK" ] && read -r _lh_as_of _lh_ep < "$HEAL_MARK" 2>/dev/null
+      case "$_lh_ep" in ""|*[!0-9]*) _lh_ep="" ;; esac
+      if [ "$_lh_as_of" != "$AS_OF" ] || [ -z "$_lh_ep" ]; then
+        # 이 거래일의 마지막 시도 시각을 모른다(규칙 도입 전 표식 등) → 지금부터 센다(바로 다시 돌지 않는다)
+        _lh_ep="$(_now_epoch)"; printf '%s %s\n' "$AS_OF" "$_lh_ep" > "$HEAL_MARK" 2>/dev/null || true
+      fi
+      _gap=$(( $(_now_epoch) - _lh_ep ))
+      [ "$_gap" -ge "$RETRY_GAP_S" ] && _retry=1
+    fi
+    if [ "$_retry" != "1" ]; then
+      _log "⚠ as_of=$AS_OF 는 이미 리프레시했으나 stale=$PRE_STALE 잔존 — **재시도하지 않음**$( [ "$_gap" != "-" ] && echo " (퀀티 재시도까지 $(( RETRY_GAP_S - _gap ))초 남음)" )"
+      _log "   (리프레시로 고쳐지지 않는 항목이다. 생산자 배선을 봐야 한다: qepm/observability/morning_freshness_latest.json 의 stale_items)"
     [ "$QW_BEHIND" = "1" ] && _log "   ★qw = 이 거래일($QW_EXP)의 퀀티 로그인 · 수급이 이미 한 번 실패했다 — 단말 로그인 확인(daily_refresh.log [1pre] · .cache/quantiwise_fetch_status.json). 다음 거래일 또는 00:03 밤 리프레시가 다시 시도한다"
-    _stamp "stale_unfixable_by_refresh" "$PRE_STALE" "재시도 생략(같은 영업일 재발)"
-    exit 3
+      _stamp "stale_unfixable_by_refresh" "$PRE_STALE" "재시도 생략(같은 영업일 재발)"
+      exit 3
+    fi
+    _log "↻ 같은 영업일 재시도 — 퀀티 미갱신은 나중에 고쳐질 수 있는 원인이다(마지막 복구 시도 뒤 ${_gap}초 ≥ ${RETRY_GAP_S}초)"
   fi
 fi
+[ "$FORCE_RETRY" = "1" ] && _log "↻ --retry — 같은 영업일 재시도 가드를 건너뛴다(수동)"
 if [ "$PRE_STALE" = "NA" ]; then
   _log "⚠ 감사 결과를 읽지 못함 — 미상은 '최신'이 아니다. 리프레시로 진행"
 fi
@@ -271,6 +301,7 @@ _kill_tree() {   # $1 = MSYS pid — 자손(MSYS) 전부 + 각자의 윈도 트�
 }
 _log "stale=$PRE_STALE — daily_refresh.sh 자가 복구 실행 · 계획 ${HEAL_PLAN} (${HEAL_WHY}) · 상한 ${HEAL_TIMEOUT_S}s"
 _launch_mark="$(mktemp "${TMPDIR:-/tmp}/qm_edc_launch_XXXX")"; touch -d "@$(( $(date +%s) - 1 ))" "$_launch_mark" 2>/dev/null   # 이번 실행 뒤에 쓰인 상태만 '보고됨'으로 읽는다
+printf '%s %s\n' "$AS_OF" "$(_now_epoch)" > "$HEAL_MARK" 2>/dev/null || true   # 3b 재시도 규칙의 기준 시각
 QVEST_REFRESH_TG="${QVEST_REFRESH_TG:-0}" QVEST_DR_MODE=selfheal QVEST_DR_ONLY_STAGES="$_ONLY" QVEST_DR_SKIP_BATTERY=1 \
   QVEST_DR_REPORT_TG="${QVEST_DR_REPORT_TG:-1}" bash "$REFRESH_SH" &
 RPID=$!; _t0=$(date +%s); TIMED_OUT=0
