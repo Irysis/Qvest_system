@@ -1,6 +1,6 @@
 {
  "schema": "q_judgment_ledger_v1",
- "updated_at": "2026-11-11T21:45:03+0900",
+ "updated_at": "2026-11-11T21:50:41+0900",
  "judgments": [
   {
    "id": "J-20261016-001",
@@ -1721,7 +1721,7 @@
    "status": "open",
    "reviews": [],
    "supersedes": null,
-   "superseded_by": null
+   "superseded_by": "J-20261111-026"
   },
   {
    "id": "J-20261111-021",
@@ -1841,6 +1841,52 @@
    ],
    "expectation": "P2 상설 판 설계 세션이 입구 구분을 받아들이거나 사유와 함께 기각한다 · 추정 평가 계약은 합성 양성 대조를 통과해야 쓴다 · 라우터 꼬리표와 FIDELITY 신고의 불일치가 잦으면 꼬리표를 레인 분기에 쓰지 않는다",
    "confidence": 0.65,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261111-026",
+   "at": "2026-11-11T21:50:41+0900",
+   "op": "OP-20261110-V102-LADDER",
+   "kind": "verdict",
+   "summary": "[11-11 21:5x] 정정 — P1S01 1908.01112 측정 무효의 원인은 하나(폭)가 아니라 셋: ① 신호일 격자(엔진 = 60거래일마다 112일 · 셀 경로 = 월말 거래일만 읽음 → 겹침 1일 2005-10-31 · 그날 19종이 '최대 폭 19 · 보유 중앙 19') ② 시작일(셀 경로가 측정 시작일을 엔진에 넘기지 않음 → 격자 기준점이 자료 첫날 1999-09-22 · 레인은 2000-01-04) ③ 폭(직접 포트폴리오라 후보 = 엔진이 고른 종목). 결론(판정 아님 · 엔진 실패 아님 · 측정 경로 불일치 · 판 1 에서 고치지 않음)은 그대로",
+   "rationale": "J-020 의 기전 서술이 불완전했다 — 셀 엔진 로그의 'months=323 | rows=19'(전체 19행 = 신호일 하루)와 기저 캐시 중앙 14종 대 측정 메시지 19종의 불일치를 읽고도 '하루 중앙 19종'이라고 썼다(텔레그램 보고 포함). 분류 세션(local_ffde0db1 · 판단 Superfan T4 C-20261111-038)의 지적을 받아 직접 다시 셌다: 기저 캐시 신호일 112 · 거래일 간격 중앙 60 · 월말 거래일과 겹침 1(2005-10-31) · engine.R 시작일 처리 · 셀 경로 세 파일에 .RP_START_DATE 0건 · 러너 run_paper_replication.R:667 만 주입.",
+   "framework_refs": [
+    "04_Research/01_reports/portfolio_paper_layer_split_20261112/README.md §0 · §2 · rf_cell_engine.R:136-138 · run_paper_replication.R:667"
+   ],
+   "evidence": [
+    "세션 스크래치 dates_probe.R 출력(날짜 · 개수만) · .cache/rf_base_signal/base_v2_66443a35fb4f_466fcc73….rds"
+   ],
+   "alternatives": [
+    "기전 정정 없이 두기 — 판 2 수리 범위가 폭 하나로 좁게 읽힌다"
+   ],
+   "expectation": "판 2 변경 목록 = 신호일 격자 as-of 맞춤 · 시작일 전달 · 예측형 엔진 점수 출력 · 입구 사유(분류 세션 설계 §6) — 폭 면제 확장만으로는 신호일 하루짜리 측정이 통과한다",
+   "confidence": 0.85,
+   "status": "open",
+   "reviews": [],
+   "supersedes": "J-20261111-020",
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261111-027",
+   "at": "2026-11-11T21:50:41+0900",
+   "op": "OP-20261110-V102-LADDER",
+   "kind": "stop_continue",
+   "summary": "[11-11 21:5x] 시드 E2 · E3 판 1 측정은 계획대로 진행(11-12 낮) — 기저 신호가 축 시작(2000-01-01)이 아니라 2005-01-31 부터(엔진 기본 시작 2005-01-01 · 셀 경로가 시작일을 넘기지 않음)임을 판정 기록 · 보고 · 기저 풀 메모에 명시하고 판 2 재측정 탐침을 남긴다",
+   "rationale": "① 측정 계약상 유효 — 실효 시작 규칙(첫 신호일부터 성과 · 창 이탈은 실효 시작 기준)이 다루는 경우이고, 같은 사양의 앞선 셀 경로 측정(P2R04 E2 · E3 기준 칸 · 같은 epoch)도 실효 시작 2005-01-31 이었다 — 사전등록 노출(같은 사양의 보는 창 결과를 본 상태)과 같은 창이다 ② 판 1 에서는 못 고친다(엔진 · 셀 엔진 = 핀 · 2002.06975 는 2000 시작을 넣으면 스케줄 단계에서 멈춘다는 재현 보고) ③ 판정 경로(칸 평가 패킷 · β-통제 알파 · 판정 · 원장 · 실발송 · 감독 표식 · v2 기저 풀 읽기)의 첫 실전 통과 = 양성 대조(시드는 통과 예상) — 오늘 1908 실측정이 파일럿이 못 본 결함 셋을 드러낸 것과 같은 가치 · 판 2 설계가 그 결함까지 한 번에 받는다 ④ 비용 = GPU 5~6시간 + 레인 공백(THGNN 종료~시드 측정 끝).",
+   "framework_refs": [
+    "contracts/measurement_axis.R ma_effective_start · DESIGN §3-1 · §7 · lean-loop '기준점부터'"
+   ],
+   "evidence": [
+    "04_Research/strategies/RP_AUTO_2002_06975/engine.R:66 · 기저 캐시 base_v2_6b6a8e1a144b_3f798573….rds(신호일 261 · 첫 2005-01-31) · P2R04_E2_RX0 · E3_RX0 authoritative_remeasure.json measurement_axis.effective_start(2005-01-31 · engine_reported)"
+   ],
+   "alternatives": [
+    "시드를 판 1 에서 재지 않고 판 2(셀 경로 수리 + 등록 · 1~2일 뒤)로 넘긴다 — GPU · 레인 공백을 아끼지만 판정 경로 첫 실전 통과가 판 2 등록 뒤로 밀린다"
+   ],
+   "expectation": "시드 측정 기록의 실효 시작 = 2005-01-31 · 보는 창 = 2005-02~2022-12 · 판 2 가 같은 칸을 다시 판정하면 기저 풀이 어느 판의 판정을 읽는지(최신 판 우선) 정해야 한다",
+   "confidence": 0.7,
    "status": "open",
    "reviews": [],
    "supersedes": null,
