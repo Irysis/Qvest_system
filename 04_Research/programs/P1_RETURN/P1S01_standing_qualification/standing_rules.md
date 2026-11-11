@@ -20,8 +20,8 @@
 
 ## 3. 레인 스캔 규칙(자격 큐 입구 — 성과 수치를 읽지 않는다)
 
-- 원천: `04_Research/strategies/RP_AUTO_*` 디렉터리 × 등록부 인계 기록(kind = engine) · 인계 프로그램 = P1_RETURN · 허용 감사 판정 = faithful · adapted · 허용 방향 층 = engine_native · 롱 레그 창 = visible(τ_D 2022-12-31 이전) · PIT 정적 검사 = 켬
-- 방향 층: engine_native = 엔진 고유 특성(커넥터 부호를 쓰지 않음) · factor_db_asof = 정본 커넥터 `load_month_factors`/`load_daily_factors` 의 as-of IC 3단 부호 · orientation_layer = `align_factor_direction`/`compute_rolling_ic_all` 호출 또는 부호 층 식별자(R 파서 토큰 — 주석 · 문자열 제외)
+- 원천: `04_Research/strategies/RP_AUTO_*` 디렉터리 × 등록부 인계 기록(kind = engine) · 인계 프로그램 = P1_RETURN · 허용 감사 판정 = faithful · adapted · 허용 방향 층 = engine_native · factor_db_static · 롱 레그 창 = visible(τ_D 2022-12-31 이전) · PIT 정적 검사 = 켬
+- 방향 층: engine_native = 엔진 고유 특성(커넥터 부호를 쓰지 않음) · factor_db_static = 커넥터 · 결합용 뷰를 등록부 방향(`direction = "registry"` | `"defensive"` 문자열 상수)으로만 부름(engine_native 허용 시 함께 허용) · factor_db_asof = 정본 커넥터 `load_month_factors`/`load_daily_factors` · 결합용 뷰 `fc_load_month(s)`/`fc_daily` 를 방향 인자 없이 · `ic_asof` · 판정 불가 값으로 부름(as-of IC 부호) · orientation_layer = `align_factor_direction`/`compute_rolling_ic_all` 호출 또는 부호 층 식별자(R 파서 토큰 — 주석 · 문자열 제외)
 - 한 디렉터리의 모든 실패 사유를 모은다. 통과 + 처음 보는 엔진(md5)만 인계 시각 순으로 넣는다. 같은 엔진은 판 사이에서도 다시 판정하지 않는다(새 판의 rejudge_prior_editions = true 일 때만).
 
 | 사유 코드 | 제외 조건 |
@@ -35,7 +35,7 @@
 | `engine_changed_since_handoff` | 인계 뒤 엔진이 바뀌었다(인계 engine_md5 ≠ 지금 · md5 미기록이면 파일 시각 > 인계 시각 · 인계 시각 없음) |
 | `engine_parse_failed` | 엔진 파싱 실패(정적 검사 불가) |
 | `output_contract_unknown` | FACTORS · PORTFOLIO 대입을 찾지 못했다 |
-| `dynamic_sign` | 동적 부호 — 방향 층이 허용 목록 밖(factor_db_asof = 정본 커넥터의 as-of IC 부호 · orientation_layer = 엔진이 부호 · IC 를 스스로 다룸) |
+| `dynamic_sign` | 동적 부호 — 방향 층이 허용 목록 밖(factor_db_asof = 정본 커넥터 · 결합용 뷰의 as-of IC 부호(방향 인자 없음 · ic_asof · 판정 불가) · orientation_layer = 엔진이 부호 · IC 를 스스로 다룸 · factor_db_static(등록부 방향 registry · defensive)은 engine_native 를 허용하면 함께 허용) |
 | `long_leg_absent` | 보는 창 신호일 중 롱 레그(비중 > 0)가 없는 날이 있다 — 시계열 방향 · 현금 타이밍 층(표준 구성이 그날 숏 대상을 사거나 비게 된다) |
 | `long_leg_unverifiable` | 레인 측정 보유(04_holdings.csv)를 읽지 못해 롱 레그를 확인할 수 없다 |
 | `pit_static` | PIT 정적 검사(lookahead_detector) 위반 또는 미스캔 |
