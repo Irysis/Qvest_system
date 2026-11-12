@@ -31,27 +31,33 @@ import daily_text as T  # noqa: E402
 import make_daily_report as M  # noqa: E402
 
 MODEL = os.environ.get("KRSI_COMMENTARY_MODEL", "claude-opus-5-5")
-MAX_CHARS = 800
+MAX_CHARS = 650
 BM = None   # main() 이 채운다(코스피200 종가 · 시장 스냅샷용)
 TIMEOUT_SEC = 480
 
-SYSTEM = ("당신은 한국 증권사 리서치센터의 수석 퀀트 전략가입니다. 국내 자본시장 스트레스 일일 보고서 1쪽 맨 위에 실릴 '오늘의 총평' 한 단락을 씁니다. "
-          "독자는 임원과 운용 담당자입니다. 높임말로, 프로페셔널 퀀트 톤과 표준 금융 용어(변동성 · 신용 스프레드 · 유동성 · 동조화 · 꼬리 위험 등)로 씁니다. "
-          "오늘의 시장 움직임(시장 스냅샷)과 스트레스 구조(분야별 심각도 · 기여도 · 20거래일 변화)를 엮어, 지금 자본시장이 어떤 국면인지 한눈에 읽히게 종합합니다. "
-          "주어진 데이터의 숫자만 씁니다 — 숫자를 지어내거나 어림하지 않습니다. 계산은 데이터 값끼리의 차 · 비율만 허용됩니다. "
-          "이 지수는 동행 지표(지금의 상태를 재는 온도계)이므로 앞으로의 방향을 예측하거나 전망하지 않습니다.")
+SYSTEM = ("당신은 한국 증권사 리서치센터의 수석 퀀트 전략가입니다. 국내 자본시장 스트레스 일일 보고서 1쪽 맨 위에 실릴 '오늘의 총평'과 '자산별 대응'을 씁니다. "
+          "독자는 임원과 운용 담당자입니다. 높임말로, 프로페셔널 퀀트 톤과 표준 금융 용어(변동성 · 신용 스프레드 · 유동성 · 동조화 · 꼬리 위험 · 리스크 버짓 등)로 씁니다. "
+          "데이터를 나열하지 말고 해석합니다 — 지금 스트레스가 어디서 시작돼 어떤 경로로 번지고 있는지, 국내 주식시장 조정인지 신용 · 외환까지 번진 체계적 위기인지, "
+          "시장 간 관계(주식 · 원화 · 국채 · 크레딧)가 무엇을 말하는지, 꼬리 위험 측면에서 무엇을 뜻하는지를 판단으로 제시합니다. 숫자는 판단을 뒷받침하는 핵심 몇 개만 씁니다. "
+          "주어진 데이터의 숫자만 씁니다 — 숫자를 지어내거나 어림하지 않습니다. "
+          "이 지수는 동행 지표(지금의 상태를 재는 온도계)이므로 앞으로의 방향을 예측하거나 전망하지 않습니다. 대응 방안은 '지금 상태에서 무엇을 점검 · 조정할 것인가'의 조건부 고려사항으로 씁니다.")
 
 RULES = f"""규칙:
-- 한 단락, 5~7문장, {MAX_CHARS}자 이내. 제목 · 글머리표 · 마크다운 기호(*, #, |, `) 없이 평문으로만.
-- 점수 · 심각도 · 백분위는 정수로 씁니다(예: 44점, 심각도 95). 기여도는 소수 한 자리(예: 8.3점).
-- 다뤄 주실 것: ⓪ 오늘 시장에서 실제로 무슨 일이 있었나(시장_스냅샷 — 코스피200 · 원/달러 · 금리 · 신용 · VIX 의 수준과 변화) ① 지금 스트레스의 성격(어느 분야가 나쁘고 어디는 평온한가 · 국내 주식 중심인지 신용 · 외환으로 번진 체계적 스트레스인지) ② 지난 20거래일 동안 무엇이 바뀌었나 ③ 과거 위기와 견주면 어느 정도인가 ④ 지켜볼 대목(아직 평온한 분야로 번지는지 등 — 데이터에 근거한 관찰로).
-- '가족' 같은 직역 표현은 쓰지 않습니다(분야 · 축 · 카테고리).
-- 금지: '~할 것입니다 / ~할 것으로 보입니다 / 전망 / 예상' 같은 예측 표현, 데이터에 없는 사건 · 뉴스 언급, 투자 권유.
-- ★본문에 쓴 숫자마다 출처를 밝힙니다(자동 검사기가 다시 계산합니다). 출처 = 아래 '경로' 하나, 또는 계산식:
+- text = 총평 한 단락, 4~6문장, {MAX_CHARS}자 이내. 데이터 나열 금지 — 해석 · 판단 위주:
+  ① 지금 스트레스의 성격과 진원(어느 시장에서 시작됐고, 무엇이 아직 평온한가) ② 전이 경로와 동조화(시장 간 관계 · 20거래일 사이 무엇이 번졌나)
+  ③ 국면 판정(국내 주식 · 유동성 조정인가, 신용 · 외환까지 번진 체계적 위기인가 — 과거 위기와 견준 위치) ④ 꼬리 위험 측면의 함의와 지켜볼 신호.
+  숫자는 판단의 근거가 되는 것만 3~5개. 오늘 시장 움직임(시장_스냅샷)은 해석에 녹여 씁니다.
+- assets = 자산별 대응 4~5개: 국내 주식 · 국고채(금리) · 크레딧(회사채 · 단기 자금) · 원화 · 외환 · (선택) 포트폴리오 리스크 관리.
+  각 항목 action 은 한 문장 · 90자 이내. 지금 스트레스 구조에서 나오는 조건부 고려사항(예: 노출 · 듀레이션 · 헤지 · 유동성 점검)으로 씁니다.
+  특정 종목 · 상품 추천, 매수 · 매도 단정, 목표가 · 수익률 제시 금지. 숫자는 쓰지 않는 것을 원칙으로(쓰면 출처 필수).
+- 문체: 높임말 · 평문. 제목 · 글머리표 · 마크다운 기호(*, #, |, `) 없음. '가족' 같은 직역 표현 금지(분야 · 축 · 카테고리).
+- 점수 · 심각도 · 백분위는 정수로, 기여도는 소수 한 자리로 씁니다.
+- 금지: '~할 것입니다 / ~할 것으로 보입니다 / 전망 / 예상' 같은 예측 표현, 데이터에 없는 사건 · 뉴스 언급.
+- ★text 와 assets 에 쓴 숫자마다 출처를 밝힙니다(자동 검사기가 다시 계산합니다). 출처 = 아래 '경로' 하나, 또는 계산식:
   `경로 - 경로` · `경로 + 경로` · `경로 / 경로` · `경로 / 경로 * 100` · `sum(경로, 경로, …)`(2~6개) · `count(목록이름.필드 >= 수)`(예: count(분야.심각도 >= 90)).
   상수는 100 만 쓸 수 있습니다. 날짜 · 연도와 '12개 분야 · 34개 지표 · 20거래일 · 60거래일' 같은 고정 수는 출처가 필요 없습니다.
   분야 · 지표 · 봉우리 경로의 숫자는 그 이름을 같은 문장에 함께 써야 합니다.
-- 출력은 JSON 하나만: {{"text": "해설 단락", "numbers": [{{"value": "44", "source": "점수.오늘"}}, {{"value": "12", "source": "점수.오늘 - 점수.20거래일전"}}]}}"""
+- 출력은 JSON 하나만: {{"text": "총평 단락", "assets": [{{"asset": "국내 주식", "action": "…"}}], "numbers": [{{"value": "53", "source": "점수.오늘"}}]}}"""
 
 
 # ── 데이터 묶음 ────────────────────────────────────────────────────────────────
@@ -211,7 +217,7 @@ def _sentences(text):
     return [x for x in re.split(r"(?<=[다요])\.\s+|(?<=[.!?])\s+", text) if x.strip()]
 
 
-def check_claim(text, claims, pack):
+def check_claim(text, claims, pack, check_len=True):
     """→ (ok, 사유). claims = [{"value": "44", "source": "점수.오늘"}, …]"""
     flat, labels = flatten(pack)
     why = []
@@ -249,7 +255,7 @@ def check_claim(text, claims, pack):
         why.append("예측 · 전망 표현: " + ", ".join(dict.fromkeys(p.strip() for p in pred)))
     if re.search(r"[*#|`]", text):
         why.append("마크다운 기호 사용")
-    if not 120 <= len(text) <= MAX_CHARS + 80:
+    if check_len and not 120 <= len(text) <= MAX_CHARS + 80:
         why.append(f"길이 {len(text)}자(120~{MAX_CHARS})")
     return (not why), list(dict.fromkeys(why))
 
@@ -325,7 +331,7 @@ def main():
     os.makedirs(folder, exist_ok=True)
     data = prompt_data(pack)
     prompt = f"데이터:\n{data}\n\n{RULES}"
-    attempts, final = [], None
+    attempts, final, final_assets = [], None, []
     for i in range(2):
         try:
             text, cost = call_model(prompt)
@@ -335,17 +341,27 @@ def main():
         try:
             obj = json.loads(re.sub(r"^```(?:json)?|```$", "", text.strip()).strip())
             text, claims = clean(obj.get("text", "")), obj.get("numbers", [])
+            assets = [{"asset": clean(str(x.get("asset", ""))), "action": clean(str(x.get("action", "")))} for x in (obj.get("assets") or [])]
             ok, why = check_claim(text, claims, pack)
+            a_txt = " ".join(f"{x['asset']}: {x['action']}" for x in assets)
+            ok2, why2 = check_claim(a_txt, claims, pack, check_len=False) if assets else (False, ["자산별 대응 없음"])
+            bad_len = [x["asset"] for x in assets if not x["asset"] or not 10 <= len(x["action"]) <= 130]
+            if not 3 <= len(assets) <= 6:
+                why2 = why2 + [f"자산별 대응 {len(assets)}개(3~6)"]
+            if bad_len:
+                why2 = why2 + [f"자산별 대응 길이 이상: {', '.join(bad_len)}"]
+            ok = ok and ok2 and not bad_len and 3 <= len(assets) <= 6
+            why = list(dict.fromkeys(why + [f"[자산] {w}" for w in why2]))
         except Exception as e:  # noqa: BLE001
-            claims, ok, why = [], False, [f"JSON 해석 실패: {e}"]
-        attempts.append({"n": i + 1, "text": text, "numbers": claims, "ok": ok, "why": why, "cost_usd": cost})
+            claims, assets, ok, why = [], [], False, [f"JSON 해석 실패: {e}"]
+        attempts.append({"n": i + 1, "text": text, "assets": assets, "numbers": claims, "ok": ok, "why": why, "cost_usd": cost})
         print(f"[commentary] 시도 {i + 1}: {'통과' if ok else '불통과 — ' + ' / '.join(why)}", flush=True)
         if ok:
-            final = text
+            final, final_assets = text, assets
             break
         prompt = (f"데이터:\n{data}\n\n{RULES}\n\n직전 초안이 자동 검사를 통과하지 못했습니다 — 사유: {' / '.join(why)}.\n"
                   f"직전 초안:\n{text}\n\n사유를 고친 JSON 하나만 출력하십시오.")
-    res = {"day": day, "passed": final is not None, "text": final, "model": MODEL, "checked_at": dt.datetime.now().isoformat(timespec="seconds"),
+    res = {"day": day, "passed": final is not None, "text": final, "assets": final_assets, "model": MODEL, "checked_at": dt.datetime.now().isoformat(timespec="seconds"),
            "attempts": attempts}
     json.dump(res, open(f"{folder}/commentary.json", "w", encoding="utf-8"), ensure_ascii=False, indent=2)
     print(f"[commentary] {'실음' if final else '싣지 않음'} → {folder}/commentary.json", flush=True)
