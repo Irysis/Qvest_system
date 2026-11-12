@@ -1,0 +1,172 @@
+{
+  "schema": "fc_own_spec_v0",
+  "spec_id": "FC_FAM_leverage",
+  "spec_md5": "70bc9dc098542d8e4f18c465cb91f758",
+  "core": {
+    "spec_id": "FC_FAM_leverage",
+    "kind": "family",
+    "families": [
+      "leverage"
+    ],
+    "rule_version": "fce_rule_v0",
+    "generator_md5": "e31ad11fa6be218017e961c47b06bbdc",
+    "view_builder": "factor_combinable.R v1.1",
+    "view_cfg_version": "fc_v1.1",
+    "read": {
+      "direction": "registry",
+      "missing": "na",
+      "dedup": false,
+      "family": true
+    },
+    "start_rule": "rp_start_date_else_measurement_axis_active_epoch_start_date",
+    "members": [
+      {
+        "id": "XF_DU03_EquityMultiplier",
+        "s_reg": -1,
+        "family": "leverage"
+      },
+      {
+        "id": "XF_LL01_DebtToCapital",
+        "s_reg": -1,
+        "family": "leverage"
+      },
+      {
+        "id": "XF_LL02_NetDebt",
+        "s_reg": -1,
+        "family": "leverage"
+      },
+      {
+        "id": "XF_LL03_CashRatio",
+        "s_reg": 1,
+        "family": "leverage"
+      },
+      {
+        "id": "XF_LL04_QuickRatio",
+        "s_reg": 1,
+        "family": "leverage"
+      },
+      {
+        "id": "XF_LL05_WorkingCapital",
+        "s_reg": 1,
+        "family": "leverage"
+      }
+    ]
+  },
+  "n_members": 6,
+  "n_members_by_family": {
+    "leverage": 6
+  },
+  "design_draft_n_members": 5,
+  "family_root": "FC:leverage",
+  "root_paper": {
+    "url": "https://doi.org/10.1111/jofi.13249",
+    "title": "Is There a Replication Crisis in Finance?",
+    "paper_key": "FC_FAM_leverage"
+  },
+  "literature": [
+    {
+      "use": "transform",
+      "rule": "매 시점 횡단면 순위 → [−1, 1] · 동순위 평균(결합용 뷰 저장 변환 · factor_combinable.json transform)",
+      "ref": "Gu, Kelly & Xiu (2020) Empirical Asset Pricing via Machine Learning, RFS 33(5):2223-2273",
+      "url": "https://doi.org/10.1093/rfs/hhaa009"
+    },
+    {
+      "use": "family_score",
+      "rule": "가족 구성원 중 값이 있는 것의 평균 · 하나도 없으면 결측",
+      "ref": "Asness, Frazzini & Pedersen (2019) Quality Minus Junk, RAS 24(1):34-112",
+      "url": "https://doi.org/10.1007/s11142-018-9470-2"
+    },
+    {
+      "use": "family_score",
+      "rule": "팩터를 주제로 묶어 평균",
+      "ref": "Jensen, Kelly & Pedersen (2023) Is There a Replication Crisis in Finance?, JF 78(5):2465-2518",
+      "url": "https://doi.org/10.1111/jofi.13249"
+    },
+    {
+      "use": "total_v0",
+      "rule": "가족 점수 중 값이 있는 것의 평균(가족 균형 등가중) — 같은 규칙을 한 층 위에 적용",
+      "ref": "Asness, Frazzini & Pedersen (2019) · Jensen, Kelly & Pedersen (2023)(위 두 편)",
+      "url": "https://doi.org/10.1111/jofi.13249"
+    },
+    {
+      "use": "missing",
+      "rule": "점수가 결측인 종목은 그날 패널에서 뺀다(0 으로 채우지 않는다)",
+      "ref": "06_Registry/factor_combinable.json missing.options 의 'na'",
+      "url": null
+    }
+  ],
+  "composite": {
+    "transform": "cross_sectional_rank_to_pm1",
+    "family_score": "mean_of_available",
+    "total": null,
+    "missing": "drop_ticker_date (fc_load_month missing = na)"
+  },
+  "output": "FACTORS(Date, Ticker, Score) — Date = 결합용 뷰의 그 달 as-of · 점수 결측 종목 제외 · PORTFOLIO 없음",
+  "rule_notes": [
+    "구성원 규칙 fce_rule_v0 = 설계 §3-2 규칙 1~5 그대로 — ① 등록부 category = 가족 ② lifecycle.status = active ③ factor_panel_axis.json panel_axis = cross_sectional ④ PIT 격리 목록(pit_quarantine.R::pitq_factor_ids) 밖 ⑤ release_pending 표식 없음 — 에 규칙 6 의 v0 판을 더한다.",
+    "규칙 6(v0 · PIT 우선 — 설계 원안 '중복 군집마다 하나만'을 바꿈): 등록부 dedup · retired_dedup 표식(2026-08-02 · 08-09 상관 · 군집 스캔 = 전기간 통계 측정)은 읽지 않았다. 전기간 상관으로 구성원을 고르면 pit.md C1 · C14 에 걸린다. 빼는 것은 정의상 별칭뿐 — 같은 가족 · 같은 data_source · 같은 update_freq 안에서 (F) definition 문장 전체가 같거나(공백 · 대소문자 정규화) (D) definition 이 다른 구성원을 'alias of <id>' · 'identical to <id>' 로 선언한 것. 정의로 판별할 수 없으면 빼지 않았다. F0-2(수리 뒤 중복 재스캔)는 하지 않았다.",
+    "별칭 묶음에서 남기는 하나 = factor id 사전순 첫째(C 로캘 정렬) — 성과를 읽지 않는 기계 규칙이다. 등록부 dedup.canonical · reason 같은 표식(전기간 통계에서 나온 근거가 섞여 있다)은 남길 쪽을 정하는 데도 쓰지 않았다(판단 Superfan T1 참고 C-20261112-007).",
+    "적용 범위 = 가족 안(가족 점수 = 가족 안 평균). 가족을 넘어 정의가 같은 구성원은 남겼다 — 그런 쌍은 해당 사양의 메모에 적는다.",
+    "성과에서 나온 표식(labels.evidence_tier · lifecycle.research_stage · factor_evidence.json 단계)은 읽지 않았다(C1 · C14).",
+    "방향 = 등록부 기대수익 방향 direction(lower_better → s_reg −1 · 그 밖 → +1 — 결합용 뷰 .fc_reg_signs 와 같은 규칙). 엔진은 direction = \"registry\" 상수로 읽고, 실행 때 뷰 메타의 s_reg · category · 빌더 판이 선언과 다르면 멈춘다 — 등록부 방향 · 가족이 바뀌면 새 사양으로 다시 선언한다.",
+    "패널 축 판정 = factor_panel_axis.json(2026-11-07T07:02:55+0900 생성 · 표본 달 202512 202601 202602 202603 202604 202605 202606 202607 202608 202609 202610 202611 의 횡단면 고유값 관측 — 구조 판정이지 성과가 아니다).",
+    "구성원 수는 이 등록부 판(md5 4995af5ad30ec401c7dc7cc2099f6b11 · 2026-11-10T04:01:52)에 규칙을 다시 적용해 낸 값이다. 설계 §3-1 초안 수는 통계 dedup 표식을 쓴 규칙 6 원안 기준이라 다르다.",
+    "가족 leverage: 등록부 6 → 규칙 1~5 뒤 6 → 정의상 별칭 0 제외 → 구성원 6 (설계 §3-1 초안 5).",
+    "정의상 별칭 제외 없음 — 등록부 정의 필드로 같은 식 · 같은 원천이라 판별되는 구성원 쌍이 이 가족에 없다(통계로만 겹치는 쌍은 남겼다)."
+  ],
+  "excluded": [],
+  "view_check": {
+    "probe_date": "2022-12-31",
+    "probe_asof": "2022-12-29",
+    "n_checked": 6,
+    "n_not_in_probe_month": 0,
+    "mismatches": []
+  },
+  "decision": "FACTOR-SPINE-STAGE1-20261112",
+  "design": "04_Research/01_reports/factor_spine_design_20261111/README.md",
+  "generator": {
+    "path": "02_Infrastructure/factor_db/fc_engine_gen.R",
+    "md5": "e31ad11fa6be218017e961c47b06bbdc"
+  },
+  "inputs": {
+    "registry": {
+      "path": "02_Infrastructure/factor_db/factor_registry.json",
+      "md5": "4995af5ad30ec401c7dc7cc2099f6b11",
+      "mtime": "2026-11-10T04:01:52",
+      "n_entries": 371,
+      "reader": "factor_db_connector.R::.load_registry (factor_combinable.R .fc_env 경유)",
+      "note": "작업 트리 판 — 미커밋 변경이 있으면 그것까지 포함한 바이트의 md5"
+    },
+    "panel_axis": {
+      "path": "06_Registry/factor_panel_axis.json",
+      "md5": "039c31e02bb9015a1b33c627e3122746",
+      "generated_at": "2026-11-07T07:02:55+0900",
+      "sample_months": "202512 202601 202602 202603 202604 202605 202606 202607 202608 202609 202610 202611"
+    },
+    "pit_quarantine": {
+      "path": "06_Registry/pit_quarantine.json",
+      "md5": "5e6f68df3e10f68d3b0aa94f4eb440b3",
+      "reader": "02_Infrastructure/validation/pit_quarantine.R::pitq_factor_ids",
+      "ids": [
+        "D32_Beta_VIX",
+        "MA01_GDP_Sensitivity",
+        "MA02_CPI_Sensitivity"
+      ]
+    },
+    "view": {
+      "builder": "factor_combinable.R v1.1",
+      "cfg_path": "06_Registry/factor_combinable.json",
+      "cfg_version": "fc_v1.1",
+      "cfg_md5": "08e1194adf2e478edfd5ee1c5e5e1b34",
+      "transform": "cross_sectional_rank_to_pm1",
+      "family_composite": "mean_of_available",
+      "probe_date": "2022-12-31",
+      "probe_asof": "2022-12-29"
+    }
+  },
+  "engine": {
+    "path": "04_Research/strategies/FC_FAM_leverage/engine.R",
+    "md5": "8899e5934fcf11e22289a1364975e383"
+  },
+  "declared_at": "2026-11-12T22:25:52+0900"
+}
