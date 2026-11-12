@@ -1,8 +1,8 @@
 {
   "schema": "research_programs_v1",
   "_doc": "v10.01 목표 역산형 3엔진 리서치의 정본 등록부(2026-10-13 도훈 지시 '이 리서치 프로세스를 지속가능하게 운영할 인프라'). 쓰기는 02_Infrastructure/programs/program_registry.R 경유만(원자적 · 스키마 검사). 설계 = 04_Research/01_reports/l1_prescription_redesign_20261013/README.md(§대안 설계 · §2 등급 v3 · §3 처방 루프 · §9 유니버스 · §10 에이전트).",
-  "version": 87,
-  "updated_at": "2026-11-11T18:54:05+0900",
+  "version": 94,
+  "updated_at": "2026-11-12T22:00:44+0900",
   "target_spec": {
     "_doc": "0단계 목표 명세 — 설계는 이 행동 목표로 한다. 등급(essence v3)은 결과 보고 문턱. 수치 출처를 단다(하드코딩 금지).",
     "upside_capture_min": {
@@ -280,6 +280,19 @@
             "P1S01_E3_RX0"
           ],
           "recorded_at": "2026-11-11T15:12:12+0900"
+        },
+        {
+          "round_id": "P1S02_standing_qualification",
+          "prereg": "stage_artifacts/programs/P1_RETURN/P1S02_standing_qualification/prereg.json",
+          "prereg_md5": "65021bbd0eb59c81aa84d2feac5281da",
+          "status": "registered",
+          "core": "v3",
+          "n_variants": 0,
+          "variants": [
+            "P1S02_E2_C0",
+            "P1S02_E3_RX0"
+          ],
+          "recorded_at": "2026-11-12T22:00:44+0900"
         }
       ],
       "queue": [
@@ -1553,6 +1566,40 @@
           "route_date": "20261111",
           "route_file": "alpha_search_route_20261111.json",
           "enqueued_at": "2026-11-11T07:21:33+0900"
+        },
+        {
+          "key": "axv:2611.14325",
+          "kind": "paper",
+          "title": "Point-in-Time Encoders for Earnings Calls",
+          "id": "2611.14325",
+          "source": "arxiv",
+          "engine": "return",
+          "engine_secondary": [],
+          "verdict": "data_pipeline_required",
+          "crisis_evidence": "n/a",
+          "reason": "필요 데이터 = 어닝콜 전문 스크립트(논문: Capital IQ 412,248건 · 16,000+ 기업 · 2004~, 라이선스) — 한국 RAWDATA·재무·컨센서스에 없음. 기존 어닝콜 논문 4건과 같은 결손 축(data_pipeline_queue 적재). 신호는 순위상관(Rank IC) 보고뿐 포트폴리오 성과 없음, 논문 자체 결론도 '수익 예측 개선 없음'. 코퍼스 결손이라 지어내서 재현하지 않는다.",
+          "route_date": "20261112",
+          "route_file": "alpha_search_route_20261112.json",
+          "enqueued_at": "2026-11-12T00:26:06+0900"
+        },
+        {
+          "key": "engine:RP_20261112_042027_15540_rulefast",
+          "kind": "engine",
+          "base_status": "engine",
+          "title": "Deep Learning in Long-Short Stock Portfolio Allocation: An Empirical Study",
+          "paper_key": "2411.13555",
+          "base_id": "RP_20261112_042027_15540_rulefast",
+          "grade": "C",
+          "fidelity": "faithful",
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20261112_042027_15540",
+          "engine_path": "C:\\Users\\99922\\OneDrive\\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_CLEAN_2411_13555/engine.R",
+          "routed_by": "program_queue",
+          "cr_verdict": "weak",
+          "implementation_suspect": false,
+          "holdings_claim_mismatch": false,
+          "has_short": true,
+          "audit_verdict": "adapted",
+          "enqueued_at": "2026-11-12T09:23:06+0900"
         }
       ],
       "status_reason": "P1R01 완료 — 자격 2/3",
@@ -2037,21 +2084,6 @@
           "enqueued_at": "2026-10-15T10:22:05+0900"
         },
         {
-          "key": "axv:1309.7119",
-          "kind": "paper",
-          "title": "Stock price direction prediction by directly using prices data: an empirical study on the KOSPI and HSI",
-          "id": "1309.7119",
-          "source": "arxiv",
-          "engine": "defense",
-          "engine_secondary": [],
-          "verdict": "testable",
-          "crisis_evidence": "not_reported",
-          "reason": "Proposes direct price-data-based ML prediction of KOSPI index direction as an early warning/timing signal; reconstructable as an index-level exposure-switching defense overlay using published KOSPI daily data.",
-          "route_date": "20261015",
-          "route_file": "alpha_search_route_20261015.json",
-          "enqueued_at": "2026-10-15T10:22:05+0900"
-        },
-        {
           "key": "axv:2606.09478",
           "kind": "paper",
           "title": "Volatility Forecasting and Return Prediction under Market Regimes: Evidence from High-Frequency Chinese Equity Data",
@@ -2423,6 +2455,28 @@
           "route_date": "20261111",
           "route_file": "alpha_search_route_20261111.json",
           "enqueued_at": "2026-11-11T07:21:33+0900"
+        },
+        {
+          "key": "engine:RP_20261112_215728_skipped_base",
+          "kind": "engine",
+          "base_status": "skipped",
+          "title": "Stock price direction prediction by directly using prices data: an empirical study on the KOSPI and HSI",
+          "paper_key": "1309.7119",
+          "base_id": "RP_20261112_215728_skipped_base",
+          "grade": "F",
+          "fidelity": "faithful",
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20261112_105907_19064",
+          "engine_path": "C:\\Users\\99922\\OneDrive\\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_CLEAN_1309_7119/engine.R",
+          "routed_by": "program_queue",
+          "cr_verdict": "weak",
+          "base_below_threshold": true,
+          "base_port_t": -3.936,
+          "base_min_port_t": 0,
+          "implementation_suspect": false,
+          "holdings_claim_mismatch": false,
+          "has_short": false,
+          "audit_verdict": "adapted",
+          "enqueued_at": "2026-11-12T21:57:53+0900"
         }
       ],
       "status_reason": "P2R04 falsified(β 짝 깊은 위기 0/8 · 늘 켜진 틸트는 전면 급락 둘에서 β 사본에 짐) · P2R05 원천 ① 분포 표적 설계 · 구현 중 · P2R02 C4 '검증'은 이 축에서 대체(P2R04 결론 범위 4)",
@@ -2446,6 +2500,23 @@
           "enqueued_at": "2026-10-15T10:22:05+0900",
           "consumed_at": "2026-10-17T07:35:04+0900",
           "consumer": "replication:RP_20261017_073446_skipped_base"
+        },
+        {
+          "key": "axv:1309.7119",
+          "kind": "paper",
+          "title": "Stock price direction prediction by directly using prices data: an empirical study on the KOSPI and HSI",
+          "id": "1309.7119",
+          "source": "arxiv",
+          "engine": "defense",
+          "engine_secondary": [],
+          "verdict": "testable",
+          "crisis_evidence": "not_reported",
+          "reason": "Proposes direct price-data-based ML prediction of KOSPI index direction as an early warning/timing signal; reconstructable as an index-level exposure-switching defense overlay using published KOSPI daily data.",
+          "route_date": "20261015",
+          "route_file": "alpha_search_route_20261015.json",
+          "enqueued_at": "2026-10-15T10:22:05+0900",
+          "consumed_at": "2026-11-12T21:57:53+0900",
+          "consumer": "replication:RP_20261112_215728_skipped_base"
         }
       ]
     },
@@ -2593,21 +2664,6 @@
           "verdict": "testable",
           "crisis_evidence": "not_reported",
           "reason": "Textbook Kelly-criterion growth-optimal sizing reconstructable from return/volatility estimates alone; classified as construction (growth-optimization) and treated as a well-known classical result, hence not novel.",
-          "route_date": "20261015",
-          "route_file": "alpha_search_route_20261015.json",
-          "enqueued_at": "2026-10-15T10:22:05+0900"
-        },
-        {
-          "key": "axv:2601.04602",
-          "kind": "paper",
-          "title": "Forecasting Equity Correlations with Hybrid Transformer Graph Neural Network",
-          "id": "2601.04602",
-          "source": "arxiv",
-          "engine": "construction",
-          "engine_secondary": [],
-          "verdict": "testable",
-          "crisis_evidence": "not_reported",
-          "reason": "Correlation forecasting for clustering is a portfolio-construction input reconstructable from Korean daily return data; testable as a construction-engine module, though adaptation from S&P500 to KR universe is non-trivial.",
           "route_date": "20261015",
           "route_file": "alpha_search_route_20261015.json",
           "enqueued_at": "2026-10-15T10:22:05+0900"
@@ -3297,6 +3353,28 @@
           "route_date": "20261111",
           "route_file": "alpha_search_route_20261111.json",
           "enqueued_at": "2026-11-11T07:21:33+0900"
+        },
+        {
+          "key": "engine:RP_20261111_235546_skipped_base",
+          "kind": "engine",
+          "base_status": "skipped",
+          "title": "Forecasting Equity Correlations with Hybrid Transformer Graph Neural Network",
+          "paper_key": "2601.04602",
+          "base_id": "RP_20261111_235546_skipped_base",
+          "grade": "F",
+          "fidelity": "adapted",
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20261111_114852_32704",
+          "engine_path": "C:\\Users\\99922\\OneDrive\\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_CLEAN_2601_04602/engine.R",
+          "routed_by": "program_queue",
+          "cr_verdict": "normal",
+          "base_below_threshold": true,
+          "base_port_t": -2.897,
+          "base_min_port_t": 0,
+          "implementation_suspect": false,
+          "holdings_claim_mismatch": false,
+          "has_short": true,
+          "audit_verdict": "adapted",
+          "enqueued_at": "2026-11-11T23:56:26+0900"
         }
       ],
       "status_reason": "P3R02 완료 — falsified",
@@ -3356,6 +3434,23 @@
           "enqueued_at": "2026-10-15T10:22:05+0900",
           "consumed_at": "2026-10-17T05:43:34+0900",
           "consumer": "replication:RP_20261017_054317_skipped_base"
+        },
+        {
+          "key": "axv:2601.04602",
+          "kind": "paper",
+          "title": "Forecasting Equity Correlations with Hybrid Transformer Graph Neural Network",
+          "id": "2601.04602",
+          "source": "arxiv",
+          "engine": "construction",
+          "engine_secondary": [],
+          "verdict": "testable",
+          "crisis_evidence": "not_reported",
+          "reason": "Correlation forecasting for clustering is a portfolio-construction input reconstructable from Korean daily return data; testable as a construction-engine module, though adaptation from S&P500 to KR universe is non-trivial.",
+          "route_date": "20261015",
+          "route_file": "alpha_search_route_20261015.json",
+          "enqueued_at": "2026-10-15T10:22:05+0900",
+          "consumed_at": "2026-11-11T23:56:26+0900",
+          "consumer": "replication:RP_20261111_235546_skipped_base"
         }
       ]
     },
