@@ -1,0 +1,160 @@
+{
+  "schema": "p1s02_rehearsal_summary_v1",
+  "ok": true,
+  "at": "2026-11-12T21:32:58+0900",
+  "run": "20261112_212912",
+  "run_dir": "04_Research/programs/P1_RETURN/P1S02_standing_qualification/rehearsal/out/20261112_212912",
+  "core": {
+    "version": "v3",
+    "manifest_md5": "4d00113a84c55238b51988645950846d"
+  },
+  "engine": "04_Research/programs/P1_RETURN/P1S02_standing_qualification/rehearsal/engine/RP_REHEARSAL_MOM121/engine.R",
+  "engine_md5": "115790a4fe843877978548cda66161eb",
+  "rehearsal_round": "P1SR02_rehearsal",
+  "code": "P1SR02_RH_C0",
+  "cell_spec_md5": "6265f7f09ece1177c7a562c1944961e4",
+  "inject_fresh": true,
+  "steps": [
+    {
+      "id": "S0",
+      "name": "격리 단정(rc_root · 코어 v3 · RC_SA_ROOT · 공유 원장 표식 0)",
+      "pass": true,
+      "seconds": 0,
+      "note": "코어 v3 · 공유 원장 표식 0/0/0"
+    },
+    {
+      "id": "S1",
+      "name": "리허설 판(판 2 사양 복제 · 칸 1 · standing-validate)",
+      "pass": true,
+      "seconds": 0.2,
+      "note": "판 P1SR02_rehearsal · 판 번호 2 · 칸 P1SR02_RH_C0(reference)"
+    },
+    {
+      "id": "S2",
+      "name": "초안 · 점검 스텁 · P1 스텁 · 등록(임시 등록부 · check_git/run_tests 끔)",
+      "pass": true,
+      "seconds": 1.1,
+      "note": "초안 v1 · 사전등록 04_Research/programs/P1_RETURN/P1S02_standing_qualification/rehearsal/out/20261112_212912/sa/stage_artifacts/programs/P1_RETURN/P1SR02_rehearsal/prereg.json(md5 490f9536) · 임시 등록부 기록 1"
+    },
+    {
+      "id": "S3",
+      "name": "scan(시드 enqueue · 레인 새 항목 0)",
+      "pass": true,
+      "seconds": 37.8,
+      "note": "레인 디렉터리 51 · 입구 통과 0(넣지 않음) · 넣은 항목 P1SR02_RH_C0"
+    },
+    {
+      "id": "S4g",
+      "name": "GPU 관문 판별(리허설 엔진 = cpu 여야 한다 · 임대 없음)",
+      "pass": true,
+      "seconds": 0.5,
+      "note": "관문 cpu(engine_dependency engine.R(+0_참조_파일)_GPU_프레임워크_없음)"
+    },
+    {
+      "id": "S4a",
+      "name": "측정 — 실제 신선도 관문(낡음 → data_stale · 원장 무기록 = 음성 대조)",
+      "pass": true,
+      "seconds": 1.7,
+      "note": "관문 data_stale · 원장 줄 2 → 2"
+    },
+    {
+      "id": "S4b",
+      "name": "측정 — 신선도 주입(배선 시험) · 실제 워커 · 실제 지문",
+      "pass": true,
+      "seconds": 96.8,
+      "note": "ok TRUE · 지문 동일 TRUE · rc 0 · 1.6분"
+    },
+    {
+      "id": "S5",
+      "name": "판정 전 점검 10항목(tools/prejudge_check.R --eval · 리허설 경로)",
+      "pass": true,
+      "seconds": 83.6,
+      "note": "종료 0 · P1SR02_RH_C0 — 이상 없음"
+    },
+    {
+      "id": "S6",
+      "name": "judge(판정 줄 · 판정 파일 · standing_visible.json τ_D 검사)",
+      "pass": true,
+      "seconds": 0.6,
+      "note": "판정 줄 있음 · status evaluated · 판정 파일 있음 · 보는 창 파일 τ_D 뒤 날짜 0"
+    },
+    {
+      "id": "S7",
+      "name": "standing-report 드라이런(발송 없음 · 원장 reported 무기록)",
+      "pass": true,
+      "seconds": 0.5,
+      "note": "보고 대상 1 · 드라이런 출력 23줄 · 원장 reported 0"
+    },
+    {
+      "id": "S8",
+      "name": "standing-status 줄(원장 사슬 정상)",
+      "pass": true,
+      "seconds": 0.3,
+      "note": "상태 2줄 · 원장 사슬 정상(4줄)"
+    },
+    {
+      "id": "S9",
+      "name": "격리 증명(실제 파일 md5 · 폴더 · 공유 원장 표식)",
+      "pass": true,
+      "seconds": 0.2,
+      "note": "실제 파일 바뀜 0 · 판 1/판 2 폴더 같음 TRUE · 공유 원장 표식 0/0/0"
+    }
+  ],
+  "defects": [],
+  "freshness": {
+    "real_state": "stale",
+    "real_ok": false,
+    "real_as_of": "2026-11-11",
+    "real_reason": "[감사기 --check] status=STALE · 기준일 2026-11-11 · 낡음 rawdata · 판독 불가 -",
+    "injected": true
+  },
+  "gpu_guard": {
+    "state": "cpu",
+    "need": false
+  },
+  "measure": {
+    "ok": true,
+    "fp_same": true,
+    "rc": 0,
+    "seconds": 94.6,
+    "artifacts": "stage_artifacts/replication/20261112_213000_23284",
+    "error": null,
+    "base_alignment": {
+      "RP_REHEARSAL_MOM121/engine.R": {
+        "rule": "month_snap_v1",
+        "n_engine_dates": 323,
+        "n_cell_dates": 323,
+        "n_moved": 0,
+        "n_superseded": 0,
+        "n_offcal": 0,
+        "max_lag_td": 0,
+        "start": "2000-01-01",
+        "from_cache": true,
+        "first_engine_date": "2000-01-31",
+        "first_cell_date": "2000-01-31",
+        "n_cell_dates_from_start": 323,
+        "base_kind": "factors"
+      }
+    }
+  },
+  "isolation": {
+    "real_changed": [],
+    "dirs_same": true,
+    "shared_marks_before": {
+      "06_Registry/q_judgment_ledger.json": 0,
+      "06_Registry/decision_register.json": 0,
+      "06_Registry/session_resume.json": 0
+    },
+    "shared_marks_after": {
+      "06_Registry/q_judgment_ledger.json": 0,
+      "06_Registry/decision_register.json": 0,
+      "06_Registry/session_resume.json": 0
+    },
+    "allowed_ledger_ids": [
+      "J-20261112-003"
+    ],
+    "real_sa_rehearsal": "absent"
+  },
+  "seconds_total": 225.1,
+  "note": "성과 값 없음(통과 여부 · 유한 여부 · 개수 · τ_D 이전 날짜만) · 판정 · 보고 원문 = run_dir 파일"
+}

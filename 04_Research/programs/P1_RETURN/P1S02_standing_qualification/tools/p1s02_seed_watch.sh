@@ -7,7 +7,9 @@
 #      (신선도는 코어가 측정 직전에 본다). 이른 창(02:30~)은 없앴다 — 밤 체인(00:03~약 06:00)과 아침 체인(07:10) 사이에 6시간 창이 없다.
 #   L: 창이 열려 있는 동안 레인 GPU 슬롯 측정 0 을 본다(임대 요청 없음). 둘 다 서면 M.
 #   M: measure-item E2 → (E2 ok · 지문 동일이면) E3 용 임대를 곧바로 한 번 선점(관문이 쓸 것과 같은 보유자 이름 — 관문 요청은 already_held 로 통과)
-#      → measure-item E3 → standing-status. 코어가 'GPU · 신선도 건너뜀'(원장 무기록)으로 돌려주면 W 로 돌아가 다시 기다린다.
+#      → E3 는 follow 대기(격리 점검 v2 R-1 · 11-12): 시각 창 · 지문 안정 대기 없이 체인 · 배리어 · 메모리 · 레인 조건만 보고, 지문이 E2 측정
+#      시작 때와 같을 때 곧바로 잰다(같은 창 · 같은 자료 판 · 기저 캐시 공유). 지문이 달라졌으면 선점 임대를 놓고 보통 대기(W)로 돌아간다.
+#      E2 가 실패하면 선점하지 않는다. → measure-item E3 → standing-status. 코어가 'GPU · 신선도 건너뜀'(원장 무기록)으로 돌려주면 W 로 돌아가 다시 기다린다.
 #      **판정 · 발송은 하지 않는다**(판정 전 점검 10항목을 세션이 본 뒤 judge — DESIGN.md §5).
 #   종료: 0 = M 끝 · 3 = E2 측정 실패(E3 생략) · 6 = 대기 상한 · 2 = 준비 실패. 어느 종료든 trap 이 두 보유자 이름의 임대를 놓는다(쥔 것이 없으면 무동작).
 #   이 셸이 죽으면 선점한 임대는 보유자 pid 사망으로 풀린다(레인 재개 = 안전 쪽). 본문을 main() 안에 둔다 — 실행 중 파일이 바뀌어도 읽은 정의로 돈다.
@@ -27,6 +29,7 @@ main() {
   TS=$(date +%Y%m%d_%H%M%S)
   LOG=.cache/scheduler_logs/p1s02_seed_watch_${TS}.log
   STATE=.cache/scheduler_logs/p1s02_seed_watch_state.txt
+  FP_E2=.cache/scheduler_logs/p1s02_seed_watch_fp_e2.txt   # E2 측정 시작 때의 데이터 지문(E3 follow 대조 · 점검 v2 R-1)
   WINPID=$(cat /proc/$$/winpid 2>/dev/null)
   DAY_A=${P1S02_DAY_A:-500};     DAY_Z=${P1S02_DAY_Z:-705}          # 낮 창 시작 허용(분) 08:20~11:45 — 측정 약 6시간 가정(판 1 추정 J-017 · 5~6시간) → 17:45 전 종료
   FP_STABLE_S=${P1S02_FP_STABLE_S:-1200}
@@ -50,13 +53,16 @@ main() {
 
   # ── M: 측정(판정 · 발송 없음) ────────────────────────────────────────────────────
   local rc_e2 rc_e3=-1 e2ok exitc=0
-  rc_e2=$(measure_until_done P1S02_E2_C0) || exit $?
-  try_acquire "$H_E3" || log "M: E3 임대 선점 실패 — 관문이 스스로 잡는다(레인이 먼저 잡았으면 gpu_wait → 다시 기다린다)"
+  rc_e2=$(measure_until_done P1S02_E2_C0 normal) || exit $?
   e2ok=$(grep -F "측정 P1S02_E2_C0 ok=TRUE" "$LOG" | grep -cF "지문 동일=TRUE")
   if [ "$e2ok" -ge 1 ]; then
-    rc_e3=$(measure_until_done P1S02_E3_RX0) || exit $?
+    # (격리 점검 v2 R-1 · 11-12) E3 는 E2 와 같은 창 · 같은 자료 판에서 곧바로 잰다 — 시각 창 · 지문 안정 대기를 다시 하지 않는다
+    #   (체인 · 배리어 · 메모리 · 레인 조건은 그대로 · 지문은 E2 측정 시작 때와 같아야 한다 — 다르면 임대를 놓고 보통 대기로 돌아간다).
+    #   선점은 E2 성공 뒤에만 한다(E2 실패면 쥐지 않는다).
+    try_acquire "$H_E3" || log "M: E3 임대 선점 실패 — 관문이 스스로 잡는다(레인이 먼저 잡았으면 gpu_wait → 다시 기다린다)"
+    rc_e3=$(measure_until_done P1S02_E3_RX0 follow) || exit $?
   else
-    log "M: E2 측정이 ok · 지문 동일이 아니다(rc=$rc_e2) — E3 생략(같은 기저 · 같은 경로) · 세션이 본다"; exitc=3
+    log "M: E2 측정이 ok · 지문 동일이 아니다(rc=$rc_e2) — E3 생략(같은 기저 · 같은 경로) · 임대 선점 안 함 · 세션이 본다"; exitc=3
   fi
   run standing-status
   log "M: 끝 — E2 rc=$rc_e2 · E3 rc=$rc_e3 · 판정 전 점검 → judge → 보고는 세션 몫"
@@ -65,10 +71,11 @@ main() {
 }
 
 # W → L 을 지난 뒤 measure-item 한 번 · 코어가 GPU · 신선도로 건너뛰면(원장 무기록) 다시 W → L. 표준 출력 = measure-item rc
-measure_until_done() {
-  local code=$1 n0 n1 rc
+measure_until_done() {   # $2 = normal | follow(E3 — E2 와 같은 창 · 같은 자료 판)
+  local code=$1 mode=${2:-normal} n0 n1 rc
   while :; do
-    wait_window_and_lane "$code" || return 6
+    wait_window_and_lane "$code" "$mode" || return 6
+    mode=normal                                     # 건너뜀(코어 관문) 뒤 다시 기다릴 때는 보통 대기
     st "M 측정 중 — $code"
     n0=$(grep -cF "측정 $code 건너뜀" "$LOG" 2>/dev/null); n0=${n0:-0}
     run measure-item "$code"; rc=$?
@@ -79,28 +86,40 @@ measure_until_done() {
 }
 
 # W: 측정 창 · L: 레인 측정 0 — 둘 다 서면 0 · 대기 상한이면 1(임대를 잡지 않는다)
-wait_window_and_lane() {
-  local code=$1 now fp_last="" fp_since last_why=0 why fp nowm mg ls
+wait_window_and_lane() {   # $2 = normal | follow — follow 면 시각 창 · 지문 안정 대기를 건너뛰되 지문 = E2 측정 시작 때여야 한다
+  local code=$1 mode=${2:-normal} now fp_last="" fp_since last_why=0 why fp nowm mg ls fpe2
   fp_since=$(date +%s)
-  st "W 측정 창 · 레인 측정 0 대기 — $code(임대 없음)"
+  if [ "$mode" = "follow" ]; then
+    fpe2=$(cat "$FP_E2" 2>/dev/null)
+    st "W(follow) E2 직후 — $code(시각 창 · 지문 안정 대기 없음 · 지문 = E2 때 · 체인 · 배리어 · 메모리 · 레인 조건만)"
+  else
+    st "W 측정 창 · 레인 측정 0 대기 — $code(임대 없음)"
+  fi
   while :; do
     now=$(date +%s)
     [ $((now - T0)) -gt "$MAX_WAIT_S" ] && { log "W: 대기 상한 초과"; return 1; }
     fp=$(bash "$FPS" equality 2>/dev/null | md5sum | cut -c1-32)
     if [ "$fp" != "$fp_last" ]; then [ -n "$fp_last" ] && log "W: 데이터 지문 변경 ${fp_last:0:8} → ${fp:0:8}"; fp_last=$fp; fp_since=$now; fi
+    if [ "$mode" = "follow" ] && [ "$fp" != "$fpe2" ]; then
+      log "W(follow): 지문이 E2 측정 시작 때(${fpe2:0:8})와 다르다(${fp:0:8}) — E3 는 다른 자료 판이 된다 · 선점 임대를 놓고 보통 대기로 돌아간다"
+      release_lease "$H_E3"; mode=normal; fp_since=$now
+    fi
     why=""
     nowm=$((10#$(date +%H) * 60 + 10#$(date +%M)))
-    if ! { [ "$nowm" -ge "$DAY_A" ] && [ "$nowm" -le "$DAY_Z" ]; }; then why="시각 창 밖(${nowm}분)"; fi
+    if [ "$mode" != "follow" ] && ! { [ "$nowm" -ge "$DAY_A" ] && [ "$nowm" -le "$DAY_Z" ]; }; then why="시각 창 밖(${nowm}분)"; fi
     if [ -z "$why" ]; then task_running Qvest_DailyRefresh && why="밤 체인 실행 중"; fi
     if [ -z "$why" ]; then task_running Qvest_MorningBrief && why="아침 체인 실행 중"; fi
     if [ -z "$why" ]; then barrier_free || why="리프레시 배리어 held"; fi
-    if [ -z "$why" ] && [ $((now - fp_since)) -lt "$FP_STABLE_S" ]; then why="지문 안정 $((now - fp_since))s < ${FP_STABLE_S}s"; fi
+    if [ -z "$why" ] && [ "$mode" != "follow" ] && [ $((now - fp_since)) -lt "$FP_STABLE_S" ]; then why="지문 안정 $((now - fp_since))s < ${FP_STABLE_S}s"; fi
     if [ -z "$why" ]; then mg=$(mem_gb); { [ -n "$mg" ] && [ "$mg" -ge "$MEM_MIN_GB" ]; } 2>/dev/null || why="가용 메모리 ${mg:-?}GB < ${MEM_MIN_GB}GB"; fi
     if [ -z "$why" ]; then
       if lane_dir_busy; then why="레인 GPU 슬롯 claim 디렉터리 있음"
       else ls=$(lane_status); { [ "$ls" = "live" ] || [ "$ls" = "unreadable" ]; } && why="레인 측정 status=$ls"; fi
     fi
-    if [ -z "$why" ]; then log "W · L: 창 열림 · 레인 측정 0 — $code 측정 · 가용 메모리 ${mg}GB · 지문 ${fp:0:8}"; return 0; fi
+    if [ -z "$why" ]; then
+      [ "$mode" != "follow" ] && printf '%s\n' "$fp" > "$FP_E2"   # E3 follow 대조용 — E2(첫 측정) 시작 때의 지문
+      log "W · L: 창 열림 · 레인 측정 0 — $code 측정($mode) · 가용 메모리 ${mg}GB · 지문 ${fp:0:8}"; return 0
+    fi
     if [ $((now - last_why)) -ge 600 ]; then log "W: 대기($code) — $why"; st "W 대기($code) — $why"; last_why=$now; fi
     sleep 60
   done
@@ -153,6 +172,10 @@ except Exception:
       log "임대를 잡았다는데 상태가 $ls2/$lh2"; return 1 ;;
     *) log "임대 실패($res)"; return 1 ;;
   esac
+}
+release_lease() {   # $1 = 보유자 이름 — follow 대기에서 지문이 E2 때와 달라 보통 대기로 돌아갈 때 선점을 놓는다
+  local out; out=$(timeout 120 "$PY" -X utf8 02_Infrastructure/ops/qv_lock.py lease release --holder "$1" --json 2>&1 | tr -d '\r' | tail -n 1)
+  log "임대 놓기($1) → $(printf '%s' "$out" | cut -c1-200)"
 }
 task_running() {
   local s; s=$(timeout 90 powershell.exe -NoProfile -NonInteractive -Command "(Get-ScheduledTask -TaskName '$1').State" 2>/dev/null | tr -d '\r\n ')
