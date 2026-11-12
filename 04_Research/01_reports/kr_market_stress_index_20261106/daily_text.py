@@ -292,21 +292,22 @@ def build_markdown(meta, d, st, eps, cv, nsr, rob, day, peaks):
     A(f'<span style="font-size:7.8pt;color:#444">점수 눈금 읽기 — {scale_phrase(meta)} · 100 = 12개 분야가 모두 역대 최악이면서 한 방향으로 움직일 때. '
       f'점수는 34개 세부 지표의 심각도를 분야들이 **함께** 움직일수록 크게 치도록 합친 값입니다(유럽중앙은행 CISS 방식 · 제곱근 눈금).</span>')
     A("")
+    # 오늘의 총평(1쪽 맨 위 · 도훈 11-13 "Opus급 지능으로 매일 총평 한 문단") — make_commentary.py 가 Claude Opus 5.5 로 쓰고 숫자 자동 검사를 통과한 경우에만
+    #   (같은 기준일 · passed). 없거나 불통과면 이 절 없이 발행한다(규칙 기반 핵심 요약은 그대로).
+    cm = _commentary(day)
+    if cm:
+        A(f"#### 오늘의 총평 — AI 작성({cm['model_label']}) · 숫자 출처 자동 검사 통과")
+        A("")
+        A(cm["text"])
+        A("")
+        A('<span style="font-size:7.6pt;color:#666">위 단락은 AI 가 이 보고서의 데이터만 보고 쓴 총평입니다. 본문의 모든 숫자는 데이터의 출처 항목으로 자동 재계산해 일치를 확인했으며, '
+          '예측 · 전망 표현은 싣지 않습니다. 총평이 검사를 통과하지 못한 날은 이 단락 없이 발행됩니다.</span>')
+        A("")
     A("## 1. 핵심 요약")
     A("")
     for b in summary_bullets(meta, d, st, eps, cv, ns, peaks):
         A(f"- {b}")
     A("")
-    # 오늘의 해설(선택) — make_commentary.py 가 Sonnet 으로 쓰고 숫자 자동 검사를 통과한 경우에만(같은 기준일 · passed). 없거나 불통과면 이 절은 없다.
-    cm = _commentary(day)
-    if cm:
-        A(f"#### 오늘의 해설 — AI 작성({cm['model_label']}) · 숫자 출처 자동 검사 통과")
-        A("")
-        A(cm["text"])
-        A("")
-        A('<span style="font-size:7.6pt;color:#666">위 단락은 AI 가 이 보고서의 데이터만 보고 쓴 해설입니다. 본문의 모든 숫자는 데이터의 출처 항목으로 자동 재계산해 일치를 확인했으며, '
-          '예측 · 전망 표현은 싣지 않습니다. 해설이 검사를 통과하지 못한 날은 이 단락 없이 발행됩니다.</span>')
-        A("")
     # 소제목으로 블록을 나눈다 — PDF 도구는 제목~다음 제목을 한 덩어리(쪽 나눔 금지)로 묶으므로, 요약 글머리와 게이지를 한 덩어리로 두면
     # 1쪽에 못 들어갈 때 요약까지 통째로 2쪽으로 밀린다(1쪽 = 제목 + 카드만 남는 양식 사고)
     A("#### 오늘의 자리 — 0~100 눈금과 최근 1년의 길")
@@ -481,7 +482,7 @@ def build_markdown(meta, d, st, eps, cv, nsr, rob, day, peaks):
 
 
 def _commentary(day):
-    """daily/<기준일>/commentary.json — 같은 기준일 · 검사 통과분만 · ★KRSI_COMMENTARY=1 일 때만(도훈 11-06: 매일 일보는 해설 없는 확정본 v1 기준)."""
+    """daily/<기준일>/commentary.json — 같은 기준일 · 검사 통과분만 · KRSI_COMMENTARY=1 일 때만(11-13 부터 체인 기본 켬 · 끄기 = KRSI_COMMENTARY=0)."""
     import json
     import os
     if os.environ.get("KRSI_COMMENTARY") != "1":

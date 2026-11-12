@@ -11,7 +11,7 @@ ROOT="$(cd "$HERE/../../.." && pwd)"
 PY="$ROOT/.venv_qvest_ml/Scripts/python.exe"
 LOG_DIR="$HERE/daily/logs"; mkdir -p "$LOG_DIR"
 LOG="$LOG_DIR/run_$(date +%Y%m%d_%H%M%S).log"
-export PYTHONUTF8=1 KRSI_DAILY=1
+export PYTHONUTF8=1 KRSI_DAILY=1 KRSI_COMMENTARY="${KRSI_COMMENTARY:-1}"   # 오늘의 총평(Opus) 기본 켬 — 도훈 11-13 · 끄기 = KRSI_COMMENTARY=0
 SKIP_FETCH=0; NO_PDF=""
 for a in "$@"; do case "$a" in --skip-fetch) SKIP_FETCH=1;; --no-pdf) NO_PDF="--no-pdf";; esac; done
 step() { echo "[$(date '+%F %T')] $*" | tee -a "$LOG"; }
@@ -21,8 +21,8 @@ step "start · root=$ROOT"
 if [ "$SKIP_FETCH" = 0 ]; then step "① fetch_research_inputs.py"; run "$PY" fetch_research_inputs.py || exit 3; fi
 step "② build_kr_stress_index_v1.py (KRSI_DAILY=1)"; run "$PY" build_kr_stress_index_v1.py || exit 4
 step "③ make_charts.py v1";                           run "$PY" make_charts.py v1 || exit 5
-# ③b 오늘의 해설(Sonnet · 숫자 출처 자동 검사) — ★기본 끔(도훈 11-06: 매일 일보 = 해설 없는 확정본 v1). 시험할 때만 KRSI_COMMENTARY=1(본문 삽입도 같은 변수)
-if [ "${KRSI_COMMENTARY:-0}" = "1" ]; then step "③b make_commentary.py"; run "$PY" make_commentary.py || step "★해설 단계 실패(일보는 해설 없이 계속)"; fi
+# ③b 오늘의 총평(Claude Opus 5.5 · 숫자 출처 자동 검사) — 기본 켬(도훈 11-13 "Opus급 지능으로 매일 총평 한 문단"). 실패 · 불통과면 총평 없이 발행(본문 삽입도 같은 변수)
+if [ "${KRSI_COMMENTARY:-1}" = "1" ]; then step "③b make_commentary.py (Opus 총평)"; run "$PY" make_commentary.py || step "★해설 단계 실패(일보는 해설 없이 계속)"; fi
 step "④ make_daily_report.py $NO_PDF";                run "$PY" make_daily_report.py $NO_PDF || exit 6
 # 방법론 문서는 매일 만들지 않는다(도훈 11-06) — 필요할 때 손으로: make_methodology.py --pdf
 # ⑤ 메일(PDF 일보 + 엑셀 대시보드 → ops/mail_config.json 수신자 · 기준일당 1통) — 발신 자격이 없거나 실패해도 일보는 유효(KRSI_NO_MAIL=1 이면 건너뜀)

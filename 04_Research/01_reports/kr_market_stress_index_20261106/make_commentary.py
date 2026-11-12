@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""일보 '오늘의 해설' 한 단락 — Claude Sonnet 5.5 가 쓰고, 숫자 자동 검사를 통과해야만 싣는다(도훈 11-06 "해설 단락 붙여 보기").
+"""일보 1쪽 '오늘의 총평' 한 단락 — Claude Opus 5.5 가 쓰고, 숫자 자동 검사를 통과해야만 싣는다(도훈 11-06 "해설 단락 붙여 보기" · 11-13 "Opus급 지능으로 매일 총평 한 문단" → 체인 기본 켬).
 
-흐름: make_daily_report.load() 의 파생값 → 데이터 묶음(JSON) → `claude -p`(Sonnet · 도구 없음 · 프로젝트 밖 임시 폴더에서 · 훅/CLAUDE.md 미적재)
+흐름: make_daily_report.load() 의 파생값 + 시장 스냅샷(코스피200 · 원/달러 · 국고채 · AA- 스프레드 · VIX — 가용일 규칙과 같은 자료일) → 데이터 묶음(JSON) → `claude -p`(Opus · 도구 없음 · 프로젝트 밖 임시 폴더에서 · 훅/CLAUDE.md 미적재)
       → 검사 ① 숫자: 본문의 모든 숫자가 묶음 값이거나 묶음 값끼리의 차 · 비율 · 상위 기여도 합이어야 한다
              ② 문장: 예측 · 전망 표현 금지(이 지수는 동행 지표) · 마크다운 기호 금지 · 길이
       → 불통과면 사유를 붙여 1회 다시 쓰게 하고, 그래도 불통과면 싣지 않는다(일보는 해설 없이 정상 발행 · 사유 기록).
@@ -30,18 +30,22 @@ sys.path.insert(0, HERE)
 import daily_text as T  # noqa: E402
 import make_daily_report as M  # noqa: E402
 
-MODEL = os.environ.get("KRSI_COMMENTARY_MODEL", "claude-sonnet-5-5")
-MAX_CHARS = 700
-TIMEOUT_SEC = 240
+MODEL = os.environ.get("KRSI_COMMENTARY_MODEL", "claude-opus-5-5")
+MAX_CHARS = 800
+BM = None   # main() 이 채운다(코스피200 종가 · 시장 스냅샷용)
+TIMEOUT_SEC = 480
 
-SYSTEM = ("당신은 한국 증권사 리서치센터의 시장 전략 담당자입니다. 임원에게 보내는 일일 스트레스 보고서의 '오늘의 해설' 한 단락을 씁니다. "
-          "높임말 · 쉬운 말. 주어진 데이터의 숫자만 씁니다 — 숫자를 지어내거나 어림하지 않습니다. 계산은 데이터 값끼리의 차 · 비율만 허용됩니다. "
+SYSTEM = ("당신은 한국 증권사 리서치센터의 수석 퀀트 전략가입니다. 국내 자본시장 스트레스 일일 보고서 1쪽 맨 위에 실릴 '오늘의 총평' 한 단락을 씁니다. "
+          "독자는 임원과 운용 담당자입니다. 높임말로, 프로페셔널 퀀트 톤과 표준 금융 용어(변동성 · 신용 스프레드 · 유동성 · 동조화 · 꼬리 위험 등)로 씁니다. "
+          "오늘의 시장 움직임(시장 스냅샷)과 스트레스 구조(분야별 심각도 · 기여도 · 20거래일 변화)를 엮어, 지금 자본시장이 어떤 국면인지 한눈에 읽히게 종합합니다. "
+          "주어진 데이터의 숫자만 씁니다 — 숫자를 지어내거나 어림하지 않습니다. 계산은 데이터 값끼리의 차 · 비율만 허용됩니다. "
           "이 지수는 동행 지표(지금의 상태를 재는 온도계)이므로 앞으로의 방향을 예측하거나 전망하지 않습니다.")
 
 RULES = f"""규칙:
-- 한 단락, 4~6문장, {MAX_CHARS}자 이내. 제목 · 글머리표 · 마크다운 기호(*, #, |, `) 없이 평문으로만.
+- 한 단락, 5~7문장, {MAX_CHARS}자 이내. 제목 · 글머리표 · 마크다운 기호(*, #, |, `) 없이 평문으로만.
 - 점수 · 심각도 · 백분위는 정수로 씁니다(예: 44점, 심각도 95). 기여도는 소수 한 자리(예: 8.3점).
-- 다뤄 주실 것: ① 지금 스트레스의 성격(어느 분야가 나쁘고 어디는 평온한가) ② 지난 20거래일 동안 무엇이 바뀌었나 ③ 과거 위기와 견주면 어느 정도인가 ④ 지켜볼 대목(아직 평온한 분야로 번지는지 등 — 데이터에 근거한 관찰로).
+- 다뤄 주실 것: ⓪ 오늘 시장에서 실제로 무슨 일이 있었나(시장_스냅샷 — 코스피200 · 원/달러 · 금리 · 신용 · VIX 의 수준과 변화) ① 지금 스트레스의 성격(어느 분야가 나쁘고 어디는 평온한가 · 국내 주식 중심인지 신용 · 외환으로 번진 체계적 스트레스인지) ② 지난 20거래일 동안 무엇이 바뀌었나 ③ 과거 위기와 견주면 어느 정도인가 ④ 지켜볼 대목(아직 평온한 분야로 번지는지 등 — 데이터에 근거한 관찰로).
+- '가족' 같은 직역 표현은 쓰지 않습니다(분야 · 축 · 카테고리).
 - 금지: '~할 것입니다 / ~할 것으로 보입니다 / 전망 / 예상' 같은 예측 표현, 데이터에 없는 사건 · 뉴스 언급, 투자 권유.
 - ★본문에 쓴 숫자마다 출처를 밝힙니다(자동 검사기가 다시 계산합니다). 출처 = 아래 '경로' 하나, 또는 계산식:
   `경로 - 경로` · `경로 + 경로` · `경로 / 경로` · `경로 / 경로 * 100` · `sum(경로, 경로, …)`(2~6개) · `count(목록이름.필드 >= 수)`(예: count(분야.심각도 >= 90)).
@@ -53,6 +57,47 @@ RULES = f"""규칙:
 # ── 데이터 묶음 ────────────────────────────────────────────────────────────────
 def r(x, k=2):
     return None if x is None or x != x else round(float(x), k)
+
+
+def market_snapshot(day, st, bm):
+    """오늘 시장 스냅샷 — 지수 계산과 같은 자료일(indicator_status 의 last_obs_date · 가용일 규칙)로 원값을 뽑는다."""
+    obs = {r.id: pd.Timestamp(r.last_obs_date) for r in st.itertuples()}
+    val = {r.id: float(r.value) for r in st.itertuples()}
+    out, dates = {}, {}
+    b = bm[bm.index <= pd.Timestamp(day)] if bm is not None else pd.Series(dtype=float)
+    if len(b) > 21:
+        out["코스피200"] = {"종가": r(b.iloc[-1], 2), "일간_수익률_퍼센트": r(100 * (b.iloc[-1] / b.iloc[-2] - 1), 2),
+                           "20거래일_수익률_퍼센트": r(100 * (b.iloc[-1] / b.iloc[-21] - 1), 1), "2년고점대비_낙폭_퍼센트": r(100 * val.get("E2", np.nan), 1)}
+        dates["코스피200"] = str(b.index[-1].date())
+    try:
+        k = pd.read_parquet(HERE + "/output/research_pull_ecos_krw.parquet")
+        k["Date"] = pd.to_datetime(k["Date"])
+        k = k.drop_duplicates("Date").set_index("Date")["Value"].astype(float).sort_index()
+        k = k[k.index <= obs.get("X1", pd.Timestamp(day))]
+        out["원달러"] = {"환율": r(k.iloc[-1], 1), "20영업일전_환율": r(k.iloc[-21], 1), "20영업일_변화_원": r(k.iloc[-1] - k.iloc[-21], 1)}
+        dates["원달러"] = str(k.index[-1].date())
+    except Exception:  # noqa: BLE001
+        pass
+    try:
+        rt = pd.read_parquet(HERE + "/output/research_pull_ecos_817Y002.parquet")
+        rt["Date"] = pd.to_datetime(rt["Date"])
+        cut = obs.get("R1", pd.Timestamp(day))
+        g = {sid: grp.set_index("Date")["Value"].astype(float).sort_index() for sid, grp in rt.groupby("Series")}
+        g3, g10 = g["KR_Gov3Y"][lambda x: x.index <= cut], g["KR_Gov10Y"][lambda x: x.index <= cut]
+        out["국고채"] = {"3년_금리_퍼센트": r(g3.iloc[-1], 3), "10년_금리_퍼센트": r(g10.iloc[-1], 3),
+                        "3년_20영업일_변화_bp": r(100 * (g3.iloc[-1] - g3.iloc[-21]), 1), "10년_20영업일_변화_bp": r(100 * (g10.iloc[-1] - g10.iloc[-21]), 1)}
+        dates["국고채"] = str(g3.index[-1].date())
+        out["회사채_AA_스프레드_bp"] = r(100 * val.get("C1", np.nan), 1)
+        out["회사채_BBB_스프레드_bp"] = r(100 * val.get("C2", np.nan), 1)
+        dates["회사채_스프레드"] = str(obs.get("C1", cut).date())
+    except Exception:  # noqa: BLE001
+        pass
+    if "G1" in val:
+        out["VIX"] = r(val["G1"], 2)
+        dates["VIX"] = str(obs["G1"].date())
+    if "E3" in val:
+        out["V_KOSPI200"] = r(val["E3"], 2)
+    return out, dates
 
 
 def build_pack(meta, d, st, eps, cv, nsr):
@@ -79,6 +124,7 @@ def build_pack(meta, d, st, eps, cv, nsr):
                               for x in st.assign(dd=st.ecdf_pct - st.ecdf_pct_20td_ago).sort_values("dd", ascending=False).head(5).itertuples()],
         "역대_봉우리": [{"날짜": str(t.date()), "점수": r(v, 1), "상황": T._peak_label(t)} for t, v in M.peaks_of(d)],
         "진행중_급락": [{"코스피200_고점": str(e.peak), "낙폭_퍼센트": r(100 * e.depth, 0)} for e in cv.itertuples() if bool(e.ongoing)],
+        "시장_스냅샷": market_snapshot(meta["last_date"], st, BM)[0],
         "지수의_성격": "동행 지표 — 급락과 거의 동시에 오르고 고점을 앞서지 못함. 점수가 역대 상위 5% 안일 때 이후 60거래일 큰 추가 하락이 평소보다 잦았음(꼬리 위험 정보).",
     }
 
@@ -256,14 +302,18 @@ def prompt_data(pack):
     flat, _ = flatten(pack)
     notes = {"점수_정의": pack["점수"]["정의"], "지수의_성격": pack["지수의_성격"], "경보단계_오늘": pack["경보단계"]["오늘"],
              "역대최고_날짜": pack["점수"]["역대최고_날짜"], "기준일": pack["기준일"],
+             "시장_스냅샷_자료일": pack.get("_스냅샷_자료일", {}),
              "세부지표_자료일": [(x["이름"], x["자료일"]) for x in pack["세부지표_심각도80이상"]],
              "봉우리_상황": [(x["날짜"], x["상황"]) for x in pack["역대_봉우리"]], "진행중_급락_고점": [x["코스피200_고점"] for x in pack["진행중_급락"]]}
     return "경로 = 값\n" + "\n".join(f"{k} = {v:g}" for k, v in flat.items()) + "\n\n참고(숫자 출처 아님):\n" + json.dumps(notes, ensure_ascii=False, indent=1)
 
 
 def main():
+    global BM
     meta, d, st, eps, cv, nsr, rob, bm = M.load()
+    BM = bm
     pack = build_pack(meta, d, st, eps, cv, nsr)
+    pack["_스냅샷_자료일"] = market_snapshot(meta["last_date"], st, bm)[1]
     if "--dry-check" in sys.argv:
         s = sys.argv[sys.argv.index("--dry-check") + 1]
         claims = json.loads(sys.argv[sys.argv.index("--dry-check") + 2]) if len(sys.argv) > sys.argv.index("--dry-check") + 2 else []
