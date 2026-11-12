@@ -114,3 +114,7 @@ Rscript 02_Infrastructure/factor_db/fc_engine_gen.R --write --out DIR  # 다른 
 | FC_FAM_regime | 8 | 2422c1c492d528f1944c4cef9003dd08 |
 | FC_FAM_leverage | 6 | 8899e5934fcf11e22289a1364975e383 |
 | FC_TOTAL_EW | 334 | 55e6f27f1b660ef349d1f95ec2b98d75 |
+
+## P1R03 등록 약속(판단 Superfan T1 C-20261112-001 · T3 C-20261112-011 수용 · 11-12)
+
+- 설계 §3-7 시험 1(절단 불변성) · 2(양성 대조)는 생략하지 않는다 — `08_Tests/factor_db/test_fc_engine_gen.R` 로 만들어 P1R03 사양 `tests` 에 넣고 **`rc_register(run_tests = TRUE)`** 로 등록 때 반드시 한 번 돈다(판 2 의 `run_tests = FALSE` 선례를 따르지 않는다). 나머지 시험 3~7 은 생략(도훈 11-12 "테스트 좀 그만하자").
