@@ -32,17 +32,27 @@ if (file.exists(.mpath)) {
   }
 }
 
+## ★2026-11-13 (도훈 "최신데이터로 계산되서 발송되게"): 기대 기준일(= 신선도 감사 as_of · 직전 거래일)을 브리핑에 넘긴다 —
+##   자료 기준일이 그보다 이르면 tg_regime_briefing 이 본문 첫머리와 차트 부제에 '낡음'과 원천별 마지막 날짜를 적는다.
+## QVEST_TG_DRY_RUN=1 → 발송 0(본문 · 차트 경로만 로그) — 보류 경보도 보내지 않는다.
+.dry <- identical(Sys.getenv("QVEST_TG_DRY_RUN", ""), "1")
+.exp <- suppressWarnings(tryCatch(as.Date(.asof), error = function(e) as.Date(NA)))
 if (!.gate_ok) {
   .msg <- sprintf("⚠️ 레짐 브리핑 보류 — 컴포넌트 stale: %s (as_of=%s). regime 데이터 점검 요.",
                   paste(.stale, collapse = ", "), .asof)
   cat(sprintf("[mrs_daily] STALE-GATE BLOCK: %s\n", .msg))
   ## (2026-11-10 감사 레인 B) tg_send 는 실패를 예외가 아니라 list(ok = FALSE) 로 돌려준다 — tryCatch(error=) 만으로는 못 본다.
-  .sr <- tryCatch(tg_send(.msg), error = function(e) list(ok = FALSE, error = conditionMessage(e)))
+  .sr <- if (.dry) list(ok = TRUE, dry_run = TRUE) else
+    tryCatch(tg_send(.msg), error = function(e) list(ok = FALSE, error = conditionMessage(e)))
+  if (.dry) cat("[mrs_daily] DRYRUN — 보류 경보 발송 없음\n")
   if (!isTRUE(.sr$ok)) cat(sprintf("[mrs_daily] stale alert FAILED: %s\n", substr(.sr$error %||% "?", 1, 200)))
 } else tryCatch({
-  .br <- tg_regime_briefing()
+  .br <- tg_regime_briefing(expected_date = if (is.na(.exp)) NULL else .exp, dry_run = .dry)
   ## 구판은 반환값과 무관하게 'sent OK' 를 찍었다(400 · 429 거부도 성공으로 기록 · superfan 감시도 그 줄을 믿는다).
-  if (is.list(.br) && identical(.br$sent_ok, FALSE)) {
+  if (is.list(.br) && isTRUE(.br$dry_run)) {
+    cat(sprintf("[mrs_daily] briefing DRYRUN — 발송 없음 (자료 기준일 %s%s)\n", format(.br$ref_date),
+                if (is.null(.br$stale)) "" else sprintf(" · 낡음 — 기대 %s", format(.br$stale$expected))))
+  } else if (is.list(.br) && identical(.br$sent_ok, FALSE)) {
     cat(sprintf("[mrs_daily] briefing SEND FAILED: %s (원장 qepm/observability/telegram_send_failures.jsonl)\n",
                 substr(.br$send_error %||% "?", 1, 200)))
   } else if (is.null(.br)) {

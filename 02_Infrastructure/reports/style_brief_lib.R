@@ -166,7 +166,13 @@ sw_compose_brief <- function(FF, SB = NULL, mtd5 = NULL, sbm = NULL, ib = NULL, 
     } else r12 <- NULL
   }
   ## 지수 팩터 민감도 (도훈 지시 07-18) — 창은 index_factor_beta.json 이 이미 '36개월+MTD' 로 동적
+  ##   ★2026-11-13(도훈 "최신데이터로 계산 안하는 부분들 … 최신데이터 기반으로"): 진행월 점이 빠진 창은 라벨이
+  ##   '36개월 ~<완결월> · 진행월 제외(<사유>)' 로 온다(index_factor_beta.R). 스마트베타 절도 자기 창(sb_window)을 제목에 싣고,
+  ##   FF5 창은 진행월을 담았는데 지수 β 가 진행월을 못 담았으면 '지수 함의' 줄에 그 사실을 붙인다(옛 기준을 조용히 섞지 않는다).
   bn <- .SW_IDX_KO
+  ib_win <- function(k) { w <- if (is.null(ib)) NULL else ib[[k]]; if (is.null(w) || length(w) != 1L || is.na(w)) NULL else as.character(w) }
+  sb_win <- if (!is.null(ib_win("sb_window"))) ib_win("sb_window") else ib_win("window")
+  ib_lag <- mtd_ok && !is.null(sb_win) && !grepl("+MTD", sb_win, fixed = TRUE)
   if (!is.null(ib) && !is.null(ib$betas)) {
     items_ff <- tryCatch(vapply(names(bn), function(ix) { b <- ib$betas[[ix]]
       v <- c(SMB = b$SMB, HML = b$HML, RMW = b$RMW, CMA = b$CMA)
@@ -188,8 +194,9 @@ sw_compose_brief <- function(FF, SB = NULL, mtd5 = NULL, sbm = NULL, ib = NULL, 
                 krs[names(v)[ip]], v[ip], krs[names(v)[im]], v[im]) }, character(1)),
         error = function(e) NULL)
       if (!is.null(items_sb)) {
-        sections[[length(sections) + 1L]] <- list(heading = "지수 스마트베타 민감도 (양수최대·음수최대, 시장통제)",
-                                                  type = "bullet", items = unname(items_sb))
+        sections[[length(sections) + 1L]] <- list(
+          heading = sprintf("지수 스마트베타 민감도 (%s · 시장 통제 · 양수 최대·음수 최대)", if (is.null(sb_win)) "36개월" else sb_win),
+          type = "bullet", items = unname(items_sb))
         charts <- c(charts, "outputs/ff5_kr/charts/index_smartbeta_beta.png")
       }
     }
@@ -218,7 +225,8 @@ sw_compose_brief <- function(FF, SB = NULL, mtd5 = NULL, sbm = NULL, ib = NULL, 
       bt <- tryCatch(vapply(names(bn), function(ix) as.numeric(unlist(ib$sb_betas[[ix]])[top12]), numeric(1)),
                      error = function(e) NULL)
       if (!is.null(bt) && any(!is.na(bt)))
-        jd <- c(jd, sprintf("지수 함의: %s 국면 지속 시 %s 우위(β%+.1f)·%s 역풍(β%+.1f) — 반전 시 역전",
+        jd <- c(jd, sprintf("지수 함의%s: %s 국면 지속 시 %s 우위(β%+.1f)·%s 역풍(β%+.1f) — 반전 시 역전",
+                            if (ib_lag) "(β 진행월 제외)" else "",
                             .SW_SB_KO[top12], bn[names(bn)[which.max(bt)]], max(bt, na.rm = TRUE),
                             bn[names(bn)[which.min(bt)]], min(bt, na.rm = TRUE)))
     }

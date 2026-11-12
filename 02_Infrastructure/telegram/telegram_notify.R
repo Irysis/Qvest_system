@@ -2418,7 +2418,12 @@ tg_trigger_check <- function(current_metrics, strategy_name = "Portfolio") {
   }
   lab
 }
-tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
+## ★2026-11-13 (도훈 "최신데이터로 계산 안하는 부분들 … 최신데이터 기반으로 계산되서 발송되게"):
+##   expected_date = 기대 기준일(호출자 mrs_regime_send.R 가 신선도 감사 as_of = 직전 거래일을 넘긴다). 자료 기준일(국면 일간 원장
+##   마지막 날)이 그보다 이르면 본문 첫머리 · 차트 부제에 '낡음'과 원천별 마지막 날짜를 적는다(옛 날짜로 조용히 보내지 않는다).
+##   dry_run(기본 = QVEST_TG_DRY_RUN=1) → 차트는 그리되 발송 0 · 본문은 표준출력. 구판은 이 환경변수를 보지 않아 드라이런이 없었다.
+tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL, expected_date = NULL,
+                               dry_run = identical(Sys.getenv("QVEST_TG_DRY_RUN", ""), "1")) {
   suppressPackageStartupMessages({
     library(data.table); library(arrow); library(ggplot2); library(scales); library(gridExtra)
   })
@@ -2461,7 +2466,8 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
   raw_date <- tryCatch({
     rp <- ifelse(exists("RAWDATA_CACHE"), RAWDATA_CACHE,
                  file.path(PROJECT_ROOT, ".cache", "RAWDATA.parquet"))
-    if (file.exists(rp)) max(as.data.table(arrow::read_parquet(rp))$Date) else NULL
+    ## Date 열만 읽는다(구판은 RAWDATA 전 열 ~0.4GB 를 날짜 하나 때문에 메모리에 올렸다)
+    if (file.exists(rp)) max(as.Date(arrow::read_parquet(rp, col_select = "Date")$Date), na.rm = TRUE) else NULL
   }, error = function(e) NULL)
 
   ktri_date <- if (!is.null(ktri_daily) && nrow(ktri_daily) > 0) max(ktri_daily$Date) else NULL
@@ -2476,6 +2482,24 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
   ref_date <- if (length(.cand)) suppressWarnings(max(.cand)) else NA
   if (length(ref_date) != 1L || is.na(ref_date) ||
       !is.finite(suppressWarnings(as.numeric(ref_date)))) ref_date <- latest$Date
+
+  ## ── 자료 기준일 vs 기대 기준일 (2026-11-13) — 낡으면 본문 · 차트에 표시 ──
+  .fmt_d <- function(d) { d <- suppressWarnings(tryCatch(as.Date(d), error = function(e) as.Date(NA)))
+    if (length(d) != 1L || is.na(d) || !is.finite(as.numeric(d))) "NA" else format(d) }
+  .cache_d <- ifelse(exists("CACHE_DIR"), CACHE_DIR, file.path(PROJECT_ROOT, ".cache"))
+  .last_d <- function(p) tryCatch(suppressWarnings(max(as.Date(arrow::read_parquet(p, col_select = "Date")$Date), na.rm = TRUE)),
+                                  error = function(e) as.Date(NA))
+  data_date <- .last_d(file.path(.cache_d, "unified_regime_signal_daily.parquet"))
+  exp_date <- if (is.null(expected_date)) as.Date(NA) else
+    suppressWarnings(tryCatch(as.Date(expected_date), error = function(e) as.Date(NA)))
+  stale_info <- NULL
+  if (length(exp_date) == 1L && !is.na(exp_date) && length(data_date) == 1L && !is.na(data_date) &&
+      is.finite(as.numeric(data_date)) && data_date < exp_date) {
+    stale_info <- list(data = data_date, expected = exp_date,
+                       src = c(RAWDATA = .fmt_d(raw_date), KTRI = .fmt_d(ktri_date),
+                               MSM = .fmt_d(.last_d(file.path(.cache_d, "msm_asof_daily.parquet")))))
+  }
+  stale_en <- if (is.null(stale_info)) "" else sprintf(" | STALE: expected %s", format(exp_date))
 
   # ── Chart 1 (v2.3 2026-04-24): Daily Regime Score + Cash (12M) ──
   # unified_regime_signal_daily.parquet 기반 최근 12개월 일간 — 월간 24M block을 완전 대체
@@ -2549,10 +2573,10 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
             breaks = c(0, 30, 50, 70, 100)) +
           labs(title = "Daily Regime Score (12M)",
                subtitle = sprintf(
-                 "Data: %s | Score %.1f | %s",
+                 "Data: %s | Score %.1f | %s%s",
                  format(latest_d1$Date),
                  latest_d1$Regime_Score_smooth,
-                 .regime_cat_label(latest_d1)),
+                 .regime_cat_label(latest_d1), stale_en),
                x = "") +
           theme_minimal(base_size = 13) +
           theme(plot.title = element_text(face = "bold", size = 15),
@@ -2663,11 +2687,11 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
                            breaks = c(0, 30, 50, 70, 100)) +
         labs(title = "3-Layer Signal Decomposition (Month-end + Latest Daily)",
              subtitle = sprintf(
-               "MSM %.1f%% | KTRI %.1f | VEA %.1f | FRED MRS %.1f  (latest: %s)",
+               "MSM %.1f%% | KTRI %.1f | VEA %.1f | FRED MRS %.1f  (latest: %s)%s",
                latest_d2$MSM_Crisis_Prob * 100,
                latest_d2$KTRI_Score, latest_d2$VEA_Score,
                latest_d2$FRED_MRS,
-               format(latest_d2$Date)),
+               format(latest_d2$Date), stale_en),
              x = "") +
         theme_minimal(base_size = 13) +
         theme(plot.title = element_text(face = "bold", size = 15),
@@ -2681,7 +2705,9 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
                                    fifelse(FRED_MRS >= 50, "Caution",
                                      fifelse(FRED_MRS >= 30, "Normal", "Calm")))]
       latest_mrs <- d2_combined[.N]
-      prev_mrs <- if (nrow(d2_combined) >= 2) d2_combined[.N - 1] else latest_mrs
+      ## '5d' 라벨 = 일간 원장 5행(5거래일) 전 대비 — 본문 [Trend 5d] 와 같은 기준(2026-11-13 수리: 구판은 직전 **월말** 점과의
+      ##   차이를 '5d' 로 적었다 · 월초면 하루치 · 월말이면 한 달치가 '5d' 로 나갔다)
+      prev_mrs <- d2_all[max(1L, nrow(d2_all) - 5L)]
       mrs_delta <- latest_mrs$FRED_MRS - prev_mrs$FRED_MRS
 
       # Y 축 상한: latest 기준 탄력적 (최소 50, 최대 100)
@@ -2905,8 +2931,10 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
                hjust = 0, vjust = 1, size = 4, fontface = "bold",
                color = "#B71C1C", fill = scales::alpha("white", 0.9), linewidth = 0.3) +
       coord_cartesian(xlim = c(0, 100), ylim = c(0, 100), clip = "off") +
-      labs(title = sprintf("KTRI-VEA 9-Quadrant (252d, data: %s)", ref_date),
-           subtitle = sprintf("5D Change: KTRI %+.1f | VEA %+.1f | %s", dk5, dv5, dir5),
+      ## 제목 날짜 = 이 차트가 그린 KTRI 자료의 마지막 날(2026-11-13 수리: 구판은 RAWDATA 최신일(ref_date)을 적어
+      ##   KTRI 가 하루 늦은 날 'data: 11-12' 제목에 11-11 점이 찍혔다)
+      labs(title = sprintf("KTRI-VEA 9-Quadrant (252d, data: %s)", .fmt_d(ktri_latest$Date)),
+           subtitle = sprintf("5D Change: KTRI %+.1f | VEA %+.1f | %s%s", dk5, dv5, dir5, stale_en),
            x = expression(bold("KTRI  ") * "(Weakness" %<-% "" %->% "Strength)"),
            y = expression(bold("VEA  ") * "(Calm" %<-% "" %->% "Stress)")) +
       theme_minimal(base_size = 12) +
@@ -3342,8 +3370,14 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
     "\xf0\x9f\x9f\xa2 RISK_ON \xe2\x80\x94 \xec\xa0\x95\xec\x83\x81 \xec\x9a\xb4\xec\x9a\xa9"
   }
 
+  ## 낡음 줄 (2026-11-13) — 자료 기준일 < 기대 기준일일 때만. 원천별 마지막 날짜로 어느 층이 늦었는지 보인다.
+  stale_line <- if (is.null(stale_info)) "" else sprintf(
+    "\xe2\x9a\xa0\xef\xb8\x8f \xec\x9e\x90\xeb\xa3\x8c \xea\xb8\xb0\xec\xa4\x80\xec\x9d\xbc %s \xc2\xb7 \xeb\x82\xa1\xec\x9d\x8c \xe2\x80\x94 \xec\xa7\x81\xec\xa0\x84 \xea\xb1\xb0\xeb\x9e\x98\xec\x9d\xbc %s \xeb\xaf\xb8\xeb\xb0\x98\xec\x98\x81 (\xec\x9b\x90\xec\xb2\x9c \xeb\xa7\x88\xec\xa7\x80\xeb\xa7\x89 \xeb\x82\xa0\xec\xa7\x9c: RAWDATA %s \xc2\xb7 KTRI %s \xc2\xb7 MSM %s)\n\n",
+    format(stale_info$data), format(stale_info$expected),
+    stale_info$src[["RAWDATA"]], stale_info$src[["KTRI"]], stale_info$src[["MSM"]])
   msg <- sprintf(paste0(
     "%s Regime Briefing (%s)\n\n",
+    "%s",
     "\xf0\x9f\x93\x8a [Regime Score]\n",
     "Score: %.1f (5d %s)\n",
     "Category: %s\n\n",
@@ -3358,6 +3392,7 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
     "%s\n\n",
     "\xf0\x9f\x8e\xaf [Verdict]\n%s"),
     cat_emoji, format(msg_ref_date),
+    stale_line,
     cur_score, score_trend,
     cur_category,
     l1_icon, cur_msm,
@@ -3370,6 +3405,17 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
     verdict)
 
   # ── Send: text + 3 charts (v2.4 — Chart 4/5 삭제, 핵심 3종만) ──
+  .charts3 <- c(file.path(out_dir, "regime_score_24m.png"), file.path(out_dir, "regime_3layer_24m.png"),
+                file.path(out_dir, "ktri_9quad.png"))
+  if (isTRUE(dry_run)) {   # 2026-11-13 — 드라이런: 차트는 위에서 그렸고 발송만 하지 않는다
+    cat("[regime_briefing] DRYRUN — 발송 없음 · 본문:\n", msg, "\n", sep = "")
+    cat(sprintf("[regime_briefing] DRYRUN 차트: %s\n", paste(sprintf("%s(%s)", basename(.charts3),
+        ifelse(file.exists(.charts3), format(file.mtime(.charts3), "%Y-%m-%d %H:%M:%S"), "부재")), collapse = " | ")))
+    return(invisible(list(regime = latest, daily = latest_daily, ktri = ktri_latest,
+                          fred = fred_latest_row, ref_date = msg_ref_date, charts = out_dir,
+                          sent_ok = NA, charts_sent = 0L, dry_run = TRUE, msg = msg, stale = stale_info,
+                          send_error = NA_character_)))
+  }
   ## ★(2026-11-10 감사 레인 B) 발송 결과를 읽는다 — 구판은 반환값을 버리고 '파일이 있으면 보냈다'로 셌다
   ##   (mrs_regime_send.R 는 그 위에서 'briefing sent OK' 를 무조건 찍었다 · 400 · 429 거부도 성공으로 기록).
   .r_txt <- tg_send(msg)
@@ -3386,7 +3432,7 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
   cat(sprintf("[regime_briefing] Sent: text=%s + %d charts\n", if (sent_ok) "ok" else "FAILED", n_charts_sent))
   invisible(list(regime = latest, daily = latest_daily, ktri = ktri_latest,
                  fred = fred_latest_row, ref_date = msg_ref_date, charts = out_dir,
-                 sent_ok = sent_ok, charts_sent = n_charts_sent,
+                 sent_ok = sent_ok, charts_sent = n_charts_sent, stale = stale_info,
                  send_error = if (sent_ok) NA_character_ else (.r_txt$error %||% "unknown")))
 }
 

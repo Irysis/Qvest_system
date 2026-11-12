@@ -13,7 +13,7 @@ setDTthreads(1)
 setwd("C:/Users/99922/OneDrive/Quant_Module_Moltbot")
 source("02_Infrastructure/config.R")
 source("02_Infrastructure/factor_db/factor_db_connector.R")
-OUT_DIR <- "outputs/smartbeta_kr"
+OUT_DIR <- Sys.getenv("SMARTBETA_KR_OUT_DIR", "outputs/smartbeta_kr")   # 검사용 덮어쓰기(운영 = 기본값)
 dir.create(file.path(OUT_DIR, "charts"), recursive = TRUE, showWarnings = FALSE)
 RUNTAG <- format(Sys.Date(), "%Y%m%d")
 wf <- function(fmt, ...) cat(sprintf(fmt, ...), "\n")
@@ -219,19 +219,27 @@ cols <- c(VAL = "steelblue", QUAL = "darkgreen", MOM = "firebrick", LOWVOL = "pu
 ##   style_brief_lib.R::sw_window12 로 판정**(브리핑과 같은 함수·같은 창) — 12M 막대 = 완결 11개월 + 진행월 MTD,
 ##   히트맵 = 24개월 + 진행월 열 'MM(MTD)'. ★SB(월간 파일)는 위에서 이미 기록 — 여기선 읽기만(완결월 발행 규약 불변).
 source("02_Infrastructure/reports/style_brief_lib.R")
-WSB <- tryCatch(sw_window12(SB, sty, sw_read_json(file.path(OUT_DIR, "smartbeta_kr_mtd.json"))),
+SB_MTDJ <- sw_read_json(file.path(OUT_DIR, "smartbeta_kr_mtd.json"))
+WSB <- tryCatch(sw_window12(SB, sty, SB_MTDJ),
                 error = function(e) { wf("  [warn] 진행월 창 계산 실패: %s", conditionMessage(e)); NULL })
 MTD_OK <- !is.null(WSB) && identical(WSB$mode, "mtd")
 mtd_note <- if (MTD_OK) sprintf("%s 기준 · 완결월 %s", format(WSB$state$as_of), max(SB$ym)) else
   sprintf("완결월 %s 기준 · %s", max(SB$ym), if (is.null(WSB)) "진행월 판정 실패" else sw_reason_ko(WSB$state))
 
-## (A) 최근 성과 정렬 막대 — 1M / 3M평균 / 12M평균(완결 11개월 + 진행월 MTD) / 진행월 MTD
+## (A) 최근 성과 정렬 막대 — 1M(마지막 완결월) / 3M(완결 2개월 + 진행월 MTD) / 12M(완결 11개월 + 진행월 MTD) / 진행월 MTD
+##   2026-11-13 도훈 지시("최신데이터로 계산 안하는 부분들 … 최신데이터 기반으로"): 구판 3M 평균은 완결 3개월만 써서
+##   같은 차트의 12M(진행월 포함)과 기준일이 달랐다 → 3M 도 sw_window12(n = 3) — 12M 과 같은 함수 · 같은 MTD 판정.
+##   1M 은 정의상 마지막 완결월이다 — 라벨에 그 달을 박아 '직전영업일까지'로 읽히지 않게 한다.
+W3 <- tryCatch(sw_window12(SB, sty, SB_MTDJ, n = 3L), error = function(e) NULL)
 a1  <- vapply(sty, function(s) tail(SB[[s]], 1) * 100, numeric(1))
-a3  <- vapply(sty, function(s) mean(tail(SB[[s]], 3), na.rm = TRUE) * 100, numeric(1))
+a3  <- if (!is.null(W3) && identical(W3$mode, "mtd")) W3$values[sty] * 100 else
+  vapply(sty, function(s) mean(tail(SB[[s]], 3), na.rm = TRUE) * 100, numeric(1))
 a12 <- if (!is.null(WSB)) WSB$values[sty] * 100 else vapply(sty, function(s) mean(tail(SB[[s]], 12), na.rm = TRUE) * 100, numeric(1))
+lab1 <- sprintf("1M(%s 완결)", max(SB$ym))
+lab3 <- if (!is.null(W3) && identical(W3$mode, "mtd")) "3M(2M+MTD)" else "3M avg"
 lab12 <- if (MTD_OK) "12M(11M+MTD)" else "12M avg"
 ord <- order(a12)
-M <- rbind(a1[ord], a3[ord], a12[ord]); rownames(M) <- c("1M", "3M avg", lab12)
+M <- rbind(a1[ord], a3[ord], a12[ord]); rownames(M) <- c(lab1, lab3, lab12)
 if (MTD_OK) {
   mtd_v <- WSB$mtd_values[sty[ord]] * 100
   M <- rbind(M, matrix(mtd_v, nrow = 1, dimnames = list(sprintf("MTD~%s", WSB$mmdd), NULL)))
