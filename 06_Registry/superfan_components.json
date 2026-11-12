@@ -19,8 +19,18 @@
       {"severity": "fail", "regex": "\\[FATAL\\]", "label": "치명"},
       {"severity": "fail", "regex": "^Error in |Execution halted", "label": "R 오류"},
       {"severity": "warn", "regex": "\\[0c\\] ★적재 미달", "label": "적재 신선도 미달"},
-      {"severity": "warn", "regex": "^\\[warn\\] \\[8\\.1r\\]", "label": "역할 재분류 실패"}]},
-    {"id": "log_fresh", "kind": "freshness", "file": ".cache/scheduler_logs/daily_refresh.log", "max_age_h": 26, "severity": "fail", "cause": "task_run"}
+      {"severity": "warn", "regex": "^\\[warn\\] \\[8\\.1r\\]", "label": "역할 재분류 실패"},
+      {"severity": "fail", "regex": "dofork: child -1 - forked process \\d+ died unexpectedly", "label": "셸 fork 실패 — 로그오프 · 재시작 · 자원 고갈로 실행이 중도 사망(Done 없음 · 11-12 00:10 · 과거 5회 모두 중도 사망과 짝)"}]},
+    {"id": "log_fresh", "kind": "freshness", "file": ".cache/scheduler_logs/daily_refresh.log", "max_age_h": 26, "severity": "fail", "cause": "task_run"},
+    {"id": "data_current", "kind": "json_field", "file": ".cache/data_currency_stamp.json", "path": "verdict",
+     "bad_values": ["stale_after_refresh", "stale_unfixable_by_refresh"], "severity": "fail", "cause": "own",
+     "_why": "소비면 신선도 판정(ensure_data_current 표식) — 밤 실행 · 자가 복구 뒤에도 측정 관문 자료가 낡았다. 상태형(다음 판정이 already_current · refreshed_current 면 해소). stale_check_only(부팅 점검 · 밤 적재 창 안)는 넣지 않는다 — 진단 20261112_2201 W1 · 2026-11-13"},
+    {"id": "selfheal_alerts", "kind": "log_patterns", "files": ["~/AppData/Local/Temp/qm_morning_briefing_{YYYYMMDD}.log", ".cache/scheduler_logs/data_selfheal_tick.log"],
+     "max_event_age_h": 26,
+     "_why_max_event_age_h": "아침 로그는 날짜별 파일이고 줄에 날짜가 없어 사건 시각 = 파일 날짜 00:00 이다. 감시는 매시 새 줄만 읽으므로 새 사건은 24+1 시간 안에 잡힌다 · 26 = 처음 켤 때 어제 파일의 이미 다룬 사건(11-12 02:56 상한 초과)을 다시 알리지 않는 문턱",
+     "patterns": [
+      {"severity": "fail", "regex": "자가 복구 리프레시가 상한 \\d+s 를 넘김", "label": "자가 복구 시간 상한 초과(11-12 02:56 · OHLCVS 저장본 미적재)"},
+      {"severity": "warn", "regex": "리프레시 후에도 stale=\\d+ 잔존", "label": "자가 복구 뒤 낡음 잔존"}]}
    ]
   },
   {

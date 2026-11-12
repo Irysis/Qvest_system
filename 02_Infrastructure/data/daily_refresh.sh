@@ -328,27 +328,80 @@ fi
 #   이미 닿은 파일은 드라이버가 건너뜀 — 주말 · 휴일은 곧바로 끝난다). 벤치 수급 rc=3(로그인 창 · 애드인 미등록)이면 건너뛴다.
 #   ★보충 원천이 없다(네이버 · KRX 퇴역) — 미완료(done D<N · rc≠0)와 건너뜀은 DR_FAILED 로 싣는다(그날 RAWDATA 정체를 조용히 넘기지 않는다).
 #   전진한 파일이 있으면 [0b'] 적재. 끄기: QVEST_QW_UPDATEFILE_UNATTENDED=0 · 검사: 08_Tests/data/test_qw_updatefile_unattended.R(스텁)
-_qwuf_log="$(mktemp /tmp/qm_qwuf_XXXX.log)"
-bash "$INFRA/data/qw_updatefile_unattended.sh" "${_qw_rc:-1}" "$QVENV_PY" 2>&1 | tee "$_qwuf_log"; _qwuf_rc=${PIPESTATUS[0]}
-_qwuf_line="$(grep '^QWUF' "$_qwuf_log" | tail -n 1)"; rm -f "$_qwuf_log"
-_qwuf_state="$(printf '%s' "$_qwuf_line" | sed -n 's/.*state=\([^[:space:]]*\).*/\1/p')"
-_qwuf_done="$(printf '%s' "$_qwuf_line" | sed -n 's/.*done=\([^[:space:]]*\).*/\1/p')"
-_qwuf_inc="$(printf '%s' "$_qwuf_line" | sed -n 's/.*incomplete=\([0-9]*\).*/\1/p')"
-if [ "$_qwuf_state" = "skipped" ]; then
-  DR_FAILED+=("qw_updatefile_skipped(bench_rc=${_qw_rc:-?})")
-  echo "!! [1pre-qw] ★퀀티 Update_File 수급 건너뜀 — 오늘 RAWDATA 주가가 전진하지 않는다(보충 원천 없음 · 단말 로그인 확인)"
-elif [ "${_qwuf_inc:-0}" = "1" ]; then
-  DR_FAILED+=("qw_updatefile_incomplete(done=${_qwuf_done:-?})")
-  echo "!! [1pre-qw] ★퀀티 Update_File 미완료(done=${_qwuf_done:-?}) — 목표일 미달 파일은 오늘 정체(다음 밤 같은 구간을 다시 받는다)"
+#   ★(2026-11-13 · 진단 20261112_2201 R1 · R2 · 도훈 "리프레시 실패 … 원천해결해") 수급을 둘로 가른다 — OHLCVS 를 먼저 받아 **바로** [0b'] 로 싣고,
+#   그다음 나머지 3종(Universe_Support · Investor_Act · Consensus)을 받아 [0b''] 로 싣는다. 구판은 4종(실측 약 250분)이 다 끝나 래퍼가 rc 0 으로
+#   돌아와야만 [0b'] 를 돌렸다 — 11-12 자가 복구가 150분 상한에 끊겼을 때 01:19 에 저장된 OHLCVS 가 RAWDATA 에 실리지 않았다(끊긴 곳 = Consensus).
+#   이제 RAWDATA 주가 전진은 OHLCVS 한 권(실측 42~46분)에만 걸린다. 뒤 3종이 멈추거나 끊겨도 주가는 이미 실렸다.
+#   자가 복구(QVEST_DR_MODE=selfheal)는 OHLCVS 만 받는다(R2 — 상한 150분 안: OHLCVS 46분 + 적재 · 벤치 · 신규 상장 ≈ 60분 · 실측 11-07 · 11-09 · 11-12).
+#   나머지 3종은 다음 밤 몫이다(보충 대기열 qw_backfill_pending.json 은 책 단위라 그대로 남는다). 자가 복구에서도 다 받으려면 QVEST_DR_QWUF_REST=1.
+#   보고 = 두 번의 done 을 더한 한 줄(qw_updatefile_incomplete(done=D/N) — 실패 서명 꼴 그대로). 한 번에 4종(구 동작) = QVEST_DR_QWUF_SPLIT=0.
+#   ★(2026-11-13 · R6 · 결정 대기 QW-NIGHT-SESSION-ENSURE-20261113) QVEST_DR_NIGHT_SESSION_ENSURE=1 이면 밤 실행(DR_MODE=full)이 첫 수급 직전에
+#   퀀티 세션을 한 번 확인한다(ops/qw_session_ensure.sh — 살아 있으면 무동작 · 중복 로그인 종료 · 세션 없음이면 저장된 자격으로 1회 재로그인 ·
+#   로그인에 실패한 날은 다시 누르지 않음). 기본 0 = 지금대로(밤 Update_File 수급은 로그인 없음 · 10-16 결정 QW-UPDATEFILE-UNATTENDED 안 A).
+#   11-11 · 11-13 밤 실패의 직접 원인(다른 호스트의 같은 아이디 로그인 → 종료 대화상자 → -SkipLogin 드라이버가 재로그인 못 함)을 닫는다. 자가 복구는
+#   ensure_data_current.sh 4a 가 이미 확인한다(11-11 결정) — 여기서는 밤 실행만.
+_qwuf_run() {   # $1 = 책(쉼표) → _qwuf_rc · _qwuf_state · _qwuf_done · _qwuf_inc (래퍼 마지막 줄 QWUF 판독)
+  local _log _line
+  _log="$(mktemp /tmp/qm_qwuf_XXXX.log)"
+  QWUF_ONLY="$1" bash "$INFRA/data/qw_updatefile_unattended.sh" "${_qw_rc:-1}" "$QVENV_PY" 2>&1 | tee "$_log"; _qwuf_rc=${PIPESTATUS[0]}
+  _line="$(grep '^QWUF' "$_log" | tail -n 1)"; rm -f "$_log"
+  _qwuf_state="$(printf '%s' "$_line" | sed -n 's/.*state=\([^[:space:]]*\).*/\1/p')"
+  _qwuf_done="$(printf '%s' "$_line" | sed -n 's/.*done=\([^[:space:]]*\).*/\1/p')"
+  _qwuf_inc="$(printf '%s' "$_line" | sed -n 's/.*incomplete=\([0-9]*\).*/\1/p')"
+}
+_qwuf_sum_done() {   # "D/N" 둘 → 합(하나라도 모르면 '?') · 둘째가 비면 첫째 그대로
+  local a="${1:-?}" b="${2:-}"
+  [ -z "$b" ] && { printf '%s' "$a"; return; }
+  if [[ "$a" =~ ^[0-9]+/[0-9]+$ ]] && [[ "$b" =~ ^[0-9]+/[0-9]+$ ]]; then printf '%s/%s' "$(( ${a%%/*} + ${b%%/*} ))" "$(( ${a##*/} + ${b##*/} ))"
+  else printf '?'; fi
+}
+_QWUF_ALL="OHLCVS,Universe_Support,Investor_Act,Consensus"; _QWUF_REST="Universe_Support,Investor_Act,Consensus"
+_qwuf_rest_want=1; [ "${DR_MODE:-full}" = "selfheal" ] && [ "${QVEST_DR_QWUF_REST:-0}" != "1" ] && _qwuf_rest_want=0
+if [ "${QVEST_DR_NIGHT_SESSION_ENSURE:-0}" = "1" ] && [ "${DR_MODE:-full}" = "full" ]; then
+  _qse_sh="${QVEST_DR_QSE:-$INFRA/ops/qw_session_ensure.sh}"
+  if [ -f "$_qse_sh" ]; then
+    _qse_out="$(bash "$_qse_sh" 2>&1)"; _qse_rc=$?
+    echo "[1pre-qw] 퀀티 세션 확인(수급 전 · 밤) rc=$_qse_rc · $(printf '%s' "$_qse_out" | tail -n 1 | tr '\t' ' ')"
+  else
+    echo "[1pre-qw] 퀀티 세션 확인 도우미 없음($_qse_sh) — 건너뜀"
+  fi
 fi
+_qwuf_books_a=OHLCVS
+[ "${QVEST_DR_QWUF_SPLIT:-1}" = "0" ] && _qwuf_books_a="$_QWUF_ALL"   # 한 번에 4종(구 동작) — 아래 첫 분기가 나머지 수급을 막는다
+_qwuf_run "$_qwuf_books_a"; _qwuf_d_all="$_qwuf_done"; _qwuf_inc_all="${_qwuf_inc:-0}"; _qwuf_state_a="$_qwuf_state"
 if [ "$_qwuf_rc" -eq 0 ]; then
-  echo "[0b'/7] Update_File 재적재 (무인 수급 전진분)..."
+  echo "[0b'/7] Update_File 재적재 (무인 수급 전진분 · $_qwuf_books_a — 주가 먼저 · 뒤 책을 기다리지 않는다)..."
   cd "$INFRA"
   run_r '
     source("config.R")
     source("data/incremental_update_file.R")
     incremental_update_all()
   '
+fi
+if [ "$_qwuf_state_a" = "skipped" ] || [ "$_qwuf_books_a" = "$_QWUF_ALL" ]; then
+  :   # 벤치 수급 rc=3(전제 부재 — 뒤 3종도 같은 관문에서 건너뛴다 · 보고는 아래 한 줄) · 또는 한 번에 4종(QVEST_DR_QWUF_SPLIT=0)
+elif [ "$_qwuf_rest_want" = "1" ]; then
+  _qwuf_run "$_QWUF_REST"; _qwuf_d_all="$(_qwuf_sum_done "$_qwuf_d_all" "$_qwuf_done")"
+  [ "${_qwuf_inc:-0}" = "1" ] && _qwuf_inc_all=1
+  if [ "$_qwuf_rc" -eq 0 ]; then
+    echo "[0b''/7] Update_File 재적재 (무인 수급 전진분 · $_QWUF_REST)..."
+    cd "$INFRA"
+    run_r '
+      source("config.R")
+      source("data/incremental_update_file.R")
+      incremental_update_all()
+    ' reingest_rest
+  fi
+else
+  echo "[1pre-qw] 자가 복구 — 나머지 3종($_QWUF_REST)은 받지 않는다(시간 상한 안 · 다음 밤 몫 · 받으려면 QVEST_DR_QWUF_REST=1)"
+fi
+_qwuf_state="$_qwuf_state_a"
+if [ "$_qwuf_state" = "skipped" ]; then
+  DR_FAILED+=("qw_updatefile_skipped(bench_rc=${_qw_rc:-?})")
+  echo "!! [1pre-qw] ★퀀티 Update_File 수급 건너뜀 — 오늘 RAWDATA 주가가 전진하지 않는다(보충 원천 없음 · 단말 로그인 확인)"
+elif [ "${_qwuf_inc_all:-0}" = "1" ]; then
+  DR_FAILED+=("qw_updatefile_incomplete(done=${_qwuf_d_all:-?})")
+  echo "!! [1pre-qw] ★퀀티 Update_File 미완료(done=${_qwuf_d_all:-?}) — 목표일 미달 파일은 오늘 정체(다음 밤 같은 구간을 다시 받는다)"
 fi
 
 # --- [1pre-ext] 퀀티 확장 질의서(등록부 group=ext · glossary 코드로 만든 DB) 수급 · 적재 (2026-11-08 · BUILD_20261108.md §2) -----------

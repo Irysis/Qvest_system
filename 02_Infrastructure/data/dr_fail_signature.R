@@ -26,6 +26,13 @@ dr_sig_items <- function(fails, stale_names = "") {
   sort(unique(c(f[nzchar(f)], if (length(s)) paste0("stale:", s))))
 }
 
+# ★(2026-11-13 · 도훈 "리프레시 실패 … 원천해결해" — 실패가 조용히 다음 날로 넘어가지 않게) 측정 관문 자료의 낡음은 날마다 한 번 소리 내 알린다.
+#   1계층 측정 관문(round_core fresh-check)은 rawdata · benchmark 두 항목만 본다(v3/freshness.R → freshness_audit.R --items rawdata,benchmark).
+#   그 둘이 낡은 채 같은 원인이 반복되면 측정이 하루 더 멈춘다 — 소음이 아니다(11-13 밤 [7] = '지속 1일째(같은 원인 · 무음)' · 자가 복구 보고도 무음).
+#   서명에 stale:rawdata 또는 stale:benchmark 가 있고 오늘 아직 소리 낸 적이 없으면(last_loud 날짜 < 오늘) 반복이어도 푸시한다.
+#   같은 날 두 번째 보고(밤 실행 뒤 자가 복구 등)는 종전대로 무음이다. 상태에 last_loud(마지막으로 소리 낸 날)를 더한다 — 없는 옛 상태는 since 로 읽는다.
+DR_SIG_GATE_ITEMS <- c("stale:rawdata", "stale:benchmark")
+
 dr_sig_read <- function(path) {
   st <- tryCatch(jsonlite::fromJSON(path, simplifyVector = TRUE), error = function(e) NULL)
   if (!is.list(st)) list(signature = "", since = NA_character_) else st
@@ -47,15 +54,23 @@ dr_sig_decide <- function(fails, stale_names = "", prev = list(signature = ""), 
   }
   if (identical(sig, psig) && length(since) == 1L && !is.na(since)) {
     n <- as.integer(as.Date(today) - since) + 1L
+    loud <- suppressWarnings(tryCatch(as.Date(as.character(prev$last_loud %||% NA)), error = function(e) as.Date(NA)))
+    if (length(loud) != 1L || is.na(loud)) loud <- since
+    gate <- any(dr_sig_items(fails, stale_names) %in% DR_SIG_GATE_ITEMS)
+    if (gate && as.Date(today) > loud) {
+      return(list(kind = "repeat_gate", mute = FALSE, sig = sig,
+                  hdr = sprintf("[Daily Refresh v2 ★부분실패 지속 %d일째 — 측정 관문 자료 낡음(같은 원인 · 하루 한 번 알림) — %s]", n, fs),
+                  state = list(signature = sig, since = format(since), last_loud = format(as.Date(today)))))
+    }
     return(list(kind = "repeat", mute = TRUE, sig = sig,
                 hdr = sprintf("[Daily Refresh v2 부분실패 지속 %d일째(같은 원인 · 무음) — %s]", n, fs),
-                state = list(signature = sig, since = format(since))))
+                state = list(signature = sig, since = format(since), last_loud = format(loud))))
   }
   kind <- if (nzchar(psig)) "changed" else "new"
   list(kind = kind, mute = FALSE, sig = sig,
        hdr = sprintf("[Daily Refresh v2 ★부분실패 — %s (%s)]", fs,
                      if (kind == "new") "신규" else "원인 변경"),
-       state = list(signature = sig, since = format(as.Date(today))))
+       state = list(signature = sig, since = format(as.Date(today)), last_loud = format(as.Date(today))))
 }
 
 # 원자 쓰기 — 발송 ok 뒤에만 호출

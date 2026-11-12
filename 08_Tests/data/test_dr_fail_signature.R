@@ -12,6 +12,10 @@
 #   G7 실패 0 + 이전 없음 = 종전 "완료" · 상태 불변   G8 커밋 왕복          G9 파손 상태 파일 → new(보수적)
 #   W  daily_refresh.sh [7] 배선: 게이트 호출 · mute 전달 · 발송 ok 뒤에만 커밋 · tg_sent 증거 줄 · 구판 모듈 폴백
 #   M1 돌연변이(숫자 제거 안 함) → G1 red      M2 돌연변이(반복 판정 제거) → G4 red
+#   (2026-11-13) 측정 관문 자료(rawdata · benchmark) 낡음은 날마다 한 번 소리 낸다 — 실패가 조용히 다음 날로 넘어가지 않게:
+#   G10 관문 낡음 반복 · 새 날 = repeat_gate · 푸시 · last_loud = 오늘   G11 같은 날 두 번째(자가 복구 보고) = 무음 · last_loud 유지
+#   G12 last_loud 없는 옛 상태 = since 로 읽는다(어제 since → 푸시 · 오늘 since → 무음)   G13 새 실패 상태에 last_loud = 오늘
+#   M3 돌연변이(관문 분기 제거) → G10 red
 #==============================================================================
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
 .root <- function() {
@@ -64,6 +68,19 @@ run_suite <- function(helper_src, tag = "") {
   writeLines("{ not json", p); bad <- e$dr_sig_read(p)
   r$G9 <- identical(e$dr_sig_decide("ingest_freshness", "consensus", bad, as.Date("2026-09-24"))$kind, "new")
   unlink(td, recursive = TRUE)
+  # (2026-11-13) 측정 관문 자료 낡음 — 11-13 밤 서명 그대로(qw_updatefile_incomplete · ingest_freshness · stale:rawdata)
+  f13 <- "qw_updatefile_incomplete(done=0/4) factor_db_vintage_gap ingest_freshness"
+  g_sig <- paste(e$dr_sig_items(f13, "rawdata"), collapse = " ")
+  d10 <- e$dr_sig_decide(f13, "rawdata", list(signature = g_sig, since = "2026-11-11", last_loud = "2026-11-13"), as.Date("2026-11-14"))
+  r$G10 <- identical(d10$kind, "repeat_gate") && !isTRUE(d10$mute) && grepl("측정 관문", d10$hdr) && grepl("4일째", d10$hdr) &&
+           identical(d10$state$last_loud, "2026-11-14") && identical(d10$state$since, "2026-11-11")
+  d11 <- e$dr_sig_decide(f13, "rawdata", list(signature = g_sig, since = "2026-11-11", last_loud = "2026-11-14"), as.Date("2026-11-14"))
+  r$G11 <- identical(d11$kind, "repeat") && isTRUE(d11$mute) && identical(d11$state$last_loud, "2026-11-14")
+  d12a <- e$dr_sig_decide(f13, "rawdata", list(signature = g_sig, since = "2026-11-13"), as.Date("2026-11-14"))
+  d12b <- e$dr_sig_decide(f13, "rawdata", list(signature = g_sig, since = "2026-11-14"), as.Date("2026-11-14"))
+  r$G12 <- identical(d12a$kind, "repeat_gate") && !isTRUE(d12a$mute) && identical(d12b$kind, "repeat") && isTRUE(d12b$mute)
+  d13 <- e$dr_sig_decide(f13, "rawdata", list(signature = ""), as.Date("2026-11-13"))
+  r$G13 <- identical(d13$kind, "new") && identical(d13$state$last_loud, "2026-11-13")
   r
 }
 
@@ -74,7 +91,11 @@ lab <- c(G1 = "G1 같은 항목·다른 숫자(lag/rc/월/개수) → 같은 서
          G3 = "G3 첫 실패 = new · 푸시 · ★부분실패(신규)", G4 = "G4 같은 서명 반복 = repeat · 무음 · 3일째",
          G5 = "G5 원인 변경 = changed · 푸시", G6 = "G6 실패 0 + 이전 서명 = 해소 1회(상태 비움)",
          G7 = "G7 실패 0 + 이전 없음 = 종전 '완료' · 상태 불변", G8 = "G8 커밋 → 읽기 왕복",
-         G9 = "G9 파손 상태 파일 → new(무음으로 접지 않음)")
+         G9 = "G9 파손 상태 파일 → new(무음으로 접지 않음)",
+         G10 = "G10 측정 관문 자료 낡음 반복 · 새 날 → repeat_gate · 푸시 · last_loud = 오늘(실패가 조용히 다음 날로 넘어가지 않는다)",
+         G11 = "G11 같은 날 두 번째 보고(밤 뒤 자가 복구) → 무음 · last_loud 유지",
+         G12 = "G12 last_loud 없는 옛 상태 → since 로 읽는다(어제 = 푸시 · 오늘 = 무음)",
+         G13 = "G13 새 실패 상태에 last_loud = 오늘")
 for (k in names(lab)) chk(lab[[k]], r[[k]])
 
 # 돌연변이
@@ -85,6 +106,9 @@ chk("M1 돌연변이(서명에 숫자 유지) → G1 red", !isTRUE(run_suite(m1)
 m2 <- sub("if (identical(sig, psig) && length(since) == 1L && !is.na(since)) {", "if (FALSE) {", src, fixed = TRUE)
 chk("M2 전제: 반복 판정 분기 제거됨", !identical(m2, src))
 chk("M2 돌연변이(반복 판정 제거) → G4 red", !isTRUE(run_suite(m2)$G4))
+m3 <- sub("if (gate && as.Date(today) > loud) {", "if (FALSE) {", src, fixed = TRUE)
+chk("M3 전제: 측정 관문 분기 제거됨", !identical(m3, src))
+chk("M3 돌연변이(관문 분기 제거 = 구판) → G10 red · G4(비관문 반복 무음)는 그대로", !isTRUE(run_suite(m3)$G10) && isTRUE(run_suite(m3)$G4))
 
 # 배선 — daily_refresh.sh [7] 블록(게이트를 부르는 run_r 블록 하나)
 cat("\n== daily_refresh.sh [7] 배선 ==\n")

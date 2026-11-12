@@ -25,45 +25,82 @@ T="$(cygpath -m "$(mktemp -d)" 2>/dev/null)"; [ -n "$T" ] || T="$(mktemp -d)"; t
 awk '/^# --- \[1pre-qw\]/{f=1} /^# --- (BMG-01|\[1pre-ext\])/{f=0} f' "$DR" > "$T/block.sh"
 [ -s "$T/block.sh" ] && grep -q 'qw_updatefile_unattended.sh' "$T/block.sh" && ok "0 [1pre-qw] 블록을 실제 daily_refresh.sh 에서 잘랐다($(wc -l < "$T/block.sh")줄)" || ng "0 블록 추출 실패"
 
-## 스텁 수급 스크립트($INFRA/data/qw_updatefile_unattended.sh) — STUB_LINE 을 마지막 줄로 내고 STUB_RC 로 끝난다
-mkdir -p "$T/infra/data"
+## 스텁 수급 스크립트($INFRA/data/qw_updatefile_unattended.sh) — 부른 책(QWUF_ONLY)을 호출 기록에 남기고, OHLCVS 면 STUB_LINE_A · 그 밖이면
+#   STUB_LINE_B 를 마지막 줄로 내고 STUB_RC_A · STUB_RC_B 로 끝난다(2026-11-13 R1 — 수급이 OHLCVS · 나머지 3종 두 번으로 갈렸다).
+#   run_r 스텁도 호출 기록에 'R:<이름표>' 를 남긴다 — 순서(OHLCVS 수급 → 적재 → 나머지 수급)를 단정한다. 세션 확인 도우미 스텁 = 'QSE'.
+mkdir -p "$T/infra/data" "$T/infra/ops"
 cat > "$T/infra/data/qw_updatefile_unattended.sh" <<'STUB'
 #!/usr/bin/env bash
+echo "W:${QWUF_ONLY:-ALL}" >> "$STUB_CALLS"
 echo "[qwuf] stub"
-printf '%b\n' "$STUB_LINE"
-exit "${STUB_RC:-0}"
+case "${QWUF_ONLY:-}" in
+  OHLCVS) printf '%b\n' "$STUB_LINE_A"; exit "${STUB_RC_A:-0}" ;;
+  *)      printf '%b\n' "$STUB_LINE_B"; exit "${STUB_RC_B:-0}" ;;
+esac
 STUB
-run_case(){   # $1 = 블록 파일 · $2 = QWUF 줄 · $3 = 스텁 rc · $4 = 벤치 rc → "DRF=<목록>|RUNR=<횟수>"
+printf '#!/usr/bin/env bash\necho QSE >> "$STUB_CALLS"\nprintf "QSE\\tstate=alive\\talive=True\\tkicks=0\\n"\n' > "$T/infra/ops/qw_session_ensure.sh"
+run_case(){   # $1 블록 · $2 OHLCVS 줄 · $3 rc · $4 나머지 줄 · $5 rc · $6 벤치 rc · $7 셸 대입문(선택) → "DRF=<목록>|RUNR=<횟수>|CALLS=<순서>"
+  : > "$T/calls.log"
   cat > "$T/harness.sh" <<HARN
 set -uo pipefail
+unset QVEST_DR_QWUF_SPLIT QVEST_DR_QWUF_REST QVEST_DR_NIGHT_SESSION_ENSURE QVEST_DR_QSE DR_MODE
 DR_FAILED=(); RUNR=0
-run_r(){ RUNR=\$((RUNR + 1)); }
+run_r(){ RUNR=\$((RUNR + 1)); echo "R:\${2:--}" >> "$T/calls.log"; }
 dr_lane_join(){ :; }   # (2026-11-06 레인) 블록 안 합류 호출 스텁 — 이 검사는 QWUF 판정만 잰다(합류 · 레인 = test_daily_refresh_lanes.sh)
-INFRA="$T/infra"; QVENV_PY="python"; _qw_rc="$4"
-export STUB_LINE='$2' STUB_RC="$3"
+INFRA="$T/infra"; QVENV_PY="python"; _qw_rc="$6"
+${7:-}
+export STUB_CALLS="$T/calls.log" STUB_LINE_A='$2' STUB_RC_A="$3" STUB_LINE_B='$4' STUB_RC_B="$5"
 . "$1" >/dev/null 2>&1
-printf 'DRF=%s|RUNR=%s\n' "\${DR_FAILED[*]:-}" "\$RUNR"
+printf 'DRF=%s|RUNR=%s|CALLS=%s\n' "\${DR_FAILED[*]:-}" "\$RUNR" "\$(tr '\n' ' ' < "$T/calls.log" | sed 's/ \$//')"
 HARN
   bash "$T/harness.sh" 2>/dev/null | tail -n 1
 }
-Q(){ printf 'QWUF\\tstate=%s\\tonly=OHLCVS,Universe_Support,Investor_Act,Consensus\\tadvanced=%s\\trc=%s\\tdone=%s\\tincomplete=%s' "$1" "$2" "$3" "$4" "$5"; }
-ra=$(run_case "$T/block.sh" "$(Q advanced 4 0 4/4 0)" 0 0)
-[ "$ra" = "DRF=|RUNR=1" ] && ok "a 전진 4/4 → 실패 0 · [0b'] 재적재 1회" || ng "a" "$ra"
-rb=$(run_case "$T/block.sh" "$(Q no_advance 0 0 4/4 0)" 10 2)
-[ "$rb" = "DRF=|RUNR=0" ] && ok "b 전진 없음 · 4/4(주말 — 모두 목표일) → 실패 0 · 재적재 없음" || ng "b" "$rb"
-rc_=$(run_case "$T/block.sh" "$(Q advanced 2 0 3/4 1)" 0 0)
-[ "$rc_" = "DRF=qw_updatefile_incomplete(done=3/4)|RUNR=1" ] && ok "c 일부 전진 3/4 → qw_updatefile_incomplete(done=3/4) · 재적재 1회(받은 것은 싣는다)" || ng "c" "$rc_"
-rd=$(run_case "$T/block.sh" "$(Q skipped 0 - '?' 0)" 10 3)
-[ "$rd" = "DRF=qw_updatefile_skipped(bench_rc=3)|RUNR=0" ] && ok "d 건너뜀(로그인 창 · 벤치 rc=3) → qw_updatefile_skipped · 재적재 없음" || ng "d" "$rd"
-re=$(run_case "$T/block.sh" "$(Q no_advance 0 1 '?' 1)" 10 1)
-[ "$re" = "DRF=qw_updatefile_incomplete(done=?)|RUNR=0" ] && ok "e 전진 없음 + rc≠0 → 미완료 실패 · 재적재 없음(오늘 RAWDATA 정체를 조용히 넘기지 않는다)" || ng "e" "$re"
+Q(){ printf 'QWUF\\tstate=%s\\tonly=stub\\tadvanced=%s\\trc=%s\\tdone=%s\\tincomplete=%s' "$1" "$2" "$3" "$4" "$5"; }
+WA="W:OHLCVS"; WB="W:Universe_Support,Investor_Act,Consensus"
+ra=$(run_case "$T/block.sh" "$(Q advanced 1 0 1/1 0)" 0 "$(Q advanced 3 0 3/3 0)" 0 0)
+[ "$ra" = "DRF=|RUNR=2|CALLS=$WA R:- $WB R:reingest_rest" ] && ok "a 전진 1/1 + 3/3 → 실패 0 · [0b'] 는 OHLCVS 직후(나머지 수급 전) · [0b''] 1회" || ng "a" "$ra"
+rb=$(run_case "$T/block.sh" "$(Q no_advance 0 0 1/1 0)" 10 "$(Q no_advance 0 0 3/3 0)" 10 2)
+[ "$rb" = "DRF=|RUNR=0|CALLS=$WA $WB" ] && ok "b 전진 없음 · 1/1 + 3/3(주말 — 모두 목표일) → 실패 0 · 재적재 없음" || ng "b" "$rb"
+rc_=$(run_case "$T/block.sh" "$(Q advanced 1 0 1/1 0)" 0 "$(Q advanced 1 0 2/3 1)" 0 0)
+[ "$rc_" = "DRF=qw_updatefile_incomplete(done=3/4)|RUNR=2|CALLS=$WA R:- $WB R:reingest_rest" ] && ok "c 일부 전진(나머지 2/3) → qw_updatefile_incomplete(done=3/4) · 받은 것은 싣는다" || ng "c" "$rc_"
+rd=$(run_case "$T/block.sh" "$(Q skipped 0 - '?' 0)" 10 "$(Q skipped 0 - '?' 0)" 10 3)
+[ "$rd" = "DRF=qw_updatefile_skipped(bench_rc=3)|RUNR=0|CALLS=$WA" ] && ok "d 건너뜀(로그인 창 · 벤치 rc=3) → qw_updatefile_skipped 1줄 · 나머지 수급 안 부름 · 재적재 없음" || ng "d" "$rd"
+re=$(run_case "$T/block.sh" "$(Q no_advance 0 1 '?' 1)" 10 "$(Q no_advance 0 1 '?' 1)" 10 1)
+[ "$re" = "DRF=qw_updatefile_incomplete(done=?)|RUNR=0|CALLS=$WA $WB" ] && ok "e 전진 없음 + rc≠0 → 미완료 실패 · 재적재 없음(오늘 RAWDATA 정체를 조용히 넘기지 않는다)" || ng "e" "$re"
+rf=$(run_case "$T/block.sh" "$(Q advanced 1 0 1/1 0)" 0 "$(Q no_advance 0 0 0/3 1)" 10 0)
+[ "$rf" = "DRF=qw_updatefile_incomplete(done=1/4)|RUNR=1|CALLS=$WA R:- $WB" ] && ok "f R1(11-12 꼴) OHLCVS 전진 뒤 나머지가 끊김 → 주가는 이미 실렸다(재적재 1 · 나머지 수급 전) · done=1/4" || ng "f" "$rf"
+rg=$(run_case "$T/block.sh" "$(Q no_advance 0 0 0/1 1)" 10 "$(Q no_advance 0 0 0/3 1)" 10 0)
+[ "$rg" = "DRF=qw_updatefile_incomplete(done=0/4)|RUNR=0|CALLS=$WA $WB" ] && ok "g 11-13 꼴(둘 다 session kicked) → done=0/4(실패 서명 꼴 구판과 같다)" || ng "g" "$rg"
+rh=$(run_case "$T/block.sh" "$(Q advanced 1 0 1/1 0)" 0 "$(Q advanced 3 0 3/3 0)" 0 0 'DR_MODE=selfheal')
+[ "$rh" = "DRF=|RUNR=1|CALLS=$WA R:-" ] && ok "h R2 자가 복구 → OHLCVS 만(나머지 3종 수급 0 · 시간 상한 안)" || ng "h" "$rh"
+ri=$(run_case "$T/block.sh" "$(Q advanced 1 0 1/1 0)" 0 "$(Q advanced 3 0 3/3 0)" 0 0 'DR_MODE=selfheal; QVEST_DR_QWUF_REST=1')
+[ "$ri" = "DRF=|RUNR=2|CALLS=$WA R:- $WB R:reingest_rest" ] && ok "i 자가 복구 + QVEST_DR_QWUF_REST=1 → 나머지도 받는다(손 복구)" || ng "i" "$ri"
+rj=$(run_case "$T/block.sh" "$(Q advanced 1 0 1/1 0)" 0 "$(Q advanced 4 0 4/4 0)" 0 0 'QVEST_DR_QWUF_SPLIT=0')
+[ "$rj" = "DRF=|RUNR=1|CALLS=W:OHLCVS,Universe_Support,Investor_Act,Consensus R:-" ] && ok "j QVEST_DR_QWUF_SPLIT=0 → 구 동작(한 번에 4종 · 재적재 1)" || ng "j" "$rj"
+rl=$(run_case "$T/block.sh" "$(Q advanced 1 0 1/1 0)" 0 "$(Q advanced 3 0 3/3 0)" 0 0 'QVEST_DR_NIGHT_SESSION_ENSURE=1')
+[ "$rl" = "DRF=|RUNR=2|CALLS=QSE $WA R:- $WB R:reingest_rest" ] && ok "l R6 스위치 켬(밤) → 첫 수급 직전에 세션 확인 1회" || ng "l" "$rl"
+rm6=$(run_case "$T/block.sh" "$(Q advanced 1 0 1/1 0)" 0 "$(Q advanced 3 0 3/3 0)" 0 0 'QVEST_DR_NIGHT_SESSION_ENSURE=1; DR_MODE=selfheal')
+[ "$rm6" = "DRF=|RUNR=1|CALLS=$WA R:-" ] && ok "m R6 스위치 켬 + 자가 복구 → 밤 확인 안 함(자가 복구는 ensure_data_current 4a 가 한다)" || ng "m" "$rm6"
+case "$ra" in *QSE*) ng "k R6 기본값" "$ra" ;; *) ok "k R6 기본 꺼짐 — 세션 확인 호출 0(10-16 결정 안 A 그대로 · 결정 대기)" ;; esac
 
-## ② 뮤테이션 — 미완료 DR_FAILED 줄을 지운 사본은 c 를 놓친다
+## ② 뮤테이션 — 미완료 DR_FAILED 줄을 지운 사본은 c 를 놓친다 · OHLCVS 먼저를 되돌린 사본은 f 를 놓친다 · 자가 복구 분기를 지운 사본은 h 를 놓친다
 grep -v 'DR_FAILED+=("qw_updatefile_incomplete' "$T/block.sh" > "$T/block_mut.sh"
 if ! cmp -s "$T/block.sh" "$T/block_mut.sh"; then
-  rm_=$(run_case "$T/block_mut.sh" "$(Q advanced 2 0 3/4 1)" 0 0)
-  [ "$rm_" = "DRF=|RUNR=1" ] && ok "M 뮤테이션(미완료 경보 줄 삭제) → c 가 침묵 — c 는 그 줄의 발화다(검출력)" || ng "M 뮤테이션 판독" "$rm_"
+  rm_=$(run_case "$T/block_mut.sh" "$(Q advanced 1 0 1/1 0)" 0 "$(Q advanced 1 0 2/3 1)" 0 0)
+  [ "$rm_" = "DRF=|RUNR=2|CALLS=$WA R:- $WB R:reingest_rest" ] && ok "M 뮤테이션(미완료 경보 줄 삭제) → c 가 침묵 — c 는 그 줄의 발화다(검출력)" || ng "M 뮤테이션 판독" "$rm_"
 else ng "M 뮤테이션 치환 실패" "블록에 미완료 경보 줄이 없다"; fi
+n1=$(grep -c '^_qwuf_books_a=OHLCVS$' "$T/block.sh")
+sed 's/^_qwuf_books_a=OHLCVS$/_qwuf_books_a="$_QWUF_ALL"/' "$T/block.sh" > "$T/block_mut1.sh"
+if [ "$n1" = "1" ] && ! cmp -s "$T/block.sh" "$T/block_mut1.sh"; then
+  rm1=$(run_case "$T/block_mut1.sh" "$(Q advanced 1 0 1/1 0)" 0 "$(Q no_advance 0 0 0/3 1)" 10 0)
+  [ "$rm1" = "DRF=qw_updatefile_incomplete(done=0/3)|RUNR=0|CALLS=W:OHLCVS,Universe_Support,Investor_Act,Consensus" ] && ok "M1 뮤테이션(4종 한 번에 — 구판 순서) → f 의 주가 적재가 사라진다 — f 는 R1 의 발화다(검출력)" || ng "M1 뮤테이션 판독" "$rm1"
+else ng "M1 뮤테이션 치환 실패" "치환 대상 줄 $n1 개"; fi
+n2=$(grep -c '\] && \[ "${QVEST_DR_QWUF_REST:-0}" != "1" \] && _qwuf_rest_want=0$' "$T/block.sh")
+sed 's/\] && \[ "${QVEST_DR_QWUF_REST:-0}" != "1" \] && _qwuf_rest_want=0$/] \&\& [ "${QVEST_DR_QWUF_REST:-0}" != "1" ] \&\& _qwuf_rest_want=1/' "$T/block.sh" > "$T/block_mut2.sh"
+if [ "$n2" = "1" ] && ! cmp -s "$T/block.sh" "$T/block_mut2.sh"; then
+  rm2=$(run_case "$T/block_mut2.sh" "$(Q advanced 1 0 1/1 0)" 0 "$(Q advanced 3 0 3/3 0)" 0 0 'DR_MODE=selfheal')
+  [ "$rm2" = "DRF=|RUNR=2|CALLS=$WA R:- $WB R:reingest_rest" ] && ok "M2 뮤테이션(자가 복구 분기 무력화) → h 가 나머지 3종을 받는다 — h 는 R2 의 발화다(검출력)" || ng "M2 뮤테이션 판독" "$rm2"
+else ng "M2 뮤테이션 치환 실패" "치환 대상 줄 $n2 개"; fi
 
 ## ③ 정적 — 밤 · 아침 체인 실행 코드(주석 제외)에 네이버 · KRX 주가 수집 호출 0
 PRICE_RE='naver_run_pipeline|krx_run_pipeline|krx_detect_gap|krx_detect_interior_gaps|morning_steps/(krx_update|naver_supplement)\.R|data/naver_data_collector\.R|data/krx_build_rawdata\.R'

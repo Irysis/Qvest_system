@@ -34,8 +34,12 @@ DOWN = {
     "krf": [], "fdb": [], "nonret": [],
 }
 # freshness_audit.R 감사 이름 → 생산 단계(daily_refresh.sh 안의 생산자 위치). p3_forecast = 브리핑 산출물(리프레시 하류 아님)
+# ★(2026-11-13 · 진단 20261112_2201 R3) Update_File 계열 낡음(rawdata · consensus · investor_act · universe_support)의 씨앗 = ingest(그 하류 = qw 포함).
+#   구판은 qw 만 씨앗으로 두어, 밤 실행 상태가 있는 날의 자가 복구가 [0b](ingest)를 건너뛰었다 — '저장됐지만 안 실린' xlsx 를 첫 단계에서 싣지 못하고,
+#   드라이버는 그 책을 '이미 목표일'로 건너뛰어 [0b'] 도 안 돌았다(11-12 꼴: OHLCVS 11-11 저장본 01:19 · RAWDATA 11-10 정체). [0b] 는 새 자료가 없으면
+#   rc 0 으로 곧바로 끝난다(11-09 수리). 벤치는 퀀티 수급([1pre])만 고친다 → qw 그대로.
 STALE_TO_STAGE = {
-    "rawdata": "qw", "benchmark": "qw", "consensus": "qw", "investor_act": "qw", "universe_support": "qw",
+    "rawdata": "ingest", "benchmark": "qw", "consensus": "ingest", "investor_act": "ingest", "universe_support": "ingest",
     "msm_daily": "macro", "fred": "macro", "fred_wide": "macro", "ktri_indices": "macro", "ktri_v3_signals": "macro",
     "regime_daily": "macro", "p3_forecast": None,
 }

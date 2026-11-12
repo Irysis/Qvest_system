@@ -82,7 +82,7 @@ st 2026-11-10 full done "$(S ingest ok),$(S qw ok),$(S universe ok),$(S macro ok
 chk "P6 dart 만 실패 → dart,krf,fdb" "dart,krf,fdb" "$(plan)"
 chk "P7 모르는 낡은 항목 → FULL" FULL "$(plan --stale 'mystery(STALE)')"
 st 2026-11-10 full done "$(S ingest ok),$(S qw ok),$(S universe ok),$(S macro ok),$(S dart ok),$(S krf ok),$(S fdb ok),$(S nonret ok)"
-chk "P8 실패 0 · rawdata 낡음 → qw 와 하류" "qw,universe,macro,krf,fdb" "$(plan --stale 'rawdata(STALE,lag=3d)')"
+chk "P8 실패 0 · rawdata 낡음 → ingest 부터(11-13 R3 — 저장됐지만 안 실린 xlsx 를 먼저 싣는다 · 하류에 qw 포함)" "ingest,qw,universe,macro,krf,fdb" "$(plan --stale 'rawdata(STALE,lag=3d)')"
 st 2026-11-10 full done "$(S ingest ok),$(S qw ok),$(S universe ok),$(S macro failed),$(S dart ok),$(S krf ok),$(S fdb ok),$(S nonret ok)"
 chk "P8b macro 만 실패 → macro 와 하류(krf 포함 — FF 요인의 무위험 금리가 macro 의 ECOS 금리)" "macro,krf,fdb" "$(plan)"
 n=$(sub1 "$PLN" "$TMP/plan_mut.py" '"qw": ["universe", "macro", "krf", "fdb"],' '"qw": [],')
@@ -131,7 +131,7 @@ mkrefresh "echo \"mode=\$QVEST_DR_MODE only=\$QVEST_DR_ONLY_STAGES skipbat=\$QVE
 printf '{\"schema\":\"daily_refresh_state_v1\",\"run_date\":\"$TODAY\",\"mode\":\"selfheal\",\"status\":\"done\",\"rc\":1,\"reported\":1,\"stages\":[],\"failed\":[\"x\"]}' > \"\$S\"; exit 1"
 printf '{"schema":"daily_refresh_state_v1","run_date":"%s","mode":"full","status":"done","rc":1,"reported":1,"stages":[%s],"failed":[]}' "$TODAY" "$ALLOK" > "$B/.cache/daily_refresh_state.json"
 edc >/dev/null
-chk "N1 자가 복구 환경 — selfheal · 계획 · 배터리 생략 · 보고 켬" "mode=selfheal only=qw,universe,macro,krf,fdb skipbat=1 rep=1" "$(cat "$B/refresh_env.txt" 2>/dev/null)"
+chk "N1 자가 복구 환경 — selfheal · 계획(rawdata 낡음 → ingest 부터 · 11-13 R3) · 배터리 생략 · 보고 켬" "mode=selfheal only=ingest,qw,universe,macro,krf,fdb skipbat=1 rep=1" "$(cat "$B/refresh_env.txt" 2>/dev/null)"
 chk "N2 [7] 보고가 나간 실패 → 추가 알림 0" 0 "$(ntg)"
 chk "N3 사후 감사 조용(QUIET=1)" "quiet=1" "$(tail -1 "$B/audit.log")"
 mkrefresh "exit 1"; edc >/dev/null

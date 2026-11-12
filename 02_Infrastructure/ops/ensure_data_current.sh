@@ -216,13 +216,20 @@ fi
 #      그 전에는 막는다(부팅 직후 · 아침 브리핑처럼 붙어 있는 호출이 연달아 퀀티 단말을 두드리지 않게). 끄기 = QVEST_EDC_QW_RETRY=0.
 #      낮 시간 호출 지점 = ops/data_selfheal_tick.sh(예약 작업 Qvest_StandingBoard 매시 37분).
 #   ③ --retry — 사람이 원인을 고친 뒤 수동으로: 가드를 건너뛴다.
+#   ★(2026-11-13 · 진단 20261112_2201 R4 · 도훈 "리프레시 실패 … 원천해결해") ②의 대상을 '퀀티 수급 · 적재로 고쳐지는 낡음'으로 넓힌다 =
+#      퀀티 미갱신(QW_BEHIND) ∪ rawdata · benchmark 낡음. 구판은 QW_BEHIND 만 봤다 — 11-12 · 11-13 은 자가 복구가 벤치만 올려 놓아 QW_BEHIND = 0 인데
+#      RAWDATA 만 낡아, 매시 틱이 하루 종일 '재시도하지 않음'으로 끝났다. 안내 문구도 '리프레시로 고쳐지지 않는 항목'이라고 틀리게 말했다
+#      (11-12: OHLCVS 11-11 저장본이 01:19 부터 디스크에 있었고 [0b] 한 번이면 됐다 · 11-13: 단말 재로그인 01:46 뒤 수급 한 번이면 됐다).
+#      간격 규칙(마지막 복구 시도 뒤 RETRY_GAP_S) · 끄는 손잡이(QVEST_EDC_QW_RETRY=0)는 그대로다. 표식 이름(verdict)도 그대로 둔다(소비자 · 시험 호환).
+_QW_FIX=0; [ "$QW_BEHIND" = "1" ] && _QW_FIX=1
+case ",${PRE_ACT}," in *,rawdata,*|*,benchmark,*) _QW_FIX=1 ;; esac
 RETRY_GAP_S="${QVEST_EDC_QW_RETRY_GAP_S:-$(( ${QVEST_EDC_HEAL_TIMEOUT_MIN:-150} * 60 ))}"
 if [ -f "$STAMP" ] && [ "$FORCE_RETRY" != "1" ]; then
   _prev_as_of="$(sed -n 's/.*"as_of":"\([^"]*\)".*/\1/p' "$STAMP" 2>/dev/null)"
   _prev_verdict="$(sed -n 's/.*"verdict":"\([^"]*\)".*/\1/p' "$STAMP" 2>/dev/null)"
   if [ "$_prev_as_of" = "$AS_OF" ] && { [ "$_prev_verdict" = "stale_after_refresh" ] || [ "$_prev_verdict" = "stale_unfixable_by_refresh" ]; }; then
     _retry=0; _gap="-"
-    if [ "$QW_BEHIND" = "1" ] && [ "${QVEST_EDC_QW_RETRY:-1}" != "0" ]; then
+    if [ "$_QW_FIX" = "1" ] && [ "${QVEST_EDC_QW_RETRY:-1}" != "0" ]; then
       _lh_as_of=""; _lh_ep=""
       [ -f "$HEAL_MARK" ] && read -r _lh_as_of _lh_ep < "$HEAL_MARK" 2>/dev/null
       case "$_lh_ep" in ""|*[!0-9]*) _lh_ep="" ;; esac
@@ -235,7 +242,11 @@ if [ -f "$STAMP" ] && [ "$FORCE_RETRY" != "1" ]; then
     fi
     if [ "$_retry" != "1" ]; then
       _log "⚠ as_of=$AS_OF 는 이미 리프레시했으나 stale=$PRE_STALE 잔존 — **재시도하지 않음**$( [ "$_gap" != "-" ] && echo " (퀀티 재시도까지 $(( RETRY_GAP_S - _gap ))초 남음)" )"
-      _log "   (리프레시로 고쳐지지 않는 항목이다. 생산자 배선을 봐야 한다: qepm/observability/morning_freshness_latest.json 의 stale_items)"
+      if [ "$_QW_FIX" = "1" ]; then
+        _log "   (퀀티 수급 · 적재로 고쳐지는 낡음이다(${PRE_ACT}) — 마지막 복구 시도 뒤 ${RETRY_GAP_S}초가 지나면 같은 영업일에도 다시 시도한다$( [ "${QVEST_EDC_QW_RETRY:-1}" = "0" ] && echo " · 지금은 QVEST_EDC_QW_RETRY=0 으로 꺼져 있다" ))"
+      else
+        _log "   (리프레시로 고쳐지지 않는 항목이다. 생산자 배선을 봐야 한다: qepm/observability/morning_freshness_latest.json 의 stale_items)"
+      fi
     [ "$QW_BEHIND" = "1" ] && _log "   ★qw = 이 거래일($QW_EXP)의 퀀티 로그인 · 수급이 이미 한 번 실패했다 — 단말 로그인 확인(daily_refresh.log [1pre] · .cache/quantiwise_fetch_status.json). 다음 거래일 또는 00:03 밤 리프레시가 다시 시도한다"
       _stamp "stale_unfixable_by_refresh" "$PRE_STALE" "재시도 생략(같은 영업일 재발)"
       exit 3
@@ -299,6 +310,18 @@ _kill_tree() {   # $1 = MSYS pid — 자손(MSYS) 전부 + 각자의 윈도 트�
   for p in $all; do wp="$(cat "/proc/$p/winpid" 2>/dev/null)"; [ -n "$wp" ] && taskkill //F //T //PID "$wp" >/dev/null 2>&1; done
   for p in $all; do kill -KILL "$p" 2>/dev/null; done
 }
+# ★(2026-11-13 · 진단 20261112_2201 R5) 상한 종료 뒤 수급 Excel 정리 — 수급 Excel 은 COM 으로 떠서 부모가 svchost(DcomLaunch)라 위 트리에 없고,
+#   래퍼의 자기 정리(qw_updatefile_unattended.sh cleanup)는 래퍼가 먼저 죽어 돌지 못한다. 11-12 02:56 종료 뒤 Consensus_update.xlsx 를 연 채
+#   고아 Excel(4.5 GB)이 22시간 남았다(다음 밤 같은 책 차례의 위험). 이 복구를 띄운 시각 뒤에 생긴 ∧ 명령줄에 /automation 이 든 EXCEL 만 끝낸다
+#   (래퍼 cleanup 과 같은 원리 · 사람이 연 Excel 과 단말의 자식 Excel 은 /automation 이 없어 빠진다 — 11-13 실측: 수급 Excel 명령줄
+#   '"…\EXCEL.EXE" /automation -Embedding' · 부모 svchost 1852 / 단말 자식 Excel 명령줄 '"…\EXCEL.EXE"' 인자 없음).
+#   시험 주입: QVEST_EDC_XL_CLEANUP_CMD(명령 대체) · QVEST_EDC_XL_NAME · QVEST_EDC_XL_PAT(가짜 프로세스로 거르기 규칙 자체를 잴 때만)
+_xl_cleanup() {   # $1 = 복구를 띄운 epoch — 끝낸 pid 를 한 줄씩 낸다
+  if [ -n "${QVEST_EDC_XL_CLEANUP_CMD:-}" ]; then bash -c "$QVEST_EDC_XL_CLEANUP_CMD" 2>/dev/null; return 0; fi
+  local t0 nm pat; t0="$(date -d "@$1" '+%Y-%m-%d %H:%M:%S' 2>/dev/null)" || return 0
+  nm="${QVEST_EDC_XL_NAME:-EXCEL.EXE}"; pat="${QVEST_EDC_XL_PAT:-/automation}"
+  powershell.exe -NoProfile -Command "\$t=[datetime]'$t0'; Get-CimInstance Win32_Process -Filter \"Name='$nm'\" -EA SilentlyContinue | Where-Object { \$_.CreationDate -ge \$t -and \"\$(\$_.CommandLine)\".Contains('$pat') } | ForEach-Object { Stop-Process -Id \$_.ProcessId -Force -EA SilentlyContinue; 'killed ' + \$_.ProcessId }" 2>/dev/null | tr -d '\r'
+}
 # ── 4a. 퀀티 세션 확인 (2026-11-11 도훈 "자가 복구가 수급 전에 퀀티 세션을 먼저 확인하고, 죽어 있으면 한 번 재로그인하게 해줘"
 #       · 결정 QW-SELFHEAL-SESSION-ENSURE-20261111) ──
 #   왜: 밤 체인의 Update_File 수급은 로그인 클릭을 하지 않고(-SkipLogin), [1pre] 벤치 수급은 로그인 창이 보일 때만 로그인한다.
@@ -306,7 +329,11 @@ _kill_tree() {   # $1 = MSYS pid — 자손(MSYS) 전부 + 각자의 윈도 트�
 #   무엇: 계획에 퀀티 단계가 있을 때만(QW_BEHIND = 1) ops/qw_session_ensure.sh 를 한 번 부른다 — 살아 있으면 아무것도 안 하고,
 #     죽어 있으면 드라이버 -LoginOnly(앱에 저장된 자격 · 1회). 로그인에 실패한 날은 도우미가 다시 시도하지 않는다(계정 잠금 방지).
 #   결과와 무관하게 복구는 진행한다(다른 단계는 퀀티와 무관 · 실패는 사후 감사가 그대로 보고한다). 끄기 = QVEST_QW_SESSION_ENSURE=0.
-if [ "$QW_BEHIND" = "1" ]; then
+#   ★(2026-11-13) 조건 = **복구 계획에 퀀티 단계(qw)가 있을 때**(결정 문안 그대로 — '복구 계획에 퀀티 단계가 있을 때 리프레시 직전에 세션 확인').
+#     구판은 QW_BEHIND = 1(벤치 낡음)을 그 대리로 썼다 — 11-13 01:37 자가 복구는 계획 qw,universe,… 인데 벤치가 최신이라 확인을 건너뛰고
+#     같은 종료 대화상자 뒤 단말(로그인 창)에서 'session kicked' 로 끝났다(01:43 · 01:46 매크로 단계가 로그인한 뒤에도 수급을 다시 돌 주체 없음).
+_plan_has_qw=0; case ",${HEAL_PLAN}," in *,FULL,*|*,qw,*) _plan_has_qw=1 ;; esac
+if [ "$_plan_has_qw" = "1" ]; then
   QSE_SH="${QVEST_EDC_QSE:-$BASE/02_Infrastructure/ops/qw_session_ensure.sh}"
   if [ -f "$QSE_SH" ]; then
     _qse_out="$(bash "$QSE_SH" 2>&1)"; _qse_rc=$?
@@ -326,6 +353,7 @@ while kill -0 "$RPID" 2>/dev/null; do
   if [ $(( $(date +%s) - _t0 )) -ge "$HEAL_TIMEOUT_S" ]; then
     TIMED_OUT=1; _log "⚠ 자가 복구 리프레시가 상한 ${HEAL_TIMEOUT_S}s 를 넘김 — 프로세스 트리 종료(PID=$RPID)"
     _kill_tree "$RPID"
+    _xl_out="$(_xl_cleanup "$_t0")"; _log "   수급 Excel 정리(복구 시작 뒤 · /automation): ${_xl_out:-없음}"
     _lp="$(cat "$LOCKDIR/pid" 2>/dev/null)"; [ "$_lp" = "$RPID" ] && rm -rf "$LOCKDIR"   # 죽인 실행의 잠금만 치운다
     break
   fi

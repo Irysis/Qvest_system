@@ -4734,7 +4734,27 @@
       "decided_at": "2026-11-13T06:41:38+0900",
       "note": "적용 범위 = P1R03 첫 측정 1회. 신선도 관문 자체는 바꾸지 않는다(코어 v3 · 핀 불변). 측정 기록의 칸 지문(fp_start · fp_end)이 자료 판본(RAWDATA 11-10)을 남긴다. 결과 인용 때 '자료 11-10 기준'을 붙인다. 빠진 거래일 적재 · 리프레시 원천 수리는 별도 세션(refresh-root-fix)이 오늘 오전 마감으로 한다.",
       "registered_at": "2026-11-13T06:41:37+0900"
+    },
+    {
+      "id": "QW-NIGHT-SESSION-ENSURE-20261113",
+      "title": "밤 실행(00:03)이 퀀티 Update_File 수급 직전에 세션을 확인하고, 다른 기기의 같은 아이디 로그인으로 끊겼으면 한 번 재로그인할지",
+      "status": "open",
+      "opened_at": "2026-11-13T07:25:06+0900",
+      "options": [
+        "(가) 켠다 — daily_refresh.sh [1pre-qw] 첫 수급 직전에 ops/qw_session_ensure.sh 1회(살아 있으면 무동작 · 중복 로그인 종료 대화상자 · 세션 없음이면 저장된 자격으로 1회 재로그인 · 로그인에 실패한 날은 다시 누르지 않음). 스위치 QVEST_DR_NIGHT_SESSION_ENSURE 기본값을 1 로(코드는 11-13 커밋에 들어가 있고 기본 0)",
+        "(나) 지금대로 — 밤 Update_File 수급은 로그인 없음(10-16 결정 QW-UPDATEFILE-UNATTENDED 안 A). 밤에 끊기면 매시 자가 복구 틱이 세션을 확인한 뒤 OHLCVS 를 다시 받는다(11-13 수리 R4 · R4b — 마지막 복구 시도 뒤 150분 · 자가 복구는 OHLCVS 만)"
+      ],
+      "recommendation": "(가) — 최근 새 거래일 밤 넷 중 둘(11-11 · 11-13)이 이 원인이다: 다른 호스트의 같은 아이디 로그인 → 단말에 중복 로그인 종료 대화상자(11-13 00:16~00:22 · alive-diag kickdlg=1) → -SkipLogin 드라이버가 재로그인 못 함 → done 0/4. (나)로도 자료는 대개 아침 전에 회복되지만 밤 Done 은 ★실패로 남고 회복이 1~4시간 늦는다(틱 간격 · 150분 재시도 간격). 계정 잠금 위험은 자가 복구와 같은 규칙(1회 · 실패한 날 재시도 없음 · 08-29 사고 대책)으로 막는다. 비용 = 상대 기기가 밤에 쓰는 중이면 그 세션이 끊긴다(11-06 상시 위임 '다른 기기에서 로그인 되서 종료되면 묻지 말고 재로그인'과 같은 비용).",
+      "default_until_decided": "(나) 지금대로 — 스위치 기본 0",
+      "blocks": [],
+      "owner": "dohoon",
+      "source": "도훈 11-13 '리프레시 실패 다른 세션에서 원천해결해 도대체 몇일 쨰야?' · 진단 04_Research/programs/_supervision/superfan/components/daily_refresh/20261112_2201_diagnosis.md R6 · 세션 refresh-root-fix(local_9fa47fd9 의 사이드 세션) 11-13 밤 로그 재도출(daily_refresh.log 394415~394446 · /tmp/qm_daily_refresh_20261113.log 63841~63857)",
+      "decision": null,
+      "decided_by": null,
+      "decided_at": null,
+      "note": null,
+      "registered_at": "2026-11-13T07:25:06+0900"
     }
   ],
-  "last_updated": "2026-11-13T06:41:39+0900"
+  "last_updated": "2026-11-13T07:25:06+0900"
 }
