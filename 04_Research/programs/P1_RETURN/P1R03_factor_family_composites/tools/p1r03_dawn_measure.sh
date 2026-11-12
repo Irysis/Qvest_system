@@ -22,7 +22,8 @@ main() {
   local why nowm mg rc fp fp_prev="" fp_t=0 stale_day="" last_why="" vl dl v0 v1
   log() { printf '%s %s\n' "$(date '+%F %T')" "$*" >> "$LOG"; }
   st() { printf '%s\t%s\tlog=%s\n' "$(date '+%F %T')" "$*" "$LOG" > "$ST"; }
-  running() { local s; s=$(timeout 90 powershell.exe -NoProfile -NonInteractive -Command "(Get-ScheduledTask -TaskName '$1').State" 2>/dev/null | tr -d '\r\n '); [ "$s" = "Running" ]; }
+  running() { local s; s=$(timeout 90 powershell.exe -NoProfile -NonInteractive -Command "(Get-ScheduledTask -TaskName '$1').State" 2>/dev/null | tr -d '\r\n ')
+    [ -z "$s" ] && return 0; [ "$s" = "Running" ]; }   # 판독 실패 = 실행 중으로 본다(닫힘 · 격리 점검 v2 S-7)
   viewfp() { bash "$FPS" record .cache/factor_combinable 2>/dev/null; }
   fpnow() { { bash "$FPS" equality; viewfp; } 2>/dev/null | md5sum | cut -c1-32; }
   ms() { timeout 300 Rscript "$MS" "$@" >> "$LOG" 2>&1 || log "이정표 발송 rc=$?"; }
@@ -34,7 +35,7 @@ main() {
     [ -z "$why" ] && running Qvest_DailyRefresh && why="밤 체인 실행 중"
     [ -z "$why" ] && running Qvest_MorningBrief && why="아침 체인 실행 중"
     [ -z "$why" ] && { bash 02_Infrastructure/ops/refresh_barrier.sh status 2>/dev/null | grep -q "state=free" || why="리프레시 배리어 held"; }
-    [ -z "$why" ] && grep -q "M 측정 중" "$SEED_ST" 2>/dev/null && why="판 2 시드 측정 중(메모리)"
+    [ -z "$why" ] && grep -qE "M 측정 중|W\(follow\)|W 대기\(P1S02_E3_RX0\)" "$SEED_ST" 2>/dev/null && why="판 2 시드 측정 중 · E3 직후 대기(메모리 · 격리 점검 v2 N-4)"
     if [ -z "$why" ]; then mg=$(timeout 90 powershell.exe -NoProfile -NonInteractive -Command "[math]::Floor((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory/1MB)" 2>/dev/null | tr -d '\r\n ')
       { [ -n "$mg" ] && [ "$mg" -ge 10 ]; } 2>/dev/null || why="가용 메모리 ${mg:-?}GB < 10GB"; fi
     [ -z "$why" ] && { bash "$RS" - fresh-check >> "$LOG" 2>&1 || why="자료 낡음(fresh-check)"; }

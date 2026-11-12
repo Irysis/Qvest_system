@@ -1,5 +1,5 @@
 # P1R03 이정표 1통(prep_send · 1계층 표제 · 푸시) — 새벽 측정 셸(p1r03_dawn_measure.sh)이 부른다.
-#   인자: <단계 키 measured | stale | view_changed | failed> <본문 줄>...
+#   인자: <단계 키 registered | measured | stale | view_changed | failed> <본문 줄>...
 #   measured 면 판정 단일 출처(results/verdict.json)의 기계 요약(summary)을 함께 싣는다 — 판정 해석 · 판단 T2 · 철학 P2 · 정식 보고는 세션(격리 점검 v1 R-4).
 args <- commandArgs(trailingOnly = TRUE)
 ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot"); setwd(ROOT)
@@ -8,12 +8,14 @@ invisible(capture.output(suppressMessages(source("02_Infrastructure/programs/pro
 `%||%` <- function(a, b) if (is.null(a) || !length(a)) b else a
 key <- args[1] %||% "?"; body <- as.list(args[-1])
 RD <- "04_Research/programs/P1_RETURN/P1R03_factor_family_composites"
-stage <- switch(key, measured = "측정 · 평가 끝", stale = "자료 낡음 — 측정 대기", view_changed = "측정 중 결합용 뷰 바뀜 — 재측정 필요",
-                failed = "측정 실패", key)
+stage <- switch(key, registered = "등록 · 새벽 측정 대기", measured = "측정 · 평가 끝", stale = "자료 낡음 — 측정 대기",
+                view_changed = "측정 중 결합용 뷰 바뀜 — 재측정 필요", failed = "측정 실패", key)
 nxt <- switch(key,
+  registered = "새벽 측정 셸: 04:30~06:00(못 서면 18:00~22:00) · 자료 신선 · 지문 10분 안정이면 15칸 측정 → 이정표 1통",
   measured = "세션: 판정 해석 → 판단 Superfan T2 · 철학 P2 → 정식 보고(철학 줄 포함) → 닫기",
   stale = "07:10 아침 체인 자가 복구(ensure_data_current) → P1R03 다음 시작 창 18:00 · 세션이 열리면 표적 복구",
-  view_changed = "세션: 뷰 갱신 원인 확인 → 15칸 재측정", failed = "세션: 측정 로그 확인", "세션 확인")
+  view_changed = "세션: 뷰 갱신 원인 확인 → results 의 P1R03 칸 파일 15개와 측정 시작 뒤 생긴 .cache/rf_base_signal 파일을 치운 뒤 15칸 재측정(기저 캐시 키에 뷰 없음 · DESIGN §8)",
+  failed = "세션: 측정 로그 확인", "세션 확인")
 vl <- NULL
 if (identical(key, "measured")) {
   vf <- file.path(RD, "results", "verdict.json")
