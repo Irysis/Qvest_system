@@ -37,6 +37,13 @@ if (file.exists(.mpath)) {
 ## QVEST_TG_DRY_RUN=1 → 발송 0(본문 · 차트 경로만 로그) — 보류 경보도 보내지 않는다.
 .dry <- identical(Sys.getenv("QVEST_TG_DRY_RUN", ""), "1")
 .exp <- suppressWarnings(tryCatch(as.Date(.asof), error = function(e) as.Date(NA)))
+## 감사 as_of 는 거래일 달력이 아직 덮지 못한 평일 휴장일(그 다음 날 아침)을 그대로 둔다(regime_data_gate.R '한계' 주석) —
+##   KRX 휴장일 정본(06_Registry/krx_holidays.json · 신선도 감사 세션 축과 같은 원천)으로 직전 개장일까지 물려 거짓 '낡음'을 막는다.
+##   정본 판독 실패 · 수록 연도 밖이면 물리지 않는다(구판 동작 = 감사 as_of 그대로).
+.hol <- tryCatch({ .h <- jsonlite::fromJSON("06_Registry/krx_holidays.json")
+  list(years = as.integer(unlist(.h$years)), days = as.Date(names(.h$holidays))) }, error = function(e) NULL)
+if (!is.null(.hol) && !is.na(.exp))
+  while (as.integer(format(.exp, "%Y")) %in% .hol$years && (format(.exp, "%u") %in% c("6", "7") || .exp %in% .hol$days)) .exp <- .exp - 1L
 if (!.gate_ok) {
   .msg <- sprintf("⚠️ 레짐 브리핑 보류 — 컴포넌트 stale: %s (as_of=%s). regime 데이터 점검 요.",
                   paste(.stale, collapse = ", "), .asof)
