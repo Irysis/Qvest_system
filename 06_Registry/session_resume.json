@@ -1,6 +1,6 @@
 {
  "schema": "session_resume_v1",
- "updated_at": "2026-11-12T23:00:02+0900",
+ "updated_at": "2026-11-13T00:22:40+0900",
  "operations": [
   {
    "id": "OP-20261015-MSM-A",
@@ -555,7 +555,7 @@
    "goal": "전수점검 결론(A 미산출 = 생성 편중 · 시행 소진 · 기준점 부재 · 정지)에 따라 1계층의 일하는 순서를 바꿔 계약 경로 A 를 낸다 — 설계 README §4 의 순서와 완료 기준",
    "status": "in_progress",
    "started_at": "2026-11-10T10:27:03+0900",
-   "updated_at": "2026-11-12T23:00:02+0900",
+   "updated_at": "2026-11-13T00:22:40+0900",
    "steps": [
     {
      "id": "S0",
@@ -611,7 +611,7 @@
      "updated_at": "2026-11-10T12:13:47+0900"
     }
    ],
-   "next_action": "★11-12 23시대 순서(J-20261112-011 · T3 수용): (0) 11-13 05:00~07:30 bash 04_Research/programs/_lib/round_core/round.sh - fresh-check → 낡음이면 진단 daily_refresh 20261112_2201 §5-3 표적 복구(OHLCVS 11-12 있으면 QVEST_DR_MODE=selfheal QVEST_DR_ONLY_STAGES=ingest,universe,macro,krf,fdb QVEST_DR_SKIP_BATTERY=1 bash 02_Infrastructure/data/daily_refresh.sh · 없으면 단말 확인 뒤 QWUF_ONLY=OHLCVS) (1) P1R03_factor_family_composites — 사양 있음(04_Research/programs/P1_RETURN/P1R03_factor_family_composites · 핀 68 · DESIGN · tools/p1r03_dawn_measure.sh) · 시험 파일 08_Tests/factor_db/test_fc_engine_gen.R(서브에이전트 작성 중) → 사양 tests 에 넣기 → rc_draft → 격리 점검 · 철학 P1 · 판단 T1 → reviewed → 판 폴더 커밋 → rc_register(run_tests = TRUE) → 등록 커밋 → 새벽 감시 셸 WMI 분리 실행(04:30~06:50 · 08:00~16:30 · fresh-check · 메모리 ≥ 10 GB · 시드 측정 중 아님 → measure --now --p=2 → report --send) → 판정 뒤 판단 T2 · 철학 P2 · 닫기 (2) 인계 기록 재발행 후보 4(1505.00328 · 1806.01743 · 2001.04185 · 2511.12129) (3) S3 = 레인 출력 계약(점수 패널) (4) D4 a 코어 v4 자체 사양 입구 (5) 판 2 시드(감시 셸 · 임계 경로 아님) (6) 레인 복구 B(시드 뒤) · 2411.13555 · 1309.7119 감사만 재실행 · 데이터 갱신 R1~R5 · R6 = 도훈 결정 카드",
+   "next_action": "P1R03 등록 끝(75ac07e0c · prereg 05e3f053). ① 06:00 뒤 .cache/scheduler_logs/p1r03_dawn_measure_state.txt 확인 — '끝' 이면 results/verdict.json 판정 해석 → 판단 Superfan T2 · 철학 P2(백그라운드) → prep_send 정식 보고(철학 줄 · program_report.R) → bash 04_Research/programs/_lib/round_core/round.sh 04_Research/programs/P1_RETURN/P1R03_factor_family_composites close --note … --probe … --probe … --p2 … --t2 …. '대기 — 자료 낡음' 이면 07:10 아침 체인 자가 복구 뒤 18:00 창(또는 표적 복구: QVEST_DR_MODE=selfheal QVEST_DR_ONLY_STAGES=ingest,universe,macro,krf,fdb QVEST_DR_SKIP_BATTERY=1 bash 02_Infrastructure/data/daily_refresh.sh). 종료 7(뷰 바뀜) = DESIGN §8 재측정 절차. ② 판 2 시드 자리 예약 수리(J-20261112-014 — 시드 감시 셸이 대기 중 임대를 안 잡아 레인과 서로 미룬다 · 1109.3488 측정 끝 ≈ 11-13 22시대) — 1109 멈춤 여부는 도훈 답 대기(기본 그대로). ③ 코어 v4 자체 사양 입구(D4 a · philosophy_unread · 원천 라운드 전 칸을 사슬 시행 집합에 — T1 C-026) = 첫 사슬 등록 앞.",
    "context_files": [
     "04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/README.md",
     "04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/findings_ledger.md",
@@ -647,6 +647,13 @@
      "sentinel": ".cache/scheduler_logs/p1s02_seed_watch_state.txt",
      "pid": 32592,
      "at": "2026-11-12T22:02:56+0900"
+    },
+    {
+     "what": "P1R03 새벽 측정 셸(tools/p1r03_dawn_measure.sh · WMI 분리 실행 00:22 · 창 04:30~06:00 · 18:00~22:00 · 대기 상한 40시간) → round.sh measure --now → 평가 연쇄 → 이정표 1통",
+     "log": ".cache/scheduler_logs/p1r03_dawn_measure_20261113_002204.log",
+     "sentinel": ".cache/scheduler_logs/p1r03_dawn_measure_state.txt",
+     "pid": 38772,
+     "at": "2026-11-13T00:22:39+0900"
     }
    ],
    "decisions": [
@@ -654,22 +661,6 @@
     "레인 재가동(S0) · 비밀 값 교체 — 설계 README §6 결정 1 · 4(도훈 직접 조치)"
    ],
    "log": [
-    {
-     "at": "2026-11-11T15:13:49+0900",
-     "text": "S1 → in_progress · 11-11 15:12 코어 v1 출시 기록 d10a95697(매니페스트 e70ac0af · 시험 9종 0 실패) · P1S01 판 1 등록 e26717ab7(사전등록 fd3ef649 · git_head_at_register 0232aec81 — 등록 커밋 메시지의 'f6eba1e7f 위에서'는 0232aec81 이 정확) · 초안 v3(점검 v1 revise → v2 ok → v3 ok · 핀 31) · 철학 P1 R-20261111-002 · 판단 T1 R-20261111-001 · 도전 7건 응답 · 결정 P4-BASE-POOL-GRADE-PATH-TAU-20261111 open · 텔레그램 1통(등록)"
-    },
-    {
-     "at": "2026-11-11T15:40:05+0900",
-     "text": "다음: P1S01 상설 판 판 1 = 11-11 15:12 등록(e26717ab7 · 사전등록 fd3ef649 · 핀 31 · 코어 v1 e70ac0af). 15:37 틱 scan = 3건 넣음(시드 P1S01_E2_C0 "
-    },
-    {
-     "at": "2026-11-11T16:06:31+0900",
-     "text": "다음: ★도훈 11-11 15:38 '파일럿부터'(L1-CHAIN-PILOT-FIRST-20261111) — P1S01 판 1 은 등록(e26717ab7 · fd3ef649)된 채 판 폴더 tick_hold(원 세션 15:"
-    },
-    {
-     "at": "2026-11-11T16:06:31+0900",
-     "text": "S1 → in_progress · J-006 결과: 원 세션 답('없음 — register 는 수급 계열 재계산 completed_at 뒤')은 15:02 공유 감사 기록 cef43e2bf(설계 README §10.8)에 있었고 Q 는 메시지 알림만 보다 놓친 채 15:12 등록(T3 C-20261111-022 수용). 15:37 틱 scan = 3건 넣음 · 측정 0(배리어) · 15:45 tick_hold. 판단 J-20261111-010 · 011(J-009 대체) · T3 R-20261111-003."
-    },
     {
      "at": "2026-11-11T16:09:27+0900",
      "text": "S1 → in_progress · 도훈 11-11 16:09 결정 P4-BASE-POOL-GRADE-PATH-TAU-20261111 = (나) 기저 자격 = 상설 판 통과만(권위 등급 = 참고 열) — 구현은 파일럿 세션의 코어 v2 P4 정정 묶음(next ⓐ ②)에서 코드 · CLAUDE.md 파이프라인 문구 · SKILL §0-1 ② · round_core README P4 절을 같은 날 맞춘다. 그 전까지 v1 코드엔 등급 경로가 남아 사슬 판 등록 보류."
@@ -813,6 +804,22 @@
     {
      "at": "2026-11-12T23:00:02+0900",
      "text": "11-12 23:3x 도훈 '아니 지금 시작해' — P1R03 초안 v1(daa0dc69 · tests 빈 목록) 작성 · 격리 점검 v1 · 철학 P1 · 판단 T1 동시 기동(백그라운드) · PIT 시험 파일 작성 중. 다음: 시험 파일 → 사양 tests 추가 → 초안 v2 → 변경분 점검 → reviewed → 판 폴더(tools/p1r03_dawn_measure.sh 포함) 커밋 → rc_register(run_tests = TRUE) → 등록 커밋 → 새벽 감시 셸 WMI 분리 실행. 측정은 자료 신선(밤 갱신 뒤 약 04:45) 전에는 관문이 막는다"
+    },
+    {
+     "at": "2026-11-12T23:38:22+0900",
+     "text": "다음: P1R03(팩터 가족 합성 15칸) — 격리 점검 v2(변경분 · 초안 v3 f6307548) 결과 ok 면: bash 04_Research/programs/_lib/round_core/round.sh 04_Rese"
+    },
+    {
+     "at": "2026-11-12T23:38:28+0900",
+     "text": "11-12 23:36 O2 단말 읽기 확인 통과 — qwMain 27152(11-12 00:26 기동 · 응답) · 창 qwMain · Item Lookup · 로그인 창 없음 · 종료 대화상자 없음 · Excel = qwMain 자식 34852 만 · 재시작 대기 키 없음(파일 이름 바꾸기 대기 58건은 표식 아님). P1R03 묶음 커밋 83086746a(32파일)."
+    },
+    {
+     "at": "2026-11-13T00:22:39+0900",
+     "text": "백그라운드: P1R03 새벽 측정 셸(tools/p1r03_dawn_measure.sh · WMI 분리 실행 00:22 · 창 04:30~06:00 · 18:00~22:00 · 대기 상한 40시간) → round.sh measure --now → 평가 연쇄 → 이정표 1통"
+    },
+    {
+     "at": "2026-11-13T00:22:40+0900",
+     "text": "다음: P1R03 등록 끝(75ac07e0c · prereg 05e3f053). ① 06:00 뒤 .cache/scheduler_logs/p1r03_dawn_measure_state.txt 확인 — '끝' 이면 result"
     }
    ]
   }
