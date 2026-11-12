@@ -59,7 +59,9 @@
 # 한도 문구 — 실측 표본: "You've reached your Fable limit"(09-07) · "You've hit your session limit ·
 #   resets 2am (Asia/Seoul)"(09-02·09-15) · 429 rate_limit_error. 문구가 한 종이 아니라 여기 하나로 모은다
 #   (충실구현 레인의 환경 실패 판정도 이 정규식을 쓴다 — 두 벌이면 한쪽만 고쳐진다).
-RF_LLM_LIMIT_RE="(reached|hit) your [A-Za-z0-9 .-]*limit|(session|usage) limit|manage usage credits|rate_limit_error|API Error: 429|resets [0-9]+(:[0-9]+)?(am|pm)"
+#   (11-12 추가) "You're out of usage credits. Switch to another model to continue." — Fable 크레딧 소진 새 문구. 옛 정규식이 몰라
+#   Opus 폴백 없이 no_engine 으로 오분류 → 재시도 3회 → 스킵리스트(2507.01964 · 2412.12516). 진단 = _supervision/superfan/components/replication_lane/20261112_2156_diagnosis.md
+RF_LLM_LIMIT_RE="(reached|hit) your [A-Za-z0-9 .-]*limit|(session|usage) limit|manage usage credits|rate_limit_error|API Error: 429|resets [0-9]+(:[0-9]+)?(am|pm)|out of usage credits|switch to another model"
 
 rf_llm_is_fable() {
   case "$(printf '%s' "${1:-}" | tr 'A-Z' 'a-z')" in
