@@ -41,7 +41,7 @@ $xml = @"
     <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
     <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
     <Enabled>true</Enabled>
-    <ExecutionTimeLimit>PT9H</ExecutionTimeLimit>
+    <ExecutionTimeLimit>PT20H</ExecutionTimeLimit>
     <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
     <StartWhenAvailable>true</StartWhenAvailable>
     <IdleSettings>

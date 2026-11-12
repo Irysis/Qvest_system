@@ -5,14 +5,27 @@
 
 **휴장일엔 쉰다**(도훈 11-06): 오늘이 주말 · KRX 휴장일(`06_Registry/krx_holidays.json`)이면 일보 · 메일 모두 건너뛴다(rc 0). 직전 거래일 마감분은 다음 거래일 04:00 에 만들어 보낸다 — 금요일 마감 → 월요일 아침.
 
-**데이터 준비 = 둘 다 만족**: (a) 밤 리프레시 잠금 `/tmp/qm_daily_refresh.lock` 이 없다 (b) 벤치(퀀티) 최신일 ≥ KRX 직전 거래일
-(`02_Infrastructure/data/krx_holidays.py currency` — 부팅 · ensure_data_current 와 같은 판정). (b) 가 없으면 04:00 에 리프레시가 아직 시작 전일 때
-묵은 데이터로 일보가 나간다. 60초 간격 · 상한 480분(12:00) — 넘기면 rc 7 로 그날은 건너뛴다(묵은 데이터로 일보를 내지 않는다).
+**데이터 준비 = 셋 다 만족**: (a) 밤 리프레시 잠금 `/tmp/qm_daily_refresh.lock` 이 없다 (b) 벤치(퀀티) 최신일 ≥ KRX 직전 거래일
+(`02_Infrastructure/data/krx_holidays.py currency` — 부팅 · ensure_data_current 와 같은 판정) (c) RAWDATA 최신일 ≥ 직전 거래일. (b) 가 없으면 04:00 에 리프레시가 아직 시작 전일 때
+묵은 데이터로 일보가 나간다.
+
+**늦게 들어와도 감지되면 생성(도훈 11-13)**: 60초 간격으로 **마감 23:30**(`STRESS_DEADLINE` · 다음 밤 리프레시 전)까지 감시한다.
+- 준비되는 순간 일보를 만든다.
+- 그 뒤에도 입력 캐시(RAWDATA · investor_wide · benchmark · indices)의 최신일이 바뀌면 같은 기준일 일보를 다시 만든다(예: 외국인 수급이 늦게 오는 날).
+- 외국인 수급까지 직전 거래일에 닿으면 끝낸다.
+- 메일은 기준일당 1통(`mail_sent.json`)이라 다시 만들어도 중복 발송하지 않는다.
+- 마감까지 한 번도 준비되지 않으면 rc 7 로 그날은 건너뛴다(묵은 데이터로 일보를 내지 않는다).
+- '직전 거래일'은 오늘 이전 마지막 거래일이라 하루 안에서 바뀌지 않는다.
+
+**★실행 상한**:
+- 실행기는 시작할 때 예약 작업의 `ExecutionTimeLimit` 을 읽고, 감시 마감을 '상한 − 15분'으로 당긴다(체인 도중 강제 종료 방지).
+- `make_task_xml.ps1` 은 PT20H 로 바꿨다. 다만 11-13 현재 등록본은 PT9H12M 이라 04:00 실행의 실제 마감은 약 12:57 이다.
+- 23:30 까지 늘리려면 아래 §설치 한 줄을 다시 실행한다(관리자 PowerShell). 도구 세션에서 `Set-ScheduledTask` 로 바꾸면 Access denied 다.
 
 | 파일 | 역할 |
 |---|---|
 | `install_task.ps1` | **한 줄 설치**(노트북 · 메인 공통) — 아래 둘을 차례로 부르고 등록 상태 · 다음 실행 시각을 보여 준다. `-WhatIf` · `-RunNow` · `-Time` |
-| `make_task_xml.ps1` | 이 기계 경로로 원본 XML 생성(`%OneDrive%\Qvest_sync\stress_daily_task_<컴퓨터 이름>` · 기계마다 사용자 폴더 · QM_ROOT 가 달라 저장소에 고정하지 않는다) — 매일 04:00 · 실행 상한 9시간 · 놓친 실행은 켜지는 대로 |
+| `make_task_xml.ps1` | 이 기계 경로로 원본 XML 생성(`%OneDrive%\Qvest_sync\stress_daily_task_<컴퓨터 이름>` · 기계마다 사용자 폴더 · QM_ROOT 가 달라 저장소에 고정하지 않는다) — 매일 04:00 · 실행 상한 20시간(11-13 · 구 9시간) · 놓친 실행은 켜지는 대로 |
 | `Qvest_StressDaily.bat` | 작업 진입점(Git Bash → 아래 실행기 · ASCII 전용 · 자기 위치 기준 경로) · 로그 `.cache/scheduler_logs/stress_daily.log` |
 | `run_daily_stress_task.sh` | 실행기 — 데이터 준비 대기 → 체인(수급 → 지수 → 차트 → 일보 PDF · 엑셀 → 메일) → rc 전달 · 로그 `daily/logs/task_*.log` |
 | `send_daily_mail.py` · `mail_config.json` | 메일 단계 — 아래 §메일 |
