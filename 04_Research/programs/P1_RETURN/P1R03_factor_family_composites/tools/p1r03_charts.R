@@ -202,7 +202,7 @@ if (nrow(D1)) {
     labs(title = "P1 자격 지도 — 카테고리 합성 엔진 15",
          subtitle = paste0(RULE_LINE, "\nIS = 실효 시작 ~ ", format(TAU), " · 통과 ", sum(D1$verdict_lab == "통과"), " / ", nrow(D1), partial_note),
          x = "IS 상승 포착률(강세 국면 중앙값 · KOSPI200 대비)", y = "IS β-통제 알파 t(NW)",
-         caption = "출처: results/verdict.json(round_core v3 판정 표) · 문턱 = 등록본 prereg.json rules_resolved\n표준 구성 = 롱온리 25종 등가중 · 월말 신호 · 15bps · 20일 평균 거래대금 ≥ 2억 원 · 전 종목 위생 유니버스") +
+         caption = "출처: results/verdict.json(round_core v3 판정 표) · 문턱 = 등록본 prereg.json rules_resolved\n표준 구성 = 롱온리 25종 동일가중 · 월말 신호 · 15bps · 20일 평균 거래대금 ≥ 2억 원 · 전 종목 위생 유니버스") +
     th() + theme(legend.box = "vertical", legend.spacing.y = unit(2, "pt"))
   add(save_png(g, "01_qualification_map.png", 7.0),
       sprintf("자격 지도 — IS 상승 포착률 × β-통제 알파 t · 문턱 t ≥ %s · 상승 포착률 ≥ %s · 통과 %d/%d", f2(TH_T, 1), f2(TH_UC, 2), sum(D1$verdict_lab == "통과"), nrow(D1)))
