@@ -1,6 +1,6 @@
 {
  "schema": "q_judgment_ledger_v1",
- "updated_at": "2026-11-11T23:08:08+0900",
+ "updated_at": "2026-11-12T22:23:51+0900",
  "judgments": [
   {
    "id": "J-20261016-001",
@@ -2020,8 +2020,10 @@
    ],
    "expectation": "최종 회귀 묶음(셀 엔진 실행 시험 23종)이 교체 전 기준선과 같은 통과 수 · v3 시험에서 새 관문 양방향 초록 · 어긋나면 해당 교체분만 되돌린다",
    "confidence": 0.8,
-   "status": "open",
-   "reviews": [],
+   "status": "reviewed",
+   "reviews": [
+    "R-20261111-011"
+   ],
    "supersedes": null,
    "superseded_by": null
   },
@@ -2043,6 +2045,229 @@
    ],
    "expectation": "등재 뒤 P4 · P3 가 이 방법들을 쓸 때 진단 줄(skrp fallback · trp root · iso 진단)이 칸 로그에 남는다 · 위상 위험 패리티에서 한 종목 집중이 헌장의 실패 형태에 닿으면 그 칸의 행동 카드에서 드러난다 · 등방 상관을 MVO 추정기 여섯 가운데서 고르는 선택은 형제 6 스윕으로 세어진다",
    "confidence": 0.75,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261111-034",
+   "at": "2026-11-11T23:32:07+0900",
+   "op": "OP-20261110-V102-LADDER",
+   "kind": "design",
+   "summary": "[11-11 23:3x] 상설 판 2(P1S02 · 코어 v3) 등록 설계 — 판정 규칙 · 문턱 · 표준 구성 생성 함수는 판 1 그대로(생성 함수 핀 80f8311f 동일) · 달라지는 것: ① 판정 경로(달 스냅 · 측정 시작일 전달 · 캐시 판 v3 · 시드 엔진 스케줄 — S1 · S2 커밋 64ee89013) ② 입구 사유 셋(portfolio_only_base · breadth_insufficient · base_off_month_grid) ③ 측정 관문(base_alignment 필수 · base_kind = factors · 월말 격자 밖 = 판정 안 함) ④ 판정 지표 계산 예외는 verdict 로 굳히지 않고 eval_failed(T3 C-049) ⑤ rejudge_prior_editions = true(판 1 판정 0건) · 최신 판 우선 ⑥ 시드 E2 · E3 재측정(기저 창 2004-07~ · 무가산 264) ⑦ 원장 보는 창 열 확장은 판 2 에서도 미집행(공시) ⑧ 등록 뒤 tick_hold 를 두고 첫 판정은 손으로(측정 → 판정 전 점검 → judge)",
+   "rationale": "판 1 첫 실측정이 드러낸 것은 엔진이 아니라 측정 경로 불일치 셋이고 셋 다 판정 경로 변경이라 R2 로 새 판이 필요하다. 규칙 · 문턱을 그대로 두는 이유 = 판 2 의 목적이 측정 경로 정합이지 자격 기준 재설계가 아니기 때문(결과를 본 적 없는 규칙 변경을 섞지 않는다). ④는 판정 절차 변경이라 T4 대상 — v1 · v2 는 지표 계산 예외를 미시험 판정으로 굳혀 다시 재지 못하게 했고 칸 평가 예외(eval_failed)와 비대칭이었다. ⑦을 미룬 이유 = 판정 경로가 실자료에서 아직 한 번도 끝까지 지나지 않았고 열 확장은 진단 패킷 판독을 판정 기록에 싣는 코어 작업이라 범위를 넓힌다 — 완화책(통과 즉시 철학 P2 판독 · 사슬 등록 전 필수)은 판 1 과 같다. ⑧ = 판정 경로 첫 통과에서 인프라 결함이 판정으로 굳지 않게(판단 J-20261111-019 승계).",
+   "framework_refs": [
+    "research-program SKILL 0-1 ④ 상설 판 · 2-0 등록 조건 · lean-loop.md 라운드 1 사전등록 · superfan_protocol 11 · 13 · 설계 README 6 · 8"
+   ],
+   "evidence": [
+    "04_Research/programs/P1_RETURN/P1S02_standing_qualification/{round_spec.json,DESIGN.md,standing_rules.md,prereg_draft.md} · 코어 v3 커밋 6e43e1158 · 출시 1b1bda18d · 입구 미리보기(dry-run · 사유 코드만) 51 디렉터리 통과 0 · v3 시험 68/0 · 33/0 · 8/0"
+   ],
+   "alternatives": [
+    "(가) 판 2 에서 원장 열 확장까지 — 범위 확대 · 첫 판정이 늦어진다 (나) 판 1 을 고쳐 쓴다 — R2 위반 (다) 시드 없이 등록 — 판정 경로 첫 통과가 레인 새 엔진을 기다린다(지금 입구 통과 0)"
+   ],
+   "expectation": "격리 교차 점검 ok · 철학 P1 · 판단 T1 도전에 응답 뒤 등록 · 시드 2건이 판정 전 점검 10항목을 통과해 판정까지 간다 · 어긋나면 판정하지 않고 멈춰 보고",
+   "confidence": 0.75,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261111-009",
+    "R-20261111-010",
+    "R-20261111-011"
+   ],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261112-001",
+   "at": "2026-11-12T00:00:38+0900",
+   "op": "OP-20261110-V102-LADDER",
+   "kind": "stop_continue",
+   "summary": "[11-12 00:0x] 판 2 등록을 리허설 뒤로 미룬다 — 초안 v1 리뷰 셋(격리 교차 점검 revise · 필수 2 / 철학 P1 R-20261111-009 도전 4 / 판단 T1 · T4 R-20261111-010 · 011 도전 3) 전부 수용 · 집행은 opus 서브에이전트 둘: ① 리뷰 반영(사양 v2 — rejudge false · 핀 3 추가 · 시험 3 추가 · 결론 범위 공시 보강 · tick_hold 를 등록 전에 커밋 · 감시 셸은 창 확인 → 레인 측정 0 → 측정(임대 선점 없음)) + 등록 전 리허설(격리 · 실제 워커 · 싼 월말 격자 엔진 · 밤 체인 뒤) + 초안 v2(rehearsal 칸) ② S3 레인 출력 계약 후보판(교체는 레인 빈틈에 세션이)",
+   "rationale": "T1 C-085: 판정 경로는 실자료에서 한 번도 끝까지 지나지 않았는데 그 첫 통과를 GPU 몇 시간짜리 DNN 시드에 걸면 결함 하나가 새 판 + 재측정이 된다 — 싼 엔진의 격리 리허설이 같은 정보를 임계 경로 비용 없이 준다(레인이 THGNN 을 재는 동안). C-086: 시드는 같은 계보라 첫 사슬의 단독 기저가 될 수 없고 사다리의 공급 병목은 레인이다 — 시드 측정이 레인 GPU 슬롯을 붙잡지 않게 하고, 새 레인 엔진이 점수 패널을 내도록 S3 를 앞당긴다. 격리 점검 F-1: 등록 직후 :37 무인 틱이 판정 전 점검 없이 측정 · 판정 · 발송까지 갈 수 있었다. 세션 맥락 87% · 주간 Fable 83% 라 집행을 opus 서브에이전트로 넘겨 이 세션의 호출 수를 줄인다(결정과 검토는 이 세션).",
+   "framework_refs": [
+    "superfan_protocol 응답 규약 · feedback-preflight-before-expensive-runs · feedback-check-weekly-usage-before-workflows · lean-loop.md v10.2 2 새 계보 · 5 막지 않는다"
+   ],
+   "evidence": [
+    "04_Research/programs/P1_RETURN/P1S02_standing_qualification/prereg_draft_review_v1.md · 04_Research/programs/_supervision/superfan/philosophy/20261111_2344_P1_P1S02.md · 04_Research/programs/_supervision/superfan/20261111_2349_T1_T4.md · 사용량 판독(Fable 83% · 맥락 87%)"
+   ],
+   "alternatives": [
+    "(가) 지적만 문장으로 반영하고 오늘 밤 등록 — 리허설 없이 DNN 시드가 첫 통과 (나) 전부 내일 새 세션으로 — 밤 시간(레인이 THGNN 을 재는 동안)을 버린다"
+   ],
+   "expectation": "리허설이 판정 경로를 끝까지 지나거나 결함을 재현법과 함께 낸다 · 초안 v2 가 변경분 점검 ok 를 받으면 등록 · 어긋나면(코어 결함) 새 코어 판 여부를 정한다",
+   "confidence": 0.8,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261112-002",
+   "at": "2026-11-12T21:11:32+0900",
+   "op": "OP-20261110-V102-LADDER",
+   "kind": "ops",
+   "summary": "[11-12 21:1x] 판 2(P1S02) 구축 인수 — 원 세션 local_d1e1cc26 정지(11-12 00:16) · 서브에이전트 둘(① 리뷰 반영 · 리허설 · 초안 v2 / ② S3 레인 출력 계약 후보판) 미완 → 이 세션 local_9fa47fd9 가 이어받는다(도훈 선택 '이 세션이 이어받기')",
+   "rationale": "원 세션 isRunning=false · 마지막 활동 11-12 00:16 · 재기동 뒤 0턴 종료(작업 알림: 백그라운드 에이전트 2개 미완) · 판 2 를 쥔 실행 세션 없음. 같은 일을 두 세션이 쓰지 않도록(11-11 사고) 소유를 도훈께 여쭈었고 원 세션 재개(맥락 1,431 메시지 재독)보다 새 세션 인수가 싸다",
+   "framework_refs": [
+    "feedback-check-resume-journal-before-opening-session-for-inflight-work-20261111 · BUILD_EDITION2.md 인계 절 · J-20261112-001"
+   ],
+   "evidence": [
+    "list_sessions(local_d1e1cc26 isRunning false · lastActivity 2026-11-11T15:16Z) · list_events 마지막 = 작업 알림 stopped(aac077097dfed8290 · a05db63eaa67f4da3) · ① 전사 마지막 도구 호출 = rehearsal/engine/RP_REHEARSAL_MOM121/engine.R 쓰기(15:09:54Z) · ② 산출 = staging/s3(00:08~00:10)"
+   ],
+   "alternatives": [
+    "원 세션 재개(도훈 비선택 · 맥락 재독 비용 큼)"
+   ],
+   "expectation": "1부 잔여 대조 → 등록 전 리허설 → 초안 v2 → 변경분 격리 점검 ok → reviewed → 판 폴더 커밋 → register → scan → 시드 감시 셸(11-13 낮 창) · S3 은 판 2 등록 뒤",
+   "confidence": 0.9,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261112-001"
+   ],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261112-003",
+   "at": "2026-11-12T21:27:31+0900",
+   "op": "OP-20261110-V102-LADDER",
+   "kind": "design",
+   "summary": "[11-12 21:2x] 판 2 등록 전 리허설(T1 C-20261111-085) 설계 — 격리(RC_SA_ROOT · 등록부 사본 · 판단 원장 스텁 · 리뷰 뿌리)로 판 2 사양을 복제한 리허설 판 P1SR02_rehearsal(칸 1 = 싼 CPU 12-1 모멘텀 · reference)을 실제 셀 워커 · 실제 자료 · 실제 지문 · 실제 GPU 관문으로 S0~S9 지난다. 실제 신선도 관문이 낡음(RAWDATA 11-10 · 기준일 11-11)이라 S4a = 실제 관문 음성 대조(data_stale · 원장 무기록) 뒤 S4b = 신선도만 주입해 측정(배선 시험 · 요약에 기록)",
+   "rationale": "11-12 밤 갱신이 OHLCVS 적재 거부(not_advanced) + 로그오프 중단(0xC000026B)으로 RAWDATA 를 못 올렸다. 브리프 조건 'fresh-check 통과'를 기다리면 리허설이 11-13 아침 체인 뒤로 밀리고 시드 측정 창(08:20~11:45)과 겹친다. 리허설의 목적은 배선(경로가 끝까지 지나는가)이라 하루 낡은 자료가 결론을 바꾸지 않고, 실제 관문은 S4a 가 음성 대조로 따로 본다. 판 2 의 실제 시드 측정은 주입 없이 실제 관문을 지난다",
+   "framework_refs": [
+    "BUILD_EDITION2.md S5 · J-20261112-001 · 브리프 2부 '실행 조건'"
+   ],
+   "evidence": [
+    "round.sh - fresh-check = stale · 기준일 2026-11-11 · 낡음 rawdata · daily_refresh.log 11-12 00:03 [incr_ohlcvs] GATE_REFUSED not_advanced · dofork 0xC000026B · RAWDATA.parquet mtime 11-11 11:29"
+   ],
+   "alternatives": [
+    "리허설을 11-13 아침 체인 뒤로 미룬다(시드 창과 겹침 · 등록 지연) / 신선도 주입 없이 S4a 만(측정 · 판정 경로 미검증)"
+   ],
+   "expectation": "S4a pass(data_stale · 원장 무기록) · S4b 이하 pass 면 초안 v2 rehearsal 필드에 실린다 · 격리 교차 점검 v2 가 주입이 리허설 밖으로 새지 않음을 확인",
+   "confidence": 0.8,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261112-001"
+   ],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261112-004",
+   "at": "2026-11-12T21:43:29+0900",
+   "op": "OP-20261110-V102-LADDER",
+   "kind": "ops",
+   "summary": "[11-12 21:4x] 판 2 진행 상황 텔레그램 주기 보고 설치(도훈 지시 '텔레 주기적으로 보내') — 세션 밖 반복 셸이 30분마다 상태(등록 · 원장 개수 · 감시 셸 · 데이터 신선도 · 레인 GPU)를 읽어 바뀌면 1통(무음) · 2시간 무변화면 1통(무음) · 이정표 변화 = 푸시 · 판정 끝 = 마지막 1통",
+   "rationale": "도훈이 시간 간격을 정하지 않아 기본값을 골랐다: 확인 30분(감시 셸 대기 갱신 10분 · 레인 틱 8분보다 느리게 — 같은 상태 반복 발송을 피한다) · 무변화 심장박동 2시간(밤새 무음 4통 안팎) · 이정표는 푸시(§0.4 푸시 정책의 '판정 변화 · 실패'와 같은 결). 1계층 발송 정본 prep_send 를 쓰고 성과 수치는 싣지 않는다(판정 결과는 상설 판 보고가 따로 보낸다). 세션이 닫혀도 살아야 해서 WMI 분리 실행",
+   "framework_refs": [
+    "qvest-telegram SKILL §0 · §0.4 · feedback-telegram-at-each-improvement-milestone-20261013"
+   ],
+   "evidence": [
+    "첫 1통 21:42 ok=TRUE(푸시) · 분리 실행 pid 39390 · 첫 확인 21:43 '바뀐 것 없음'(중복 없음) · 상태 .cache/scheduler_logs/p1s02_tg_progress_state.json"
+   ],
+   "alternatives": [
+    "세션 안 주기 깨우기(세션이 닫히면 멈춤) / 감시 셸에 발송을 넣기(검토 중인 도구 변경 · 재점검 필요) / 이정표 때만(도훈 '주기적' 지시와 어긋남)"
+   ],
+   "expectation": "오늘 밤 = 점검 v2 · 등록 · 시드 넣기 · 감시 셸 기동 이정표 푸시 · 밤새 무음 심장박동 · 내일 낮 창에서 측정 시작 푸시",
+   "confidence": 0.85,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261112-001"
+   ],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261112-005",
+   "at": "2026-11-12T21:52:30+0900",
+   "op": "OP-20261110-V102-LADDER",
+   "kind": "harness_change",
+   "summary": "[11-12 22시대] 도훈 '테스트 좀 그만하자' — 시험 재실행 중단: 판 2 격리 점검 v2 는 시험 7종 재실행 없이 변경분 대조만(점검자에게 전달) · 판 2 등록은 rc_register(run_tests = FALSE)로 하고 근거 = 점검 v1 §4 #8 실행 결과(7종 fail 0 · HEAD 1b1bda18d) + 핀 불일치 0(판정 경로 파일이 그때와 같다) · 팩터 척추 F0 은 시험 묶음(§3-7 1~7 · 돌연변이) 없이 재현 · 정적 · 3개월 동작 확인만",
+   "rationale": "도훈 명시 지시(같은 턴 '최대한 빨리 처리하고 본격적인 1계층 리서치 루프 시작해'). 시험 결과의 근거는 남긴다: 판 2 판정 경로 파일 md5 는 v1 점검이 시험을 돌린 때와 같고(핀 35 불일치 0 · 더한 3개는 내용 불변 파일), 리허설이 같은 경로를 실자료로 끝까지 지났다. F0 엔진의 PIT 는 구조(달마다 결합용 뷰 as-of 하나만 읽는다 · 방향 상수 · 저장본 직접 읽기 없음)와 측정 때 러너 감사(lookahead_detector · audit_bt_result) · A 후보 때 Judge 로 담보한다",
+   "framework_refs": [
+    "도훈 11-12 '테스트 좀 그만하자' · register.R:121-127(run_tests) · 설계 factor_spine §3-7"
+   ],
+   "evidence": [
+    "점검 v1 prereg_draft_review_v1.md §4 #8 · 초안 v2 핀 불일치 0 · 리허설 run 20261112_212912"
+   ],
+   "alternatives": [
+    "시험을 그대로 돌린다(도훈 지시와 어긋남) / 격리 점검까지 건너뛴다(등록 조건 ① · 사전등록 규율 — 도훈이 말한 범위 밖)"
+   ],
+   "expectation": "점검 v2 가 빨리 끝나 오늘 밤 등록 · F0 이 시험 없이 오늘 밤~내일 오전에 끝난다 · 시험 생략으로 놓친 결함은 측정(판 2 시드 · P1R03)에서 드러나면 그 칸만 다시 잰다",
+   "confidence": 0.75,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261112-001"
+   ],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261112-006",
+   "at": "2026-11-12T21:52:31+0900",
+   "op": "OP-20261110-V102-LADDER",
+   "kind": "design",
+   "summary": "[11-12 22시대] 팩터 척추 F0 착수(결정 FACTOR-SPINE-STAGE1-20261112) — 구성원 규칙 6(중복 군집 하나만)을 v0 에서 '정의상 별칭만 뺀다'로 바꿨다 · 상관 군집(통계 측정)은 구성원 규칙에 쓰지 않는다 · F0-2 재스캔 생략",
+   "rationale": "설계 §3-2 규칙 6 은 등록부 dedup 군집(08-02 · 전기간 신호 상관 스캔)으로 구성원을 고른다. pit.md C1 은 '팩터를 전기간 IC · ic_bad · 상관으로 고르면 C1/C14 대상'이라 명시한다 — 시점 t 구성원을 미래 통계로 정하는 셈이다. 정의상 별칭(같은 식 · 원천)은 통계가 아니라 정의이므로 뺀다. 판별 불가면 포함(가족 평균에서 중복은 그 신호 가중이 조금 늘 뿐 PIT 문제가 아니다). PIT 가 설계보다 우선이라 도훈께 묻지 않고 더 엄격한 쪽으로 고쳤다",
+   "framework_refs": [
+    "pit.md C1 · 설계 factor_spine_design_20261111 §3-2 규칙 6 · §7 F0-2"
+   ],
+   "evidence": [
+    "factor_dup_scan.R 머리 주석(signal basis = 월별 횡단면 상관 · 운영 기본 load_month_factors) · 설계 §3-2 '중복 군집 표는 2026-08-02 측정'"
+   ],
+   "alternatives": [
+    "설계대로 08-02 군집 사용(C1 의심) / F0-2 를 as-of 로 다시 설계(시간 · 범위 큼)"
+   ],
+   "expectation": "가족별 구성원 수가 초안 275 보다 조금 늘어난다 · 결과는 FC_README.md · own_spec rule_notes 에 기록",
+   "confidence": 0.8,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261112-001"
+   ],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261112-007",
+   "at": "2026-11-12T22:02:27+0900",
+   "op": "OP-20261110-V102-LADDER",
+   "kind": "round_selection",
+   "summary": "[11-12 22:0x] 상설 자격 판 2(P1S02_standing_qualification) 등록 · 시드 2 넣음 · 감시 셸 세션 밖 기동 — 사전등록 65021bbd(초안 v2 b3f180ff · 점검 v2 ok · 리허설 ok · 철학 P1 R-20261111-009) · 등록 커밋 30fbabd1e · scan = 레인 51 · 입구 통과 0 · 시드 2 · 감시 셸(R-1 follow 패치) = 낮 창 08:20~11:45 · 레인 측정 0 · 신선 · 메모리 ≥ 16 GB 일 때 E2 → E3",
+   "rationale": "사다리 루프 ④ 상설 판 — 판 1 은 셀 경로 결함(시작일 미주입 · 비중을 점수로 읽음)으로 판정 0건 보류였고 판 2 가 그 정합 뒤의 판이다. 등록 조건은 코어가 기계로 봤다(시험 재실행만 도훈 지시로 생략). 시드 측정은 판정 경로를 실 DNN 으로 처음 지나는 기준점이고, 그 판정 뒤 P1R03(팩터 척추 15칸)을 잰다(결정 FACTOR-SPINE-STAGE1-20261112 D6 가)",
+   "framework_refs": [
+    "lean-loop.md v10.2 ④ · research-program SKILL §0-1 · BUILD_EDITION2.md S5 · S6"
+   ],
+   "evidence": [
+    "prereg md5 65021bbd · 커밋 4269ea6b5 · 30fbabd1e · scan 원장 enqueue 2 · 감시 셸 로그 .cache/scheduler_logs/p1s02_seed_watch_20261112_220159.log"
+   ],
+   "alternatives": [
+    "등록을 시드 판정 창 직전으로 미룬다(이득 없음 · tick_hold 로 무인 틱은 이미 막혀 있다)"
+   ],
+   "expectation": "11-13 낮 창에 E2 → E3 측정(자료가 오늘 밤 갱신으로 신선해지고 레인 GPU 가 빌 때) → 판정 전 점검 → judge → 보고 · 레인 엔진 입구 통과는 S3(레인 출력 계약) · 인계 기록 정비 전까지 0 이 이어진다",
+   "confidence": 0.8,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261112-001"
+   ],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261112-008",
+   "at": "2026-11-12T22:12:23+0900",
+   "op": "OP-20261110-V102-LADDER",
+   "kind": "ops",
+   "summary": "[11-12 22:3x] 고아 Excel 자동화 인스턴스(pid 23220 · 02:48:15 · /automation -Embedding · 부모 svchost DcomLaunch · Consensus_update.xlsx 미저장 · 4.4 GB) 저장 없이 종료 + 잔해 2개(잠금 ~$ 은 종료 때 자동 삭제 · 0바이트 AD127F00 삭제) — 구성요소 Superfan daily_refresh O1",
+   "rationale": "11-12 새벽 자가 복구가 상한(9000s)으로 끝나며 COM Excel 을 못 죽여 남긴 것이다(ensure_data_current.sh:297-301). 오늘 밤 00:03 정기 갱신의 Consensus 차례에서 같은 파일을 열다 읽기 전용 실패 · 대화상자 멈춤이 날 수 있고, 멈추면 RAWDATA 재적재가 영영 안 돌아 내일 시드 측정 관문이 막힌다. 사람이 연 Excel 이 아님을 명령줄 · 부모 · 생성 시각으로 재확인했고(pid 재사용 대비) 원본 시각 · 크기 불변 · 단독 열기 성공을 확인했다",
+   "framework_refs": [
+    "04_Research/programs/_supervision/superfan/components/daily_refresh/20261112_2201_diagnosis.md §7 O1"
+   ],
+   "evidence": [
+    "Win32_Process 23220 created 2026-11-12 02:48:15 · cmd /automation -Embedding · parent 1852 svchost · 종료 뒤 Consensus_update.xlsx 2026-11-11 13:07:51 · 657189724 B · 가용 메모리 15 GB · qwMain 27152 생존"
+   ],
+   "alternatives": [
+    "그대로 두고 오늘 밤 결과를 본다(실패 시 측정 창 안 복구 어려움)"
+   ],
+   "expectation": "오늘 밤 Consensus 단계가 막히지 않는다 · 성공하면 RAWDATA 11-12 가 약 04:30~04:45 에 실린다",
+   "confidence": 0.85,
    "status": "open",
    "reviews": [],
    "supersedes": null,
@@ -2687,6 +2912,95 @@
     "C-20261111-068",
     "C-20261111-069",
     "C-20261111-070"
+   ]
+  },
+  {
+   "id": "R-20261111-009",
+   "at": "2026-11-11T23:49:51+0900",
+   "role": "philosophy",
+   "trigger": "P1",
+   "scope": [
+    "J-20261111-034"
+   ],
+   "file": "04_Research/programs/_supervision/superfan/philosophy/20261111_2344_P1_P1S02.md",
+   "round": "P1S02_standing_qualification",
+   "direction": null,
+   "challenges": [
+    "C-20261111-071",
+    "C-20261111-072",
+    "C-20261111-073",
+    "C-20261111-074",
+    "C-20261111-075",
+    "C-20261111-076",
+    "C-20261111-077",
+    "C-20261111-078"
+   ]
+  },
+  {
+   "id": "R-20261111-010",
+   "at": "2026-11-11T23:53:26+0900",
+   "role": "judgment",
+   "trigger": "T1",
+   "scope": [
+    "J-20261111-034"
+   ],
+   "file": "04_Research/programs/_supervision/superfan/20261111_2349_T1_T4.md",
+   "round": "P1S02_standing_qualification",
+   "direction": null,
+   "challenges": [
+    "C-20261111-085",
+    "C-20261111-086",
+    "C-20261111-087",
+    "C-20261111-088"
+   ]
+  },
+  {
+   "id": "R-20261111-011",
+   "at": "2026-11-11T23:53:26+0900",
+   "role": "judgment",
+   "trigger": "T4",
+   "scope": [
+    "J-20261111-032",
+    "J-20261111-034"
+   ],
+   "file": "04_Research/programs/_supervision/superfan/20261111_2349_T1_T4.md",
+   "round": null,
+   "direction": null,
+   "challenges": [
+    "C-20261111-079",
+    "C-20261111-080",
+    "C-20261111-081",
+    "C-20261111-082",
+    "C-20261111-083",
+    "C-20261111-084"
+   ]
+  },
+  {
+   "id": "R-20261112-001",
+   "at": "2026-11-12T22:21:02+0900",
+   "role": "judgment",
+   "trigger": "T1",
+   "scope": [
+    "J-20261112-002",
+    "J-20261112-003",
+    "J-20261112-004",
+    "J-20261112-005",
+    "J-20261112-006",
+    "J-20261112-007"
+   ],
+   "file": "04_Research/programs/_supervision/superfan/20261112_2218_T1.md",
+   "round": "P1S02_standing_qualification",
+   "direction": null,
+   "challenges": [
+    "C-20261112-001",
+    "C-20261112-002",
+    "C-20261112-003",
+    "C-20261112-004",
+    "C-20261112-005",
+    "C-20261112-006",
+    "C-20261112-007",
+    "C-20261112-008",
+    "C-20261112-009"
    ]
   }
  ],
@@ -7833,8 +8147,9 @@
      "change": "판 2 구축 세션(local_d1e1cc26 · 소유)에 (a) 권고 + (b) 임시 규칙을 전달해 판 2 변경 목록에 올리게 함 · 재개 저널 OP-20261110-V102-LADDER 에 기록 · 공유 노트 인계 메모 갱신. 코어 변경 자체는 판 2 세션이 한다(이 세션은 마감 · 코어 무접촉)."
     }
    ],
-   "outcome": null,
-   "outcome_note": null
+   "outcome": "vindicated",
+   "outcome_note": "v3 시험 J5(test_round_core_v3.R:354-360) — 새 분기를 끈 돌연변이(= v1 · v2 동작)에서 같은 입력이 자격 NA verdict 로 굳어 판정 대기 · 측정 대기 둘 다 아니게 된다(v2 결함 재현). 수리는 v3 rc_standing_judge eval_failed 분기(standing.R:941-955)",
+   "outcome_at": "2026-11-11T23:53:29+0900"
   },
   {
    "id": "C-20261111-050",
@@ -8097,8 +8412,9 @@
      "change": "rf_base_align.R 진단에 n_offcal · first_engine_date · last_engine_date 추가(단위 시험 T10 · 원자 교체 23:00 md5 e9b28528). 코어 v3: 입구 사유 base_off_month_grid(레인 점수 패널의 보는 창에 한 달 2개 이상 신호일) + 측정 관문(n_superseded > 0 또는 n_offcal > 0 = 판정하지 않는다 · 모수 없음) — 구현 중(v3 출시 전 시험 양방향)."
     }
    ],
-   "outcome": null,
-   "outcome_note": null
+   "outcome": "vindicated",
+   "outcome_note": "BUILD_EDITION2.md:153 실자료 census — n_superseded > 0 운영 엔진(주간 1810.08384 · 2604.16773 · 일간 2601.10732)이 실재했고, v3 가 입구 base_off_month_grid · 측정 관문(standing.R rc_standing_base_alignment)으로 판정에서 뺀다(시험 B1g · M12 · M13)",
+   "outcome_at": "2026-11-11T23:53:29+0900"
   },
   {
    "id": "C-20261111-062",
@@ -8286,6 +8602,669 @@
    "claim": "지난 논쟁 — C-20261111-041(이월 + 신고 주기 만료 형식 고정 권고)은 측정 전 달 스냅으로 대체됐다. 모수 0 · 비수혜 엔진 비트 동일 기준이라 내 형식보다 낫다. 주간 엔진 근사 지적은 README §6-3 에 반영 · 기계 판독은 C-20261111-061 몫. 조치 없음.",
    "evidence": [
     "04_Research/programs/_supervision/superfan/20261111_2249_T4.md N5"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261111-071",
+   "at": "2026-11-11T23:51:39+0900",
+   "review": "R-20261111-009",
+   "target": "J-20261111-034",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "portfolio_only_base · breadth_insufficient 는 판 1 리뷰 C-20261111-013 의 급한 경로를 입구에서 닫는다 — 비중을 점수로 읽은 표준 구성(엔진이 고른 좁은 보유 전수 등가중)에서 집중 · 숨은 현금이 엔진의 성질처럼 판정까지 가는 형태(측정 무효보다 나쁘다 · DESIGN §4)를 성과를 읽지 않고 뺀다. 헌장 §4 집중 · 현금 기계 · 빈칸 1 의 경로를 구조로 막는다.",
+   "evidence": [
+    "04_Research/programs/_supervision/superfan/philosophy/20261111_2344_P1_P1S02.md",
+    "04_Research/programs/P1_RETURN/P1S02_standing_qualification/standing_rules.md §3",
+    "04_Research/programs/P1_RETURN/P1S02_standing_qualification/DESIGN.md §4"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261111-072",
+   "at": "2026-11-11T23:51:39+0900",
+   "review": "R-20261111-009",
+   "target": "J-20261111-034",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "base_off_month_grid 와 측정 관문(정합 진단 필수 · 기저 = 점수 패널 · 월말 격자 밖 신호 = 판정 안 함)은 축 밖 근사(월말 표본으로 잰 주간 · 일간 신호)를 자격 판정으로 쓰지 않는다 — 헌장 원칙 7(맞춘 곡선 불인정) · INV-7(고정 축 완화 금지) · 측정 축 D16(주간 신호면 주간 리밸)과 같은 말이다.",
+   "evidence": [
+    "04_Research/programs/_supervision/superfan/philosophy/20261111_2344_P1_P1S02.md",
+    "04_Research/programs/P1_RETURN/P1S02_standing_qualification/standing_rules.md §3",
+    "04_Research/programs/P1_RETURN/P1S02_standing_qualification/round_spec.json:138"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261111-073",
+   "at": "2026-11-11T23:51:39+0900",
+   "review": "R-20261111-009",
+   "target": "J-20261111-034",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "판정 규칙 · 문턱 불변이 맞다 — 결과를 본 시드(E2 · E3)가 있는 판에서 규칙을 바꾸지 않는 것이 R2 이고, 빈칸 24 의 기저 엔진 단위는 헌장 결정 전이라 지금 규칙으로 넣으면 결과를 본 채 만든 규칙이 된다. 첫 판정을 tick_hold 아래 손으로 · 판정 지표 계산 예외를 eval_failed(재평가)로 두는 것은 공급 병목(계보 밖 자격 0)에서 인프라 예외로 엔진을 잃지 않게 한다(빈칸 17 · 9 A′ (b) '두 엔진').",
+   "evidence": [
+    "04_Research/programs/_supervision/superfan/philosophy/20261111_2344_P1_P1S02.md",
+    "06_Registry/q_judgment_ledger.json#J-20261111-034",
+    "06_Registry/q_judgment_ledger.json#C-20261111-049"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261111-074",
+   "at": "2026-11-11T23:51:40+0900",
+   "review": "R-20261111-009",
+   "target": "J-20261111-034",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "완화책('통과 엔진은 철학 P2 가 진단 패킷으로 판독하고, 사슬 판 등록은 그 판독 없이 기저를 받지 않는다' — round_spec.json:147 · DESIGN §6)을 지키는 코드가 코어 v3 에 없다. rc_p4_chain_register(p4.R:685-704 · driver.R:158)는 사슬 자신의 P1 · T1 영수증 · 풀 md5 · 기저 eligible 만 보고, rc_p4_base_pool(p4.R:136-202)은 상설 원장의 superfan-mark(--p2) 표식을 읽지 않는다 — 통과 엔진은 P2 판독과 무관하게 eligible 이고, 사슬 판 P1 의 보류 요청도 Q 수용으로 풀린다(p4.R:287). 열 확장이 두 번 미뤄진 까닭도 같다 — 그 열을 읽는 규칙(소비자)이 없다(기저 엔진의 강세 참여 단위가 결정 기록부에 없음). 판독 목록도 미리 정하지 않았다 — 숨은 현금 날(보유 0)은 칸 감사 표에 나오지 않는다(v3 cell_eval.R:15 · w != 0 행만).",
+   "evidence": [
+    "04_Research/programs/_supervision/superfan/philosophy/20261111_2344_P1_P1S02.md",
+    "04_Research/programs/_lib/round_core/v3/p4.R:136-202 · 180-184 · 287 · 685-704",
+    "04_Research/programs/_lib/round_core/v3/driver.R:158",
+    "04_Research/programs/_lib/round_core/v3/standing.R:1185",
+    "04_Research/programs/_lib/round_core/v3/cell_eval.R:15",
+    "04_Research/programs/P1_RETURN/P1S02_standing_qualification/round_spec.json:147",
+    "00_Lawbook/specs/superfan_protocol.md §11-1"
+   ],
+   "alternative": "판 2 등록을 막지 않는다 · 판정 규칙 불변 · 새 숫자 없음. (가) 영수증: 첫 사슬 판을 등록할 코어 판(v4)의 rc_p4_base_pool 에 사유 philosophy_unread — 상설 통과 칸 원장에 kind = pass · p2 = 철학 P2 리뷰 id 표식이 없거나 그 리뷰에 미응답 도전 · 열린 보류가 있으면 eligible = FALSE(blend 상대 칸도 같다). 판 2 결론 범위 · RELEASES v3 known_limits · 재개 저널 next 에 '첫 사슬 판은 이 사유가 있는 코어 판으로 등록한다'(담당 · 시점). (나) 소비자: 기저 엔진의 강세 참여 단위(중앙값 · 강세 구간 과반 · 사이클 조건)를 결정 기록부에 올린다 — 결정 뒤 열 확장과 기저 풀 현금 기계 조건이 같은 코어 판의 일이 된다. (다) 판 2 DESIGN §5-3 에 P2 판독 목록을 미리 적는다 — 집중(최소 · 유효 종목 수 · 깊은 위기 한 종목 기여) · 숨은 현금(노출 평균 · 리밸 달력 대비 보유 0 달) · 강세 구간별 상승 포착(강세 수 · uc_floor 이상 비율) · 하락/상승 β · MC8 귀속 · 팩터 방향(registry · defensive) · 학습 난수 · CDaR · 회복 — 패킷에 없는 항목은 '미측정'.",
+   "falsifier": "v3 rc_p4_base_pool 이나 rc_p4_chain_register(또는 round.sh p4-register 경로)가 기저 상설 칸의 Superfan 표식(p2)을 이미 읽고 없으면 거부하거나, 그 판독 의무가 코어 판 · 시점과 함께 RELEASES known_limits · 재개 저널 next 에 이미 추적되고 결정 기록부에 기저 엔진 강세 참여 단위 항목이 열려 있으면 이 도전은 틀렸다.",
+   "status": "accepted",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-11-11T23:57:29+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용. 완화책(통과 엔진의 철학 P2 판독 · 판독 없이 기저를 받지 않는다)을 지키는 코드가 v3 에 없다는 것을 확인했다. 판 2 등록은 막지 않되 추적 위치와 판독 목록을 남긴다.",
+     "change": "(다) 판 2 DESIGN 5절에 P2 판독 목록을 미리 적는다(집중 · 숨은 현금 · 강세 구간별 상승 포착 · 하락/상승 β · MC8 귀속 · 팩터 방향 · 학습 난수 · CDaR · 회복 — 패킷에 없는 항목은 '미측정') (가) 첫 사슬 판은 기저의 철학 판독 영수증을 읽는 코어 판(기저 풀 사유 philosophy_unread)으로 등록한다 — 판 2 결론 범위 · BUILD_EDITION2.md '다음 코어 판 후보' · 재개 저널 next 에 적는다 (나) 기저 엔진의 강세 참여 단위는 그 코어 판 설계 때 결정 기록부 안건으로 올린다(BUILD 후속에 기록)."
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261111-075",
+   "at": "2026-11-11T23:51:40+0900",
+   "review": "R-20261111-009",
+   "target": "J-20261111-034",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "결론 범위가 판 1 보다 약해졌다 — 판 1 줄(P1S01 round_spec.json:142)의 'P4 기저 풀은 이 가운데 상승 포착 중앙값만 읽는다 — 집중(빈칸 1) · 숨은 현금 날 · 강세 구간별 참여(빈칸 7 · 24)'가 판 2 같은 줄(P1S02 round_spec.json:147)에서 빠졌다(C-20261111-014 수용 공시의 소실 · v3 풀은 여전히 중앙값만 — p4.R:180-184). 헌장 빈칸 14~24 는 '앞으로 등록되는 상설 판부터 판정 규칙에'인데 빈칸 24(기저 풀 · 채택 규칙에 같은 조건)는 판 · 풀 어디에도 없고 공시도 없다. 실패 형태 넷의 한계 문장이 없다 — 현금 기계(숨은 현금 날) · 노출(β) 방어(위기 하락노출 = 귀속 전 원값 · 등록부 defensive 방향 상수 엔진 — 빈칸 3 · 8 · 14 · 원칙 5) · 집중(폭은 보는 창 하루의 필요조건뿐) · 추첨 행운(판 2 시드 = 같은 추첨의 재현 — BUILD_EDITION2.md:81 · DESIGN.md:25). 노출 고지 2번째 줄(round_spec.json:125)의 '다시 학습되므로 같은 값이 아니다'는 S2 의 '2005 이후 같은 입력 · 시드'와 어긋나게 읽힌다(262/268개월 같은 추첨). 포트폴리오 전용 엔진의 길(새 판이 아니라 레인 출력 계약 뒤 새 인계)도 적혀 있지 않다(conclusion_scope[2]).",
+   "evidence": [
+    "04_Research/programs/_supervision/superfan/philosophy/20261111_2344_P1_P1S02.md",
+    "04_Research/programs/P1_RETURN/P1S01_standing_qualification/round_spec.json:142",
+    "04_Research/programs/P1_RETURN/P1S02_standing_qualification/round_spec.json:125 · 137 · 147",
+    "04_Research/programs/_lib/round_core/v3/p4.R:180-184",
+    "04_Research/01_reports/portfolio_paper_layer_split_20261112/BUILD_EDITION2.md:81 · 86-88",
+    "00_Lawbook/specs/investment_philosophy_charter.md §5 빈칸 14~24 적용 시점 · 빈칸 1 · 3 · 7 · 8 · 14 · 21 · 24"
+   ],
+   "alternative": "판정 규칙 불변 · 문장만 · 등록 전. conclusion_scope 에 넷을 더한다: (1) '기저 풀(v3 rc_p4_base_pool)은 이 판의 보는 창 열 가운데 상승 포착 중앙값만 읽는다 — 현금 기계 검사(빈칸 24)는 q_uc 와 같은 조건이라 통과 엔진에서 늘 아님 · 강세 구간별 참여(빈칸 7) · 사이클 조건 · 숨은 현금 날 · 집중(빈칸 1)은 재지 않는다 · 빈칸 24 의 새 판 적용은 미집행(기저 엔진 단위 헌장 결정 전)' (2) '위기 하락노출(원장 · 통과 보고)은 시장 대비 원값 — MC8 귀속 · 하락/상승 β 없음. 낮은 값은 β 축소(빈칸 3 · 8) · 크기(빈칸 14) · 숨은 현금에서도 나오므로 방어 근거로 쓰지 않는다. defensive 방향 상수 엔진은 저변동 기계(원칙 5)일 수 있고 방향 값은 원장에 없다' (3) '판 2 시드 재측정은 같은 추첨의 재현(2005-01 이후 같은 학습창 · 입력 · 시드) — 앞선 같은 사양 측정과의 일치는 시드 강건성 증거가 아니다(빈칸 21) · 학습 난수 레인 엔진도 시드 미결 · 원장 꼬리표 없음' (4) '포트폴리오 전용 엔진의 길 = 기여 층별: 예측 → 레인 출력 계약(S3) 뒤 새 인계로 같은 판 · 구성 규칙 → 비중 카탈로그 → 사슬 비중 걸음(빈칸 1 · 3 · 8 — C4) · 노출 규칙 → P2 상설 판(아직 없음)'. exposures[1] 정정: '2005-01 이후 262개월은 같은 학습창 · 같은 시드라 그 결과와 거의 같은 신호가 예상된다(차이 = 앞 6개월 · 실효 시작 · 자료 판)'.",
+   "falsifier": "P1S02 round_spec.json conclusion_scope 에 '기저 풀은 상승 포착 중앙값만 읽는다(빈칸 24 미집행)'는 뜻의 문장과 '위기 하락노출은 귀속 전 원값이라 방어 근거가 아니다'는 뜻의 문장이 이미 있으면 이 도전은 틀렸다.",
+   "status": "accepted",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-11-11T23:57:29+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용. 판 1 에 있던 '기저 풀은 상승 포착 중앙값만 읽는다' 문장이 판 2 초안에서 빠졌고, '다시 학습되므로'는 스케줄 대조(2005-01 이후 262개월 같은 창 · 시드)와 어긋난다. 격리 교차 점검 R-1 과 같은 지적.",
+     "change": "초안 v2: 결론 범위에 리뷰 문안 (1)~(4)(기저 풀 중앙값만 · 빈칸 24 미집행 사유 / 위기 하락노출 = 귀속 전 원값 / 시드 = 같은 추첨의 재현 / 포트폴리오만 내는 엔진의 기여 층별 길)를 넣고 exposures 둘째 줄과 가설 문장을 '앞 6개월 · 실효 시작 · 자료 판의 차이'로 고친다."
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261111-076",
+   "at": "2026-11-11T23:51:40+0900",
+   "review": "R-20261111-009",
+   "target": "J-20261111-034",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "통과 push 판정 줄(v3 standing.R:1010-1013)이 '자격 통과 — t(α) … · 상승 포착률 … · 위기 하락노출 중앙 x(최악 x · 위기 n번)'으로 귀속 없는 위기 하락노출을 판정 줄 안에 싣고, 결론 범위의 범위 문장('위기 방어 · 꾸준함은 판정하지 않는다 — 통과를 철학 적합으로 보고하지 않는다' · conclusion_scope[6])이 없다. prep_send 도 결론 범위를 덧붙이지 않는다(program_report.R 검색 0건). 통과 push 는 엔진마다 나가고 P2 한 줄은 다음 일 요약에야 실린다(규약 §11-1) — 헌장 원칙 4 '기록은 구분한다(MC8 귀속)'를 push 가 지키지 않아, 자격 통과가 위기 방어 엔진으로 읽힐 수 있다.",
+   "evidence": [
+    "04_Research/programs/_supervision/superfan/philosophy/20261111_2344_P1_P1S02.md",
+    "04_Research/programs/_lib/round_core/v3/standing.R:1004-1016",
+    "02_Infrastructure/programs/program_report.R",
+    "04_Research/programs/P1_RETURN/P1S02_standing_qualification/round_spec.json:141",
+    "00_Lawbook/specs/investment_philosophy_charter.md 원칙 4 · 빈칸 16"
+   ],
+   "alternative": "코어 다음 판(C1 (가)와 같은 판): 판정 줄은 판정 두 조건(t(α) · 상승 포착)만 싣고, 위기 하락노출은 '보고 열(판정 아님 · 귀속 전 · 위기 방어는 판정하지 않음)' 한 줄로 따로 싣는다. 판 2(v3 고정) 동안: 통과 엔진마다 철학 P2 한 줄(방향 · 실패 형태 · 귀속)을 그 엔진의 다음 일 요약에 반드시 싣는다(superfan-mark 표식으로 확인).",
+   "falsifier": "v3 rc_standing_report 의 통과 push(standing.R:1004-1016)나 prep_send(02_Infrastructure/programs/program_report.R)가 사전등록 결론 범위 또는 '위기 방어 판정 안 함 · 귀속 전' 같은 범위 문구를 이미 덧붙이면 이 도전은 틀렸다.",
+   "status": "accepted",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-11-11T23:57:29+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용. 통과 보고의 판정 줄은 코어가 만들고 v3 는 출시됐다 — 판 2 동안은 운영으로 메운다.",
+     "change": "판 2(v3 고정) 동안 통과 엔진마다 철학 P2 의 한 줄(방향 · 실패 형태 · 귀속)을 그 엔진의 다음 일 요약에 반드시 싣는다(결론 범위에 약속으로 · 확인 = superfan-mark). 다음 코어 판에서 판정 줄(판정 두 조건)과 보고 열(위기 하락노출 — 판정 아님 · 귀속 전)을 가른다(BUILD '다음 코어 판 후보')."
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261111-077",
+   "at": "2026-11-11T23:51:40+0900",
+   "review": "R-20261111-009",
+   "target": "SYSTEM",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "판 2 가 포트폴리오 전용 엔진을 빼고 분류표 4분법이 구성 규칙 논문을 비중 카탈로그 → 사슬 비중 걸음으로 보내면(J-20261111-025 · J-033), 방어형 구성(최소분산 · 위험 패리티 · 낙폭 제약 비중)이 철학에 닿는 유일한 길은 그 걸음이다. 그런데 채택 규칙 v2 의 N5 β 비대칭(빈칸 3 · 8)은 노출 블록 걸음에만 재고 비중 · 구성 걸음은 1(해당 없음)로 채우며(v3 p4.R:41 · 52-53 · 1070), N4 집중(빈칸 1)은 규칙이 쓸 때만 계산하고 필수 다섯에 없다(p4.R:40 · 46 · 1056). 이 세 빈칸은 바로 비중 · 구성 사례에서 나왔다 — 최소분산 · 낙폭 제약 비중(유효 종목 5~11 · 2008 한 종목 −19.8 ~ −21.5% · 하락장 β 1.02 · 1.05 > 상승장 β 0.67 · 0.65) · P3R03 구성 변형(β 짝 10/10 미통과). 같은 사례가 위기 하락 포착 중앙값 비악화(1.02 → 0.78 · 0.75 — 빈칸 2)는 충족했으므로, 그 길로 들어온 방어형 구성 규칙이 비대칭 역행 β 축소 · 깊은 위기 한 종목 폭발을 지닌 채 채택 규칙의 해당 칸을 통과할 수 있다.",
+   "evidence": [
+    "04_Research/programs/_supervision/superfan/philosophy/20261111_2344_P1_P1S02.md",
+    "04_Research/programs/_lib/round_core/v3/p4.R:40-41 · 46 · 52-53 · 1056 · 1070",
+    "00_Lawbook/specs/investment_philosophy_charter.md §5 빈칸 1 · 2 · 3 · 8",
+    "06_Registry/q_judgment_ledger.json#J-20261111-025",
+    "06_Registry/q_judgment_ledger.json#J-20261111-033"
+   ],
+   "alternative": "새 숫자 없음 · 첫 사슬 판(또는 채택 규칙 판 v3): N5 를 '걸음이 부모보다 β 를 낮춘 모든 블록'(비중 · 구성 · 노출 · 유니버스)에서 잰다(β 가 낮아지지 않은 걸음 = 1). 블록이 weighting · construction 이면 N4(−10% = 빈칸 1 값)를 필수로 싣는다. 사슬 판 철학 P1 이 이 두 조건을 확인한다. 판 2 결론 범위의 길 문장(C2 대안 (4))에 '그 걸음의 판정에 빈칸 1 · 3 · 8'을 덧붙인다.",
+   "falsifier": "v3 p4.R 이 beta_asym_ok_vis 를 weighting · construction 걸음에서도 하락/상승 β 로 계산하거나, 채택 규칙 v2 필수 목록(RC_P4_REQUIRED)이 그 블록에서 worst_name_contrib_deep_vis 를 요구하면 이 도전은 틀렸다.",
+   "status": "accepted",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-11-11T23:57:30+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용(사슬 판 몫). 첫 사슬 판 등록 설계의 조건으로 남긴다.",
+     "change": "BUILD_EDITION2.md 후속 · 재개 저널: 첫 강화 사슬 판의 채택 규칙은 N5(β 비대칭)를 β 를 낮춘 모든 블록에 · 비중 · 구성 걸음에는 N4(집중)를 필수로 — 판 2 결론 범위의 기여 층별 길 문장에 '그 걸음의 판정에 헌장 빈칸 1 · 3 · 8'을 적는다."
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261111-078",
+   "at": "2026-11-11T23:51:41+0900",
+   "review": "R-20261111-009",
+   "target": "SYSTEM",
+   "grade": "note",
+   "rule": null,
+   "claim": "빠른 신호 엔진(주간 · 일간)의 길 = 셀 엔진 주간 신호(MC4 잔여)는 RELEASES v3 known_limits 에만 있고 담당 · 시점이 없다(축 표 'MC4 ✅ · 셀 엔진 주간 신호 생성은 미구현'). 지금 해당 셋(1810.08384 · 2604.16773 = 포트폴리오 전용 · 2601.10732 = 타이밍형)은 다른 사유로도 빠져 한계 손실 0(C-20261111-061 응답). 철학 쪽 의미: 빠른 급락(빈칸 6 · 10)은 월간 층이 원리상 늦는 곳이라, 셀 주간 신호가 없으면 기저 단계의 빠른 신호 엔진은 구조적으로 0. 노출 규칙 엔진(현금 · 타이밍 — 원칙 4 · 빈칸 9 A′)의 길인 P2 상설 판도 없다(C-20261111-030 추적 중). 권고 = scan 출력의 base_off_month_grid 목록 보존(셀 주간 신호가 생긴 새 판의 rejudge 대상) · MC4 잔여를 등록부 pr_mc_set 이나 결과 원장 탐침으로(담당 · 시점).",
+   "evidence": [
+    "04_Research/programs/_supervision/superfan/philosophy/20261111_2344_P1_P1S02.md",
+    "04_Research/programs/_lib/round_core/RELEASES.json v3 known_limits"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261111-079",
+   "at": "2026-11-11T23:53:26+0900",
+   "review": "R-20261111-011",
+   "target": "J-20261111-034",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "rejudge + 최신 판 우선에 '언제 다시 재도 되는가' 규칙이 없다 — v3/standing.R:741 rejudge = true 면 다른 판 엔진을 모두 새 항목으로 · :296-304 같은 칸은 판 번호 큰 판의 판정만이고 출력에 앞 판 판정 · 뒤집힘 열이 없다(시험 Q1 :393 이 '앞 판 미달 + 뒤 판 통과 = 통과'를 표식 없이 단정) · 시드(reference)는 판마다 무가산(:346 · :353)인데 학습 난수 엔진은 판마다 경로가 바뀌어 새 추첨이 된다 · README · 생성 규칙문 · RELEASES known_limits 어디에도 rejudge 조건이 없고 P1S01 round_spec.json:156 은 판 2 를 rejudge = false 로 예고했다. P1S02 에서 이 플래그는 무동작(P1S01 원장 enqueue 3 · verdict 0 · 시드 md5 6b6a8e1a→fe301130 · 1908 은 portfolio_only_base 로 excluded 먼저) — 판정 0건인 지금이 규칙을 수혜자 없이 정할 유일한 때(규약 §13-1 T4)",
+   "evidence": [
+    "04_Research/programs/_lib/round_core/v3/standing.R:296-309 · :346 · :353 · :683-700 · :741-742",
+    "08_Tests/programs/test_round_core_v3.R:393",
+    "stage_artifacts/programs/P1_RETURN/P1S01_standing_qualification/standing_ledger.jsonl(7줄 · verdict 0)",
+    "04_Research/programs/P1_RETURN/P1S01_standing_qualification/round_spec.json:156"
+   ],
+   "alternative": "등록 전 하나 이상: (가) 결론 범위에 '판 2 판정은 다음 판 rejudge 로만 대체 — 조건 = 판정 결과와 무관하게 파일:행으로 특정한 판정 경로 결함 · 범위 = 판 2 전 항목 · 뒤집힌 판정(미달→통과)은 기저 풀 표식 + 사슬 판 T1 확인 · 시드는 판정받은 판 수를 회계에 더한다' (나) rejudge_prior_editions = false(판 2 효과 동일) (다) v4 후보 rc_standing_qualified 에 editions_judged · flipped_from_fail 열 — 그 전엔 RELEASES known_limits 한 줄 + 사슬 판 등록 점검에서 손으로",
+   "falsifier": "rc_standing_qualified 또는 rc_p4_base_pool 이 이미 앞 판 판정 이력 · 뒤집힘 표식을 내거나, round_core README · research-program SKILL · standing_rules 생성문 · 결정 기록부 중 한 곳에 'rejudge 는 판정과 무관한 결함일 때만 · 뒤집힘 표식'이 이미 있으면 틀렸다. 또는 P1S01 상설 원장에 verdict 줄이 하나라도 있으면(무동작 주장) 틀렸다",
+   "status": "accepted",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-11-11T23:57:30+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용. 판 1 판정이 0건인 지금이 대체 규칙을 수혜자 없이 정할 수 있는 때다. rejudge_prior_editions = true 는 지금 기능상 무동작(판 1 원장 enqueue 3 · verdict 0 · 시드는 엔진 md5 가 바뀌어 새 항목 · 1908.01112 는 점수 패널 패치로 엔진이 바뀐 뒤 온다)이므로 기본값 false 로 되돌린다.",
+     "change": "초안 v2: rejudge_prior_editions = false(기본) + 결론 범위에 대체 조건 한 줄 — '뒤 판이 앞 판의 판정을 다시 재는 것은 판정 결과와 무관하게 정한 측정 경로 결함의 수리일 때만 · 고르지 않고 전 항목 · 뒤집힌 판정(미달 → 통과)은 표식 · 시드도 판마다 시행으로 센다'. 다음 코어 판에 기저 풀 열 editions_judged · flipped_from_fail(BUILD 후속)."
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261111-080",
+   "at": "2026-11-11T23:53:27+0900",
+   "review": "R-20261111-011",
+   "target": "J-20261111-034",
+   "grade": "note",
+   "rule": null,
+   "claim": "(b) eval_failed 경계는 결과와 완전히 독립은 아니다 — v3/standing.R:978 은 status ≠ evaluated ∨ is.na(qualify), rules.R:89-91 은 Kleene 논리곱(거짓 우선)이라 자격 지표 하나가 NA 일 때 다른 하나가 미달이면 미달 판정으로 굳고 통과면 재평가로 간다(시험 J1 :331-343 은 미달 아닌 쪽만). 재측정 길이 없어(:211 · 같은 산출물 재평가 → 2회 사람) 불리한 판정을 다시 재는 데는 못 쓰고 굳는 쪽이 보수적 — 다만 규칙문 §4 '판정 지표 계산 예외는 판정이 아니다'와 어긋난다. 고침 = 조건에 length(na_m) > 0(:950 에서 이미 계산) — v4 를 낼 때 같이, 아니면 결론 범위에 '부분 미측정 미달' 공시",
+   "evidence": [
+    "04_Research/programs/_lib/round_core/v3/standing.R:950 · :978",
+    "04_Research/programs/_lib/round_core/v3/rules.R:89-91",
+    "08_Tests/programs/test_round_core_v3.R:331-343"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261111-081",
+   "at": "2026-11-11T23:53:27+0900",
+   "review": "R-20261111-011",
+   "target": "J-20261111-032",
+   "grade": "note",
+   "rule": null,
+   "claim": "C-063 수용의 실체 절반 — prejudge_check.R:57-61 은 레인 패널 신호일 개수 · 첫 날을 찍기만 하고 ★ 를 걸지 않으며, 패널이 없을 때 '첫 엔진 신호일 = 주입 시작일에서 기대한 날' 비교가 없다(시드는 엔진 md5 가 바뀌어 대조할 레인 패널이 없다) · 점검 5(:38-40 · :54)도 실효 시작 날짜를 읽기만 한다. 기대값(시드 첫 엔진 신호일 2004-07-30 · 268 — S2 스케줄 대조 7/0)을 도구에 넣고 다르면 ★",
+   "evidence": [
+    "04_Research/programs/P1_RETURN/P1S02_standing_qualification/tools/prejudge_check.R:38-61"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261111-082",
+   "at": "2026-11-11T23:53:27+0900",
+   "review": "R-20261111-011",
+   "target": "J-20261111-034",
+   "grade": "note",
+   "rule": null,
+   "claim": "base_off_month_grid 경계 사례 — 판독(한 달력 월 신호일 ≥ 2 · .rcs_grid_of)과 관문(n_superseded > 0)이 20 · 21거래일 고정 간격 엔진(가끔 한 달 2회)을 주간 · 일간으로 빼낸다 — 지연이 통과하는 60거래일 격자보다 짧은데 제외. 지금 캐시 33개엔 없다. 모수 없는 대안 = '보는 창 신호일 수 > 달 수' · 시험 B1g 에 사례 1개",
+   "evidence": [
+    "04_Research/programs/_lib/round_core/v3/standing.R(.rcs_grid_of)",
+    "08_Tests/programs/test_round_core_v3.R:145"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261111-083",
+   "at": "2026-11-11T23:53:27+0900",
+   "review": "R-20261111-011",
+   "target": "J-20261111-034",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "(a) 규칙을 성과를 보고 정한 흔적 없음 — 입구 새 사유 셋 = 정적 대입 + factors_panel.parquet 의 Date · Ticker 열만(col_select · τ_D 절단 먼저) · 관문 = 진단 날짜 · 개수 · base_kind 만 · 판정 수리 = 앞 판 판정 0건일 때 · 시험이 성과 무관 불변(B6 · B7) · τ_D 음성 대조(B4) · 돌연변이(X1~X4)로 양방향 · 피해 엔진(1908 · 주간 2 · 일간 1)은 구조에서 나왔고 공급을 줄이는 쪽 · 규칙 · 문턱 · 생성 함수 핀(80f8311f) = 판 1 동일 · 노출이 미리보기(사유 코드만) 뒤 입구 무변경까지 적었다",
+   "evidence": [
+    "04_Research/programs/_lib/round_core/v3/standing.R(.rcs_panel_vis · rc_standing_base_alignment)",
+    "08_Tests/programs/test_round_core_v3.R:155 · :162-172 · :406-419",
+    "04_Research/programs/P1_RETURN/P1S02_standing_qualification/round_spec.json:123-133"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261111-084",
+   "at": "2026-11-11T23:53:28+0900",
+   "review": "R-20261111-011",
+   "target": "J-20261111-032",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "수용 4건(C-060~063)의 실체 표본 대조 — C-060 run_paper_replication.R:655 시드 관문 !length(engine_vars)(md5 04b18146 = BUILD 표) · C-061 rf_base_align.R:58 n_offcal(md5 e9b28528) + v3 입구 · 관문 · C-062 v3 관문 base_alignment_missing(상설 standing.R:885-892 · 사슬 p4.R .rcp4_run_cell · 시험 A5 · P1 · P2) · C-063 진단 필드(RC_STANDING_BASE_SUMMARY 의 n_cell_dates_from_start · first_engine_date). 바꾼 위치가 파일 · md5 로 적혔고 열어 보니 있다(C-063 의 점검 쪽 절반은 별도 note)",
+   "evidence": [
+    "02_Infrastructure/alpha_search/run_paper_replication.R:655",
+    "02_Infrastructure/reinforcement/rf_base_align.R:58",
+    "04_Research/programs/_lib/round_core/v3/standing.R:885-892"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261111-085",
+   "at": "2026-11-11T23:53:28+0900",
+   "review": "R-20261111-010",
+   "target": "J-20261111-034",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "판정 경로(칸 평가 · β-통제 알파 · 판정 표)의 첫 실자료 통과를 가장 비싼 항목(DNN 시드 · GPU 5~6시간)에 걸었다 — v3 시험은 대체 워커(test_round_core_v3.R:5) · 진단 계약은 합성 45종(diag_contract.R:37-41)이라 판정까지 가지 않는다 · 코어에 등록 전 리허설 자리(v3/register.R:45 · :58 rc_draft(rehearse =) · :120 실패면 등록 거부)가 있는데 P1S02 초안 rehearsal = null · 앞선 첫 통과 둘이 다 결함을 냈다(J-026 셀 경로 셋 · C-048) · 등록 뒤 핀 파일(32)에서 결함이 나오면 새 판(R2) → 시드 GPU 재측정 → 판정이 있는 판의 rejudge 첫 사용 · 지금 레인 GPU = THGNN 이라 CPU 리허설은 임계 경로 비용 0",
+   "evidence": [
+    "04_Research/programs/_lib/round_core/v3/register.R:45 · :58 · :120",
+    "04_Research/programs/P1_RETURN/P1S02_standing_qualification/prereg_draft.json(rehearsal = null)",
+    "08_Tests/programs/test_round_core_v3.R:5",
+    "08_Tests/programs/test_round_core_v3_diag_contract.R:37-41",
+    "04_Research/01_reports/portfolio_paper_layer_split_20261112/README.md §8 · BUILD_EDITION2.md:166"
+   ],
+   "alternative": "초안 v2 를 rc_draft(rehearse = 거울 루트 종단 리허설)로 — 임시 RC_SA_ROOT · 등록부 사본 · 임시 판 + 실제 rf_cell_worker(실 RAWDATA 읽기 전용) + 월말 FACTORS 를 내는 싼 엔진(합성 12-1 모멘텀 또는 월말 격자 레인 엔진 하나) → measure-item → prejudge_check.R --eval → judge → standing-report dry-run · 값 미표시(유한 / NA 만) · 판정 파일 미열람 · 결함이면 v4 로 고쳐 등록(판 3 없이)",
+   "falsifier": "실자료에서 v3 판정 경로(rf_cell_worker → rc_eval_cell → rc_metric_beta_alpha → rc_standing_judge)를 끝까지 지난 기록(시험 · 로그 · 파일럿 · 초안 rehearsal 필드)이 이미 있거나, BUILD_EDITION2 S5 · S6 · DESIGN §5 에 시드 전 CPU 리허설이 이미 있으면 틀렸다. 사후: 시드 측정 → 점검 10항목 → judge 가 판 2 경로 결함 없이(★ 0 · eval_failed 0 · 새 판 0) 끝나면 위험 크기 판단이 틀렸다",
+   "status": "accepted",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-11-11T23:57:42+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용. 판정 경로(칸 평가 패킷 · β-통제 알파 · judge · 판정 원장 · 보고)는 실자료에서 한 번도 끝까지 지나지 않았고, 그 첫 통과를 GPU 몇 시간짜리 DNN 시드에 걸면 결함 하나가 새 판 + 재측정이 된다. 등록 전에 싼 월말 격자 엔진으로 같은 경로를 격리해 지난다.",
+     "change": "등록 전 리허설: 격리(임시 사전등록 · 임시 원장 · 임시 등록부 사본) + 실제 워커 · 실제 자료 + 싼 CPU 엔진(월말 격자 점수 패널)으로 enqueue → measure-item → 판정 전 점검 → judge → 보고(발송 없음)를 지나고, 결과(값 미표시 · 유한 여부만)를 초안 v2 의 rehearsal 칸에 싣는다(rc_draft(rehearse =) — 실패면 등록 거부). 밤 체인이 끝난 뒤 실행(opus 서브에이전트)."
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261111-086",
+   "at": "2026-11-11T23:53:28+0900",
+   "review": "R-20261111-010",
+   "target": "J-20261111-034",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "시드의 비용이 공급 병목(레인 GPU 슬롯)에 떨어진다 — p1s02_seed_watch.sh:47-93 은 레인 측정 0 순간 임대를 잡고 측정 창(02:30~04:30 · 08:20~15:15 시작)을 임대를 쥔 채 기다린다(THGNN 끝 → 창 열림 + 5~6시간 · 15:15 뒤 끝나면 십수 시간 레인 정지). 대가 = 같은 계보 두 구성(첫 사슬 단독 기저 불가 · J-028 '급한 측정이 아니고') · 공급 수리 S3 는 '등록 뒤 착수 전'(BUILD_EDITION2.md:117 · 입구 통과 0/51 · portfolio_only_base 21) · C-059 의 '병목 자원 한 줄'이 J-034 에 없다. 창 산수: 헤더 :28 '07:10 아침 체인 전에 끝나야 한다'인데 02:30 + 5~6시간 = 07:30~08:30 · 측정 중 쓰기는 지문 사후 검출 = 실패 1회(standing.R:209-210) · MEM_MIN_GB=16(:31) 근거 없음(J-011 DNN 25~33 GB) — C-055 ①② 재발",
+   "evidence": [
+    "04_Research/programs/P1_RETURN/P1S02_standing_qualification/tools/p1s02_seed_watch.sh:4-5 · :28 · :31 · :47-93",
+    "04_Research/01_reports/portfolio_paper_layer_split_20261112/BUILD_EDITION2.md:117 · :166",
+    "06_Registry/q_judgment_ledger.json J-20261111-017 · 028 · C-20261111-055 · 059",
+    "04_Research/programs/_lib/round_core/v3/standing.R:209-210 · :863-866"
+   ],
+   "alternative": "(가) S3(레인 출력 계약)를 THGNN 이 끝나기 전에 배포 (나) 감시 셸을 W → L 순서로(창이 열려 있고 레인이 빌 때만 임대 · 레인이 먼저 잡으면 다음 빈틈) 또는 창 전 보유 상한을 근거와 함께 (다) 이른 창 삭제(밤 체인 00:03~약 06:00 과 07:10 사이에 5~6시간 창 없음) · 메모리 문턱에 실측 근거 한 줄 (라) 시드는 계보 밖 엔진이 입구를 통과한 뒤 · 레인이 쉬는 창에",
+   "falsifier": "THGNN 뒤 레인 큐가 비어 레인이 어차피 놀거나, 감시 셸이 창 열림 전 임대 보유를 이미 짧게 묶었거나(코드), S3 를 시드 전에 못 하는 이유(시드 결과 의존)가 BUILD_EDITION2 · 설계 README 에 있으면 틀렸다. 창 산수 부분은 P1S02 시드 E2 + E3 기대 소요 < 4시간 40분의 실측 · 근거가 있으면 틀렸다",
+   "status": "accepted",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-11-11T23:57:31+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용. 시드는 같은 계보라 첫 사슬의 단독 기저가 될 수 없고, 사다리의 공급 병목은 레인이다 — 리허설이 판정 경로 검증을 대신하면 시드 측정이 레인 GPU 슬롯을 붙잡을 이유가 없다. 이른 창(02:30 시작)은 측정 5~6시간이면 07:10 아침 체인을 넘는다.",
+     "change": "감시 셸: 창 확인 → 레인 측정 0 → 측정(임대는 코어 관문이 잡는다 · 미리 쥐지 않는다) · 이른 창 삭제 · 낮 창 시작 08:20~11:45(6시간 뒤 17:45 전 종료) · 메모리 하한 16 GB 의 근거를 주석에(물리 31.8 − 레인 측정 실측 12.7 − 기저 사용 약 3 = 레인급 작업이 돌고 있지 않다는 표지). S3 레인 출력 계약은 후보판을 지금 준비(opus 서브에이전트)하고 레인 빈틈에 원자 교체한다 — 다음 레인 엔진부터 점수 패널이 나오게."
+    }
+   ],
+   "outcome": "vindicated",
+   "outcome_note": "뒤에 온 증거(R-20261112-001): 반증 조건 셋이 모두 일어나지 않았다. ① THGNN 뒤에도 레인은 놀지 않았다 — 11-12 레인 산출 기록 04:20 · 10:02 · 10:42 · 10:59 · 22:04, 22:1x gpu1 claim live. ② 옛 셸은 창 전 임대 보유를 묶지 않았다 — 격리 점검 v2 R-1 이 E3 에 남은 보유를 따로 재현했다. ③ S3 에 시드 결과 의존은 없었다 — BUILD 는 'S7 의 선행'으로만 적었다. 옛 셸이었다면 레인이 쉬지 않는 날 밤새 GPU 슬롯이 섰다. 수용 변경 중 감시 셸 절반은 집행됨(4269ea6b5). S3 절반은 미집행(C-20261112-008 note)",
+   "outcome_at": "2026-11-12T22:22:02+0900"
+  },
+  {
+   "id": "C-20261111-087",
+   "at": "2026-11-11T23:53:28+0900",
+   "review": "R-20261111-010",
+   "target": "J-20261111-034",
+   "grade": "note",
+   "rule": null,
+   "claim": "원장 열 확장 재연기(⑦) — 열 확장이 코어(rc_standing_judge 원장 줄)를 바꾸는 한 판 2 판정 뒤에는 판 3 + 다시 재기(rejudge)다. 원장 밖 읽기 전용 사이드카(통과 칸 results/<code>/visible/ 패킷 → 열 표 · 핀 · 판정 무관)면 판이 필요 없다. 철학 P1 C-20261111-013 · 014 의 수용 변경('판 2 로')이 두 번째로 미뤄졌다 — 판 2 철학 P1 에 명시적으로 다시 올릴 것",
+   "evidence": [
+    "04_Research/programs/P1_RETURN/P1S02_standing_qualification/round_spec.json:147",
+    "04_Research/programs/P1_RETURN/P1S01_standing_qualification/round_spec.json:154"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261111-088",
+   "at": "2026-11-11T23:53:29+0900",
+   "review": "R-20261111-010",
+   "target": "SYSTEM",
+   "grade": "note",
+   "rule": null,
+   "claim": "설계 README §6-6 '판 2 부터 cardinal 인데 미달 건수를 일 요약에 세어 사각의 크기를 본다'가 P1S02 폴더 · v3/standing.R 어디에도 없다(grep 0). S3 의 score_panel.scale 꼬리표가 먼저라 지금은 셀 수 없다 — C-050 원칙대로 BUILD_EDITION2 '남긴 후속' 또는 RELEASES known_limits 에 추적 한 줄",
+   "evidence": [
+    "04_Research/01_reports/portfolio_paper_layer_split_20261112/README.md:476"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261112-001",
+   "at": "2026-11-12T22:21:15+0900",
+   "review": "R-20261112-001",
+   "target": "J-20261112-005",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "도훈 '테스트 좀 그만하자'를 팩터 척추 F0 에 넓혀 §3-7 시험 1(절단 불변성 — 결합용 뷰를 t 월까지 자른 사본의 FACTORS = 전체 실행 Date ≤ t 부분)과 2(다음 달 읽기 돌연변이가 1 에서 실패하는 양성 대조)까지 뺐다. 설계 §3-7(README.md:198-219)은 이 둘을 '엔진 · 팩터 코드용 값 섭동 검사가 저장소에 없어 그 자리를 채우는' 자체 사양 엔진의 유일한 값 수준 PIT 검사로 적었다. J-005 가 대신 든 담보 — lookahead_detector(설계가 부족하다고 한 실행 전 정적 스캔) · audit_bt_result(축 · 계약 감사 · PIT 아님) · Judge(Grade A 뒤) — 로는 P1R03 자격 → 기저 풀(D4 a) → P4 사슬 사이 값 수준 PIT 검사가 0 이다. 같은 형태 실사고 = pit.md 오버레이 07-06(한 달 어긋난 읽기가 placebo · OOS · DSR · subperiod 를 다 통과하고 lag1 · strict-PIT A/B 로만 잡힘). 비용은 임계 경로 밖이다 — 결정 FACTOR-SPINE-STAGE1 D6 (가)로 P1R03 등록 · 측정은 판 2 시드 판정 뒤 · 엔진은 가벼운 R(§3-9). 도훈 승인 설계의 F0-1 완료 기준(README.md:325)도 '§3-7 시험 7종 통과(위반 주입 포함)'였다.",
+   "evidence": [
+    "04_Research/01_reports/factor_spine_design_20261111/README.md",
+    "06_Registry/decision_register.json",
+    ".claude/rules/pit.md",
+    "04_Research/programs/P1_RETURN/P1S02_standing_qualification/prereg_draft_review_v2.md"
+   ],
+   "alternative": "§3-7 의 1 · 2 만 남긴다(토탈 엔진 + 가족 엔진 1개 × 절단 달 2개 · 다음 달 읽기 돌연변이는 소스 텍스트 치환 + 치환 성사 단정) — 시드 판정을 기다리는 동안 1회 돌리거나 P1R03 round_spec.json::tests 에 넣어 등록 조건 ④ 가 한 번만 돌게 한다(재실행 없음). 3~7 은 Q 판단대로 빼고 '3개월 동작 확인'을 절단 비교로 바꾼다. 지시가 이것까지 덮는다고 보면 도훈께 한 줄('PIT 값 검사 2종만 남길까요 — 임계 경로 밖') — P1R03 은 어차피 시드 판정을 기다리므로 대기 비용 0.",
+   "falsifier": "F0 산출(FC_README.md · 생성기 · F0 실행 기록)에 '자른 사본 FACTORS = 전체 실행 Date ≤ t 부분' 확인과 '다음 달 읽기 돌연변이가 그 확인에서 실패' 기록이 이미 있거나, 도훈 지시 원문(채팅 · 결정 note)이 F0 의 §3-7 PIT 시험까지 생략하라고 명시했으면 이 도전은 틀렸다. 사후: P1R03 격리 교차 점검 v1 이 값 수준 PIT 시험 부재를 지적하지 않고 ok 를 내면 '되돌이 비용' 부분이 틀렸다.",
+   "status": "accepted",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-11-12T22:23:51+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용 — PIT 는 모든 목표보다 앞서고(pit.md 최상위) 설계 §3-7 이 시험 1 · 2 를 자체 사양 엔진의 유일한 값 기반 미래참조 검사로 적었다. 대신 든 담보(정적 스캔 · 축 감사 · A 뒤 Judge)는 그 자리를 채우지 못한다는 지적이 맞다. 두 시험은 P1R03 등록이 시드 판정 뒤라 임계 경로 밖이므로 도훈 지시('테스트 좀 그만하자 · 최대한 빨리')의 뜻(루프를 늦추는 시험 반복을 줄인다)과 어긋나지 않는다.",
+     "change": "F0 의 §3-7 시험 1(절단 불변성) · 2(그 양성 대조 — 미래 달을 읽는 돌연변이 사본이 1에서 실패) 만 시험 파일 08_Tests/factor_db/test_fc_engine_gen.R 로 만들어 P1R03 사양 tests 에 넣는다 — 등록 때 한 번만 돈다. 시험 3~7 · 그 밖의 묶음은 계속 생략. 도훈께 한 줄로 알린다."
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261112-002",
+   "at": "2026-11-12T22:21:34+0900",
+   "review": "R-20261112-001",
+   "target": "J-20261112-003",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "리허설 설계(질문 ②) — 실제 신선도 관문을 먼저 지나 data_stale · 원장 무기록을 음성 대조로 확인(S4a)하고, 주입은 rehearse.R:154-155 가 rc_standing_measure_item(…, freshness = function(root) …)로 넘긴 그 호출 인자뿐이다(코어 기본 freshness = rc_data_freshness · v3/standing.R:851-866 · 환경변수 · 파일 · 전역 상태 없음 · 실제 감시 셸 = round.sh measure-item = 기본 관문). S9 격리 증명(실제 파일 10개 md5 · 판 폴더 해시 · 공유 원장 표식)과 2회차 거짓 양성의 좁은 수리(허용 id 를 요약에 기록). J-003 기대(S4a · S4b 이하 pass · 점검 v2 의 주입 범위 확인)가 그대로 맞았다 — C-085 대안을 3.8분에 집행. 유지할 방식",
+   "evidence": [
+    "04_Research/programs/P1_RETURN/P1S02_standing_qualification/rehearsal/rehearse.R",
+    "04_Research/programs/_lib/round_core/v3/standing.R",
+    "04_Research/programs/P1_RETURN/P1S02_standing_qualification/rehearsal/REHEARSAL.md"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261112-003",
+   "at": "2026-11-12T22:21:34+0900",
+   "review": "R-20261112-001",
+   "target": "J-20261112-007",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "감시 셸 R-1 follow 패치는 C-086 수용 내용과 맞는다(질문 ③ · 수용 응답에 위치가 없어 표본 대조): 커밋 4269ea6b5 tools/p1s02_seed_watch.sh — E2 = W → L → M · 임대 미리 안 쥠(:3-8 · :88-126) · 이른 창 삭제(:7) · 낮 창 08:20~11:45(:34) · 메모리 16 GB 근거 주석(:36-38) · 유일한 선점 = E2 ok ∧ 지문 동일일 때 E3 용 1회(:57-63) · 지문이 E2 시작 때와 다르면 놓고 보통 대기(:103-106). 레인은 GPU 1슬롯(reinforce_auto_config.json replication_lane.slots cpu 0 · gpu 1)이고 임대는 GPU 새 claim 만 보류(qv_lock.py:41)라 E2 동안 이미 보류된 레인에 E2 → E3 사이만 더해진다. 점검 v2 (가)에 지문 대조를 더해 '다른 자료 판의 E3' 경로까지 막았다. 남은 것 = 머리 주석 :4 · :16 문구가 :9 의 E3 예외와 어긋남(문구만)",
+   "evidence": [
+    "04_Research/programs/P1_RETURN/P1S02_standing_qualification/tools/p1s02_seed_watch.sh",
+    "06_Registry/reinforce_auto_config.json",
+    "02_Infrastructure/ops/qv_lock.py"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261112-004",
+   "at": "2026-11-12T22:21:34+0900",
+   "review": "R-20261112-001",
+   "target": "J-20261112-006",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "구성원 규칙 6 수정은 C1 해석으로 맞고 결정 범위 안이다(질문 ④): pit.md C1 '전기간 IC · ic_bad · 상관으로 고르면' — 08-02 군집은 전기간 월별 횡단면 신호 상관(factor_dup_scan.R)이라 글자 그대로 해당. 근거는 더 강하다 — factor_registry.json dedup 판정 근거 문구 중 정본 선택 이유로 승인 게이트 통계(DUPC-040)와 성과 유래 등급 표식(R12 → D01)을 든 것이 있어, 설계대로 '군집의 판정된 정본을 남긴다'면 구성원 일부를 전기간 성과로 고른 셈이었다(값은 열람했으나 옮기지 않음 · 존재 사실만). 더 엄격한 쪽 수정 · 체계 §6(측정 신뢰 결함 수리 · 설계) · D1~D6 무변경(D3 가족 집합 그대로) · 기록 있음 — 상신할 일이 아니었다",
+   "evidence": [
+    ".claude/rules/pit.md",
+    "02_Infrastructure/factor_db/factor_registry.json",
+    "04_Research/01_reports/factor_spine_design_20261111/README.md"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261112-005",
+   "at": "2026-11-12T22:21:35+0900",
+   "review": "R-20261112-001",
+   "target": "J-20261112-005",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "판 2 시험 재실행 생략의 근거는 재도출하니 참이다(질문 ①): 사양 tests 7종 = 점검 v1 §4 #8 이 HEAD 1b1bda18d 에서 돌린 그 7종(fail 0) · git diff --name-only 1b1bda18d HEAD -- 08_Tests = 0 · -- 02_Infrastructure 04_Research/programs/_lib = rf_llm_env.sh 1개(등록 뒤 · 레인 LLM 환경) · 등록본 핀 md5 = 점검 v1 표 값(run_paper_replication 04b18146 · rf_base_align e9b28528 · rf_base_cache 3794bc7b · rf_cell_engine 25fa9a4a · 시드 엔진 fe301130 · 매니페스트 4d00113a). 다시 돌려도 새 정보가 없었다. 격리 점검은 빼지 않았고(그 점검이 R-1 을 찾았다) — 지시를 좁게, 규율이 남는 쪽으로 읽었다. 과잉 신중 · 과정 과잉 아님",
+   "evidence": [
+    "04_Research/programs/P1_RETURN/P1S02_standing_qualification/prereg_draft_review_v1.md",
+    "stage_artifacts/programs/P1_RETURN/P1S02_standing_qualification/prereg.json"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261112-006",
+   "at": "2026-11-12T22:21:51+0900",
+   "review": "R-20261112-001",
+   "target": "J-20261112-007",
+   "grade": "note",
+   "rule": null,
+   "claim": "등록본 prereg.json::tests = [] 인데 사양 tests 는 7종 — 구속 문서만으로는 '생략'과 '시험 없음'을 가를 수 없다. 근거는 커밋 메시지(4269ea6b5 · 30fbabd1e)와 J-005 에만 있고 DESIGN.md · standing_rules.md · BUILD_EDITION2.md grep 0. 제안: DESIGN.md 한 줄('조건 ④ 재실행 생략 · 근거 점검 v1 §4 #8 · git diff 0 · J-005') + 코어 v4 known_limits — rc_register(run_tests = FALSE) 는 tests_waiver = list(reason, basis_head, basis_review) 를 받아 등록본에 쓴다",
+   "evidence": [
+    "stage_artifacts/programs/P1_RETURN/P1S02_standing_qualification/prereg.json",
+    "04_Research/programs/_lib/round_core/v3/register.R"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261112-007",
+   "at": "2026-11-12T22:21:51+0900",
+   "review": "R-20261112-001",
+   "target": "J-20261112-006",
+   "grade": "note",
+   "rule": null,
+   "claim": "별칭 9건 중 남길 쪽 선택 이유에 성과 유래 정보가 든 것 2건(DUPC-040 V19 → R17 · R12 → D01) — 정의 동일 쌍이라 합성에 닿는 것은 커버리지 차이뿐(V19 · R17 은 등록부 주석상 약 12% 차이)이지만 own_spec rule_notes 에 성과를 읽지 않는 고르기 규칙(그날 as-of 커버리지가 넓은 쪽 또는 설계의 id 사전순)을 적을 것. 또 redundant 112건이 규칙 1~5 를 통과하면 남아 중복 많은 가족은 그 신호 가중이 커진다 — P1R03 가설 '등가중 가족 합성'의 뜻(구성원 등가중 · 근사 중복 포함)을 결론 범위에 싣고 가족별 구성원 수를 FC_README 에 남긴다(J-006 기대 '조금 늘어난다'의 채점 재료)",
+   "evidence": [
+    "02_Infrastructure/factor_db/factor_registry.json"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261112-008",
+   "at": "2026-11-12T22:21:51+0900",
+   "review": "R-20261112-001",
+   "target": "SYSTEM",
+   "grade": "note",
+   "rule": null,
+   "claim": "C-086 수용 응답의 change('S3 레인 출력 계약은 후보판을 지금 준비 · 레인 빈틈에 원자 교체')에 파일:행 · 커밋이 없었다(§13-3). 표본 대조: 감시 셸 절반은 있다(E2). S3 절반은 서브에이전트 ② 가 staging/s3/ 에서 멈춘 뒤(미추적 · 시험 수리 중단) 재개되지 않았고, 재개 저널 next_action 에서 마지막 (6)이며 미룬 사유가 없다 · 입구 portfolio_only_base 21(11-11 미리보기) → 22(등록 scan). 가까운 비용은 작아 보여 도전으로 올리지 않는다 — 지금 레인 claim 1109.3488 = 구성 규칙(S3 로 열리지 않음) · 예약 재구현 2편은 포트폴리오 산출 분류표(33편)에 없음 · 후보판 원본 md5(bd17de37 · 671cc2e3 · bafd208a) = 지금 운영 파일(유효). 제안: BUILD_EDITION2 · 저널에 사유와 발동 조건 한 줄(예: 레인이 큐의 새 논문을 claim 하기 전 교체)",
+   "evidence": [
+    "04_Research/01_reports/portfolio_paper_layer_split_20261112/staging/s3/SOURCE_MD5.json",
+    "06_Registry/session_resume.json",
+    "04_Research/01_reports/portfolio_paper_layer_split_20261112/classification.json"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261112-009",
+   "at": "2026-11-12T22:21:51+0900",
+   "review": "R-20261112-001",
+   "target": "J-20261112-003",
+   "grade": "note",
+   "rule": null,
+   "claim": "리허설 측정 산출이 실제 저장소에 표식 없이 남았다 — stage_artifacts/replication/20261112_213000_23284(run 3) · run 2 산출(신선도 주입 · 11-11 자료). 역할 reference 라 풀 등재 · 팩터 분석 · L-code 는 꺼지지만 grade_v3_backfill.R:88-94 는 stage_artifacts/**/authoritative_remeasure.json 을 WT_ 만 빼고 전부 대상으로 삼아, 다음 규칙 변경 재채점 · 현황 집계(T4 감사 재료)에 리허설 측정이 연구 기록으로 들어간다. 제안: 산출 폴더에 rehearsal.marker + 스캐너 건너뛰기, 또는 REHEARSAL.md 에 run id 제외 목록",
+   "evidence": [
+    "04_Research/programs/P1_RETURN/P1S02_standing_qualification/rehearsal/rehearsal_summary.json",
+    "02_Infrastructure/programs/grade_v3_backfill.R"
    ],
    "alternative": "",
    "falsifier": "",
