@@ -57,7 +57,8 @@ Rscript 04_Research/programs/P1_RETURN/P1S02_standing_qualification/rehearsal/re
 ```
 
 - 실행마다 `out/<YYYYmmdd_HHMMSS>/` 에 새 격리 판 · 사전등록 뿌리 · 등록부 사본 · 원장이 생긴다(앞 실행과 섞이지 않는다). 요약은 `out/<run>/rehearsal_summary.json` 과 `rehearsal/rehearsal_summary.json`(마지막 실행 · 커밋 대상 · 초안 v2 의 `rehearsal` 이 읽는다) 두 곳.
-- 워커 산출은 실제 `stage_artifacts/replication/<run_id>/` 에 생긴다(러너 정본 위치 · 지우지 않는다). 역할 reference 라 2계층 풀 등재 · 팩터 분석 · L-code · 강화 원장 auto-open 은 꺼진다(`rc_standing_measure_item` · 워커 환경변수).
+- 워커 산출은 실제 `stage_artifacts/replication/<run_id>/` 에 생긴다(러너 정본 위치). 역할 reference 라 2계층 풀 등재 · 팩터 분석 · L-code · 강화 원장 auto-open 은 꺼진다(`rc_standing_measure_item` · 워커 환경변수).
+- **실행 뒤 워커 산출을 `out/<run>/worker_artifacts/` 로 옮긴다**(11-12 판단 Superfan T1 C-20261112-009 — `grade_v3_backfill.R` 은 `stage_artifacts` 아래 권위 기록을 전부 센다 · 리허설을 연구 기록으로 세지 않게). 11-12 의 두 실행분(`20261112_212433_18860` · `20261112_213000_23284`)은 옮겼다. 스크립트에 자동 단계로 넣는 것은 다음 리허설 때.
 
 ## 4. 격리 — 무엇이 실제에 닿지 않았나
 
