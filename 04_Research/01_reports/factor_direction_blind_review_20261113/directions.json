@@ -1,0 +1,1943 @@
+{
+ "schema": "factor_direction_blind_review_v1",
+ "generated": "2026-11-13",
+ "scope": "FC_FAM_value(24) · FC_FAM_growth(21) · FC_FAM_consensus(14) · FC_FAM_crowding(14) core.members",
+ "information_boundary": "성과 · 성과 유래 표식 미열람(IC · 수익률 · 등급 · evidence_tier · research_stage · dedup · factor_evidence · s_ic · results). 정의 · 빌더 코드 · 문헌만.",
+ "direction_semantics": "registry_direction / proposed_direction 은 저장 Raw_Value 기준(소비자가 곱하는 값). agree: true=일치 · false=불일치 · null=불명.",
+ "summary": {
+  "by_category": {
+   "value": {
+    "일치": 22,
+    "불일치": 1,
+    "불명": 1
+   },
+   "growth": {
+    "일치": 19,
+    "불일치": 0,
+    "불명": 2
+   },
+   "consensus": {
+    "일치": 12,
+    "불일치": 1,
+    "불명": 1
+   },
+   "crowding": {
+    "일치": 8,
+    "불일치": 1,
+    "불명": 5
+   }
+  },
+  "total": {
+   "일치": 61,
+   "불일치": 3,
+   "불명": 9
+  },
+  "disagree_ids": [
+   "V23_RAFI_Weight",
+   "C08_Coverage",
+   "CR05_Short_Pressure_Proxy"
+  ],
+  "unclear_ids": [
+   "V17_Payout_Ratio",
+   "GR01_Revenue_Growth",
+   "Q21_Revenue_Growth",
+   "C06_TP_Gap",
+   "CR07_Momentum_Crowding",
+   "CR08_Volume_Price_Divergence",
+   "CR10_Convergence_Premium",
+   "TR01_ADX_Proxy",
+   "TR02_Trend_Consistency"
+  ]
+ },
+ "members": [
+  {
+   "id": "V01_BM",
+   "category": "value",
+   "registry_category": "value",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "자기자본/시가총액(자본>0) — 클수록 싸다",
+   "basis": "장부가 대비 시가가 낮을수록(=B/M 높을수록) 평균수익 높다는 가치 효과. 신흥시장 표본에서도 같은 부호.",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Fama & French (1992) The Cross-Section of Expected Stock Returns, JF 47(2)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1992.tb04398.x"
+    },
+    {
+     "ref": "Lakonishok, Shleifer & Vishny (1994) Contrarian Investment, Extrapolation, and Risk, JF 49(5)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1994.tb04772.x"
+    },
+    {
+     "ref": "Rouwenhorst (1999) Local Return Factors and Turnover in Emerging Stock Markets, JF 54(4) — 신흥시장 표본(한국 포함 · 원문 표본표 재확인 권장)",
+     "url": "https://doi.org/10.1111/0022-1082.00151"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "V02_EP",
+   "category": "value",
+   "registry_category": "value",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "순이익/시가총액(적자 포함) — 클수록 이익 대비 싸다",
+   "basis": "E/P 높을수록 수익 높다(Basu 1977 · LSV 1994). 단 적자 구간은 비단조(FF 1992 — 음의 E/P 종목 수익이 높다) — 저장값이 적자를 포함해 신뢰 중간.",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Basu (1977) Investment Performance of Common Stocks in Relation to Their Price-Earnings Ratios, JF 32(3)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1977.tb01979.x"
+    },
+    {
+     "ref": "Lakonishok, Shleifer & Vishny (1994) Contrarian Investment, Extrapolation, and Risk, JF 49(5)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1994.tb04772.x"
+    },
+    {
+     "ref": "Fama & French (1992) The Cross-Section of Expected Stock Returns, JF 47(2)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1992.tb04398.x"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "V03_CFP",
+   "category": "value",
+   "registry_category": "value",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "영업현금흐름/시가총액 — 클수록 싸다",
+   "basis": "C/P 가치 효과.",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Lakonishok, Shleifer & Vishny (1994) Contrarian Investment, Extrapolation, and Risk, JF 49(5)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1994.tb04772.x"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "V04_fPER",
+   "category": "value",
+   "registry_category": "value",
+   "registry_direction": "lower_better",
+   "s_reg": -1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "lower_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "종가/컨센서스 EPS(FY1>0) — 클수록 비싸다",
+   "basis": "P/E 낮을수록 수익 높다(Basu 1977) · 이익 배수 경쟁 비교에서도 낮은 배수 우위(Gray & Vogel 2012).",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Basu (1977) Investment Performance of Common Stocks in Relation to Their Price-Earnings Ratios, JF 32(3)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1977.tb01979.x"
+    },
+    {
+     "ref": "Gray & Vogel (2012) Analyzing Valuation Measures: A Performance Horse Race over the Past 40 Years, JPM 39(1)",
+     "url": "https://doi.org/10.3905/jpm.2012.39.1.112"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "V05_fPBR",
+   "category": "value",
+   "registry_category": "value",
+   "registry_direction": "lower_better",
+   "s_reg": -1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "lower_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "종가/컨센서스 BPS(FY1>0) — 클수록 비싸다",
+   "basis": "B/M 의 역수 — 낮을수록 가치.",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Fama & French (1992) The Cross-Section of Expected Stock Returns, JF 47(2)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1992.tb04398.x"
+    },
+    {
+     "ref": "Lakonishok, Shleifer & Vishny (1994) Contrarian Investment, Extrapolation, and Risk, JF 49(5)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1994.tb04772.x"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "V06_fDY",
+   "category": "value",
+   "registry_category": "value",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "컨센서스 DPS/종가(>0) — 클수록 배당수익률 높음",
+   "basis": "배당수익률과 수익의 양의 관계(Litzenberger & Ramaswamy 1979 · Naranjo 외 1998) · 지급수익률 프리미엄(Boudoukh 외 2007). 배당 지급 종목 안에서의 부호 — 무배당 포함 시 U자형 보고가 있어 중간.",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Litzenberger & Ramaswamy (1979) The Effect of Personal Taxes and Dividends on Capital Asset Prices, JFE 7(2)",
+     "url": "https://doi.org/10.1016/0304-405X(79)90012-6"
+    },
+    {
+     "ref": "Naranjo, Nimalendran & Ryngaert (1998) Stock Returns, Dividend Yields, and Taxes, JF 53(6)",
+     "url": "https://doi.org/10.1111/0022-1082.00082"
+    },
+    {
+     "ref": "Boudoukh, Michaely, Richardson & Roberts (2007) On the Importance of Measuring Payout Yield, JF 62(2)",
+     "url": "https://doi.org/10.1111/j.1540-6261.2007.01226.x"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "V07_EV_EBITDA",
+   "category": "value",
+   "registry_category": "value",
+   "registry_direction": "lower_better",
+   "s_reg": -1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "lower_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "EV/EBITDA(EBITDA>0) — 클수록 비싸다",
+   "basis": "기업가치 배수 낮을수록 수익 높다.",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Loughran & Wellman (2011) New Evidence on the Relation between the Enterprise Multiple and Average Stock Returns, JFQA 46(6)",
+     "url": "https://doi.org/10.1017/S0022109011000445"
+    },
+    {
+     "ref": "Gray & Vogel (2012) Analyzing Valuation Measures: A Performance Horse Race over the Past 40 Years, JPM 39(1)",
+     "url": "https://doi.org/10.3905/jpm.2012.39.1.112"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "V08_PSR",
+   "category": "value",
+   "registry_category": "value",
+   "registry_direction": "lower_better",
+   "s_reg": -1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "lower_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "시가총액/매출 — 클수록 비싸다",
+   "basis": "S/P 의 역수 — 낮을수록 가치.",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Barbee, Mukherji & Raines (1996) Do Sales-Price and Debt-Equity Explain Stock Returns Better than Book-Market and Firm Size?, FAJ 52(2)",
+     "url": "https://doi.org/10.2469/faj.v52.n2.1980"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "V09_PEG",
+   "category": "value",
+   "registry_category": "value",
+   "registry_direction": "lower_better",
+   "s_reg": -1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "lower_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "fPER/(EPS 성장률×100)(성장률>1%) — 클수록 성장 대비 비싸다",
+   "basis": "PEG 가 낮을수록 내재 기대수익(자본비용) 추정치가 높다(Easton 2004). 수익 예측 직접 검정은 아니라 중간.",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Easton (2004) PE Ratios, PEG Ratios, and Estimating the Implied Expected Rate of Return on Equity Capital, TAR 79(1)",
+     "url": "https://doi.org/10.2308/accr.2004.79.1.73"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "V10_FCF_Yield",
+   "category": "value",
+   "registry_category": "value",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "(영업CF − 투자CF 대용 capex)/시가총액 — 클수록 싸다",
+   "basis": "현금흐름 수익률 가치 효과 · FCF 배수 비교.",
+   "def_code_note": "capex = −투자활동현금흐름 근사(금융자산 매매 포함)",
+   "refs": [
+    {
+     "ref": "Lakonishok, Shleifer & Vishny (1994) Contrarian Investment, Extrapolation, and Risk, JF 49(5)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1994.tb04772.x"
+    },
+    {
+     "ref": "Gray & Vogel (2012) Analyzing Valuation Measures: A Performance Horse Race over the Past 40 Years, JPM 39(1)",
+     "url": "https://doi.org/10.3905/jpm.2012.39.1.112"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "V11_Shareholder_Yield",
+   "category": "value",
+   "registry_category": "value",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "배당/시가총액(배당>0) — 실제로는 후행 배당수익률",
+   "basis": "배당 · 지급수익률이 높을수록 기대수익 높다.",
+   "def_code_note": "정의 문구는 '배당+자사주'지만 코드는 배당만 쓴다(자사주 = 0)",
+   "refs": [
+    {
+     "ref": "Boudoukh, Michaely, Richardson & Roberts (2007) On the Importance of Measuring Payout Yield, JF 62(2)",
+     "url": "https://doi.org/10.1111/j.1540-6261.2007.01226.x"
+    },
+    {
+     "ref": "Litzenberger & Ramaswamy (1979) The Effect of Personal Taxes and Dividends on Capital Asset Prices, JFE 7(2)",
+     "url": "https://doi.org/10.1016/0304-405X(79)90012-6"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "V12_Composite_Value",
+   "category": "value",
+   "registry_category": "value",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "mean(z(−fPER), z(−fPBR), z(fDY), z(CFP)) — 클수록 싸다",
+   "basis": "성분이 모두 '클수록 가치' 쪽으로 정렬된 합성.",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Basu (1977) Investment Performance of Common Stocks in Relation to Their Price-Earnings Ratios, JF 32(3)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1977.tb01979.x"
+    },
+    {
+     "ref": "Fama & French (1992) The Cross-Section of Expected Stock Returns, JF 47(2)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1992.tb04398.x"
+    },
+    {
+     "ref": "Lakonishok, Shleifer & Vishny (1994) Contrarian Investment, Extrapolation, and Risk, JF 49(5)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1994.tb04772.x"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "V13_EV_Sales",
+   "category": "value",
+   "registry_category": "value",
+   "registry_direction": "lower_better",
+   "s_reg": -1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "lower_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "EV/매출 — 클수록 비싸다",
+   "basis": "매출 기준 가치 배수 — 낮을수록 가치.",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Barbee, Mukherji & Raines (1996) Do Sales-Price and Debt-Equity Explain Stock Returns Better than Book-Market and Firm Size?, FAJ 52(2)",
+     "url": "https://doi.org/10.2469/faj.v52.n2.1980"
+    },
+    {
+     "ref": "Loughran & Wellman (2011) New Evidence on the Relation between the Enterprise Multiple and Average Stock Returns, JFQA 46(6)",
+     "url": "https://doi.org/10.1017/S0022109011000445"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "V14_EBIT_EV",
+   "category": "value",
+   "registry_category": "value",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "영업이익/EV — 클수록 싸다",
+   "basis": "EBIT/EV 가 가치 지표 중 가장 강했다(Gray & Vogel 2012).",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Gray & Vogel (2012) Analyzing Valuation Measures: A Performance Horse Race over the Past 40 Years, JPM 39(1)",
+     "url": "https://doi.org/10.3905/jpm.2012.39.1.112"
+    },
+    {
+     "ref": "Loughran & Wellman (2011) New Evidence on the Relation between the Enterprise Multiple and Average Stock Returns, JFQA 46(6)",
+     "url": "https://doi.org/10.1017/S0022109011000445"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "V15_NetDebt_Adj_EP",
+   "category": "value",
+   "registry_category": "value",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "(순이익+이자비용)/(시가총액+순부채) — 클수록 싸다",
+   "basis": "기업가치 기준 이익수익률 — EBIT/EV 와 같은 계열.",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Gray & Vogel (2012) Analyzing Valuation Measures: A Performance Horse Race over the Past 40 Years, JPM 39(1)",
+     "url": "https://doi.org/10.3905/jpm.2012.39.1.112"
+    },
+    {
+     "ref": "Loughran & Wellman (2011) New Evidence on the Relation between the Enterprise Multiple and Average Stock Returns, JFQA 46(6)",
+     "url": "https://doi.org/10.1017/S0022109011000445"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "V16_Tobins_Q",
+   "category": "value",
+   "registry_category": "value",
+   "registry_direction": "lower_better",
+   "s_reg": -1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "lower_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "(시가총액+총부채)/총자산 — 클수록 비싸다",
+   "basis": "시장가/대체원가 근사 = 자산 기준 시장가 대 장부가 — 낮을수록 가치.",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Fama & French (1992) The Cross-Section of Expected Stock Returns, JF 47(2)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1992.tb04398.x"
+    },
+    {
+     "ref": "Lakonishok, Shleifer & Vishny (1994) Contrarian Investment, Extrapolation, and Risk, JF 49(5)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1994.tb04772.x"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "V17_Payout_Ratio",
+   "category": "value",
+   "registry_category": "value",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "unclear",
+   "agree": null,
+   "verdict": "불명",
+   "stored_meaning": "배당/순이익(둘 다>0) — 클수록 이익 중 배당 비중 큼",
+   "basis": "배당성향 자체의 횡단면 수익 예측 문헌을 찾지 못했다. 높은 배당성향 → 이후 이익성장 높음(Arnott & Asness 2003 시장 단위 · Zhou & Ruland 2006 기업 단위)은 이익 예측이지 수익 예측이 아니고, 지급 '수익률'(Boudoukh 외 2007)은 가격으로 나눈 다른 양이다.",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Arnott & Asness (2003) Surprise! Higher Dividends = Higher Earnings Growth, FAJ 59(1)",
+     "url": "https://doi.org/10.2469/faj.v59.n1.2504"
+    },
+    {
+     "ref": "Zhou & Ruland (2006) Dividend Payout and Future Earnings Growth, FAJ 62(3)",
+     "url": "https://doi.org/10.2469/faj.v62.n3.4157"
+    },
+    {
+     "ref": "Boudoukh, Michaely, Richardson & Roberts (2007) On the Importance of Measuring Payout Yield, JF 62(2)",
+     "url": "https://doi.org/10.1111/j.1540-6261.2007.01226.x"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "V18_AM",
+   "category": "value",
+   "registry_category": "value",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "총자산/시가총액 — 클수록 싸다",
+   "basis": "A/ME 는 B/M 과 같은 가치 효과(FF 1992).",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Fama & French (1992) The Cross-Section of Expected Stock Returns, JF 47(2)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1992.tb04398.x"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "V19_Debt_to_Market",
+   "category": "value",
+   "registry_category": "value",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "총차입금/시가총액(차입>0) — 클수록 시장 레버리지 높음",
+   "basis": "D/E(시가) 높을수록 수익 높다(Bhandari 1988). 복제 연구에서 유의성이 약해져(Hou 외 2020) 중간.",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Bhandari (1988) Debt/Equity Ratio and Expected Common Stock Returns: Empirical Evidence, JF 43(2)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1988.tb03952.x"
+    },
+    {
+     "ref": "Hou, Xue & Zhang (2020) Replicating Anomalies, RFS 33(5)",
+     "url": "https://doi.org/10.1093/rfs/hhy131"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "V20_SP",
+   "category": "value",
+   "registry_category": "value",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "매출/시가총액 — 클수록 싸다",
+   "basis": "S/P 가치 효과.",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Barbee, Mukherji & Raines (1996) Do Sales-Price and Debt-Equity Explain Stock Returns Better than Book-Market and Firm Size?, FAJ 52(2)",
+     "url": "https://doi.org/10.2469/faj.v52.n2.1980"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "V21_Composite_Equity_Issuance",
+   "category": "value",
+   "registry_category": "value",
+   "registry_direction": "lower_better",
+   "s_reg": -1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "lower_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "log(시총_t/시총_5y) − log(1+가격수익_5y) ≈ 5년 주식 수 증가(발행) — 클수록 많이 발행",
+   "basis": "복합 지분발행 많을수록 이후 수익 낮다 · 국제 표본에서도 같은 부호.",
+   "def_code_note": "가격수익(배당 제외)을 써서 Daniel–Titman 원식과 미세 차이",
+   "refs": [
+    {
+     "ref": "Daniel & Titman (2006) Market Reactions to Tangible and Intangible Information, JF 61(4)",
+     "url": "https://doi.org/10.1111/j.1540-6261.2006.00884.x"
+    },
+    {
+     "ref": "Pontiff & Woodgate (2008) Share Issuance and Cross-sectional Returns, JF 63(2)",
+     "url": "https://doi.org/10.1111/j.1540-6261.2008.01335.x"
+    },
+    {
+     "ref": "McLean, Pontiff & Watanabe (2009) Share Issuance and Cross-Sectional Returns: International Evidence, JFE 94(1) — SSRN 판 링크",
+     "url": "https://doi.org/10.2139/ssrn.1089858"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "V22_FCFF_EV",
+   "category": "value",
+   "registry_category": "value",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "(영업CF − capex 근사)/EV — 클수록 싸다",
+   "basis": "기업가치 기준 현금흐름 수익률.",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Gray & Vogel (2012) Analyzing Valuation Measures: A Performance Horse Race over the Past 40 Years, JPM 39(1)",
+     "url": "https://doi.org/10.3905/jpm.2012.39.1.112"
+    },
+    {
+     "ref": "Lakonishok, Shleifer & Vishny (1994) Contrarian Investment, Extrapolation, and Risk, JF 49(5)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1994.tb04772.x"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "V23_RAFI_Weight",
+   "category": "value",
+   "registry_category": "value",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "lower_better",
+   "agree": false,
+   "verdict": "불일치",
+   "stored_meaning": "유니버스 합계 대비 매출 · 영업CF · 자본 · 배당 몫의 평균 — 가격으로 나누지 않은 '기본가치 규모'",
+   "basis": "가치 비율이 아니라 규모 지표다. 규모 프리미엄(작을수록 수익 높음)은 품질을 통제하면 가격 아닌 규모 척도에서도 나타난다(Asness 외 2018) → 작을수록 좋다. Berk(1995)는 시장가 아닌 규모 척도는 수익과 무관해야 한다고 본다. 어느 쪽도 '클수록 좋다'를 지지하지 않는다. RAFI(Arnott 외 2005)의 초과수익은 기본가치 비중/시가 비중(=가치 기울기)에서 나오지, 원 비중 크기에서 나오지 않는다.",
+   "def_code_note": "등록부는 가치 계열로 분류 — 실제 양은 규모",
+   "refs": [
+    {
+     "ref": "Asness, Frazzini, Israel, Moskowitz & Pedersen (2018) Size Matters, if You Control Your Junk, JFE 129(3)",
+     "url": "https://doi.org/10.1016/j.jfineco.2018.05.006"
+    },
+    {
+     "ref": "Banz (1981) The Relationship between Return and Market Value of Common Stocks, JFE 9(1)",
+     "url": "https://doi.org/10.1016/0304-405X(81)90018-0"
+    },
+    {
+     "ref": "Berk (1995) A Critique of Size-Related Anomalies, RFS 8(2)",
+     "url": "https://doi.org/10.1093/rfs/8.2.275"
+    },
+    {
+     "ref": "Arnott, Hsu & Moore (2005) Fundamental Indexation, FAJ 61(2)",
+     "url": "https://doi.org/10.2469/faj.v61.n2.2718"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "V24_Residual_Income",
+   "category": "value",
+   "registry_category": "value",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "(순이익 − 자본×0.08)/시가총액 — 클수록 잔여이익 대비 싸다",
+   "basis": "잔여이익 모형 가치/가격 비율이 높을수록 이후 수익 높다(Frankel & Lee 1998).",
+   "def_code_note": "자기자본비용 8% 고정 상수",
+   "refs": [
+    {
+     "ref": "Frankel & Lee (1998) Accounting Valuation, Market Expectation, and Cross-Sectional Stock Returns, JAE 25(3)",
+     "url": "https://doi.org/10.1016/S0165-4101(98)00026-3"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "GR01_Revenue_Growth",
+   "category": "growth",
+   "registry_category": "growth",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "unclear",
+   "agree": null,
+   "verdict": "불명",
+   "stored_meaning": "최근 두 재무 기록 간 매출 변화율 — DART 연간 구간 = 연간 YoY · XLSX 분기 구간 = 연속 분기(QoQ)",
+   "basis": "문헌이 기간에 따라 갈린다. 다년 매출성장(글래머)은 이후 수익 낮음(LSV 1994 — 복제에서 유의성 약화, Hou 외 2020), 분기 매출 서프라이즈는 이후 수익 높음(Jegadeesh & Livnat 2006). 저장값은 어느 정의에도 정확히 맞지 않는다.",
+   "def_code_note": "정의 'YoY' ≠ 코드 '최근 두 기록'(분기 구간은 계절성 섞인 QoQ)",
+   "refs": [
+    {
+     "ref": "Lakonishok, Shleifer & Vishny (1994) Contrarian Investment, Extrapolation, and Risk, JF 49(5)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1994.tb04772.x"
+    },
+    {
+     "ref": "Hou, Xue & Zhang (2020) Replicating Anomalies, RFS 33(5)",
+     "url": "https://doi.org/10.1093/rfs/hhy131"
+    },
+    {
+     "ref": "Jegadeesh & Livnat (2006) Revenue Surprises and Stock Returns, JAE 41(1-2)",
+     "url": "https://doi.org/10.1016/j.jacceco.2005.10.003"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "GR02_Earnings_Growth",
+   "category": "growth",
+   "registry_category": "growth",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "최근 두 재무 기록 간 순이익 변화율(|전기| 분모)",
+   "basis": "이익 변화 · 서프라이즈 → 이후 수익 양(계절 이익변화 기반 SUE, Foster 외 1984 · PEAD, Bernard & Thomas 1989 · 수익성 변화, Hou 외 2020). 연간 구간은 정보가 묵어 중간.",
+   "def_code_note": "정의 'YoY' ≠ 코드 '최근 두 기록'",
+   "refs": [
+    {
+     "ref": "Foster, Olsen & Shevlin (1984) Earnings Releases, Anomalies, and the Behavior of Security Returns, TAR 59(4)",
+     "url": "https://doi.org/10.2308/tar-4483133"
+    },
+    {
+     "ref": "Bernard & Thomas (1989) Post-Earnings-Announcement Drift: Delayed Price Response or Risk Premium?, JAR 27",
+     "url": "https://doi.org/10.2307/2491062"
+    },
+    {
+     "ref": "Hou, Xue & Zhang (2020) Replicating Anomalies, RFS 33(5)",
+     "url": "https://doi.org/10.1093/rfs/hhy131"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "GR03_Asset_Growth",
+   "category": "growth",
+   "registry_category": "growth",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "−(총자산 증가율) — 클수록 자산을 덜 늘림",
+   "basis": "자산성장 높을수록 이후 수익 낮다 → 음수화한 저장값은 클수록 좋다. 국제 표본(한국 포함 다수국)에서도 같은 부호.",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Cooper, Gulen & Schill (2008) Asset Growth and the Cross-Section of Stock Returns, JF 63(4)",
+     "url": "https://doi.org/10.1111/j.1540-6261.2008.01370.x"
+    },
+    {
+     "ref": "Watanabe, Xu, Yao & Yu (2013) The Asset Growth Effect: Insights from International Equity Markets, JFE 108(2)",
+     "url": "https://doi.org/10.1016/j.jfineco.2012.12.002"
+    },
+    {
+     "ref": "Titman, Wei & Xie (2013) Market Development and the Asset Growth Effect: International Evidence, JFQA 48(5)",
+     "url": "https://doi.org/10.1017/s0022109013000495"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "GR04_GPA_Growth",
+   "category": "growth",
+   "registry_category": "growth",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "GP/A 의 최신 대 가장 오랜(최대 5개 기록) 변화율 — 클수록 수익성 개선",
+   "basis": "수익성 추세 상승 → 이후 수익 높다(Akbas 외 2017) · 매출총이익률 수준 프리미엄(Novy-Marx 2013).",
+   "def_code_note": "정의 '5Y' — 코드는 최근 5개 기록(분기 구간 ≈ 1년 · 연간 구간 ≈ 4년)",
+   "refs": [
+    {
+     "ref": "Akbas, Jiang & Koch (2017) The Trend in Firm Profitability and the Cross-Section of Stock Returns, TAR 92(5)",
+     "url": "https://doi.org/10.2308/accr-51708"
+    },
+    {
+     "ref": "Novy-Marx (2013) The Other Side of Value: The Gross Profitability Premium, JFE 108(1)",
+     "url": "https://doi.org/10.1016/j.jfineco.2013.01.003"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "GR05_ROE_Growth",
+   "category": "growth",
+   "registry_category": "growth",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "ROE 의 최신 대 가장 오랜(최대 5개 기록) 변화율",
+   "basis": "수익성(ROE) 개선 → 이후 수익 높다.",
+   "def_code_note": "GR04 와 같은 창 주의",
+   "refs": [
+    {
+     "ref": "Hou, Xue & Zhang (2020) Replicating Anomalies, RFS 33(5)",
+     "url": "https://doi.org/10.1093/rfs/hhy131"
+    },
+    {
+     "ref": "Akbas, Jiang & Koch (2017) The Trend in Firm Profitability and the Cross-Section of Stock Returns, TAR 92(5)",
+     "url": "https://doi.org/10.2308/accr-51708"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "GR06_OCF_Growth",
+   "category": "growth",
+   "registry_category": "growth",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "최근 두 재무 기록 간 영업CF 변화율",
+   "basis": "기본가치 모멘텀(이익 변화)과 같은 쪽으로 판단 — 영업CF 성장 자체를 직접 검정한 문헌은 찾지 못해 낮음.",
+   "def_code_note": "정의 'YoY' ≠ 코드 '최근 두 기록'",
+   "refs": [
+    {
+     "ref": "Chan, Jegadeesh & Lakonishok (1996) Momentum Strategies, JF 51(5)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1996.tb05222.x"
+    },
+    {
+     "ref": "Foster, Olsen & Shevlin (1984) Earnings Releases, Anomalies, and the Behavior of Security Returns, TAR 59(4)",
+     "url": "https://doi.org/10.2308/tar-4483133"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "GR07_Composite_Growth",
+   "category": "growth",
+   "registry_category": "growth",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "mean(z(GR01..GR06)) — GR03 은 음수화된 자산성장으로 들어간다",
+   "basis": "성분 다수가 '클수록 좋다'(이익 · 수익성 개선 · 저투자). 매출성장(GR01) 성분은 방향 불명이라 낮음.",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Cooper, Gulen & Schill (2008) Asset Growth and the Cross-Section of Stock Returns, JF 63(4)",
+     "url": "https://doi.org/10.1111/j.1540-6261.2008.01370.x"
+    },
+    {
+     "ref": "Foster, Olsen & Shevlin (1984) Earnings Releases, Anomalies, and the Behavior of Security Returns, TAR 59(4)",
+     "url": "https://doi.org/10.2308/tar-4483133"
+    },
+    {
+     "ref": "Akbas, Jiang & Koch (2017) The Trend in Firm Profitability and the Cross-Section of Stock Returns, TAR 92(5)",
+     "url": "https://doi.org/10.2308/accr-51708"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "IN01_CapEx_to_Assets",
+   "category": "growth",
+   "registry_category": "growth",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "투자활동현금흐름/총자산(음수 = 투자) — 클수록 투자 적음",
+   "basis": "투자 많을수록 이후 수익 낮다(Titman 외 2004 · 투자 요인 Hou 외 2015 · CMA, FF 2015).",
+   "def_code_note": "capex 가 아니라 투자활동CF 전체(금융자산 · 인수 포함) — 대용치",
+   "refs": [
+    {
+     "ref": "Titman, Wei & Xie (2004) Capital Investments and Stock Returns, JFQA 39(4)",
+     "url": "https://doi.org/10.1017/S0022109000003173"
+    },
+    {
+     "ref": "Hou, Xue & Zhang (2015) Digesting Anomalies: An Investment Approach, RFS 28(3)",
+     "url": "https://doi.org/10.1093/rfs/hhu068"
+    },
+    {
+     "ref": "Fama & French (2015) A Five-Factor Asset Pricing Model, JFE 116(1)",
+     "url": "https://doi.org/10.1016/j.jfineco.2014.10.010"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "IN02_CapEx_to_Revenue",
+   "category": "growth",
+   "registry_category": "growth",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "투자활동현금흐름/매출(음수 = 투자) — 클수록 투자 강도 낮음",
+   "basis": "Titman 외(2004)의 자본지출/매출 계열 — 투자 많을수록 이후 수익 낮다. 원 논문은 과거 평균 대비 비정상 투자라 수준 지표와 차이 있어 중간.",
+   "def_code_note": "IN01 과 같은 대용치 주의",
+   "refs": [
+    {
+     "ref": "Titman, Wei & Xie (2004) Capital Investments and Stock Returns, JFQA 39(4)",
+     "url": "https://doi.org/10.1017/S0022109000003173"
+    },
+    {
+     "ref": "Hou, Xue & Zhang (2015) Digesting Anomalies: An Investment Approach, RFS 28(3)",
+     "url": "https://doi.org/10.1093/rfs/hhu068"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "IN03_RD_to_Market",
+   "category": "growth",
+   "registry_category": "growth",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "R&D 비용/시가총액 — 클수록 시가 대비 R&D 많음",
+   "basis": "R&D/시가가 높을수록 이후 수익 높다(Chan 외 2001).",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Chan, Lakonishok & Sougiannis (2001) The Stock Market Valuation of Research and Development Expenditures, JF 56(6)",
+     "url": "https://doi.org/10.1111/0022-1082.00411"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "IN04_Net_Equity_Issuance",
+   "category": "growth",
+   "registry_category": "growth",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "−(주식 수 증가율) — 클수록 자사주 매입 · 발행 적음",
+   "basis": "순발행 많을수록 이후 수익 낮다 → 음수화한 저장값은 클수록 좋다.",
+   "def_code_note": "정의 문구는 BRS(2006) 현금 기준 — 코드는 주식 수 변화",
+   "refs": [
+    {
+     "ref": "Pontiff & Woodgate (2008) Share Issuance and Cross-sectional Returns, JF 63(2)",
+     "url": "https://doi.org/10.1111/j.1540-6261.2008.01335.x"
+    },
+    {
+     "ref": "Daniel & Titman (2006) Market Reactions to Tangible and Intangible Information, JF 61(4)",
+     "url": "https://doi.org/10.1111/j.1540-6261.2006.00884.x"
+    },
+    {
+     "ref": "McLean, Pontiff & Watanabe (2009) Share Issuance and Cross-Sectional Returns: International Evidence, JFE 94(1) — SSRN 판 링크",
+     "url": "https://doi.org/10.2139/ssrn.1089858"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "IN05_Net_Debt_Issuance",
+   "category": "growth",
+   "registry_category": "growth",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "−(차입금 변화/총자산) — 클수록 부채 축소",
+   "basis": "외부(부채) 조달 많을수록 이후 수익 낮다(Bradshaw 외 2006 · 사채 발행 뒤 저성과, Spiess & Affleck-Graves 1999).",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Bradshaw, Richardson & Sloan (2006) The Relation between Corporate Financing Activities, Analysts' Forecasts and Stock Returns, JAE 42(1-2)",
+     "url": "https://doi.org/10.1016/j.jacceco.2006.03.004"
+    },
+    {
+     "ref": "Spiess & Affleck-Graves (1999) The Long-Run Performance of Stock Returns following Debt Offerings, JFE 54(1)",
+     "url": "https://doi.org/10.1016/S0304-405X(99)00031-8"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "IN06_Investment_to_Assets",
+   "category": "growth",
+   "registry_category": "growth",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "−(ΔPPE + Δ재고)/전기 총자산 — 클수록 투자 적음",
+   "basis": "투자/자산 높을수록 이후 수익 낮다.",
+   "def_code_note": "재고는 유동자산 − 현금 − 매출채권 근사(빌더)",
+   "refs": [
+    {
+     "ref": "Lyandres, Sun & Zhang (2008) The New Issues Puzzle: Testing the Investment-Based Explanation, RFS 21(6)",
+     "url": "https://doi.org/10.1093/rfs/hhm058"
+    },
+    {
+     "ref": "Hou, Xue & Zhang (2015) Digesting Anomalies: An Investment Approach, RFS 28(3)",
+     "url": "https://doi.org/10.1093/rfs/hhu068"
+    },
+    {
+     "ref": "Titman, Wei & Xie (2004) Capital Investments and Stock Returns, JFQA 39(4)",
+     "url": "https://doi.org/10.1017/S0022109000003173"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "MK01_CAPM_Beta",
+   "category": "growth",
+   "registry_category": "growth",
+   "registry_direction": "lower_better",
+   "s_reg": -1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "lower_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "252거래일 CAPM 베타 — 클수록 시장 민감",
+   "basis": "실증 증권시장선이 평평하거나 음 — 저베타가 위험조정(및 다수 표본에서 원) 수익 우위(BAB). 신흥시장에서도 저위험 효과. 이론 CAPM 은 반대라 중간.",
+   "def_code_note": "등록부 category = growth(가족 배정이 어색 — 방향과 무관)",
+   "refs": [
+    {
+     "ref": "Frazzini & Pedersen (2014) Betting against Beta, JFE 111(1)",
+     "url": "https://doi.org/10.1016/j.jfineco.2013.10.005"
+    },
+    {
+     "ref": "Baker, Bradley & Wurgler (2011) Benchmarks as Limits to Arbitrage: Understanding the Low-Volatility Anomaly, FAJ 67(1)",
+     "url": "https://doi.org/10.2469/faj.v67.n1.4"
+    },
+    {
+     "ref": "Blitz, Pang & van Vliet (2013) The Volatility Effect in Emerging Markets, Emerging Markets Review 16",
+     "url": "https://doi.org/10.1016/j.ememar.2013.02.004"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "Q21_Revenue_Growth",
+   "category": "growth",
+   "registry_category": "growth",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "unclear",
+   "agree": null,
+   "verdict": "불명",
+   "stored_meaning": "GR01 과 같은 양(최근 두 기록 매출 변화율)",
+   "basis": "GR01 과 같다 — 기간별로 문헌 부호가 갈린다.",
+   "def_code_note": "GR01 과 사실상 중복",
+   "refs": [
+    {
+     "ref": "Lakonishok, Shleifer & Vishny (1994) Contrarian Investment, Extrapolation, and Risk, JF 49(5)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1994.tb04772.x"
+    },
+    {
+     "ref": "Hou, Xue & Zhang (2020) Replicating Anomalies, RFS 33(5)",
+     "url": "https://doi.org/10.1093/rfs/hhy131"
+    },
+    {
+     "ref": "Jegadeesh & Livnat (2006) Revenue Surprises and Stock Returns, JAE 41(1-2)",
+     "url": "https://doi.org/10.1016/j.jacceco.2005.10.003"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "Q22_Earnings_Growth",
+   "category": "growth",
+   "registry_category": "growth",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "GR02 와 같은 양(최근 두 기록 순이익 변화율)",
+   "basis": "GR02 와 같다.",
+   "def_code_note": "GR02 와 사실상 중복",
+   "refs": [
+    {
+     "ref": "Foster, Olsen & Shevlin (1984) Earnings Releases, Anomalies, and the Behavior of Security Returns, TAR 59(4)",
+     "url": "https://doi.org/10.2308/tar-4483133"
+    },
+    {
+     "ref": "Bernard & Thomas (1989) Post-Earnings-Announcement Drift: Delayed Price Response or Risk Premium?, JAR 27",
+     "url": "https://doi.org/10.2307/2491062"
+    },
+    {
+     "ref": "Hou, Xue & Zhang (2020) Replicating Anomalies, RFS 33(5)",
+     "url": "https://doi.org/10.1093/rfs/hhy131"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "Q34_GP_Growth",
+   "category": "growth",
+   "registry_category": "growth",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "코드 = 최근 두 기록 간 매출총이익 변화율",
+   "basis": "매출총이익 개선 → 이후 수익 높다(수익성 · 기본가치 모멘텀).",
+   "def_code_note": "정의 '5년 GP/TA 성장' ≠ 코드 '매출총이익 YoY'",
+   "refs": [
+    {
+     "ref": "Novy-Marx (2013) The Other Side of Value: The Gross Profitability Premium, JFE 108(1)",
+     "url": "https://doi.org/10.1016/j.jfineco.2013.01.003"
+    },
+    {
+     "ref": "Akbas, Jiang & Koch (2017) The Trend in Firm Profitability and the Cross-Section of Stock Returns, TAR 92(5)",
+     "url": "https://doi.org/10.2308/accr-51708"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "XF_GD01_GrossProfit_Growth",
+   "category": "growth",
+   "registry_category": "growth",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "최근 두 기록 간 매출총이익 변화율(|전기| 분모)",
+   "basis": "Q34 와 같은 근거.",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Novy-Marx (2013) The Other Side of Value: The Gross Profitability Premium, JFE 108(1)",
+     "url": "https://doi.org/10.1016/j.jfineco.2013.01.003"
+    },
+    {
+     "ref": "Akbas, Jiang & Koch (2017) The Trend in Firm Profitability and the Cross-Section of Stock Returns, TAR 92(5)",
+     "url": "https://doi.org/10.2308/accr-51708"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "XF_GD02_OpProfit_Growth",
+   "category": "growth",
+   "registry_category": "growth",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "(영업이익 − 전기)/|전기|",
+   "basis": "이익 변화 → 이후 수익 양(PEAD · 이익 모멘텀).",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Bernard & Thomas (1989) Post-Earnings-Announcement Drift: Delayed Price Response or Risk Premium?, JAR 27",
+     "url": "https://doi.org/10.2307/2491062"
+    },
+    {
+     "ref": "Chan, Jegadeesh & Lakonishok (1996) Momentum Strategies, JF 51(5)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1996.tb05222.x"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "XF_GD03_OCF_Growth",
+   "category": "growth",
+   "registry_category": "growth",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "(영업CF − 전기)/|전기|",
+   "basis": "GR06 과 같은 근거 — 직접 문헌 없음.",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Chan, Jegadeesh & Lakonishok (1996) Momentum Strategies, JF 51(5)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1996.tb05222.x"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "XF_GD04_Dividend_Growth",
+   "category": "growth",
+   "registry_category": "growth",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "최근 두 기록 간 배당 변화율",
+   "basis": "배당 개시 · 증가 뒤 양의 표류, 생략 뒤 음의 표류(Michaely 외 1995) · 배당 증가 공시 반응 양(Grullon 외 2002).",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Michaely, Thaler & Womack (1995) Price Reactions to Dividend Initiations and Omissions: Overreaction or Drift?, JF 50(2)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1995.tb04796.x"
+    },
+    {
+     "ref": "Grullon, Michaely & Swaminathan (2002) Are Dividend Changes a Sign of Firm Maturity?, Journal of Business 75(3)",
+     "url": "https://doi.org/10.1086/339889"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "C01_SUE",
+   "category": "consensus",
+   "registry_category": "consensus",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "벤더 SUE(지배주주순이익) = (실제 − 예측)/표준편차",
+   "basis": "이익 서프라이즈 뒤 같은 방향 표류(PEAD).",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Bernard & Thomas (1989) Post-Earnings-Announcement Drift: Delayed Price Response or Risk Premium?, JAR 27",
+     "url": "https://doi.org/10.2307/2491062"
+    },
+    {
+     "ref": "Livnat & Mendenhall (2006) Comparing the Post-Earnings Announcement Drift for Surprises Calculated from Analyst and Time Series Forecasts, JAR 44(1)",
+     "url": "https://doi.org/10.1111/j.1475-679X.2006.00196.x"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "C02_EPS_Chg_1m",
+   "category": "consensus",
+   "registry_category": "consensus",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "FY1 EPS 컨센서스 1개월 변화율",
+   "basis": "이익 예상 상향 → 이후 수익 높다.",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Givoly & Lakonishok (1979) The Information Content of Financial Analysts' Forecasts of Earnings, JAE 1(3)",
+     "url": "https://doi.org/10.1016/0165-4101(79)90006-5"
+    },
+    {
+     "ref": "Chan, Jegadeesh & Lakonishok (1996) Momentum Strategies, JF 51(5)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1996.tb05222.x"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "C03_EPS_Chg_3m",
+   "category": "consensus",
+   "registry_category": "consensus",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "FY1 EPS 컨센서스 3개월 변화율",
+   "basis": "C02 와 같은 근거.",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Givoly & Lakonishok (1979) The Information Content of Financial Analysts' Forecasts of Earnings, JAE 1(3)",
+     "url": "https://doi.org/10.1016/0165-4101(79)90006-5"
+    },
+    {
+     "ref": "Chan, Jegadeesh & Lakonishok (1996) Momentum Strategies, JF 51(5)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1996.tb05222.x"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "C04_ESBR",
+   "category": "consensus",
+   "registry_category": "consensus",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "벤더 항목 'ESBR(지배)' 원값 — 등록부 정의는 '상향 애널리스트 비율'이나 저장값은 부호가 있고(음수 비율이 SUE 와 같은 수준) 분기에 한 번 바뀐다 → 서프라이즈 비율류로 보인다",
+   "basis": "어느 해석이든(상향 폭 · 양의 서프라이즈) 클수록 좋은 소식 → 같은 쪽 표류. 정의가 확인되지 않아 중간.",
+   "def_code_note": "등록부 정의 ≠ 저장값 성질(부호 · 갱신 주기)",
+   "refs": [
+    {
+     "ref": "Bernard & Thomas (1989) Post-Earnings-Announcement Drift: Delayed Price Response or Risk Premium?, JAR 27",
+     "url": "https://doi.org/10.2307/2491062"
+    },
+    {
+     "ref": "Livnat & Mendenhall (2006) Comparing the Post-Earnings Announcement Drift for Surprises Calculated from Analyst and Time Series Forecasts, JAR 44(1)",
+     "url": "https://doi.org/10.1111/j.1475-679X.2006.00196.x"
+    },
+    {
+     "ref": "Chan, Jegadeesh & Lakonishok (1996) Momentum Strategies, JF 51(5)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1996.tb05222.x"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "C05_ESCR",
+   "category": "consensus",
+   "registry_category": "consensus",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "벤더 항목 'ESCR(지배)' 원값 — 등록부 정의는 '같은 방향 개정의 일관성'(부호 없는 양)이나 저장값은 부호가 있다(음수 비율이 SUE 와 같은 수준) → 컨센서스 대비 서프라이즈 비율로 보인다",
+   "basis": "부호 있는 서프라이즈라면 클수록 좋다(PEAD). 정의 자체가 미확인이라 낮음 — 정의대로 부호 없는 일관성이면 방향은 불명이다.",
+   "def_code_note": "등록부 정의 ≠ 저장값 성질",
+   "refs": [
+    {
+     "ref": "Bernard & Thomas (1989) Post-Earnings-Announcement Drift: Delayed Price Response or Risk Premium?, JAR 27",
+     "url": "https://doi.org/10.2307/2491062"
+    },
+    {
+     "ref": "Livnat & Mendenhall (2006) Comparing the Post-Earnings Announcement Drift for Surprises Calculated from Analyst and Time Series Forecasts, JAR 44(1)",
+     "url": "https://doi.org/10.1111/j.1475-679X.2006.00196.x"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "C06_TP_Gap",
+   "category": "consensus",
+   "registry_category": "consensus",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "unclear",
+   "agree": null,
+   "verdict": "불명",
+   "stored_meaning": "(목표주가 − 종가)/종가 — 클수록 애널리스트 상승여력 큼",
+   "basis": "문헌이 갈린다: 업종 안 상대 순위로는 양(Da & Schaumburg 2011)이나 업종 간에는 없음, 내재수익률의 예측력은 약하다(Dechow & You 2020), 목표가 분산이 크면 오히려 음(Palley 외 2025). 목표가 '수정'의 정보(Brav & Lehavy 2003)는 C07 쪽 근거다.",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Da & Schaumburg (2011) Relative Valuation and Analyst Target Price Forecasts, Journal of Financial Markets 14(1)",
+     "url": "https://doi.org/10.1016/j.finmar.2010.09.001"
+    },
+    {
+     "ref": "Dechow & You (2020) Understanding the Determinants of Analyst Target Price Implied Returns, TAR 95(6)",
+     "url": "https://doi.org/10.2308/tar-2015-0265"
+    },
+    {
+     "ref": "Palley, Steffen & Zhang (2025) The Effect of Dispersion on the Informativeness of Consensus Analyst Target Prices, Management Science",
+     "url": "https://doi.org/10.1287/mnsc.2021.03549"
+    },
+    {
+     "ref": "Brav & Lehavy (2003) An Empirical Analysis of Analysts' Target Prices: Short-term Informativeness and Long-term Dynamics, JF 58(5)",
+     "url": "https://doi.org/10.1111/1540-6261.00593"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "C07_TP_Mom",
+   "category": "consensus",
+   "registry_category": "consensus",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "목표주가 35일 변화율",
+   "basis": "목표주가 상향 → 공시 반응과 이후 수익 양(Brav & Lehavy 2003).",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Brav & Lehavy (2003) An Empirical Analysis of Analysts' Target Prices: Short-term Informativeness and Long-term Dynamics, JF 58(5)",
+     "url": "https://doi.org/10.1111/1540-6261.00593"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "C08_Coverage",
+   "category": "consensus",
+   "registry_category": "consensus",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "lower_better",
+   "agree": false,
+   "verdict": "불일치",
+   "stored_meaning": "커버리지 애널리스트 수 — 클수록 주목 · 정보 많음",
+   "basis": "커버리지가 외생적으로 줄면 가격이 떨어지고 기대수익이 오른다(Kelly & Ljungqvist 2012 — 정보 비대칭 프리미엄) · 소외 기업 효과(Arbel 외 1983). 즉 커버리지 낮을수록 기대수익 높다. Hong 외(2000)는 저커버리지에서 모멘텀이 강하다는 조건부 결과. 규모와 강하게 겹쳐 중간.",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Kelly & Ljungqvist (2012) Testing Asymmetric-Information Asset Pricing Models, RFS 25(5)",
+     "url": "https://doi.org/10.1093/rfs/hhr134"
+    },
+    {
+     "ref": "Arbel, Carvell & Strebel (1983) Giraffes, Institutions and Neglected Firms, FAJ 39(3)",
+     "url": "https://doi.org/10.2469/faj.v39.n3.57"
+    },
+    {
+     "ref": "Hong, Lim & Stein (2000) Bad News Travels Slowly: Size, Analyst Coverage, and the Profitability of Momentum Strategies, JF 55(1)",
+     "url": "https://doi.org/10.1111/0022-1082.00206"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "C09_Earnings_Surprise_Sq",
+   "category": "consensus",
+   "registry_category": "consensus",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "sign(SUE)·SUE² — SUE 의 부호 보존 볼록 변환",
+   "basis": "SUE 와 같은 방향(PEAD) — 극단 서프라이즈 가중이 커질 뿐.",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Bernard & Thomas (1989) Post-Earnings-Announcement Drift: Delayed Price Response or Risk Premium?, JAR 27",
+     "url": "https://doi.org/10.2307/2491062"
+    },
+    {
+     "ref": "Livnat & Mendenhall (2006) Comparing the Post-Earnings Announcement Drift for Surprises Calculated from Analyst and Time Series Forecasts, JAR 44(1)",
+     "url": "https://doi.org/10.1111/j.1475-679X.2006.00196.x"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "C11_Earnings_Streak",
+   "category": "consensus",
+   "registry_category": "consensus",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "연속 양(+) SUE 분기 수",
+   "basis": "같은 부호 서프라이즈 연쇄 뒤 표류가 커진다(Loh & Warachka 2012).",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Loh & Warachka (2012) Streaks in Earnings Surprises and the Cross-Section of Stock Returns, Management Science 58(7)",
+     "url": "https://doi.org/10.1287/mnsc.1110.1485"
+    },
+    {
+     "ref": "Bernard & Thomas (1989) Post-Earnings-Announcement Drift: Delayed Price Response or Risk Premium?, JAR 27",
+     "url": "https://doi.org/10.2307/2491062"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "C12_Estimate_Dispersion_Proxy",
+   "category": "consensus",
+   "registry_category": "consensus",
+   "registry_direction": "lower_better",
+   "s_reg": -1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "lower_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "|EPS 1개월 변화 − 3개월 변화|/|EPS FY1| — 애널리스트 간 분산이 아니라 개정 불안정성 대용",
+   "basis": "의견 분산 클수록 이후 수익 낮다(Diether 외 2002) — 대용치가 분산을 잰다는 근거가 약해 낮음.",
+   "def_code_note": "정의 '의견 분산' ≠ 코드 '개정 변화 차이/EPS 수준'(단위 섞임)",
+   "refs": [
+    {
+     "ref": "Diether, Malloy & Scherbina (2002) Differences of Opinion and the Cross Section of Stock Returns, JF 57(5)",
+     "url": "https://doi.org/10.1111/0022-1082.00490"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "C16_EPS_Acceleration",
+   "category": "consensus",
+   "registry_category": "consensus",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "EPS 1개월 변화 − 3개월 변화/3 — 최근 개정 속도의 가속",
+   "basis": "이익 가속 → 이후 수익 양(He & Narayanamoorthy 2020 — 실현 이익 기준) · 개정 모멘텀(Chan 외 1996). 예상치 가속을 직접 검정한 문헌은 아니라 낮음.",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "He & Narayanamoorthy (2020) Earnings Acceleration and Stock Returns, JAE 69(1)",
+     "url": "https://doi.org/10.1016/j.jacceco.2019.101238"
+    },
+    {
+     "ref": "Chan, Jegadeesh & Lakonishok (1996) Momentum Strategies, JF 51(5)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1996.tb05222.x"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "C18_Earnings_CAR_3d",
+   "category": "consensus",
+   "registry_category": "consensus",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "직전 이익 발표 대용일 ±3일 누적 초과수익",
+   "basis": "발표 주변 초과수익 뒤 같은 방향 표류.",
+   "def_code_note": "발표일 = SUE 관측일 대용",
+   "refs": [
+    {
+     "ref": "Chan, Jegadeesh & Lakonishok (1996) Momentum Strategies, JF 51(5)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1996.tb05222.x"
+    },
+    {
+     "ref": "Brandt, Kishore, Santa-Clara & Venkatachalam (2006) Earnings Announcements are Full of Surprises, SSRN WP",
+     "url": "https://doi.org/10.2139/ssrn.909563"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "C19_Composite_Earnings",
+   "category": "consensus",
+   "registry_category": "consensus",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "mean(z(SUE), z(ESBR), z(EPS 1개월 변화), z(TP Gap))",
+   "basis": "성분 4개 중 3개가 '클수록 좋다'(TP Gap 만 불명).",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Bernard & Thomas (1989) Post-Earnings-Announcement Drift: Delayed Price Response or Risk Premium?, JAR 27",
+     "url": "https://doi.org/10.2307/2491062"
+    },
+    {
+     "ref": "Chan, Jegadeesh & Lakonishok (1996) Momentum Strategies, JF 51(5)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1996.tb05222.x"
+    },
+    {
+     "ref": "Da & Schaumburg (2011) Relative Valuation and Analyst Target Price Forecasts, Journal of Financial Markets 14(1)",
+     "url": "https://doi.org/10.1016/j.finmar.2010.09.001"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "CR01_Sector_Comovement",
+   "category": "crowding",
+   "registry_category": "crowding",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "−corr(종목, 자기 제외 업종 평균) 63일 — 클수록 업종과 덜 동조",
+   "basis": "시장 · 업종 대비 R²(동조성) 낮은 종목이 이후 수익 높다는 보고(Chang & Luo 2010). 동조성의 의미(정보 대 잡음)는 논쟁 중(Morck 외 2000) — 근거가 얇아 낮음.",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Chang & Luo (2010) R-Squared, Noise, and Stock Returns, SSRN WP",
+     "url": "https://doi.org/10.2139/ssrn.1572508"
+    },
+    {
+     "ref": "Morck, Yeung & Yu (2000) The Information Content of Stock Markets: Why Do Emerging Markets Have Synchronous Stock Price Movements?, JFE 58(1-2)",
+     "url": "https://doi.org/10.1016/S0304-405X(00)00071-4"
+    },
+    {
+     "ref": "Barberis, Shleifer & Wurgler (2005) Comovement, JFE 75(2)",
+     "url": "https://doi.org/10.1016/j.jfineco.2004.04.003"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "CR02_Volume_Concentration",
+   "category": "crowding",
+   "registry_category": "crowding",
+   "registry_direction": "lower_better",
+   "s_reg": -1,
+   "registry_basis": "literature",
+   "proposed_direction": "lower_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "−(20일 평균 거래량/252일 평균) — 작을수록(더 음수) 최근 거래량 급증",
+   "basis": "비정상 거래량 급증 종목이 이후 수익 높다(고거래량 수익 프리미엄 · 다국 표본). 음수화된 저장값은 작을수록 좋다.",
+   "def_code_note": "GKM 은 일 · 주 단위 충격 — 여기는 20일 대 1년",
+   "refs": [
+    {
+     "ref": "Gervais, Kaniel & Mingelgrin (2001) The High-Volume Return Premium, JF 56(3)",
+     "url": "https://doi.org/10.1111/0022-1082.00349"
+    },
+    {
+     "ref": "Kaniel, Ozoguz & Starks (2012) The High Volume Return Premium: Cross-Country Evidence, JFE 103(2)",
+     "url": "https://doi.org/10.1016/j.jfineco.2011.08.012"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "CR04_Ownership_Concentration",
+   "category": "crowding",
+   "registry_category": "crowding",
+   "registry_direction": "lower_better",
+   "s_reg": -1,
+   "registry_basis": "literature",
+   "proposed_direction": "lower_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "20일 평균 회전율(거래량/추정 주식 수) — 클수록 회전율 높음",
+   "basis": "회전율 높을수록 이후 수익 낮다(유동성 프리미엄 · 글래머).",
+   "def_code_note": "정의 이름 '소유 집중'과 달리 양은 회전율",
+   "refs": [
+    {
+     "ref": "Datar, Naik & Radcliffe (1998) Liquidity and Stock Returns: An Alternative Test, Journal of Financial Markets 1(2)",
+     "url": "https://doi.org/10.1016/S1386-4181(97)00004-9"
+    },
+    {
+     "ref": "Lee & Swaminathan (2000) Price Momentum and Trading Volume, JF 55(5)",
+     "url": "https://doi.org/10.1111/0022-1082.00280"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "CR05_Short_Pressure_Proxy",
+   "category": "crowding",
+   "registry_category": "crowding",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "lower_better",
+   "agree": false,
+   "verdict": "불일치",
+   "stored_meaning": "−(하락일 Amihud/상승일 Amihud) 1년 — 작을수록(더 음수) 하락일 가격충격이 상대적으로 큼",
+   "basis": "Amihud 비유동성 프리미엄은 하락일 성분에서만 나타나고(Brennan, Huh & Subrahmanyam 2013) 매도 쪽 유동성이 가격에 반영된다(Brennan 외 2012). 하락일 비유동성 비중이 클수록 기대수익 높다 → 음수화 저장값은 작을수록 좋다. 등록부의 '공매도 압력 = 나쁨' 서사는 문헌 근거가 없다. 비율(수준 아님) · 주식 수 거래량 기반이라 낮음.",
+   "def_code_note": "공매도 자료 없음 — 이름과 달리 비대칭 비유동성 비율",
+   "refs": [
+    {
+     "ref": "Brennan, Huh & Subrahmanyam (2013) An Analysis of the Amihud Illiquidity Premium, Review of Asset Pricing Studies 3(1)",
+     "url": "https://doi.org/10.1093/rapstu/ras017"
+    },
+    {
+     "ref": "Brennan, Chordia, Subrahmanyam & Tong (2012) Sell-Order Liquidity and the Cross-Section of Expected Stock Returns, JFE 105(3)",
+     "url": "https://doi.org/10.1016/j.jfineco.2012.04.006"
+    },
+    {
+     "ref": "Amihud (2002) Illiquidity and Stock Returns: Cross-Section and Time-Series Effects, Journal of Financial Markets 5(1)",
+     "url": "https://doi.org/10.1016/S1386-4181(01)00024-6"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "CR06_DTC_Proxy",
+   "category": "crowding",
+   "registry_category": "crowding",
+   "registry_direction": "lower_better",
+   "s_reg": -1,
+   "registry_basis": "literature",
+   "proposed_direction": "lower_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "−(추정 주식 수/20일 평균 거래량) = −1/회전율 — 작을수록 회전율 낮음",
+   "basis": "실제 DTC(공매도잔고/거래량)가 아니라 회전율의 역수다 → 회전율 문헌: 회전율 낮을수록 수익 높다 → 저장값은 작을수록 좋다. (진짜 DTC 라면 높을수록 수익 낮다 — Hong 외 2015 — 그러나 이 양에는 공매도잔고가 없다.)",
+   "def_code_note": "이름 'DTC' ≠ 양(회전율 역수)",
+   "refs": [
+    {
+     "ref": "Datar, Naik & Radcliffe (1998) Liquidity and Stock Returns: An Alternative Test, Journal of Financial Markets 1(2)",
+     "url": "https://doi.org/10.1016/S1386-4181(97)00004-9"
+    },
+    {
+     "ref": "Lee & Swaminathan (2000) Price Momentum and Trading Volume, JF 55(5)",
+     "url": "https://doi.org/10.1111/0022-1082.00280"
+    },
+    {
+     "ref": "Hong, Li, Ni, Scheinkman & Yan (2015) Days to Cover and Stock Returns, NBER WP 21166",
+     "url": "https://doi.org/10.3386/w21166"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "CR07_Momentum_Crowding",
+   "category": "crowding",
+   "registry_category": "crowding",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "unclear",
+   "agree": null,
+   "verdict": "불명",
+   "stored_meaning": "−corr(종목, 12-1 모멘텀 상위 20% 동일가중 포트) 1년 — 클수록 승자 묶음과 덜 동조",
+   "basis": "Lou & Polk 의 comomentum 은 시장 전체 시계열 신호이고, 종목 단위 '승자 포트 상관'의 횡단면 수익 예측 문헌은 없다. 승자 노출은 모멘텀 프리미엄(양)과 붕괴 위험(Daniel & Moskowitz 2016) 양쪽을 띤다.",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Lou & Polk (2022) Comomentum: Inferring Arbitrage Activity from Return Correlations, RFS 35(7)",
+     "url": "https://doi.org/10.1093/rfs/hhab117"
+    },
+    {
+     "ref": "Daniel & Moskowitz (2016) Momentum Crashes, JFE 122(2)",
+     "url": "https://doi.org/10.1016/j.jfineco.2015.12.002"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "CR08_Volume_Price_Divergence",
+   "category": "crowding",
+   "registry_category": "crowding",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "unclear",
+   "agree": null,
+   "verdict": "불명",
+   "stored_meaning": "−|21일 평균수익|×|log(최근 21일 거래량/직전 21일)| — 클수록 가격 · 거래량 움직임이 작음",
+   "basis": "abs 로 괴리의 부호(가격↑ · 거래량↓ 등)를 지워 남은 양은 '가격 추세 크기 × 거래량 변화 크기'뿐이다. 이 양의 횡단면 수익 문헌을 찾지 못했다.",
+   "def_code_note": "정의 '괴리' ≠ 코드(부호 소실 · 크기 곱)",
+   "refs": [
+    {
+     "ref": "Lee & Swaminathan (2000) Price Momentum and Trading Volume, JF 55(5)",
+     "url": "https://doi.org/10.1111/0022-1082.00280"
+    },
+    {
+     "ref": "Gervais, Kaniel & Mingelgrin (2001) The High-Volume Return Premium, JF 56(3)",
+     "url": "https://doi.org/10.1111/0022-1082.00349"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "CR09_Money_Flow_Ratio",
+   "category": "crowding",
+   "registry_category": "crowding",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "(상승일 거래량 − 하락일 거래량)/합계 1년 — 클수록 상승일 거래 우위",
+   "basis": "자금흐름(상승 틱 − 하락 틱 거래대금)이 과거 수익을 통제해도 이후 수익을 양으로 예측(Bennett & Sias 2001) · 주문 불균형 양(Chordia & Subrahmanyam 2004). 여기는 종가 기준 일 부호 · 주식 수 · 1년 창이라 낮음.",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Bennett & Sias (2001) Can Money Flows Predict Stock Returns?, FAJ 57(6)",
+     "url": "https://doi.org/10.2469/faj.v57.n6.2494"
+    },
+    {
+     "ref": "Chordia & Subrahmanyam (2004) Order Imbalance and Individual Stock Returns: Theory and Evidence, JFE 72(3)",
+     "url": "https://doi.org/10.1016/S0304-405X(03)00175-2"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "CR10_Convergence_Premium",
+   "category": "crowding",
+   "registry_category": "crowding",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "unclear",
+   "agree": null,
+   "verdict": "불명",
+   "stored_meaning": "−AR(1) 일간 수익 1년 — 클수록 평균회귀(음의 자기상관) 강함",
+   "basis": "음의 일간 자기상관은 호가 반등 · 비유동성의 흔적(Roll 1984)이고 반전은 비유동 종목에 몰린다(Avramov 외 2006). 자기상관 자체로 정렬한 기대수익 문헌을 찾지 못했다.",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Roll (1984) A Simple Implicit Measure of the Effective Bid-Ask Spread in an Efficient Market, JF 39(4)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1984.tb03897.x"
+    },
+    {
+     "ref": "Avramov, Chordia & Goyal (2006) Liquidity and Autocorrelations in Individual Stock Returns, JF 61(5) — SSRN 판 링크",
+     "url": "https://doi.org/10.2139/ssrn.555968"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "CR11_Idiosyncratic_Return",
+   "category": "crowding",
+   "registry_category": "crowding",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "1 − R²(CAPM, 1년) — 클수록 시장과 덜 동조",
+   "basis": "R² 낮은 종목이 이후 수익 높다는 보고(Chang & Luo 2010). 고유변동성 수준(높을수록 수익 낮음, Ang 외 2006)과는 다른 양이지만 함께 움직여 근거가 얇다 — 낮음.",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Chang & Luo (2010) R-Squared, Noise, and Stock Returns, SSRN WP",
+     "url": "https://doi.org/10.2139/ssrn.1572508"
+    },
+    {
+     "ref": "Morck, Yeung & Yu (2000) The Information Content of Stock Markets: Why Do Emerging Markets Have Synchronous Stock Price Movements?, JFE 58(1-2)",
+     "url": "https://doi.org/10.1016/S0304-405X(00)00071-4"
+    },
+    {
+     "ref": "Ang, Hodrick, Xing & Zhang (2006) The Cross-Section of Volatility and Expected Returns, JF 61(1)",
+     "url": "https://doi.org/10.1111/j.1540-6261.2006.00836.x"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "SE01_Volatility_Uncertainty",
+   "category": "crowding",
+   "registry_category": "crowding",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "−(21일 실현 변동성) — 클수록 변동성 낮음",
+   "basis": "저변동성 이상현상: 변동성 높을수록 이후 수익 낮다 · 신흥시장 포함.",
+   "def_code_note": "컨센서스 분산 분기는 분산 열이 없어 실행되지 않음 → 항상 변동성 대체값",
+   "refs": [
+    {
+     "ref": "Ang, Hodrick, Xing & Zhang (2006) The Cross-Section of Volatility and Expected Returns, JF 61(1)",
+     "url": "https://doi.org/10.1111/j.1540-6261.2006.00836.x"
+    },
+    {
+     "ref": "Blitz & van Vliet (2007) The Volatility Effect: Lower Risk without Lower Return, JPM 34(1)",
+     "url": "https://doi.org/10.3905/jpm.2007.698039"
+    },
+    {
+     "ref": "Blitz, Pang & van Vliet (2013) The Volatility Effect in Emerging Markets, Emerging Markets Review 16",
+     "url": "https://doi.org/10.1016/j.ememar.2013.02.004"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "SE02_Consensus_Revision",
+   "category": "crowding",
+   "registry_category": "crowding",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "컨센서스 표의 최근 두 관측(일간) 사이 eps_1y(또는 목표주가) 변화율",
+   "basis": "예상 상향 → 이후 수익 높다.",
+   "def_code_note": "어느 열(eps_1y · target_price)을 쓰는지가 열 순서에 달림 · 1일 변화",
+   "refs": [
+    {
+     "ref": "Givoly & Lakonishok (1979) The Information Content of Financial Analysts' Forecasts of Earnings, JAE 1(3)",
+     "url": "https://doi.org/10.1016/0165-4101(79)90006-5"
+    },
+    {
+     "ref": "Chan, Jegadeesh & Lakonishok (1996) Momentum Strategies, JF 51(5)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1996.tb05222.x"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "TR01_ADX_Proxy",
+   "category": "crowding",
+   "registry_category": "crowding",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "unclear",
+   "agree": null,
+   "verdict": "불명",
+   "stored_meaning": "평활 안 한 DX = |+DI − −DI|/(+DI + −DI)×100 — 방향 없는 추세 강도",
+   "basis": "상승 · 하락 추세를 구분하지 않는 양이다. 부호 있는 추세 신호의 문헌(Han 외 2016)은 이 양에 적용되지 않고, ADX 의 횡단면 수익 문헌은 찾지 못했다.",
+   "def_code_note": "정의 'ADX' — 코드는 단기간 DX",
+   "refs": [
+    {
+     "ref": "Han, Zhou & Zhu (2016) A Trend Factor: Any Economic Gains from Using Information over Investment Horizons?, JFE 122(2)",
+     "url": "https://doi.org/10.1016/j.jfineco.2016.01.029"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "TR02_Trend_Consistency",
+   "category": "crowding",
+   "registry_category": "crowding",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "unclear",
+   "agree": null,
+   "verdict": "불명",
+   "stored_meaning": "|63일 중 상승일 비율 − 0.5|×2 — 방향 없는 일관성",
+   "basis": "정보 연속성(Frog-in-the-pan) 효과는 과거 수익 부호와 결합한 부호 있는 양에서 나온다(Da 외 2014). 부호 없는 일관성 자체의 수익 방향 문헌은 없다.",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Da, Gurun & Warachka (2014) Frog in the Pan: Continuous Information and Momentum, RFS 27(7)",
+     "url": "https://doi.org/10.1093/rfs/hhu003"
+    }
+   ],
+   "confidence": "low"
+  }
+ ]
+}
