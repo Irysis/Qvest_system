@@ -1,6 +1,6 @@
 {
  "schema": "q_judgment_ledger_v1",
- "updated_at": "2026-11-12T23:41:35+0900",
+ "updated_at": "2026-11-13T08:05:37+0900",
  "judgments": [
   {
    "id": "J-20261016-001",
@@ -2429,6 +2429,186 @@
    "reviews": [],
    "supersedes": null,
    "superseded_by": null
+  },
+  {
+   "id": "J-20261113-001",
+   "at": "2026-11-13T06:48:35+0900",
+   "op": "OP-20261110-V102-LADDER",
+   "kind": "other",
+   "summary": "[11-13 07:0x · 사실 정정] P1R03 측정 자료 끝 = RAWDATA 11-11(11-10 아님) — 빠진 거래일은 11-12 하루",
+   "rationale": "수리 세션(refresh-root-fix) 확인: 11-13 00:03 [0b] 가 11-12 저장본을 실어 RAWDATA 최신일이 11-11 이 됐다. Q 는 11-12 22:04 레인 로그(~2026-11-10)를 그대로 옮겨 결정 MEASURE-P1R03-ON-1110-DATA-20261113 · 측정 셸 문구 · 도훈 보고에 '11-10'이라 적었다. 판정에는 무영향(P1 판정 창 ≤ 2022-12-31).",
+   "framework_refs": [
+    "MEASURE-P1R03-ON-1110-DATA-20261113 · 75d6378c9"
+   ],
+   "evidence": [
+    "cross-session 메시지(local_b9d0acfc · 11-13) · .cache/RAWDATA.parquet mtime 11-13 01:44 · fresh-check '낡음 rawdata · 기준일 11-12'"
+   ],
+   "alternatives": [
+    "정정 없이 둔다 — 보고 수치의 자료 판본을 틀리게 남긴다"
+   ],
+   "expectation": "측정 끝 이정표 · 정식 보고 · 닫기 기록에 '자료 끝 = 11-11'(RAWDATA 직접 판독)",
+   "confidence": 0.9,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261113-003"
+   ],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261113-002",
+   "at": "2026-11-13T07:25:01+0900",
+   "op": "OP-20261110-V102-LADDER",
+   "kind": "ops",
+   "summary": "[11-13 07:2x · 도훈 'GPU 사용해서 DNN 엔진 검증도 진행해'] 레인 gpu1 의 1109.3488 측정(감사 misdeclared · 결과 보류분)을 멈추고 GPU 임대를 판 2 시드 보유자 이름으로 선점 · 레인 요청은 검증기의 misdeclared 처리 상태로 되돌림",
+   "rationale": "결정 DNN-SEED-GPU-PRIORITY-20261113(resolved · 도훈). ① 임대 선점(holder rc_standing:P1S02:P1S02_E2_C0 · holder-pid 32592 = 시드 감시 셸 · 07:20 → 19:20) — 같은 보유자면 관문이 already_held 로 받고(qv_lock.py:551) 측정 뒤 그 이름으로 푼다(standing.R:806-808) · 레인은 임대가 잡혀 있으면 GPU 슬롯을 hold(rf_replication_slots.py:706-711). ② 측정 트리 19696 → 34560 → 9132 → 536 → 33176 종료(pid 대응 재확인 뒤). ③ 요청(06_Registry/replication_slots/gpu1/replication_request.json): in_progress → pending · verify_engine_md5 · verify_started_at 제거(되살림 = verify_interrupted 로 같은 옛 엔진을 다시 재는 길 차단) · engine.R → engine.rejected2.R(검증기 reimplement 분기와 같음 · rf_replication_verify.R:737-752) · auto_retries 2 → 1(22:02 시도는 크레딧 문구 버그로 에이전트 9초 종료 — T1 C-20261112-027 (가) '재시도 횟수를 되돌린 뒤').",
+   "framework_refs": [
+    "DNN-SEED-GPU-PRIORITY-20261113 · C-20261112-027 · J-20261112-013 · J-20261112-014"
+   ],
+   "evidence": [
+    "앞 상태 백업 = 스크래치 gpu1_request_before_20261113.json · slots status(gpu1 claim free · status pending · lease held rc_standing:P1S02:P1S02_E2_C0)"
+   ],
+   "alternatives": [
+    "(나) 1109 측정을 끝까지 둔다(남은 약 22시간 · 시드는 11-14 이후)"
+   ],
+   "expectation": "08:20 낮 창(체인 · 배리어 · 지문 20분 안정 · 메모리 ≥ 16 GB · 레인 claim 0)에서 시드 E2 가 서고 약 6시간 뒤 E3 · 임대는 관문이 E2 끝에 풀고 시드 셸이 E3 로 다시 잡는다 · 1109 는 그 뒤 감사 지적을 안고 재구현",
+   "confidence": 0.75,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261113-003"
+   ],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261113-003",
+   "at": "2026-11-13T07:30:02+0900",
+   "op": "OP-20261110-V102-LADDER",
+   "kind": "ops",
+   "summary": "[11-13 07:29 · 도훈 '더 미루고 1109.3488 진행 다시해줘'] 판 2 시드 검증 보류(시드 감시 셸 종료 · GPU 임대 해제) · 1109.3488 은 레인이 재구현 경로로 다시 잡는다",
+   "rationale": "결정 DNN-SEED-GPU-PRIORITY-20261113 를 도훈이 30분 만에 바꿨다(시드는 뒤로). 시드 감시 셸(33064 · 30704 · 32592 · 12728) 종료 · 임대 rc_standing:P1S02:P1S02_E2_C0 해제(released) · 상태 파일 = '중단'. gpu1 요청은 07:2x 에 검증기의 misdeclared 처리 상태로 되돌려 둔 그대로다(pending · 감사 지적 · 옛 엔진 engine.rejected2.R) — 멈춘 옛 엔진 측정은 체크포인트가 없어 이어 잴 수 없고, 다시 재도 감사 기각으로 소비 보류된 뒤 재구현으로 넘어갔을 것이라 바로 재구현으로 간다(약 22시간 절약).",
+   "framework_refs": [
+    "DNN-SEED-GPU-PRIORITY-20261113 · J-20261113-002"
+   ],
+   "evidence": [
+    "slots status 07:29(gpu1 claim free · pending 1109.3488 · lease free) · p1s02_seed_watch_state.txt"
+   ],
+   "alternatives": [
+    "옛 엔진 측정을 처음부터 다시 — 약 22시간 뒤 같은 기각(소비 보류)으로 끝난다"
+   ],
+   "expectation": "다음 레인 틱(≤ 8분)이 gpu1 을 잡아 1109.3488 재구현(감사 지적 · Fable 100% 라 opus 대체) → 사전 감사 → 충실도 감사 → 측정(분기 리밸 107일 · 날짜당 약 13.5분)",
+   "confidence": 0.8,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261113-003"
+   ],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261113-004",
+   "at": "2026-11-13T07:37:39+0900",
+   "op": "OP-20261110-V102-LADDER",
+   "kind": "verdict",
+   "summary": "[11-13 07:3x] P1R03 판정 해석 — 자격 8/15(밸류 · 토탈 · 방어 · 쏠림 · 위험 · 유동성 · 성장 · 컨센서스) · 서로 다른 원천 5(토탈 제외 · 저위험 계열 = 1) → 사전등록 읽는 법 '3개 이상' 가지 = 코어 v4 자체 사양 입구 → 블렌딩 사슬",
+   "rationale": "verdict.json(규칙 = 보는 창 t(α) ≥ tier_graduation.grade_b_min_portfolio_alpha_t ∧ 보는 창 상승 포착 ≥ 0.55 · 시험 창 보고 전용) 그대로. 원천 셈 = 결론 범위(토탈은 원천 아님 · defense · risk · liquidity · regime = 한 원천) → 밸류 · 성장 · 컨센서스 · 쏠림 + 저위험 1 = 5. 철학 보류 C-20261112-021: FDEFE · FRISK 는 P4 기저 · 블렌딩 부품 전에 도훈 확인(FREGI 는 미달). 퀄리티는 t 1.95 로 문턱 바로 아래 미달(사전등록 규칙 그대로 · 재해석 없음). 자료 끝 = RAWDATA 11-11(판정 창 밖).",
+   "framework_refs": [
+    "results/verdict.json · prereg 05e3f053 · C-20261112-021 · conclusion_scope"
+   ],
+   "evidence": [
+    "evaluate 07:35 · 측정 ok 15/15 · 판정 줄 '자격 8/15(평가 15)'"
+   ],
+   "alternatives": [
+    "원천 셈에서 저위험 계열을 셋으로 센다 — 사전등록 셈법 위반"
+   ],
+   "expectation": "다음 라운드 세션이 코어 v4 입구(약속 요건 4) → 블렌딩 사슬 판 등록으로 간다 · 방어 · 위험 칸은 도훈 확인 전까지 사슬 부품에서 뺀다",
+   "confidence": 0.85,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261113-002",
+    "R-20261113-003"
+   ],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261113-005",
+   "at": "2026-11-13T07:38:09+0900",
+   "op": "OP-20261110-V102-LADDER",
+   "kind": "round_selection",
+   "summary": "[11-13 07:3x] P1R04_combiner_t1_icw 착수 — 결합기 T1(as-of ICIR⁺ 가중 · 설계 §4-2) 15칸(가족 14 + 토탈 1 · P1R03 과 같은 구성원 · 같은 표준 구성) · P1 자격 규칙 승계 · 자료 신선 뒤 CPU 측정",
+   "rationale": "P1R03 보는 창 판정 자격 8/15 · 원천 5 → 읽는 법 '3개 이상' 가지(코어 v4 입구 → 블렌딩 사슬 · 결합기 사다리 — 설계 §3-8 표). T1 은 그 가지의 결합기 사다리 1단이고 생성기 · 엔진 · PIT 값 검사(12/12)가 판정 전에 끝나 있어 감독 점검만 남았다. 결합기는 점수 패널 엔진이라 코어 · 셀 엔진을 고치지 않는다(설계 §4-1). T0 미달 가족 중 음의 알파(수급 · 기술적)는 역방향 구성원 희석이 가장 큰 후보라 T1 이 직접 겨냥한다",
+   "framework_refs": [
+    "04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/round_spec.json"
+   ],
+   "evidence": [
+    "P1R03 evaluation_visible.json(자격 8/15) · test_fc_combiner_gen 12/12 · lookahead_detector 0 · 초안 v1 3785811f"
+   ],
+   "alternatives": [
+    "코어 v4 를 먼저 끝내고 T1 은 상설 판으로 흘리기(상설 판이 없어 지금은 못 한다 · T1 이 그 판을 기다리게 된다) / T1 토탈 1칸만(가족 안 IC 가중 정보를 버린다 · 칸당 3분이라 아낄 것이 없다)"
+   ],
+   "expectation": "등록 → 자료 신선(리프레시 수리 세션 적재) 뒤 측정 45~70분 · 판정 = 원천 수(T0 5)와 계보 짝 t(α) 부호 셈",
+   "confidence": 0.7,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261113-001",
+    "R-20261113-002",
+    "R-20261113-004"
+   ],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261113-006",
+   "at": "2026-11-13T07:38:10+0900",
+   "op": "OP-20261110-V102-LADDER",
+   "kind": "priority",
+   "summary": "[11-13 07:3x] P1R03 읽는 법 '3개 이상' 가지 집행 — 코어 v4 자체 사양 입구(D4 a) + 블렌딩 사슬 판 등록을 P1R04 와 나란히 진행(이 세션)",
+   "rationale": "사전등록 결론 범위의 읽는 법이 정한 다음 일이다(재량 아님). 코어 v4 에 이미 약속된 요건 넷(philosophy_unread · 원천 라운드 전 칸의 사슬 시행 집합 · 뷰 지문 후보 · 저위험 셋 도훈 확인)에 보는 창 판정 파일의 시험 창 파생 열(test_hold) 분리를 더한다. 측정(CPU)은 P1R04 · 상설 판 · 사슬 기준 칸을 차례로 — 한 번에 무거운 작업 하나",
+   "framework_refs": [
+    "04_Research/01_reports/factor_spine_design_20261111/README.md §3-6 · §3-8 · 결정 FACTOR-SPINE-STAGE1-20261112 D4 (a)"
+   ],
+   "evidence": [
+    "P1R03 evaluation_visible.json · P1R03 round_spec conclusion_scope(읽는 법 · 시행 회계 · philosophy_unread · 저위험 보류)"
+   ],
+   "alternatives": [
+    "(b) 기준 시드로 다리(코어 무변경 — D4 결정과 다르다 · 도훈 결정 필요) / 사슬을 P1R04 판정 뒤로(사슬 착수가 늦어진다)"
+   ],
+   "expectation": "코어 v4 출시(격리 점검 1회) → 상설 판 판 3(자체 사양 입구) 등록 · 측정 → 기저 풀 → 블렌딩 사슬 1호 등록(철학 P1 · 판단 T1)",
+   "confidence": 0.65,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261113-001",
+    "R-20261113-002",
+    "R-20261113-004"
+   ],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261113-007",
+   "at": "2026-11-13T07:40:33+0900",
+   "op": "OP-20261110-V102-LADDER",
+   "kind": "harness_change",
+   "summary": "[11-13 07:4x] 코어 v3 결함 — P1 판정의 보는 창 파일(results/evaluation_visible.json)에 보고 규칙 열 test_hold(시험 창 연 알파 > 0 여부 · τ_D 뒤 정보)가 실린다 · P1R03 판단 T2 · 철학 P2 에 그 파일을 준 뒤 발견 → 두 감독에게 즉시 '읽지 말 것 · 봤으면 우연 열람 기록' 통지 · 수리 = 코어 v4(다음 라운드 세션 범위)",
+   "rationale": "다음 라운드 세션(local_2c84a34d)이 07:36 우연 열람으로 발견해 알렸다. driver.R:89 는 '_test' 로 끝나는 열만 빼는데 test_hold 는 이름이 '_test' 로 끝나지 않는다 → 시험 창 부호가 보는 창 파일에 남는다. 지금 코어(v3 · 핀)는 고치지 않는다.",
+   "framework_refs": [
+    "04_Research/programs/_lib/round_core/v3/driver.R:89 · P1R03 results/evaluation_visible.json"
+   ],
+   "evidence": [
+    "cross-session 메시지(local_2c84a34d · 11-13) · verdict.json table 열 목록(t_alpha_test · uc_test · test_hold)"
+   ],
+   "alternatives": [
+    "통지 없이 둔다 — 감독 판정에 시험 창 부호가 섞일 수 있다"
+   ],
+   "expectation": "T2 · P2 리뷰 머리에 열람 여부가 적힌다 · 코어 v4 가 보는 창 파일에서 보고 규칙 열을 뺀다(이름 규칙이 아니라 규칙 선언의 창 표식으로)",
+   "confidence": 0.85,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261113-002"
+   ],
+   "supersedes": null,
+   "superseded_by": null
   }
  ],
  "reviews": [
@@ -3235,6 +3415,104 @@
     "C-20261112-032",
     "C-20261112-033",
     "C-20261112-034"
+   ]
+  },
+  {
+   "id": "R-20261113-001",
+   "at": "2026-11-13T07:56:46+0900",
+   "role": "judgment",
+   "trigger": "T1",
+   "scope": [
+    "J-20261113-005",
+    "J-20261113-006"
+   ],
+   "file": "04_Research/programs/_supervision/superfan/20261113_0755_T1.md",
+   "round": "P1R04_combiner_t1_icw",
+   "direction": null,
+   "challenges": [
+    "C-20261113-001",
+    "C-20261113-002",
+    "C-20261113-003",
+    "C-20261113-004",
+    "C-20261113-005",
+    "C-20261113-006",
+    "C-20261113-007",
+    "C-20261113-008",
+    "C-20261113-009"
+   ]
+  },
+  {
+   "id": "R-20261113-002",
+   "at": "2026-11-13T08:00:44+0900",
+   "role": "philosophy",
+   "trigger": "P2",
+   "scope": [
+    "J-20261113-004",
+    "J-20261113-005",
+    "J-20261113-006",
+    "J-20261113-007"
+   ],
+   "file": "04_Research/programs/_supervision/superfan/philosophy/20261113_0754_P2_P1R03.md",
+   "round": "P1R03_factor_family_composites",
+   "direction": "toward",
+   "challenges": [
+    "C-20261113-010",
+    "C-20261113-011",
+    "C-20261113-012",
+    "C-20261113-013",
+    "C-20261113-014",
+    "C-20261113-015",
+    "C-20261113-016"
+   ]
+  },
+  {
+   "id": "R-20261113-003",
+   "at": "2026-11-13T08:01:39+0900",
+   "role": "judgment",
+   "trigger": "T2",
+   "scope": [
+    "J-20261113-001",
+    "J-20261113-002",
+    "J-20261113-003",
+    "J-20261113-004"
+   ],
+   "file": "04_Research/programs/_supervision/superfan/20261113_0800_T2.md",
+   "round": "P1R03_factor_family_composites",
+   "direction": null,
+   "challenges": [
+    "C-20261113-017",
+    "C-20261113-018",
+    "C-20261113-019",
+    "C-20261113-020",
+    "C-20261113-021",
+    "C-20261113-022",
+    "C-20261113-023",
+    "C-20261113-024"
+   ]
+  },
+  {
+   "id": "R-20261113-004",
+   "at": "2026-11-13T08:03:19+0900",
+   "role": "philosophy",
+   "trigger": "P1",
+   "scope": [
+    "J-20261113-005",
+    "J-20261113-006"
+   ],
+   "file": "04_Research/programs/_supervision/superfan/philosophy/20261113_0759_P1_P1R04.md",
+   "round": "P1R04_combiner_t1_icw",
+   "direction": null,
+   "challenges": [
+    "C-20261113-025",
+    "C-20261113-026",
+    "C-20261113-027",
+    "C-20261113-028",
+    "C-20261113-029",
+    "C-20261113-030",
+    "C-20261113-031",
+    "C-20261113-032",
+    "C-20261113-033",
+    "C-20261113-034"
    ]
   }
  ],
@@ -9539,8 +9817,9 @@
      "change": "next_action (0) = 11-13 05:00~07:30 fresh-check · 표적 복구(진단 §5-3) · P1R03 새벽 감시 셸이 fresh-check 를 스스로 본다"
     }
    ],
-   "outcome": null,
-   "outcome_note": null
+   "outcome": "vindicated",
+   "outcome_note": "11-13 밤 갱신 3번째 실패(RAWDATA 정체 → 결정 MEASURE-P1R03-ON-1110-DATA-20261113) · 레인 1109 측정이 낮 창을 덮어 시드 P1S02_E2_C0 는 11-13 창에서 서지 않았다(손 개입 J-20261113-002 뒤 도훈 보류 J-003) — 두 시작 조건이 모두 실현",
+   "outcome_at": "2026-11-13T08:02:54+0900"
   },
   {
    "id": "C-20261112-011",
@@ -9570,8 +9849,9 @@
      "change": "P1R03 등록 run_tests = TRUE · FC_README 에 한 줄 · next_action 에 명시"
     }
    ],
-   "outcome": null,
-   "outcome_note": null
+   "outcome": "vindicated",
+   "outcome_note": "등록본 stage_artifacts/.../P1R03_factor_family_composites/prereg.json tests = 08_Tests/factor_db/test_fc_engine_gen.R pass 9 · fail 0 — 지적한 빈자리가 실제였고 수용의 실체가 등록본에 실렸다",
+   "outcome_at": "2026-11-13T08:02:55+0900"
   },
   {
    "id": "C-20261112-012",
@@ -9772,8 +10052,9 @@
      "change": "P1R03 conclusion_scope +5줄(초안 v2) · (나) rc_init_p1 기본 결론 범위는 코어 v4 후보"
     }
    ],
-   "outcome": null,
-   "outcome_note": null
+   "outcome": "vindicated",
+   "outcome_note": "뒤에 온 증거(R-20261113-002): 반증 조건('등록 전 결론 범위에 통과 ≠ 철학 적합 · 위기 하락노출 = 귀속 전의 뜻이 이미 있거나 rc_init_p1 이 주입')이 일어나지 않았다 — 초안 v1 에 없었고 수용 뒤 등록본(prereg 05e3f053) conclusion_scope[6]~[9] 에 들어갔다. 판정 뒤 Q 해석(J-20261113-004)은 그 범위 안에서 읽었고 P1R04 초안도 같은 줄을 손으로 옮겼다(round_spec conclusion_scope[6]~[9]) — rc_init_p1 기본값(대안 나)은 아직 코어 v4 후보.",
+   "outcome_at": "2026-11-13T08:01:48+0900"
   },
   {
    "id": "C-20261112-021",
@@ -9800,8 +10081,9 @@
      "change": "결론 범위: 기대수익 부호 = 방어 부호 비율(defense 54/57 · risk 15/19 · regime 8/8 · liquidity 23/44) · '자격 · 미달 모두 방어 증거 아님' · 방어 방향판 = 같은 계보 시행 +1 · 과거 음성 = P2R04 방어 틸트 β 짝 0/8 · P2 판독에 하락/상승 β · 강세 구간별 상승 포착"
     }
    ],
-   "outcome": null,
-   "outcome_note": null
+   "outcome": "vindicated",
+   "outcome_note": "뒤에 온 증거(R-20261113-002 · 보는 창 진단 패킷): 반증 조건(부호 일치 과반 아님 · 결론 범위에 이미 있음)이 일어나지 않았고 결과가 주장 쪽이다 — FDEFE β 0.50 · FRISK 0.59 · 노출 1.00 · 깊은 위기 7 중 선택 성분 > 시장 β 성분 2/7(2000-06 · 2021-06) · 2008-05 · 2020-01 선택 성분 +3.6%/−1.8% · −1.7%/−5.6% vs 시장 β 성분 17~21%(일간 합) · MDD/시장 0.97 · 0.96 · MC8 selection_defense 는 β 미맞춤(빈칸 14). '정적 방어 틸트와 같은 모양'이 측정으로 확인됐다 — 같은 원천의 FLIQU · FCROW · TOTAL 로 보류 확대(C-20261113-010).",
+   "outcome_at": "2026-11-13T08:01:48+0900"
   },
   {
    "id": "C-20261112-022",
@@ -9960,8 +10242,9 @@
      "change": "J-20261112-013"
     }
    ],
-   "outcome": null,
-   "outcome_note": null
+   "outcome": "vindicated",
+   "outcome_note": "1109.3488 옛 엔진 측정(11-12 22:04 ~ 11-13 07:2x · 9시간+)은 결과 없이 끝났고 J-20261113-003 이 '다시 재도 감사 기각으로 소비 보류 → 재구현'을 확인 — (가)의 전제(논문 증거 아닌 실행)와 비용 추정이 맞았다 · 시드 11-13 창 상실",
+   "outcome_at": "2026-11-13T08:02:55+0900"
   },
   {
    "id": "C-20261112-028",
@@ -9988,8 +10271,9 @@
      "change": "tools/p1r03_dawn_measure.sh · tools/p1r03_milestone.R · DESIGN §8"
     }
    ],
-   "outcome": null,
-   "outcome_note": null
+   "outcome": "vindicated",
+   "outcome_note": "11-13 새벽 fresh-check 낡음 · 새벽 셸 시작 못 함 · 도훈 지시로 신선도 예외 측정(결정 MEASURE-P1R03-ON-1110-DATA-20261113) — 실패 쪽 길이 실현됐고 06:50 전 손 개입 없는 신선 전환은 없었다",
+   "outcome_at": "2026-11-13T08:02:55+0900"
   },
   {
    "id": "C-20261112-029",
@@ -10106,6 +10390,762 @@
    "falsifier": "",
    "status": "closed_note",
    "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261113-001",
+   "at": "2026-11-13T07:56:57+0900",
+   "review": "R-20261113-001",
+   "target": "J-20261113-005",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "반증 조건이 영가설에서도 반 넘게 '지지'를 낸다 — 지지 = 원천 > 5 ∨ 짝 개선 ≥ 8/15 인데 8/15 는 15짝 부호 셈의 영가설 중앙값(P = 0.5 · 독립 이항 설명용)이고, 원천 셈은 퀄리티 t 1.95(J-004 · 보는 창)가 문턱 바로 아래라 잡음만으로 6 이 나올 수 있다. 짝 비교는 R 계약(rc_pair_alpha · 같은 배치 증분 β-통제 알파)이 아니라 두 t 의 부호 셈이고, T0 기준은 RAWDATA 07:45 갱신 전 판본이다(체계 §1 · §3 같은 배치 기준 · t 하한 사전 고정)",
+   "evidence": [
+    "04_Research/programs/_supervision/superfan/20261113_0755_T1.md#C1 · 04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/round_spec.json::hypothesis · 04_Research/programs/_lib/round_core/v3/metrics.R:43-57 · J-20261113-004 · J-20261113-001 · .cache/RAWDATA.parquet mtime 11-13 07:45"
+   ],
+   "alternative": "(a) 읽는 법 ③ = 계보마다 rc_pair_alpha(T1 칸, T0 칸, τ_D)$visible 증분 t · 개선 = t ≥ tier_graduation.grade_b_min_portfolio_alpha_t · 악화 = t ≤ −같은 값 · 지지 = 개선 계보 ≥ k(등록 전 고정) ∧ 악화 0 — 부호 셈을 남기면 ≥ 11/15(독립 이항 0.059) 이상 (b) 원천 셈 갈래는 서술로 내리거나 새 원천이 그 계보 짝 증분 t 문턱도 넘을 때만 센다 (c) T0 15엔진을 P1R04 에서 같은 배치로 재측정(시행 무가산 · 판정 대상 아님 · CPU 약 45분 · LLM 0 · P1R03 재현 점검 겸) — 못 하면 판본 차이를 결론 범위에 적고 미리 정한 동률 띠 안의 짝은 개선 아님",
+   "falsifier": "등록본 round_spec.json 의 읽는 법 ③ 이 rc_pair_alpha(또는 같은 R 계약)의 보는 창 증분 t 와 미리 정한 문턱을 쓰거나, 부호 셈 문턱이 ≥ 11/15 이상이면 이 도전은 틀렸다. 원천 셈 부분은 P1R03 보는 창 판정의 퀄리티 t_alpha_vis 가 문턱에서 0.3 이상 떨어져 있으면(J-004 의 1.95 가 틀림) 틀렸다",
+   "status": "open",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261113-002",
+   "at": "2026-11-13T07:57:15+0900",
+   "review": "R-20261113-001",
+   "target": "J-20261113-006",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "코어 v4 요건 목록에 'own_spec 입구의 orientation_layer 허용'이 없다 — T1 엔진(FC_*_ICW)은 rc_standing_static 분류 = orientation_layer(직접 실행 · T0 는 factor_db_static)이고 판 1 · 2 의 허용 층은 engine_native · factor_db_static 뿐이라 dynamic_sign 으로 입구 제외된다. P1R04 지지 갈래('T1 자격 엔진 → 코어 v4 자체 사양 입구 → 기저 풀 후보')가 지금 계획으로는 집행되지 않고, 판정 뒤 허용 층을 넓히면 결과를 본 뒤 입구 규칙 변경이 된다(설계 README §4-2 T1 행 · §7 F5 가 이미 요구)",
+   "evidence": [
+    "04_Research/programs/_supervision/superfan/20261113_0755_T1.md#C2 · 04_Research/programs/_lib/round_core/v3/standing.R:367-387 · :570 · :601 · 04_Research/programs/P1_RETURN/P1S02_standing_qualification/round_spec.json::standing_cfg.scan.orientation_admit · 04_Research/01_reports/factor_spine_design_20261111/README.md:259 · :331"
+   ],
+   "alternative": "P1R04 판정 전에 v4 요건에 한 줄: (가) 생성기 핀(fc_combiner_gen md5 · 사양 md5)이 맞는 own_spec 엔진에 한해 orientation_layer 허용 — 조건 = 실행 단정(부호 = 등록부 · 가중 ≥ 0 · IC = compute_rolling_ic_all 한 길 · T1 엔진에 이미 있음) + 양성 대조(부호 뒤집기 · 음수 가중 · 다른 IC 경로 돌연변이 → 입구 거부) 또는 (나) 'T1 엔진은 v4 입구에 들이지 않는다'를 P1R04 결론 범위에 적고 지지 갈래 문장을 고친다",
+   "falsifier": "P1R04 판정 전 기록(J · 재개 저널 next_action · v4 초안 코드 · 판 3 사양)에 own_spec 입구의 orientation_layer 허용 또는 T1 엔진 제외 선언이 이미 있거나, rc_standing_static 이 FC_*_ICW 엔진을 orientation_layer 가 아닌 층으로 분류하면 이 도전은 틀렸다",
+   "status": "open",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261113-003",
+   "at": "2026-11-13T07:57:15+0900",
+   "review": "R-20261113-001",
+   "target": "J-20261113-005",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "test_hold 처리 — P1R04 규칙 쪽은 충분하다(규칙 · 엔진 07:23~07:29 고정 · 비교 기준 = 보는 창 원천 수). 그러나 재발 · 전파를 막지 못한다: 코어 v3 보는 창 작성기는 이름이 _test 로 끝나는 열만 빼서(driver.R:89) 보고 규칙 열 test_hold(p1.R:98)가 '시험 창 열 제외' 라고 적힌 evaluation_visible.json 에 남는다 — P1R04 도 코어 v3 라 측정 뒤 같은 열이 다시 생기고(읽는 이 = Q · 판단 T2 · 철학 P2), P1R03 파일은 블렌딩 사슬 기저 · 부품 선택 때 다시 읽힌다(Q 는 이미 자격 칸 시험 창 부호를 봤다 — 선택이 그 부호와 맞물려도 기록으로 반증할 길이 없다)",
+   "evidence": [
+    "04_Research/programs/_supervision/superfan/20261113_0755_T1.md#C3 · 04_Research/programs/_lib/round_core/v3/driver.R:89 · :93 · p1.R:98 · util.R:89-95 · P1R04 round_spec.json::exposures 마지막 줄 · core_version v3"
+   ],
+   "alternative": "(a) 등록 전 DESIGN §8 · 사양 exposures 에 'P1R04 · P1R03 보는 창 판정은 test_hold 열을 뺀 판독으로만 읽는다(예: rc_json_read(...)$table[, !\"test_hold\"])' + T2 · P2 스폰 지시에 같은 줄 (b) v4 작성기는 이름 무늬가 아니라 규칙 종류(type report · 시험 창 지표 파생)로 빼고 누출 시험(보고 규칙을 넣은 사양 → 보는 창 파일에 그 열 없음) (c) 사슬 1호 판 exposures 에 'P1R03 test_hold 열람(11-13 07:36)'을 적고 기저 · 부품 선택을 그 부호 없이 쓸 수 있는 기계 규칙으로 선언",
+   "falsifier": "등록 전 P1R04 DESIGN · 사양 · 스폰 지시에 test_hold 를 걸러 읽는 규칙이 이미 있거나, 코어 v3 의 다른 경로가 evaluation_visible.json 에서 test_hold 를 이미 지운다면(내 코드 판독이 틀림) 이 도전은 틀렸다",
+   "status": "open",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261113-004",
+   "at": "2026-11-13T07:57:33+0900",
+   "review": "R-20261113-001",
+   "target": "J-20261113-005",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "T1 은 등록된 읽는 법의 '3개 이상' 가지가 아니라 Q 재량의 앞당김이다 — P1R03 등록본(prereg.json 05e3f053) 읽는 법 = '3개 이상 → 코어 v4 입구 → 블렌딩 사슬 · 1~2개 → 입구 + 결합기 T1 앞당김'(설계 §3-8 표 :229-230 도 같은 구분)인데 J-005 · DESIGN §2-1 · P1R04 결론 범위는 T1 을 그 가지라고 적는다. 체계 §2-3 '병목과 무관하면 뒤로'에 대한 DESIGN 의 답('기저가 열려야')은 T0 자격 8칸으로 이미 풀렸다. 그리고 비용이 판단에 없다 — 결론 범위가 두 라운드 자격 엔진을 쓰는 사슬에 30칸 시행 집합을 걸고, J-006 순서(P1R04 → 판 3 → 사슬)대로면 사슬 1호가 P1R04 판정 뒤 등록돼 15 대신 30칸을 진다(A 관문 선택 현실 점검이 엄해짐)",
+   "evidence": [
+    "04_Research/programs/_supervision/superfan/20261113_0755_T1.md#C4 · 04_Research/programs/P1_RETURN/P1R03_factor_family_composites/prereg.json(conclusion_scope 읽는 법) · 04_Research/01_reports/factor_spine_design_20261111/README.md:229-230 · P1R04 round_spec.json::conclusion_scope(시행 회계 · 지지 갈래) · J-20261113-006 rationale(측정 순서)"
+   ],
+   "alternative": "(a) 진행은 그대로 하고 문장만 고친다 — '등록된 3개 이상 가지 = 입구 → 사슬 · T1 은 나란히 하는 Q 재량(설계 §3-8 결합기 사다리를 앞당김 · 근거 = 빈 CPU · LLM 0)' (b) P1R04 판정을 읽기 전(지금) 사슬 1호 기저 · 부품 규칙을 'P1R03 자격 엔진(저위험 보류분 제외)만'으로 J · 결정 기록에 고정 → 사슬 1호 시행 집합 = P1R03 15 + 걸음 · T1 엔진은 사슬 2호부터(30칸) · 결론 범위 30칸 문장을 'T1 엔진을 쓰는 사슬'로 좁힘(C3 (c) 기계 규칙 겸) (c) (b)를 안 하면 30칸 비용과 그 이유를 J-005 에 적는다",
+   "falsifier": "P1R03 등록본 prereg.json 의 읽는 법 '3개 이상' 가지에 결합기 T1 · 사다리가 들어 있거나, P1R04 판정 전 기록(J · 결정 · 사양)에 사슬 1호 기저 · 부품 규칙(T0 한정 또는 30칸 수용과 그 이유)이 있으면 이 도전은 틀렸다",
+   "status": "open",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261113-005",
+   "at": "2026-11-13T07:57:33+0900",
+   "review": "R-20261113-001",
+   "target": "J-20261113-005",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "규칙을 판정보다 먼저 고정(07:23~07:29 → 판정 07:35 · dd804d739) · 부호 = 등록부 · 가중 ≥ 0 · 구성원/가족/뷰 빌더 실행 단정 · IC 는 정본 접근자 한 길 · 두 입력 경로 절단 불변 + 돌연변이 대조(양성 대조) · 칸 지문 밖 입력을 측정 셸 지문 대조로 막음 · 우연 열람과 판정 뒤 정한 것까지 노출 · 결론 범위를 '선형 as-of ICIR⁺ 수준'으로 좁힘 · 지난 T1 note(여섯 기준 · 15>12 이유 · 과거 음성 조회)를 집행 · 판정 2분 뒤 초안 — 유지할 방식",
+   "evidence": [
+    "04_Research/programs/_supervision/superfan/20261113_0755_T1.md#E1 · 04_Research/strategies/FC_TOTAL_ICW/engine.R:16-18 · 04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/DESIGN.md §2 · §6 · §7"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261113-006",
+   "at": "2026-11-13T07:57:33+0900",
+   "review": "R-20261113-001",
+   "target": "J-20261113-006",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "핵심 선택(코어 v4 자체 사양 입구 → 블렌딩 사슬)은 P1R03 등록본 읽는 법 그대로다(원천 셈 = 토탈 제외 · 저위험 4가족 = 1원천 → 5 · '재량 아님'이 맞다) · test_hold 분리를 공용 작성기(v4)에 넣은 것은 맞는 자리 · 무거운 측정 한 번에 하나는 메인 PC 실측과 맞다",
+   "evidence": [
+    "04_Research/programs/_supervision/superfan/20261113_0755_T1.md#E2 · 04_Research/programs/P1_RETURN/P1R03_factor_family_composites/prereg.json(읽는 법)"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261113-007",
+   "at": "2026-11-13T07:57:48+0900",
+   "review": "R-20261113-001",
+   "target": "J-20261113-006",
+   "grade": "note",
+   "rule": null,
+   "claim": "v4 의 '원천 라운드 전 칸 = 사슬 시행 집합(빠지면 등록 거부)'은 선택 현실 점검(v3.4 A 관문)의 다중 검정 집합을 정의하는 규칙이다 → 규약 §13-1 '등급 · 판정 규칙 — A 관문' T4 의무 + record --kind harness_change 1건 · 엄해지는 쪽이라 수혜 기록 문제는 작지만 재채점 범위(닫힌 사슬 0 이면 '없음')를 한 줄",
+   "evidence": [
+    "04_Research/programs/_supervision/superfan/20261113_0755_T1.md#N1 · 00_Lawbook/specs/superfan_protocol.md §13-1"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261113-008",
+   "at": "2026-11-13T07:57:48+0900",
+   "review": "R-20261113-001",
+   "target": "J-20261113-005",
+   "grade": "note",
+   "rule": null,
+   "claim": "기전 근거 정식화 — QHS(2007) 다요인 알파 모형의 최적 가중은 IC 공분산 반영(Σ_IC⁻¹·IC̄ 꼴 · 내 기억 · 원문 식 위치 미확인)이고 T1 은 대각 · 양수부 근사라 근사 중복 구성원이 함께 무게를 받는다 → 반증 갈래 다음 탐침에 'IC 공분산 반영(수축) 가중' 한 줄을 더하면 반증이 'IC 가중 전체'로 읽히지 않는다 · IC 창 36 · 120 = 접근자 기본값(DESIGN §9)인데 설계 README §4-2(:265)는 '근거 문헌과 함께 고정'을 약속 — 처방 레인 근거 의무 해제라 위반은 아니나 근거 문구에 '문헌 아님 · 접근자 기본값'을 적는다",
+   "evidence": [
+    "04_Research/programs/_supervision/superfan/20261113_0755_T1.md#N2 · 04_Research/01_reports/factor_spine_design_20261111/README.md:265 · DESIGN.md §9"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261113-009",
+   "at": "2026-11-13T07:57:48+0900",
+   "review": "R-20261113-001",
+   "target": "J-20261113-006",
+   "grade": "note",
+   "rule": null,
+   "claim": "세션 위생 · 저위험 부품 — v4 출시(하네스 · 격리 점검) → 판 3 등록(T1 · P1) · 측정 → 사슬 1호 등록(T1 · P1)을 '이 세션'에 다 싣는다 → v4 출시 경계에서 새 세션(규약 §12) · FDEFE · FRISK 를 사슬 1호 부품으로 쓸 생각이면 도훈 확인 카드를 지금 올려 병렬로(체계 §5 · 지금 열린 카드 없음) · 아니면 C4 (b) 규칙에 '저위험 보류분 제외'",
+   "evidence": [
+    "04_Research/programs/_supervision/superfan/20261113_0755_T1.md#N3 · 06_Registry/decision_register.json(열린 카드 2 — 저위험 확인 없음)"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261113-010",
+   "at": "2026-11-13T08:01:37+0900",
+   "review": "R-20261113-002",
+   "target": "J-20261113-004",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "저β 다섯(FDEFE · FRISK · FLIQU · FCROW · TOTAL)은 늘 켜진 방어 틸트와 같은 모양이고 선택 방어 근거가 없다 — 보는 창 다섯 표지가 다섯 엔진 모두에서 확인됨: ① 노출 1.00 고정 · β 0.50~0.72(정적 β 축소) ② 깊은 위기 7 중 선택 성분 > 시장 β 성분인 위기 ≤ 2(2000-06 IT 붕괴 · 2021-06 완만한 약세 — TOTAL 은 2000-06 · 2011-05) ③ 빠른 깊은 급락 2008-05 · 2020-01 선택 성분 −9.9%~+3.9% vs 시장 β 성분 13.9~24.0%(일간 합) ④ MDD/시장 0.92~1.12 ⑤ 하락 β > 상승 β 4/5(FRISK 만 바름 · 차 0.012). MC8 selection_defense 는 크기 바스켓 × 평균 노출(1.00) 짝만 넘은 라벨이라 빈칸 14 로는 '크기 × β 미분리'. GFC: 2008 −30.9~−36.4% · 2009 +7.3~+49.0%(시장 −39.3% · +51.6%) — FDEFE · FCROW 는 S0 'CR 강함 3'보다 나쁜 모양. 그런데 J-004 기대는 '방어 · 위험 칸만 도훈 확인 전 사슬 부품에서 뺀다'라 같은 원천의 FLIQU(결론 범위상 저위험 4) · FCROW · TOTAL 은 바로 기저 · 블렌딩 부품이 된다.",
+   "evidence": [
+    "results/<칸>/visible/diagnosis_packet.json(behavior.stats · controls.attribution · exposure.crises · exposure.summary · bull_phases · annual) · report/charts/05b(보는 창 · date<=TAU 확인) · matched_controls.R 머리 ④ · prereg 05e3f053 conclusion_scope[10][11] · C-20261112-021 · C-20261018-046 · 헌장 원칙 3 · 5 · 빈칸 2 · 3 · 6 · 8 · 14 · 16 · 24 · 리뷰 파일 ②③"
+   ],
+   "alternative": "① 보고 표제 = '저β 수익 엔진(β 0.50~0.72) — 위기 초과성과는 시장 β 성분 · 방어 주장 없음'('방어 카테고리 통과'라 쓰지 않음) ② 보류 확대: FLIQU · FCROW · TOTAL 도 FDEFE · FRISK 와 같이 P4 기저 · 블렌딩 부품 전 도훈 확인 — 확인 묶음 = 리뷰 ②③ 표 + 크기 × β 짝 기록 · 등록 · 측정 · 시장 β 셋(FVALU · FGROW · FCONS) 흐름은 막지 않음 ③ 코어 v4 philosophy_unread = 이 리뷰 id 를 영수증으로, 엔진별 상태(해소 3 · 보류 5)를 기계가 읽게(라운드 results 영수증 파일 권고).",
+   "falsifier": "보는 창 크기 × β 동시 짝(크기 바스켓을 엔진 β 로 낮춘 현금 사본 · round_core/v3/p2.R::rc_p2_size_beta_record 와 같은 계약)을 저β 다섯 중 셋 이상이 깊은 위기(시장 낙폭 ≥ 중앙값) 과반에서 이기면 이 도전('선택 방어 근거 없음')은 틀렸다.",
+   "status": "accepted",
+   "role": "philosophy",
+   "hold_request": true,
+   "responses": [
+    {
+     "at": "2026-11-13T08:05:36+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용(보류) — 보류를 저β 5(방어 · 위험 · 유동성 · 쏠림 · 토탈)로 넓히고 표기를 '저β 수익 엔진'으로 쓴다. 해소 = 도훈 확인(묶음 = P2 리뷰 ②③ 표 + 크기 × β 짝 기록 · 토탈 유효 구성원 수)",
+     "change": "결정 LOWBETA-ENGINES-BASE-USE-20261113"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261113-011",
+   "at": "2026-11-13T08:01:38+0900",
+   "review": "R-20261113-002",
+   "target": "J-20261113-006",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "blend 걸음이 β 비대칭 검사에서 빠져 있어 블렌딩 사슬 1호가 β 만으로 '위기 비악화'를 채택할 수 있다 — round_core/v3/p4.R:1070 은 beta_asym_ok_vis 를 노출 블록(:53 regime_exposure · tail_overlay · defense_sleeve)에만 적용하고 blend 걸음은 1(해당 없음). 자격 풀 5/8 은 β 0.50~0.72 · 하락 β > 상승 β 4/5 의 한 원천이라, 시장 β 기저(예: FVALU β 1.01)에 저β 상대를 섞으면 β 하락만으로 d_dd_capture_median_vis ≤ 0 을 넘는다(빈칸 3 · 8 의 'β 로 산 방어'가 blend 이름으로 들어옴). 또 풀 7/8 이 대형주 주도 강세 2016-02~17-10 상승 포착 0.16 이하라 풀 안 블렌딩으로는 그 공백이 메워지지 않는다(획일화 징후). 원천 셈: 쏠림(FCROW)은 측정상 저β 원천 안(β 0.60 · 하락 β 0.70 > 상승 β 0.49 · 초과수익 상관 방어 0.80 · 위험 0.75 · 토탈 0.75 · 유동성 0.68 · 구성원 정의 = 업종 동조 역 · 회전율 · 21일 변동성 역 · CAPM 1−R²) — 원천 5 가 아니라 4(읽는 법 가지는 그대로).",
+   "evidence": [
+    "round_core/v3/p4.R:25-53 · :1060-1070 · 리뷰 ② 표 · report/charts/05b · 팩터 등록부 정의 문장(CR01 · CR04 · SE01 · CR11) · J-20261113-004(원천 5) · 헌장 빈칸 3 · 7 · 8 · 17 · §4 획일화"
+   ],
+   "alternative": "(a) 사슬 1호 채택 규칙에서 blend 걸음도 beta_asym_ok_vis = 1 필수(코어 v4 에서 RC_P4_EXPOSURE_BLOCKS 에 blend 추가 또는 사슬 판 규칙) (b) 채택 규칙 판 = p4_rules_v2(uc_seg_ok_share_vis · deep_crisis_nonworse_share_vis) (c) 걸음 원장에 2016-02~17-10 · 2003-04~04-03 강세 상승 포착 기록(판정 아님) (d) 원천 셈 두 판 기록 — 현행(5 · 판정) · 쏠림을 저β 원천에 넣은 셈(4 · 기록) · P1R04 읽는 법('T0 의 5 와 비교')에도 두 판. 새 숫자 없음.",
+   "falsifier": "사슬 1호가 쓰는 코어 판의 걸음 판정이 blend 걸음에도 하락 β < 상승 β 를 요구하거나 사슬 1호 chain_spec.json 채택 규칙에 그 조건이 있으면 이 도전은 틀렸다. 또는 사슬 1호에서 저β 상대를 섞은 채택 걸음이 모두 보는 창 하락 β < 상승 β 를 지키면 'β 만으로 채택' 주장은 틀렸다.",
+   "status": "accepted",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-11-13T08:05:37+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용 — 블렌딩 걸음에도 β 비대칭 검사 필수 · 채택 규칙 p4_rules_v2 · 대형주 주도 강세 기록 · 원천 셈 두 판을 사슬 판 설계에 넣도록 다음 라운드 세션에 전달",
+     "change": "다음 라운드 세션 전달"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261113-012",
+   "at": "2026-11-13T08:01:38+0900",
+   "review": "R-20261113-002",
+   "target": "SYSTEM",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "등급 CR '강함' 상향 노치의 노출 고정 분기가 11-10 확정 헌장 빈칸 14 와 어긋난다 — grade_v3.R::gv3_notch_basis(:146-147)는 '노출 고정 ∧ MC8 selection_defense'를 'selection'으로 세어 strong 을 유지하는데, MC8 짝은 크기 바스켓 × 평균 노출이라 β 를 맞추지 않는다(matched_controls.R 머리 ④). 빈칸 14(CHARTER-GAPS-4 · 도훈 11-10)는 선택 방어 = 크기 × β 동시 짝까지 넘을 때. P1R03 자격 8 중 저β 다섯이 모두 노출 고정 · selection_defense 라 이 분기에 걸리고 보는 창 카드로 TOTAL · FCROW 가 이미 strong — 이 엔진 또는 이들을 기저 · 부품으로 쓴 사슬 최종 후보가 β 축소만으로 상향 노치를 받을 수 있다. 같은 분기는 판단 Superfan C-20261018-035(note · 빈칸 14 확정 전)가 짚었으나 결정 안건이 없다.",
+   "evidence": [
+    "02_Infrastructure/contracts/grade_v3.R:120-155 · 06_Registry/grade_v3.json::cr_notch.strong_requires = mc8_selection_or_timing_evidence · matched_controls.R 머리 ④ · 리뷰 ② 표 · decision_register CHARTER-GAPS-4-20261018 · 헌장 §7 · 빈칸 8 · 14"
+   ],
+   "alternative": "T4 의무 절차(규약 §13-1)로 도훈 결정 안건 상신: (A) 현행 유지 — 헌장 §7 에 '등급의 선택 방어 = MC8 크기 · 노출 짝' 명시 (B) 노출 고정 분기에 크기 × β 짝 깊은 위기 과반 승리 요구(rc_p2_size_beta_record · bc_attach_controls(size_beta) 재사용) · 못 넘으면 normal (C) B + 재채점 범위 사전 고정(노출 고정 ∧ selection_defense ∧ CR strong 저장분) · 수혜 기록 이름 · 시험 창 값은 근거 자리에 두지 않음. 권고 B 또는 C.",
+   "falsifier": "MC8(matched_controls.R)의 판정 짝이 이미 전략 β 로 낮춘 현금 사본이거나, gv3_notch_basis 의 노출 고정 분기가 크기 × β 짝 결과를 읽거나, 결정 기록부에 이 분기를 빈칸 14 와 별개로 둔다는 도훈 결정이 이미 있으면 이 도전은 틀렸다.",
+   "status": "accepted",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-11-13T08:05:37+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용 — T4 도훈 안건으로 올림(권고 = CR 노치 선택 분기에 크기 × β 짝 요구 + 재채점 범위 사전 고정)",
+     "change": "결정 GRADE-CR-NOTCH-BETA-SELECTION-20261113"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261113-013",
+   "at": "2026-11-13T08:01:38+0900",
+   "review": "R-20261113-002",
+   "target": "J-20261113-005",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "P1R04 초안이 같은 시험 창 누출을 다시 만든다 — P1R04 round_spec.json 은 코어 v3 · 보고 규칙 id 'test_hold' 인데 v3/driver.R:89 는 '_test$' 로 끝나는 열만 빼므로, 평가하면 P1R03 와 같은 시험 창 연 알파 부호 열이 보는 창 파일(evaluation_visible.json)에 실린다. 그 파일은 τ_D 대상 감독과 다음 설계(사슬 판 · 다음 라운드)의 입력이다(원칙 7). J-20261113-007 의 수리는 코어 v4 범위이고 P1R04 는 v4 전에 등록 · 측정될 공산이 크다.",
+   "evidence": [
+    "04_Research/programs/_lib/round_core/v3/driver.R:80-100 · 04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/round_spec.json rules(core_version v3 · test_hold) · J-20261113-005 · J-20261113-007 · 헌장 원칙 7"
+   ],
+   "alternative": "등록 전 · 코어 무변경: (a) 보고 규칙 id 를 '_test' 로 끝나게(예: hold_test — driver.R:89 가 뺀다) (b) 또는 보고 규칙을 빼고 시험 창 유지는 사람 쪽 verdict.json 열로만 보고 (c) 또는 v4 가 먼저 나오면 v4 로 등록. 어느 쪽이든 평가 뒤 evaluation_visible.json 열 목록에 시험 창 파생 열이 없음을 확인.",
+   "falsifier": "P1R04 평가 뒤 results/evaluation_visible.json 표에 시험 창 유래 열(test_hold 또는 이름을 바꾼 보고 규칙 열)이 없으면 이 도전은 틀렸다.",
+   "status": "accepted",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-11-13T08:05:37+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용 — P1R04 보고 규칙 id 를 '_test' 로 끝나게 하거나 코어 v4 로 등록하도록 다음 라운드 세션에 전달",
+     "change": "다음 라운드 세션 전달"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261113-014",
+   "at": "2026-11-13T08:01:38+0900",
+   "review": "R-20261113-002",
+   "target": "SYSTEM",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "C-20261112-022 · 025 의 반증 측정이 'P2 판독'으로 넘어왔지만 산출 주체가 없다 — 두 수용 응답은 보유 겹침 · 공유 구성원(C-022)과 보유 종목 유효 구성원 수 대조(C-025)를 'P2 판독에'로 넘겼으나 철학 P2 는 계산하지 않는다(AX-008 — 판단 숫자는 R 계약 산출만). 판정 직후 P1R03 results/ · tools/ 어디에도 그 산출이 없다(11-13 07:5x 검색). 그대로면 두 도전은 채점될 수 없고(규약 §13-3 '바꾼 것을 확인할 수 없는 수용') 저β 다섯 · TOTAL 의 보류 확인 묶음(이 리뷰 C1)도 비어 있다.",
+   "evidence": [
+    "C-20261112-022 · C-20261112-025 응답 · prereg 05e3f053 conclusion_scope[12][13] · P1R03 results/ 목록 · 규약 §13-3"
+   ],
+   "alternative": "보는 창 사이드카 R 산출 1개(판정 아님 · results/ 아래 보는 창 파일): ① 자격 엔진 쌍의 월평균 보유 겹침(비중 겹침) · 공유 구성원 수 ② 보유 종목 유효 구성원 수(TOTAL = 유효 카테고리 수) vs 같은 날 점수 있는 전 종목 중앙값 · 보유 쪽이 작은 달 비율 ③ 저β 다섯의 크기 × β 짝. 시점 = 저β 상대를 쓰는 사슬 걸음 · 보류 해제 전 — 시장 β 셋만 쓰는 사슬 1호 첫 걸음은 막지 않는다(임계 경로 아님).",
+   "falsifier": "P1R03 results/ 또는 라운드 tools/ 산출에 보는 창 보유 겹침 표와 보유 종목 유효 구성원 수 대조 표가 이미 있으면 이 도전은 틀렸다.",
+   "status": "accepted",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-11-13T08:05:37+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용 — IS 사이드카 R 산출(보유 겹침 · 유효 구성원 수)을 저β 상대를 쓰는 걸음 · 보류 해제 전 선행 과제로 다음 라운드 세션 백로그에 넣는다(임계 경로 아님)",
+     "change": "다음 라운드 세션 전달"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261113-015",
+   "at": "2026-11-13T08:01:39+0900",
+   "review": "R-20261113-002",
+   "target": "J-20261113-007",
+   "grade": "note",
+   "rule": null,
+   "claim": "우연 열람 기록 · 수리 방향 동의 — evaluation_visible.json 의 test_hold(자격 8칸 · 시험 창 연 알파 부호)를 처음 읽을 때 보았다. 이 리뷰의 판정 · 도전 근거에 쓰지 않았다(다음 사전등록 exposures 에 이 리뷰를 적을 것). J-007 수리 방향('이름 규칙이 아니라 규칙 선언의 창 표식으로')에 동의 — 같은 판에서 창 표식 없는 보고 규칙 열을 쓰기 거부로 막고(rc_after_tau_leaks 자리) 주입 양성 대조를 붙이면 계기가 된다.",
+   "evidence": [
+    "results/evaluation_visible.json · v3/driver.R:89 · J-20261113-007 · 규약 §13-2"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261113-016",
+   "at": "2026-11-13T08:01:39+0900",
+   "review": "R-20261113-002",
+   "target": "J-20261113-004",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "DNN 계보 밖 첫 깨끗한 수익 기저 · 범위 안의 판정 해석 — 시장 β 수익 엔진 셋(밸류 · 성장 · 컨센서스)은 강세 구간 7/8 · β-통제 알파 t 2.67~5.14 로 헌장 빈칸 17 '다른 기저 엔진 확보'의 첫 실적이다. FVALU 가 S0 '엔진의 모양'에 가장 가깝다(회복이 시장보다 긴 위기 0/12 · 초과 양수 해 20/23 · 위기 결함 = 깊은 위기 하락 포착 > 1 이 4/7 — 사슬이 막을 것). 결론 범위가 자격을 철학 적합 · 방어로 읽지 못하게 막았고(C-020 · C-021 수용분) J-004 도 그 범위 안에서 읽었다. 퀄리티 t 1.95 를 재해석하지 않은 것도 원칙 7 과 같은 태도.",
+   "evidence": [
+    "evaluation_visible.json 보는 창 열 · results/P1R03_F{VALU,GROW,CONS}_C0/visible/diagnosis_packet.json · 헌장 §5 S0 · 빈칸 17 · 원칙 5 · 6 · 7"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261113-017",
+   "at": "2026-11-13T08:01:51+0900",
+   "review": "R-20261113-003",
+   "target": "J-20261113-004",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "저위험 보류(C-20261112-021)가 칸 이름(FDEFE · FRISK)에만 걸려 TOTAL 이 빠졌다 — TOTAL = 선언 가족 14 점수 평균(보류 가족 defense · risk · regime + liquidity 포함 · 결론 범위 4: 2000-05 전엔 가격 계열 가족이 평균의 대부분)이고 보는 창 β 0.58 은 FRISK 0.59 · FDEFE 0.50 띠(FVALU 1.01 · FGROW 0.97 · FCONS 1.03 과 다름). J-004 기대('방어 · 위험 칸은 사슬 부품에서 뺀다') · P1R04 결론 범위 10(IDEFE · IRISK · IREGI 뿐) · C-20261113-004 (b) 규칙안('저위험 보류분 제외')대로면 블렌딩 사슬 1호의 자연스러운 기저 · 부품인 TOTAL · ITOTAL 로 C-021 이 막으려던 '늘 켜진 방어 틸트 = 수익 엔진' 경로가 우회된다.",
+   "evidence": [
+    "stage_artifacts/programs/P1_RETURN/P1R03_factor_family_composites/prereg.json(conclusion_scope 4 · 11 · 12) · 04_Research/programs/P1_RETURN/P1R03_factor_family_composites/results/evaluation_visible.json(beta_vis) · 04_Research/01_reports/factor_spine_design_20261111/README.md:151 · 04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/round_spec.json(conclusion_scope 10) · 원장 C-20261112-021 · C-20261113-004"
+   ],
+   "alternative": "(가) 보류 범위를 '보류 가족을 구성에 담은 엔진'으로 — TOTAL · ITOTAL 도 도훈 확인 전 사슬 기저 · 부품에서 뺀다(J-004 정정 · P1R04 결론 범위 10 한 줄) 또는 (나) 지금(사슬 판 · P1R04 판정 전) 저위험 4 가족을 뺀 토탈(10 가족 평균)을 같은 계보 시행 +1 로 선언해 그 칸만 부품 후보로 · 어느 쪽이든 철학 P2 판독(C-022 보유 겹침)에 TOTAL 행",
+   "falsifier": "C-021 응답 · J-004/J-006 · P1R04 결론 범위 · 사슬 1호 기저 · 부품 규칙 중 하나에 TOTAL(·ITOTAL)의 보류 처리(포함 · 제외 · 변형)가 이미 적혀 있으면, 또는 철학 P2 판독의 보는 창 보유 겹침에서 TOTAL 이 저위험 자격 3 가족(FDEFE · FRISK · FLIQU)과 겹치는 비율이 비저위험 자격 4 가족(FVALU · FGROW · FCONS · FCROW)과 겹치는 비율보다 크지 않으면 이 도전은 틀렸다.",
+   "status": "accepted",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-11-13T08:05:35+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용 — 토탈을 저β 보류에 넣는다(철학 C-010 이 보류를 유동성 · 쏠림 · 토탈로 넓힌 것과 같다). 블렌딩 사슬 1호 기저 · 부품 = 밸류 · 성장 · 컨센서스만",
+     "change": "결정 LOWBETA-ENGINES-BASE-USE-20261113 · 다음 라운드 세션 전달"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261113-018",
+   "at": "2026-11-13T08:02:03+0900",
+   "review": "R-20261113-003",
+   "target": "J-20261113-003",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "07:29 도훈 번복('더 미루고 1109.3488 진행 다시해줘')이 결정 기록부에 없다 — DNN-SEED-GPU-PRIORITY-20261113 은 여전히 decision (가)(시드 먼저 · last_updated 07:25:07)이고 번복은 J-003 · 저널에만 있다. 시드 재개 = '도훈 지시 때'뿐(감시 셸 상태 '중단')인데 J-014 가 밝혔듯 레인은 대기열(2106.06164 · 1109 재구현)로 GPU 를 다시 잡으므로 기본값이 없으면 시드는 무기한이다. 시드는 판 2 셀 경로의 유일한 아는 답(P1S02 DESIGN.md:63 · :70)이고 P1R03 결론 범위 5 가 그 판정에 걸려 있는데 J-004 · J-006 의 다음 단계(코어 v4 → 판 3 → 사슬 1호)는 그 조건을 사슬로 잇지 않는다 — 재측정 조항은 15칸만 덮는다(T1 C-20261112-029 의 '남는 위험은 재측정 조항이 덮는다'도 15칸까지).",
+   "evidence": [
+    "06_Registry/decision_register.json#DNN-SEED-GPU-PRIORITY-20261113 · 06_Registry/session_resume.json(OP-20261110-V102-LADDER log 2026-11-13T07:30:02) · .cache/scheduler_logs/p1s02_seed_watch_state.txt · 원장 J-20261112-014 · prereg.json conclusion_scope 5 · 04_Research/programs/P1_RETURN/P1S02_standing_qualification/DESIGN.md:63 · :70 · lean-loop v10.2 ① 기준점부터"
+   ],
+   "alternative": "임계 경로 비용 0(문장 · 기록뿐): (1) 결정 기록부에 번복 기록(새 id 가 (가)를 대체 또는 decision · note 갱신) + 결정 전 기본값 — 도훈 지시와 맞는 예: '1109 재구현 측정이 끝난 다음 GPU 자리 = 시드(그때까지 J-014 자리 예약 · 그 사이 레인 새 GPU claim 보류)' · 보고 1줄로 도훈 확인 (2) 사슬 1호 판에 '시드 판정 전 결과 = 잠정 · 셀 경로 결함이면 P1R03 15칸 + 사슬 기준 칸 · 걸음 재측정' 한 줄 (3) 보고에 '시드 보류 = 판 2 무인 흐름 · 사슬 결과의 기준점 확인이 함께 밀린다' 1줄",
+   "falsifier": "결정 기록부에 07:29 번복과 시드 재개 기본값(조건 · 시각)이 이 리뷰 등록 전에 이미 있거나, J-006 · 사슬 판 초안 · 저널 next 중 하나에 '시드 전 사슬 = 잠정 · 결함 시 사슬 재측정' 조항이 있으면 이 도전은 틀렸다. (2)만: P1R03 칸이 시드 점검 항목(시작일 주입 · 신호 격자 · 정렬 · 지표 재현)을 아는 답 대조로 이미 통과했다는 기록이 있으면 틀렸다.",
+   "status": "accepted",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-11-13T08:05:36+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용 — 07:29 번복을 결정 DNN-SEED-POSTPONE-20261113 로 기록 · 기본값 = 1109 재구현 측정이 끝나는 시점에 Q 가 시드 재개를 도훈께 여쭘 · 사슬 판 결론 범위에 '시드 판정 전 결과 = 잠정 · 셀 경로 결함이면 사슬도 재측정' 1줄(다음 라운드 세션)",
+     "change": "결정 기록부 · 다음 라운드 세션 전달"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261113-019",
+   "at": "2026-11-13T08:02:15+0900",
+   "review": "R-20261113-003",
+   "target": "J-20261113-004",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "자격 원천 5 중 4(밸류 · 성장 · 컨센서스 · 쏠림)의 구성원 방향이 거의 전부 등록부 원래 값이다 — direction_economic_basis = registry_original('문헌 검토 전 — 등재자가 쓴 값') 비율 value 24/24 · growth 21/21 · consensus 14/14 · crowding 11/14(정적 필드 셈 · 성과 미열람) · 저위험 가족은 11-09 감사의 문헌 판정 · 감사 표는 저장 부호 · 코드 음수화만 대조. 사전등록 노출 마지막 줄(격리 점검 v2 R-6′)은 '성과 참조 여부를 확인하지 않았다'뿐이다. 원래 값이 전기간 IC 로 정해졌다면 부호 선택 자체가 C1 이라 자격 · 사슬 · A 후보가 연쇄 무효다(Judge 는 A 뒤에야 본다 · 재측정 비용은 사슬이 자랄수록 커진다). 문헌이 갈리는 구성원도 있다(매출 성장: 장기 음 Lakonishok · Shleifer · Vishny 1994 JF · 서프라이즈 양 Jegadeesh · Livnat 2006 JAE). 사슬 기저 전 측정 신뢰 확인(체계 §2-1)이 다음 단계에 없다.",
+   "evidence": [
+    "02_Infrastructure/factor_db/factor_registry.json(direction_economic_basis 셈 · 구성원 = 04_Research/strategies/FC_FAM_*/own_spec.json core.members) · 02_Infrastructure/factor_db/DIRECTION_POLICY.md:13 · :36 · 06_Registry/factor_direction_audit.json(_doc) · stage_artifacts/programs/P1_RETURN/P1R03_factor_family_composites/prereg.json(spec.exposures 마지막 줄)"
+   ],
+   "alternative": "코어 v4 와 나란히(임계 경로 밖 · 서브에이전트 1회) 결과를 모르는 격리 에이전트가 DIRECTION_POLICY §3 절차(정의 · 코드 · 문헌만 · 성과 · IC 금지)로 자격 4 가족의 registry_original 70개 방향을 재판정 → 모두 같으면 노출 줄을 '출처 확인 — 정의 · 문헌'으로 고치고 진행(시행 0) · 다르면 그 가족만 감사 표 writer 로 고치고 엔진 재생성 · 같은 계보 시행 +1 로 재측정한 뒤 사슬 판 등록 · 미달 가족 114개는 결합기 사다리 쪽 일로 뒤에",
+   "falsifier": "등록부 direction_history · factor_direction_audit.json · 등재 기록(add_factor.R 경로 로그 · 커밋)에서 이 70개 방향이 정의 · 문헌으로 정해졌고 성과 · IC 를 읽지 않았다는 근거가 나오거나, 격리 재판정이 70개 모두 같은 방향을 내면 이 도전은 틀렸다(그때는 노출 줄만 고친다).",
+   "status": "accepted",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-11-13T08:05:36+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용 — 자격 원천 카테고리 구성원 방향(등록부 원래 값)의 출처를 결과를 모르는 격리 에이전트가 정의 · 문헌만으로 재판정한다(코어 v4 와 병렬 · 임계 경로 밖 · 다르면 그 카테고리만 시행 +1 재측정) — 다음 라운드 세션 범위로",
+     "change": "다음 라운드 세션 전달 · P1R03 닫기 탐침"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261113-020",
+   "at": "2026-11-13T08:02:33+0900",
+   "review": "R-20261113-003",
+   "target": "J-20261113-001",
+   "grade": "note",
+   "rule": null,
+   "claim": "예외 범위 기록이 실제보다 좁다(결과는 사후 대조로 깨끗): 결정 · 커밋은 '신선도 단계 한 줄만 뺐다'인데 실행 셸 p1r03_measure_asof_1110.sh 에는 새벽 셸 시작 조건 넷(시각 창 · 밤/아침 체인 미실행 — C-20261112-034 · 뷰 마지막 달 ≥ 팩터 DB — C-032 · 지문 10분 안정 — 점검 v1 R-3)도 없고 측정(06:43~07:35)이 아침 체인(morning_run.log 07:18)과 겹쳤다. 사후: 칸 지문 시작 · 끝 30/30 동일(md5 f25e9612) · 뷰 지문 앞뒤 동일(측정 로그 2 · 43행) · 뷰 202611 = 팩터 DB 202611 · 리프레시 적재 SendMessage 보류(복구 시작 07:36:59 > 측정 끝 07:35:42) → 닫기 기록에 '뺀 조건 넷 + 사후 대조 넷' 한 줄. 남은 '11-10' 두 곳: 결정 note(인용 문구 · '칸 지문이 RAWDATA 11-10 을 남긴다' — 지문은 크기 · 수정 시각) · 저널 next_action ②. '판정 창 무영향'은 수익 계산에는 맞지만 수정주가 수준(동전주 바닥)은 뒤 기업행위로 바뀔 수 있다(CLAUDE.md 축 절) — '수익 계산에 닿지 않음'이 정확.",
+   "evidence": [
+    "04_Research/programs/P1_RETURN/P1R03_factor_family_composites/tools/p1r03_measure_asof_1110.sh · tools/p1r03_dawn_measure.sh:4-8 · :27-41 · results/*.fp_start · *.fp_end · .cache/scheduler_logs/p1r03_measure_1110_20261113_064318.log · .cache/scheduler_logs/recover_load_20261113_phase1.log · 06_Registry/decision_register.json#MEASURE-P1R03-ON-1110-DATA-20261113"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261113-021",
+   "at": "2026-11-13T08:02:33+0900",
+   "review": "R-20261113-003",
+   "target": "SYSTEM",
+   "grade": "note",
+   "rule": null,
+   "claim": "칸 측정 기록 results/<라운드>_<칸>.json 에 전기간 지표와 권위 등급이 있다(키 grade · essence.port_t · net_sharpe · cagr · mdd · calmar · oos_retention — 키만 봄) — 같은 results/ 의 보는 창 파일 옆이고 규약 §7 · §13-2 · 스폰 지시의 '열지 않는 것'에 없다 → §13-2 한 줄 또는 코어 v4 가 essence · grade 를 full/ 로. P1R04 생성기 수정 07:21 · 엔진 선언 07:23~07:29 가 P1R03 칸 기록 생성(06:46~07:28)과 겹치므로 P1R04 노출에 '칸 측정 기록 미열람' 한 줄이면 깨끗하다. test_hold 누출은 C-20261113-003 이 다룬다 — 보는 창 파일 5개 중 그 키는 P1R03 하나뿐이고, v4 작성기를 고쳐도 v3 핀 P1R03 파일은 다시 쓰이지 않으므로 지금 그 열만 뺀 사본으로 교체(md5 전후 기록 · verdict.json 원본 유지)하면 다음 사슬 T1 · P1 리뷰어 노출이 막힌다.",
+   "evidence": [
+    "04_Research/programs/P1_RETURN/P1R03_factor_family_composites/results/P1R03_FVALU_C0.json(키 목록) · 00_Lawbook/specs/superfan_protocol.md §7 · §13-2 · 04_Research/programs/_lib/round_core/v3/driver.R:89 · 02_Infrastructure/factor_db/fc_combiner_gen.R(mtime 07:21)"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261113-022",
+   "at": "2026-11-13T08:02:34+0900",
+   "review": "R-20261113-003",
+   "target": "J-20261113-003",
+   "grade": "note",
+   "rule": null,
+   "claim": "GPU 운영은 과정 과잉이 아니다(약 15분 · CPU 측정 중 · 라운드 무차단) · J-003 이 옛 엔진 재측정(약 22시간 뒤 같은 소비 보류) 대신 곧장 재구현으로 보낸 것은 비용을 제대로 읽었다. 남길 것 둘: ① 도훈 지시 문자('진행 다시해줘')와 다른 길이므로 보고에 '옛 엔진 측정 = 체크포인트 없어 재개 불가 → 재구현 · 1109 결과까지 예상 시간' 1줄 ② J-002 요청 파일 앞 상태 백업이 세션 스크래치(%TEMP% · 자동 정리 대상 — 기억 카드 10-03)에 있다 — 저장소 안(저널 · 레인 슬롯 폴더)으로 옮긴다.",
+   "evidence": [
+    "원장 J-20261113-002 · J-20261113-003 · 06_Registry/session_resume.json log 07:25:09 · 07:30:02"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261113-023",
+   "at": "2026-11-13T08:02:43+0900",
+   "review": "R-20261113-003",
+   "target": "J-20261113-004",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "원천 셈 · 가지 · 퀄리티 처리가 체계대로다 — 자격 8/15 · 원천 5(밸류 · 성장 · 컨센서스 · 쏠림 + 저위험 1 · 토탈 제외)는 결론 범위 12 · 15 문장 그대로이고 다시 묶어도 같은 가지(쏠림을 저위험에 넣어도 4 — 쏠림은 등록부 방어 방향 14/14 없음 · 성장+컨센서스 합쳐도 ≥ 3). 퀄리티 t 1.95 무재해석(체계 §4) · 계보 시행 회계는 P1R04 로 이어짐(결론 범위 5 · 30칸) · 음의 t 두 가족은 P1R04 결론 범위 18 로 단서 승계 — 유지할 방식.",
+   "evidence": [
+    "results/evaluation_visible.json(qualify · t_alpha_vis) · prereg.json conclusion_scope 12 · 15 · P1R04 round_spec.json conclusion_scope 5 · 18"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261113-024",
+   "at": "2026-11-13T08:02:44+0900",
+   "review": "R-20261113-003",
+   "target": "J-20261113-001",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "사실 정정을 문장이 아니라 기계로 고쳤다 — 06:48 정정 뒤 이정표 스크립트가 '11-10' 문구를 바꾸고 RAWDATA 최신일을 직접 읽어 싣는다(tools/p1r03_milestone.R 07:12) · 측정 동안 리프레시 세션 적재를 SendMessage 로 보류시켜 칸 지문 30/30 동일을 지켰다 · '자료를 덜 쓴다 = PIT 위반 아님' 판단도 맞다.",
+   "evidence": [
+    "04_Research/programs/P1_RETURN/P1R03_factor_family_composites/tools/p1r03_milestone.R(작업 트리 diff) · results/*.fp_start · *.fp_end · 06_Registry/session_resume.json next_action ①"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261113-025",
+   "at": "2026-11-13T08:03:19+0900",
+   "review": "R-20261113-004",
+   "target": "J-20261113-005",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "T1 규칙은 헌장과 같은 말을 한다 — 부호를 뒤집지 않고 가중 0(빈칸 15 원리 · C13) · as-of IC(Usable_Date ≤ 신호일 · 정본 접근자 한 길) · 결정론(추첨 행운 없음) · 생성기는 성과를 읽지 않음 · 엔진 15 와 규칙을 P1R03 판정 파일보다 먼저 고정(07:23~07:29 · 판정 07:35 — 원칙 7) · 주된 반대 가설(ICIR 착시 — IC 가 상위 꼬리 포트로 안 옮겨진다)을 표준 구성 상위 25 칸으로 그대로 잰다(설계 §4-2 목적함수) · P1R03 철학 일곱 줄(자격 ≠ 철학 적합 · 위기 노출 귀속 전 · 저위험 보류 · 원천 셈법 · 희소 구성원 · philosophy_unread · 시행 회계) 모두 승계 · 노출 정직(우연 열람 · 판정 뒤 정한 것까지).",
+   "evidence": [
+    "04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/round_spec.json exposures[1] · [6] · conclusion_scope[5]~[12]",
+    "02_Infrastructure/factor_db/fc_combiner_gen.R 머리말(규칙 fcc_rule_t1_v0)",
+    "헌장 원칙 7 · 빈칸 15 · 21"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261113-026",
+   "at": "2026-11-13T08:03:19+0900",
+   "review": "R-20261113-004",
+   "target": "J-20261113-005",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "짝 셈(읽는 법 ③)이 엔진 강점과 위기 행동을 읽지 않는다 — '결합 개선'이 저변동 쪽 이동을 가린다. T1 ⊇ T0(DESIGN §1)라 T1−T0 짝은 같은 엔진 위 장치 하나의 대조다. 헌장은 장치를 엔진 대비로 재고(빈칸 16) 엔진 강점을 상승 포착 중앙값 80% · 증분 알파 비열등(빈칸 4 (B)(C)) · 강세 구간 과반 80%(빈칸 7)로 지키며, 설계 §4-2 목적함수도 '상위 꼬리 성과와 위기 행동(행동 카드)'이다. 지금 짝 셈은 t_alpha_vis 부호 하나라 (1) ICIR 무게가 저위험 · 저변동 팩터로 몰려 잔차 변동이 줄면 α 가 같아도 t 가 오르고(빈칸 18 평시 변동성 축소) 상승 포착은 떨어질 수 있다 — 칸 자격(중앙값 ≥ 0.55)은 넘으면서 같은 계보 T0 대비 강세 참여를 크게 잃는 저변동 기계(원칙 5)가 '결합 개선 지지'로 적힌다 (2) 느린(36~120개월) 지난 IC 무게는 위기 뒤 반등 초입에 방어 계열에 실려 반등 상실(빈칸 12 '주된 복리 위험')이 짝에서 안 보인다. 짝 통계 · 문턱(8/15 = 귀무 중앙값) · 배치는 판단 C-20261113-001 몫 — 이 도전은 어떤 짝 통계를 쓰든 그 위에 붙어야 할 철학 조건이다.",
+   "evidence": [
+    "04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/round_spec.json conclusion_scope[16] ③ · [17] · DESIGN.md §1",
+    "04_Research/01_reports/factor_spine_design_20261111/README.md §4-2 목적함수",
+    "04_Research/programs/_lib/round_core/v3/cell_eval.R:72-79 · pair.R · p2.R(rc_p2_bull_segments · rc_p2_fast_crash_keys)",
+    "헌장 원칙 1 · 5 · §3 · 빈칸 3 · 4 · 7 · 12 · 16 · 18 · 19"
+   ],
+   "alternative": "판정 규칙 q_* 불변 · 새 숫자 없음 · 코어 무변경(보는 창 패킷 + 코어 v3 짝 함수 재사용 · T0 칸을 기준 칸 자리에): ① 짝 개선 조건 'T1 uc_vis ≥ 0.8 × 같은 계보 T0 uc_vis'(빈칸 4 (B) · 기준이 0 근처면 빈칸 13 일반화) — 못 넘으면 '강점 손실 동반' 꼬리표 · 지지에 세지 않는다(C-001 (a) 증분 알파든 지금 부호 셈이든) ② 짝마다 기록(판정 아님): 강세 구간별 비(rc_p2_bull_segments · 구간 과반 ≥ 0.8 — 빈칸 7) · 위기 바닥 뒤 첫 강세 구간 비(빈칸 12) · 위기 하락 포착 중앙값 · 최악 차 · 깊은 위기 · 빠른 급락 과반(rc_crisis_majority · rc_deep_crisis_keys · rc_p2_fast_crash_keys) · 사이클 복리 과반(rc_cycle_compound — 헌장 §3) · CDaR 차 · 회복 지연(rc_recovery_tag — 빈칸 5 · 18) · 하락/상승 β(빈칸 3) · 보유 겹침 · 처치 전달(rc_holdings_overlap · rc_treatment_delivered — 빈칸 19 · 보유가 같은 짝 = 미시험) ③ 결론 범위 한 줄 'T1 짝 개선이 상승 포착 손실 · 위기 악화와 함께 나오면 저변동 쪽 이동이지 결합 개선이 아니다'.",
+   "falsifier": "P1R04 round_spec.json conclusion_scope 의 읽는 법(③)에 짝 개선의 상승 포착 보존 조건과 위기 기록이 이미 있으면 이 도전은 틀렸다. 측정 뒤로는 — 보는 창에서 t(α)(또는 증분 t)가 오른 짝이 모두 uc_vis ≥ 0.8 × 같은 계보 T0 이고 dd_capture_median_vis 가 T0 보다 나쁘지 않으면, 조건이 없어도 결론이 같았으므로 이 도전은 실익이 없었다(refuted 로 채점).",
+   "status": "open",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261113-027",
+   "at": "2026-11-13T08:03:19+0900",
+   "review": "R-20261113-004",
+   "target": "J-20261113-005",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "T1 은 저위험 몫을 움직이는데 잴 곳이 없다 — 승계 보류(IDEFE · IRISK · IREGI)는 P1R03 정적 부호 비율(defense 54/57 · risk 15/19 · regime 8/8)로 이름을 정했고, T0 는 등가중이라 비율 = 무게지만 T1 에서는 아니다: ILIQU(방어 부호 23 · 반대 21)의 방어 쪽 무게 · ITOTAL 의 저위험 4 가족 W_f 몫(T0 = 4/14 · W_f = 그 달 가족 구성원 가중 평균 — 생성기 :337) · 저위험 구성원과 같은 식인 쌍둥이(V19_Debt_to_Market↔R17 · Q15_Debt_to_Equity↔D60 · Q16_Debt_to_Assets↔R18 · T14_HLRange↔D53↔L41 — P1R03 결론 범위[3])를 품은 IVALU · IQUAL · ITECH 의 저위험 노출이 as-of ICIR 로 커질 수 있다(구조 추론 · 측정 아님). 그런데 fce_diag.csv 는 구성원 · 가족 가중을 남기지 않는다(생성기 :278-282 — 설계 §4-4 '날짜별 가족 가중을 엔진 폴더에'와 다름). 코어 v4 의 '저위험 셋 도훈 확인'(J-20261113-006)이 엔진 이름으로 걸리면 T1 판을 못 덮는다(C-20261018-046 이 사양 이름으로만 적혀 가족 합성을 못 덮은 길). 위험: 오독('IC 가 고른 토탈 자격 = 방어하며 수익' — 원칙 4 · 빈칸 16 · 22) · 저변동 기계(원칙 5 · 빈칸 24) · 저위험끼리 섞는 블렌딩 사슬 1호(획일화 · 빈칸 17).",
+   "evidence": [
+    "02_Infrastructure/factor_db/fc_combiner_gen.R:278-282(진단 열) · :337(W_f = mean)",
+    "04_Research/strategies/FC_TOTAL_ICW/own_spec.json composite · n_members_by_family",
+    "P1R03 round_spec.json conclusion_scope[3] · P1R04 round_spec.json conclusion_scope[2] · [10] · [11]",
+    "factor_spine_design README §4-4 · §9 · C-20261112-021 · C-20261018-046 · J-20261113-006",
+    "헌장 원칙 4 · 5 · 빈칸 16 · 17 · 22 · 24"
+   ],
+   "alternative": "엔진 · 핀 무변경 · 판정 아님 · 결과 전: (가) 사이드카 — 보는 창 as-of 달마다 compute_rolling_ic_all(as-of, 36, 120)로 엔진과 같은 식의 가중을 다시 내어(τ_D 이전 행만) 가족별 방어 부호 구성원 가중 몫(등록부 direction_defensive 대조) · 유효 구성원 수 (Σw)²/Σw² · 비저위험 가족의 저위험 쌍둥이 가중 몫 · 토탈의 저위험 4 가족 W_f 몫을 남긴다 (나) 몫이 T0 기준(그 달 있는 구성원 · 가족의 개수 비율)보다 큰 보는 창 달이 과반(behavior_card.json majority_share)이면 '저위험 쏠림' 꼬리표 · 꼬리표 붙은 비저위험 가족은 원천 셈에서 저위험 묶음에 넣는다 (다) 코어 v4 확인 조건을 엔진 이름이 아니라 계보(family_root FC:defense · FC:risk · FC:regime) + (나) 꼬리표로 건다 (라) 결론 범위 한 줄 'T1 에서 저위험 몫은 정적 비율이 아니라 as-of 무게다 — (나) 꼬리표 엔진도 같은 확인'. 보류 요청: IDEFE · IRISK · IREGI(C-021 승계) + (나) 꼬리표가 붙은 ILIQU · ITOTAL · 비저위험 가족 — 자격이 나와도 P4 기저 · 블렌딩 부품으로 올리기 전에 도훈 확인 · 확인 묶음에 (가) 기록 첨부 · 등록 · 측정 · 다른 엔진 흐름은 막지 않는다.",
+   "falsifier": "(가) 기록에서 ILIQU 방어 부호 가중 몫 · ITOTAL 저위험 가족 몫 · 쌍둥이 가중 몫이 T0 기준보다 큰 보는 창 달이 어느 엔진에서도 과반이 아니면 확장 부분(ILIQU · ITOTAL · 비저위험 가족)은 틀렸다. fce_diag.csv 나 엔진 폴더의 다른 산출이 이미 날짜별 구성원 · 가족 가중을 남기면 기록 부분이 틀렸다. 코어 v4 출시본이 확인 조건을 계보 · category 로 걸면 (다)가 틀렸다.",
+   "status": "open",
+   "role": "philosophy",
+   "hold_request": true,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261113-028",
+   "at": "2026-11-13T08:03:20+0900",
+   "review": "R-20261113-004",
+   "target": "J-20261113-005",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "T1 의 가중은 측정 축 밖에서 배운다 — 소형주 착시의 두 번째 경로. IC 원장(factor_db_builder.R:1958-2045 compute_all_factor_ic_monthly)은 팩터 DB Coverage 전 종목의 원값과 다음 달 수익의 종목 동일가중 스피어만 상관이고 위생 · 동전주 바닥 · 유동성 필터가 없다. 소형 · 저유동 종목이 다수인 한국 횡단면에서 이 IC 는 그 종목들에서 맞은 팩터를 높게 쳐, T1 은 T0 보다 '측정 축 밖 종목에서 일하는 팩터'에 무게를 싣는다 → 표준 구성(2e8 · 1,000원 뒤 상위 25)에서 통과선 바로 위 소형주 선택으로 나타날 수 있다(구조 추론 · 구성원에 따라 방향이 반대일 수도 있어 기록이 필요). 결론 범위[3]은 이 한계를 '품질 문제 · PIT 문제 아님'으로만 적고 헌장 §4 소형주 착시와 잇지 않으며, 재는 곳(유동성 구간 귀속)은 미측정이다 — P1R03 C-025(희소 구성원 쏠림)와 다른 경로다.",
+   "evidence": [
+    "02_Infrastructure/factor_db/factor_db_builder.R:1958-2045 · factor_db_connector.R:845(ICIR = 평균/표준편차 · 120개월)",
+    "02_Infrastructure/contracts/diagnosis_packet.R:134-202(ew_cw · selection · by_size_decile)",
+    "P1R04 round_spec.json conclusion_scope[3] · [8] · 헌장 §4 소형주 착시"
+   ],
+   "alternative": "판정 아님 · 결과 전 · 코어 무변경: (가) 짝 기록 — 보는 창 패킷 exposure.summary 의 ew_cw(동일가중−시총가중) · selection 성분(연환산 평균 · 능동수익 몫)을 T1 · T0 로 나란히 + 위기별 크기 분위 손실 합(by_size_decile) (나) 가벼운 사이드카 — 보는 창 월말 보유 종목 20일 평균 거래대금(t−1) 중앙값 T1 vs T0 · T1 이 낮은 달이 과반이면 '소형 쏠림(T1)' 꼬리표 (다) 결론 범위 한 줄 — 짝 개선이 ew_cw 증가 · selection 감소 또는 (나) 꼬리표와 함께 나오면 '크기 틸트 개선'이고 결합 개선 근거로 세지 않는다 (라) T2 이후 결합기도 측정 축 위 IC 가 생길 때까지 같은 한계를 결론 범위에 적는다.",
+   "falsifier": "측정 뒤 보는 창 패킷(results/<칸>/visible/)에서, t(α) 가 같은 계보 T0 보다 오른 T1 칸 가운데 ew_cw 성분 연환산 평균이 T0 보다 커진 칸이 과반이 아니고 (나) 꼬리표가 붙은 계보가 하나도 없으면 이 도전은 틀렸다.",
+   "status": "open",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261113-029",
+   "at": "2026-11-13T08:03:20+0900",
+   "review": "R-20261113-004",
+   "target": "J-20261113-005",
+   "grade": "note",
+   "rule": null,
+   "claim": "승계 대조 — 물은 일곱 줄(자격 ≠ 철학 적합 · 위기 노출 귀속 전 · 저위험 보류 · 원천 셈법 · 희소 구성원 쏠림 · philosophy_unread · 시행 회계)은 모두 승계됐다. 빠진 것: P1R03[11] 'P2R04 방어 틸트 β 짝 0/8' · '방어 방향판 = 같은 계보 시행 +1' 두 문구 · P1R03[16] '칸 사이 비교는 겹치는 창으로만'(격리 점검 v2 S-6)이 [14] '창이 다르면 적는다'로 후퇴(C-20261113-001 (a) rc_pair_alpha 연월 병합을 받으면 풀림 · 아니면 되살림) · P1R03[5] 시드 판정 전 측정 · 재측정 조항(판단 쪽) · C-021 · C-022 수용 변경의 P2 판독 목록(하락/상승 β · 강세 구간별 상승 포착 · 자격 엔진 쌍 보유 겹침 · 공유 구성원)은 두 라운드 결론 범위 어디에도 없고 원장 수용 문구에만 있다(리뷰 '다음' 절로 옮김) · q_uc 는 리터럴 0.55 그대로(코어 v4 템플릿 몫).",
+   "evidence": [
+    "P1R03 round_spec.json conclusion_scope[5] · [11] · [16] · P1R04 round_spec.json conclusion_scope[10] · [14]"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261113-030",
+   "at": "2026-11-13T08:03:20+0900",
+   "review": "R-20261113-004",
+   "target": "J-20261113-005",
+   "grade": "note",
+   "rule": null,
+   "claim": "같은 가족의 T0 · T1 은 한 원천 · 한 계보(빈칸 17) — 지지면 FVALU · IVALU 가 함께 풀 후보([17])지만, 블렌딩에서 둘을 섞는 것은 '두 엔진 · 두 원천'이 아니라 한 원천의 결합 가중 시행 둘이다(빈칸 9 A′ (b) · 17 — C-20261113-004 (b) 사슬 1호 = P1R03 자격 엔진만이면 1호에는 안 생김). 비저위험 쌍둥이(Q06_Asset_Growth↔GR03 · Q20_Net_Equity_Issuance↔IN04 · XF_DU03↔Q13 · XF_LL05↔Q31)에 T1 무게가 몰리면 품질 · 성장 · 레버리지가 같은 신호를 나눠 '서로 다른 원천'이 부풀려진다 — 결론 범위 [11] 에 'T0 · T1 = 한 원천 · 쌍둥이 무게가 큰 가족 쌍은 함께 센다(C2 (가) 기록 · 자격 엔진 쌍 보유 겹침으로 확인)' 한 줄.",
+   "evidence": [
+    "P1R04 round_spec.json conclusion_scope[11] · [17] · P1R03 conclusion_scope[3] · 헌장 빈칸 9 A′ · 17"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261113-031",
+   "at": "2026-11-13T08:03:20+0900",
+   "review": "R-20261113-004",
+   "target": "J-20261113-005",
+   "grade": "note",
+   "rule": null,
+   "claim": "근거 지평 — 생성기 · DESIGN 은 '지난 성과가 양인 팩터만'의 근거로 Ehsani & Linnainmaa (2022)를 드는데, 그 시계열 팩터 모멘텀 주결과는 지난 1년 형성 창이다(원문 표 확인 권고). 36~120개월 ICIR 양의 부분은 그 직접 적용이 아니다. 긴 창 팩터 타이밍은 어느 쪽이든 증거가 약하다(Asness, Chandra, Ilmanen & Israel 2017 JPM 43(5)) — 타이밍보다 '오래 맞아 온 팩터' 품질 가중에 가깝다. DESIGN §2 기전 근거에 반대 가설 한 줄 '긴 창 양의 부분 = 경기순응 — 위기 직전 · 반등 초입에 늦다'(C1 ② 위기 바닥 뒤 첫 강세 구간 기록이 잰다).",
+   "evidence": [
+    "02_Infrastructure/factor_db/fc_combiner_gen.R FCC_LIT positive_part · P1R04 DESIGN.md §2 · §9"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261113-032",
+   "at": "2026-11-13T08:03:21+0900",
+   "review": "R-20261113-004",
+   "target": "J-20261113-005",
+   "grade": "note",
+   "rule": null,
+   "claim": "test_hold 재발 — 판단 C-20261113-003 이 재발(코어 v3 핀 · driver.R:89 는 '_test' 로 끝나는 열만 뺀다)과 전파(사슬 기저 선택)를 짚었으니 도전하지 않는다. 철학 쪽에서 더할 것: 가장 싼 길은 이 라운드 사양에서 보고 규칙 test_hold 를 빼는 것이다(판정 규칙 qualify 불변 · 사람 쪽 시험 창 값은 verdict.json 표 alpha_ann_test 열에 그대로) — P1R04 보는 창 파일에 시험 창 파생 열이 처음부터 안 생긴다. 원칙 7: P2 가 받는 표가 깨끗해야 P3 의 시험 창이 '못 본 구간'으로 남는다.",
+   "evidence": [
+    "04_Research/programs/_lib/round_core/v3/driver.R:87-94 · P1R04 round_spec.json rules[test_hold] · J-20261113-007 · C-20261113-003"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261113-033",
+   "at": "2026-11-13T08:03:21+0900",
+   "review": "R-20261113-004",
+   "target": "J-20261113-006",
+   "grade": "note",
+   "rule": null,
+   "claim": "코어 v4 · 블렌딩 사슬 판 P1 에서 볼 것 — v4: 보고 규칙 열 분리는 규칙 선언(type report)으로(J-007 · C-003 (b)) · 저위험 확인은 계보 키(C2 (다)) · philosophy_unread(C-20261112-023) · q_uc 참조. 사슬 판 P1: 같은 가족 T0 · T1 동시 기저(N2) · 저위험 쏠림 꼬리표(C2) · 기저 · 짝 선택이 기계 규칙인가 · test_hold 열람 노출(C-003 (c)) · 채택 규칙에 uc_vis 하한 · d_dd_capture_median_vis ≤ 0 · dS_vis 필수 · β 짝 · MC8 귀속을 최종 후보 판정에. 그리고 P1R04 읽는 법 [17] 은 지지면 T2 · 반증이면 T2 · T4 인데, 병목은 급락기 낙폭(설계 §9)이고 늘 켜진 방어 틸트는 β 짝 0/8(P2R04)이다 — 철학에 곧장 닿는 T4(상태 조건부) · T5(상위 꼬리)를 닫기의 다음 탐침 ≥ 2 에 지지 · 반증 어느 쪽에서도 한 자리로 둔다(빈칸 23 분류기 반증 검사와 함께 설계).",
+   "evidence": [
+    "J-20261113-006 · J-20261113-007 · factor_spine_design README §4-2 · §9 · 규약 §13-1 사슬 판 등록 행"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261113-034",
+   "at": "2026-11-13T08:04:34+0900",
+   "review": "R-20261113-004",
+   "target": "J-20261113-005",
+   "grade": "note",
+   "rule": null,
+   "claim": "병렬 P1R03 철학 P2(R-20261113-002)의 보는 창 판독이 이 리뷰의 C-20261113-026 · 027 을 앞에서 확인한다 — 저β 다섯(FDEFE · FRISK · FLIQU · FCROW · TOTAL: 노출 1.00 · β 0.50~0.72 · 하락 β > 상승 β 4/5 · 초과수익 상관 0.67~0.89 의 단일 원천 — C-20261113-010 보류) · 자격 8 중 7 이 대형주 주도 강세 2016-02~17-10 상승 포착 0.16 이하(C-20261113-011). 그래서 (1) C-027 의 보류 범위는 같은 계보 원칙(빈칸 17)으로 ILIQU · ICROW · ITOTAL 을 (나) 꼬리표와 무관하게 넣는다(C-010 과 같은 범위 — (나) 꼬리표 조건은 그 밖의 비저위험 가족에만) (2) C-026 ② 짝 기록의 첫 줄 = 2016-02~17-10 강세 구간의 T1/T0 상승 포착 비 — T1 이 그 공백을 메우는지 넓히는지 (3) 원천 셈법을 측정 쪽으로 고치면(쏠림 · 토탈 = 저β 원천 — C-011) P1R04 가설의 기준(T0 원천 5)도 같은 규칙으로 다시 세고 T0 · T1 에 같은 셈법을 쓴다(등록 전에 — R2 문제 없음).",
+   "evidence": [
+    "R-20261113-002(04_Research/programs/_supervision/superfan/philosophy/20261113_0754_P2_P1R03.md) · C-20261113-010 · C-20261113-011",
+    "P1R04 round_spec.json hypothesis · conclusion_scope[10] · [11] · [16]"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
    "hold_request": false,
    "responses": [],
    "outcome": null,
