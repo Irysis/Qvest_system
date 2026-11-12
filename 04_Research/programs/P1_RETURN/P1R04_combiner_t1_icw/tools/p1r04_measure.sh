@@ -6,19 +6,21 @@
 #       판 2 시드 감시가 아직 일을 들고 있으면(상태 W · M) 그 낮 창 08:20~11:45 도 비운다(메모리 — 한 번에 무거운 작업 하나).
 #     · 밤/아침 체인 미실행 · 리프레시 배리어 free · 판 2 시드 측정 중 아님 · 가용 메모리 ≥ 10 GB(셀 워커 정점 7.45 GB · 11-03 실측)
 #     · fresh-check 신선 · 결합용 뷰 마지막 달 ≥ 팩터 DB 마지막 달
-#     · 데이터 지문(equality + 결합용 뷰 record + IC 원장 md5)이 10분 이상 그대로 — 결합용 뷰 · IC 원장(T1 엔진의 두 입력)은 칸 지문 밖이다.
-#   예상 소요 근거: P1R03 실측 칸당 2.5~3.6분(11-13 06:43~07:28 · 15칸 45분) + T1 의 달마다 IC 접근자 호출(시험 실측 4달 2초 안팎) → 45~70분.
-#   끝나면: 측정 앞뒤 뷰 · IC 원장 지문이 같으면 이정표 1통(푸시 · 기계 판정 요약 '해석 전'). 판정 해석 · 판단 T2 · 철학 P2 · 정식 보고 · 닫기는 세션.
+#     · 데이터 지문(equality + 결합용 뷰 record + IC 원장 md5)이 10분 이상 그대로 — 결합용 뷰는 칸 지문 밖 · IC 원장은 칸 지문 안이지만 기저 캐시 키 밖(T1 엔진의 두 입력).
+#   예상 소요 근거: P1R03 실측 칸당 2.5~3.6분(11-13 06:43~07:28 · 15칸 45분) · 30칸(T1 15 + T0 기준 15) + T1 의 달마다 IC 접근자 호출(T1 토탈 48달 7초 실측) → 약 90분.
+#   끝나면: 측정 앞뒤 뷰 · IC 원장 지문이 같으면 저위험 몫 사이드카(tools/p1r04_lowrisk_share.R) → 계보 짝 읽기(tools/p1r04_pair_reading.R) → 이정표 1통
+#     (푸시 · 기계 판정 요약 '해석 전'). 판정 해석 · 판단 T2 · 철학 P2 · 정식 보고 · 닫기는 세션.
 #   종료: 0 끝 · 1 measure 실패 · 6 대기 상한(기본 40시간) · 7 측정 중 뷰 · IC 원장 바뀜(재측정 — 기저 캐시까지 비운다 · DESIGN §8).
 main() {
   set -u
   local ROOTP=/c/Users/99922/OneDrive/Quant_Module_Moltbot; cd "$ROOTP" || exit 2
   local RD=04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw RS=04_Research/programs/_lib/round_core/round.sh
   local FPS=04_Research/programs/_lib/round_core/v3/fingerprint.sh MS=04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/tools/p1r04_milestone.R
+  local LRS=04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/tools/p1r04_lowrisk_share.R PRD=04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/tools/p1r04_pair_reading.R
   local ICL=.cache/factor_db/factor_ic_monthly.parquet
   local LOG=.cache/scheduler_logs/p1r04_measure_$(date +%Y%m%d_%H%M%S).log ST=.cache/scheduler_logs/p1r04_measure_state.txt
   local SEED_ST=.cache/scheduler_logs/p1s02_seed_watch_state.txt MAXW=${P1R04_MAX_WAIT_S:-144000} T0=$(date +%s) last=0
-  local why nowm mg rc fp fp_prev="" fp_t=0 vl dl v0 v1
+  local why nowm mg rc fp fp_prev="" fp_t=0 vl dl v0 v1 prl
   log() { printf '%s %s\n' "$(date '+%F %T')" "$*" >> "$LOG"; }
   st() { printf '%s\t%s\tlog=%s\n' "$(date '+%F %T')" "$*" "$LOG" > "$ST"; }
   running() { local s; s=$(timeout 90 powershell.exe -NoProfile -NonInteractive -Command "(Get-ScheduledTask -TaskName '$1').State" 2>/dev/null | tr -d '\r\n ')
@@ -51,12 +53,14 @@ main() {
       elif [ $(( $(date +%s) - fp_t )) -lt 600 ]; then why="데이터 지문 안정 대기($(( $(date +%s) - fp_t ))초)"; fi
     else fp_prev=""; fi
     if [ -z "$why" ]; then
-      v0=$(inpfp); log "조건 서면 — measure(--now) 시작 · 입력(뷰 + IC 원장) ${v0} · 가용 메모리 ${mg}GB"; st "측정 중 — 15칸"
+      v0=$(inpfp); log "조건 서면 — measure(--now) 시작 · 입력(뷰 + IC 원장) ${v0} · 가용 메모리 ${mg}GB"; st "측정 중 — 30칸"
       bash "$RS" "$RD" measure --now >> "$LOG" 2>&1; rc=$?
       v1=$(inpfp); log "measure rc=$rc · 입력 끝 ${v1}"
-      if [ "$rc" != "0" ]; then st "측정 실패 rc=$rc — 세션 확인"; ms failed "round.sh measure rc=$rc" "로그 $LOG"; exit 1; fi
-      if [ "$v0" != "$v1" ]; then st "측정 중 결합용 뷰 · IC 원장 바뀜 — 재측정 필요(세션)"; ms input_changed "시작 $v0" "끝 $v1"; exit 7; fi
-      ms measured "측정 · 평가 끝(round.sh measure rc 0)" "로그 $LOG"
+      if [ "$rc" != "0" ]; then st "측정 실패 rc=$rc — 세션 확인"; ms failed "측정 실행 실패(종료 코드 $rc)" "로그 $LOG"; exit 1; fi
+      if [ "$v0" != "$v1" ]; then st "측정 중 결합용 뷰 · IC 원장 바뀜 — 재측정 필요(세션)"; ms input_changed "측정 중 입력 데이터(팩터 점수 · 정보계수 이력)가 바뀌어 재측정이 필요하다" "로그 $LOG"; exit 7; fi
+      ( cd 04_Research/strategies && timeout 1800 Rscript "$ROOTP/$LRS" ) >> "$LOG" 2>&1 || log "저위험 몫 사이드카 rc=$?"
+      prl=$( cd 04_Research/strategies && timeout 1800 Rscript "$ROOTP/$PRD" 2>> "$LOG" | tail -n 1 ); log "짝 읽기: ${prl:-실패}"
+      ms measured "측정 · 평가 완료" "${prl:-계보 짝 읽기 실패 — 세션 확인}"
       st "끝 — 측정 · 평가(판정 해석 · 판단 T2 · 철학 P2 · 보고 · 닫기 = 세션)"; exit 0
     fi
     [ $(( $(date +%s) - last )) -ge 900 ] && { log "대기 — $why"; st "대기 — $why"; last=$(date +%s); }
