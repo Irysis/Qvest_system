@@ -256,6 +256,13 @@ dr_stage_end; fi   # ── 단계 ingest 끝 ──
 #        (축 A = 갱신기 rc · rc=3 전제 부재도 실패 · 축 D = 정본 xlsx 미갱신 N일). 다음 밤 정본이 들어오면 전 구간이 따라온다(손실 없음).
 # ──────────────────────────────────────────────────────────────────────────────
 if dr_want qw; then dr_stage_begin qw   # ── 단계 qw ──
+# ★(2026-11-13 · 도훈 결정 QW-NIGHT-SESSION-ENSURE-20261113) 밤 실행은 벤치 수급([1pre]) 직전에도 퀀티 세션을 확인한다 — 벤치 앞에서 이미 끊겨 있으면
+#   (중복 로그인 종료 대화상자) 벤치 드라이버가 '로그인 창 없음 → 세션 있음'으로 보고 실패(rc 3)해 뒤 Update_File 수급까지 건너뛴다. 살아 있으면 무동작.
+#   [1pre-qw] 앞 확인(아래)은 신규 상장 동기화(약 5분) 사이의 끊김(11-13 00:16~00:22 실측)을 덮는다. 끄기 = QVEST_DR_NIGHT_SESSION_ENSURE=0.
+if [ "${QVEST_DR_NIGHT_SESSION_ENSURE:-1}" = "1" ] && [ "${DR_MODE:-full}" = "full" ] && [ -f "${QVEST_DR_QSE:-$INFRA/ops/qw_session_ensure.sh}" ]; then
+  _qse_out="$(bash "${QVEST_DR_QSE:-$INFRA/ops/qw_session_ensure.sh}" 2>&1)"; _qse_rc=$?
+  echo "[1pre] 퀀티 세션 확인(벤치 수급 전 · 밤) rc=$_qse_rc · $(printf '%s' "$_qse_out" | tail -n 1 | tr '\t' ' ')"
+fi
 echo "[1pre/7] Benchmark (정본 QuantiWise xlsx → 코스피200 포인트)..."
 # Python 체인 (v8.1.1): venv 우선 → QVEST_PY env → 시스템 Python312 fallback
 QVENV_PY=""
@@ -335,9 +342,10 @@ fi
 #   자가 복구(QVEST_DR_MODE=selfheal)는 OHLCVS 만 받는다(R2 — 상한 150분 안: OHLCVS 46분 + 적재 · 벤치 · 신규 상장 ≈ 60분 · 실측 11-07 · 11-09 · 11-12).
 #   나머지 3종은 다음 밤 몫이다(보충 대기열 qw_backfill_pending.json 은 책 단위라 그대로 남는다). 자가 복구에서도 다 받으려면 QVEST_DR_QWUF_REST=1.
 #   보고 = 두 번의 done 을 더한 한 줄(qw_updatefile_incomplete(done=D/N) — 실패 서명 꼴 그대로). 한 번에 4종(구 동작) = QVEST_DR_QWUF_SPLIT=0.
-#   ★(2026-11-13 · R6 · 결정 대기 QW-NIGHT-SESSION-ENSURE-20261113) QVEST_DR_NIGHT_SESSION_ENSURE=1 이면 밤 실행(DR_MODE=full)이 첫 수급 직전에
+#   ★(2026-11-13 · R6 · 도훈 결정 QW-NIGHT-SESSION-ENSURE-20261113 "밤 갱신에도 재로그인 켜주고, 재로그인 횟수에 제한두지마") 밤 실행(DR_MODE=full)이 첫 수급 직전에
 #   퀀티 세션을 한 번 확인한다(ops/qw_session_ensure.sh — 살아 있으면 무동작 · 중복 로그인 종료 · 세션 없음이면 저장된 자격으로 1회 재로그인 ·
-#   로그인에 실패한 날은 다시 누르지 않음). 기본 0 = 지금대로(밤 Update_File 수급은 로그인 없음 · 10-16 결정 QW-UPDATEFILE-UNATTENDED 안 A).
+#   로그인 자체가 실패한 날은 다시 누르지 않음). 기본 1(켬 · 11-13 결정). 끄기 = QVEST_DR_NIGHT_SESSION_ENSURE=0(구 동작 — 10-16 안 A).
+#   수급 도중 끊김은 드라이버가 라운드마다 재로그인해 이어 받는다(래퍼가 -SkipLogin 없이 부른다 · 횟수 제한 없음 · 폭주 방지 = 드라이버 -KickStall).
 #   11-11 · 11-13 밤 실패의 직접 원인(다른 호스트의 같은 아이디 로그인 → 종료 대화상자 → -SkipLogin 드라이버가 재로그인 못 함)을 닫는다. 자가 복구는
 #   ensure_data_current.sh 4a 가 이미 확인한다(11-11 결정) — 여기서는 밤 실행만.
 _qwuf_run() {   # $1 = 책(쉼표) → _qwuf_rc · _qwuf_state · _qwuf_done · _qwuf_inc (래퍼 마지막 줄 QWUF 판독)
@@ -357,7 +365,7 @@ _qwuf_sum_done() {   # "D/N" 둘 → 합(하나라도 모르면 '?') · 둘째�
 }
 _QWUF_ALL="OHLCVS,Universe_Support,Investor_Act,Consensus"; _QWUF_REST="Universe_Support,Investor_Act,Consensus"
 _qwuf_rest_want=1; [ "${DR_MODE:-full}" = "selfheal" ] && [ "${QVEST_DR_QWUF_REST:-0}" != "1" ] && _qwuf_rest_want=0
-if [ "${QVEST_DR_NIGHT_SESSION_ENSURE:-0}" = "1" ] && [ "${DR_MODE:-full}" = "full" ]; then
+if [ "${QVEST_DR_NIGHT_SESSION_ENSURE:-1}" = "1" ] && [ "${DR_MODE:-full}" = "full" ]; then
   _qse_sh="${QVEST_DR_QSE:-$INFRA/ops/qw_session_ensure.sh}"
   if [ -f "$_qse_sh" ]; then
     _qse_out="$(bash "$_qse_sh" 2>&1)"; _qse_rc=$?

@@ -4,6 +4,8 @@
 # ==============================================================================
 #  Dohoon mandate: a shared-account user (DESKTOP-GDS22UE etc.) may re-login and
 #  kill our session; keep re-logging in and re-running until refresh completes.
+#  (2026-11-13 Dohoon decision QW-NIGHT-SESSION-ENSURE-20261113: no limit on re-logins - every duplicate-login kick
+#   -> close the notice -> re-login -> resume, in unattended runs too. Replaces the 11-06 'one re-login per run' rule.)
 #
 #  Architecture:
 #    1) Per-file state (.cache/qw_refresh_state.json) -> only process pending (idempotent)
@@ -25,6 +27,8 @@ param(
   [string[]]$Only = @(),
   [int]$MaxRounds = 40,
   [switch]$SkipLogin,
+  # ★2026-11-13(도훈 결정 QW-NIGHT-SESSION-ENSURE-20261113): 재로그인 횟수 제한 없음 — 폭주 방지만(책을 하나도 못 끝낸 연속 끊김 N회에서 멈춤 · 0 = 끔)
+  [int]$KickStall = 30,
   [switch]$WhatIf,
   # ★2026-11-09: 로그인만 하고 끝낸다(책 수급 · 상태 무접촉 — 아래 main 첫머리). 낮 시간 중복 로그인 종료 뒤 재로그인(도훈 11-06 상시 위임)용.
   [switch]$LoginOnly,
@@ -382,9 +386,13 @@ function Get-BookAnchor($f, $target) {
 # 2026-11-08 수리: 중복 로그인 종료 대화상자(#32770 · 제목 'Quantiwise7G' · 본문 '[HOST(IP)]에서 같은 아이디로 … 중복사용으로
 #   프로그램을 종료합니다')가 떠 있으면 아래 제목 검사('*Quantiwise7*')를 통과해 끊긴 세션이 살아 있는 것으로 보였다
 #   → Ensure-Login 이 재로그인을 건너뛰고 라운드가 무수급으로 끝났다(11-08 15:2x · 17:15 실측 2회).
-#   대화상자가 보이면 세션 없음으로 본다. 재로그인은 한 실행에 1회까지(도훈 11-06 상시 위임 '반복 경쟁 금지' —
-#   두 번째로 끊기면 다른 기기가 쓰는 중이라 보고 멈춘다).
+#   대화상자가 보이면 세션 없음으로 본다. ★(2026-11-13 도훈 결정 QW-NIGHT-SESSION-ENSURE-20261113 "재로그인 횟수에 제한두지마.
+#   회사컴 로그인 발생하면 항상 바로 재로그인해") 재로그인 횟수 제한 없음 — 끊길 때마다 [확인] → 재로그인 → 이어 받기.
+#   구판(11-06 '반복 경쟁 금지')은 한 실행에 1회까지였다: 두 번째 종료에서 멈춰 밤 수급이 0/4 로 끝났다(11-11 · 11-13).
+#   남은 멈춤은 셋뿐이다 — 로그인 단추가 덮임(LOGIN_BLOCKED) · 로그인 실패(재로그인 뒤에도 살아나지 않음 — 라운드 예산 MaxRounds 를 쓴다) ·
+#   폭주 방지 -KickStall(책 하나도 못 끝낸 채 연속 끊김 N회 · 기본 30 · 0 = 끔 — 상대 기기가 자동 재접속으로 맞붙는 경우의 무한 반복만 끊는다).
 $script:KICKS = 0
+$script:LOGINS_OK = 0   # (2026-11-13) 이 실행에서 로그인 뒤 살아난 횟수 — 세션 확인 도우미가 '로그인 실패'와 '재로그인 뒤 다시 밀림'을 가른다
 $script:LOGIN_BLOCKED = ''   # (2026-11-09) LOGIN 단추를 다른 창이 덮음 = 그 창 설명(비면 막힘 없음) — Ensure-Login 이 채운다
 function Kick-Dialog {
   $p = Get-Process qwMain -EA SilentlyContinue
@@ -430,8 +438,7 @@ function Ensure-Login {
   if (QW-Alive) { return $true }
   if (Kick-Dialog) {
     $script:KICKS++
-    Write-Host "[login] duplicate-login termination dialog (kick #$($script:KICKS))"
-    if ($script:KICKS -gt 1) { Write-Host "[login] kicked again in this run - another device is using this ID; not competing (stop)"; return $false }
+    Write-Host "[login] duplicate-login termination dialog (kick #$($script:KICKS)) -> re-login (no limit, Dohoon 11-13)"
   }
   Write-Host "[login] no session -> launching + login"
   Get-Process qwMain -EA SilentlyContinue | Stop-Process -Force -EA SilentlyContinue
@@ -465,8 +472,9 @@ function Ensure-Login {
   if ($script:LOGIN_BLOCKED) { return $false }
   ## 제출 뒤 최대 30초(감시기가 승계 '예'를 누른다) — 살아나면 바로 돌아간다. 11-09 08:03 실측 제출 → 살아남 = 19초라
   ##   구 고정 9초면 false 를 돌려주고, 다음 시도가 Stop-Process 로 진행 중인 로그인을 죽인다.
-  for ($w = 0; $w -lt 30; $w++) { if (QW-Alive) { return $true }; Start-Sleep 1 }
-  return (QW-Alive)
+  for ($w = 0; $w -lt 30; $w++) { if (QW-Alive) { $script:LOGINS_OK++; return $true }; Start-Sleep 1 }
+  $a = QW-Alive; if ($a) { $script:LOGINS_OK++ }
+  return $a
 }
 
 # ---- refresh one file -> ok | kicked | skip | err ----
@@ -577,39 +585,46 @@ if ($LoginOnly) {
   for ($i = 1; $i -le 3 -and -not $alive; $i++) {
     $alive = Ensure-Login
     if (-not $alive) {
-      if ($script:KICKS -gt 1 -or $script:LOGIN_BLOCKED) { break }
+      if ($script:LOGIN_BLOCKED) { break }
       Write-Host "[login-only] attempt $i failed"
       if ($i -lt 3) { Start-Sleep 5 }
     }
   }
   Stop-DialogWatcher
-  Write-Host "===== LOGIN-ONLY END $(Get-Date -Format 'HH:mm:ss') / alive=$alive / kicks=$($script:KICKS)$(if ($script:LOGIN_BLOCKED) { " / covered by $($script:LOGIN_BLOCKED)" }) ====="
+  Write-Host "===== LOGIN-ONLY END $(Get-Date -Format 'HH:mm:ss') / alive=$alive / kicks=$($script:KICKS) / logins_ok=$($script:LOGINS_OK)$(if ($script:LOGIN_BLOCKED) { " / covered by $($script:LOGIN_BLOCKED)" }) ====="
   exit $(if ($alive) { 0 } else { 4 })
 }
 ## ★F1(2026-11-06 · PLAN §3.0): PowerShell 5.1 은 결과가 1개면 배열이 아니라 해시테이블 하나를 돌려주고 .Count = 키 수(3)다 →
 ##   'done 3/4'(실제 1/4) · 1개 선택 시 미완료가 숨었다. 결과는 언제나 @() 로 감싼다.
 $sel = @(if ($Only.Count -gt 0) { $FILES | Where-Object { $Only -contains $_.name } } else { $FILES })
 foreach ($k in @($FROM_OVR.Keys)) { if ($state.ContainsKey($k)) { $state.Remove($k) } }   # 지정 책은 상태 '완료'를 무시하고 1회 다시 받는다
-$round = 0
-while ($round -lt $MaxRounds) {
+## ★(2026-11-13 · 도훈 결정 QW-NIGHT-SESSION-ENSURE-20261113) 끊겨서 끝난 라운드는 예산(MaxRounds)을 쓰지 않는다 — 재로그인 횟수 제한 없음.
+##   예산은 오류 · 로그인 실패 라운드만 센다. -SkipLogin(재로그인 없음)이면 끊긴 라운드도 예산을 쓴다(구 동작).
+##   폭주 방지: 책을 하나도 못 끝낸 채 KickStall 번 연속 끊기면 멈춘다(0 = 끔 · 근거 = 실측 끊김 빈도 하루 0~3회(11-08 · 11-09 · 11-11 · 11-13) 의 10배).
+$round = 0; $spent = 0; $kickStreak = 0
+while ($spent -lt $MaxRounds) {
   $round++
   $pending = @($sel | Where-Object { -not (Is-Done $state $_.name $target) })
   if ($pending.Count -eq 0) { Write-Host "===== ALL DONE (round $round) ====="; break }
   Write-Host ("--- round {0}: pending {1} [{2}] ---" -f $round, $pending.Count, (($pending | ForEach-Object { $_.name }) -join ', '))
   if (-not $SkipLogin) {
     if (-not (Ensure-Login)) {
-      if ($script:KICKS -gt 1) { Write-Host "[round $round] stop: kicked twice (no login war)"; break }
       if ($script:LOGIN_BLOCKED) { Write-Host "[round $round] stop: LOGIN button covered by $($script:LOGIN_BLOCKED) (dismiss that window, then re-run)"; break }
-      Write-Host "[login] failed, retry"; Start-Sleep 5; continue
+      $spent++; Write-Host "[login] failed, retry"; Start-Sleep 5; continue
     }
   }
-  $kicked=$false
+  $kicked=$false; $progress=$false
   foreach ($f in $pending) {
     $r = Refresh-One $f $target
-    if ($r -eq "ok") { Mark-Done $state $f.name $target }
+    if ($r -eq "ok") { Mark-Done $state $f.name $target; $progress=$true }
     elseif ($r -eq "kicked") { $kicked=$true; break }
   }
-  if ($kicked) { Write-Host "[round $round] kicked -> re-login next round"; Start-Sleep 3 }
+  if ($kicked) {
+    if ($progress) { $kickStreak = 0 } else { $kickStreak++ }
+    if ($SkipLogin) { $spent++ }
+    if ($KickStall -gt 0 -and $kickStreak -ge $KickStall) { Write-Host "[round $round] stop: $kickStreak consecutive kicks without finishing a book (runaway guard -KickStall $KickStall)"; break }
+    Write-Host "[round $round] kicked -> re-login next round (kicks $($script:KICKS), streak $kickStreak)"; Start-Sleep 3
+  } else { $spent++; $kickStreak = 0 }
 }
 Stop-DialogWatcher
 $doneN = @($sel | Where-Object { Is-Done $state $_.name $target }).Count

@@ -10,6 +10,9 @@
 # 무엇: 드라이버(ops/qw_refresh.ps1)의 -LoginOnly 를 한 번 부른다 — 살아 있으면 아무것도 하지 않고, 죽어 있으면 단말을 띄워
 #   앱에 저장된 자격으로 로그인 단추를 누른다(자격 저장 확인 · 종료 알림 뒤 재로그인 1회 · 두 번째 종료 = 멈춤 — 드라이버 Ensure-Login
 #   규칙 그대로). 이 스크립트는 자격을 다루지 않는다.
+# ★(2026-11-13 도훈 결정 QW-NIGHT-SESSION-ENSURE-20261113 "재로그인 횟수에 제한두지마. 회사컴 로그인 발생하면 항상 바로 재로그인해")
+#   드라이버의 '두 번째 종료 = 멈춤'은 없어졌다. 재로그인이 한 번이라도 살아났는데 상대 기기가 다시 밀어낸 것(logins_ok ≥ 1)은
+#   state=kicked_again(rc 3)이고 그날을 잠그지 않는다 — 다음 호출이 다시 재로그인한다. 아래 '그날 잠금'은 로그인 자체가 실패한 경우만이다.
 # 계정 잠금 방지: 로그인을 시도했는데도 세션이 안 살면(alive=False) **그날은 다시 시도하지 않는다**(날짜 표식 .cache/qw_session_ensure.json ·
 #   08-29 사고 = 저장 안 된 비밀번호로 로그인 클릭 40회). 살아 있던 호출 · 로그인에 성공한 호출 뒤에는 다음 호출도 그대로 확인한다
 #   (호출 간격은 자가 복구의 같은 영업일 재시도 간격이 이미 묶는다 — ensure_data_current.sh 3b). 드라이버가 뜨지 못한 것(시간 초과 ·
@@ -62,6 +65,7 @@ fi
 END_LINE="$(grep -a 'LOGIN-ONLY END' "$LOG" 2>/dev/null | tail -n 1 | tr -d '\r')"
 ALIVE="$(printf '%s' "$END_LINE" | sed -n 's/.*alive=\([A-Za-z]*\).*/\1/p')"
 KICKS="$(printf '%s' "$END_LINE" | sed -n 's/.*kicks=\([0-9]*\).*/\1/p')"; KICKS="${KICKS:-0}"
+LOK="$(printf '%s' "$END_LINE" | sed -n 's/.*logins_ok=\([0-9]*\).*/\1/p')"   # (11-13) 없으면(옛 드라이버) 종전대로 로그인 실패로 본다
 ATTEMPT=0; grep -aq '\[login\] no session -> launching + login' "$LOG" 2>/dev/null && ATTEMPT=1
 if [ -z "$END_LINE" ] || [ -z "$ALIVE" ]; then
   echo "[qse] 드라이버가 끝 줄을 내지 않았다(rc=$drc · 시간 상한 ${TMO}s) — 로그 $LOG"
@@ -75,6 +79,10 @@ if [ "$ALIVE" = "True" ]; then
   fi
   echo "[qse] 세션 살아 있음 — 아무것도 하지 않았다"
   _write alive "True" "$KICKS" 0; fin alive "True" "$KICKS" 0
+fi
+if [ -n "$LOK" ] && [ "$LOK" -gt 0 ]; then
+  echo "[qse] 재로그인은 살아났는데 다시 밀렸다(alive=$ALIVE · kicks=$KICKS · logins_ok=$LOK — 다른 기기가 같은 아이디로 들어온다) — 그날을 잠그지 않는다(재로그인 횟수 제한 없음 · 도훈 11-13) · 로그 $LOG"
+  _write kicked_again "False" "$KICKS" "$ATTEMPT"; fin kicked_again "False" "$KICKS" 3
 fi
 echo "[qse] ★로그인 시도 뒤에도 세션 없음(alive=$ALIVE · kicks=$KICKS) — 오늘은 다시 시도하지 않는다 · 로그 $LOG"
 _write login_failed "False" "$KICKS" "$ATTEMPT"

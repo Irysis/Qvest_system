@@ -15,8 +15,10 @@
 #     blocking Close) -> keep the 4 sheets + DATA_Key -> B5 From / B6 CPD-1TD / B10 code / B12:<last col>12 = FQ0 ->
 #     follow the 'Quantiwise*' hyperlinks (synchronous refresh) -> check session after each sheet -> save locally -> file copy
 #     to -Out. Ingest = 02_Infrastructure/data/qw_fund_v2_tax_ingest.py.
-#   Session: a duplicate-login termination dialog (body has '(IP)]' or the word for 'duplicate') -> ONE
-#     'qw_refresh.ps1 -LoginOnly' (standing delegation 11-06) and one retry of that sheet; kicked again -> stop (rc 4, no login war).
+#   Session: a duplicate-login termination dialog (body has '(IP)]' or the word for 'duplicate') -> 'qw_refresh.ps1 -LoginOnly'
+#     and retry that sheet - NO LIMIT on re-logins (2026-11-13 Dohoon decision QW-NIGHT-SESSION-ENSURE-20261113: 'always re-login at once
+#     when the office PC logs in'; replaces the 11-06 'one re-login, then stop' rule). Stops only on: a login that never comes alive
+#     (no successful login reported by -LoginOnly: rc 3 - account-lock guard) or the runaway guard -KickStall (N kicks on one sheet).
 #     -NoRelogin (weekly update, qw_fund_v2_update.ps1): no re-login at all - a kick stops with rc 4 (re-login belongs to the
 #     driver). Any other dialog or a dead session -> stop (rc 3/4) and report. Never types credentials.
 #   Busy: another Quantiwise job (same patterns as qw_fundamental_book.ps1 Get-Busy) -> rc 3 before any Excel starts.
@@ -25,13 +27,14 @@
 #     d - 1Q and the add-in starts at the last quarter-end on or before B5 (From 20000101 -> first row 1999-12), so B5 = the
 #     first day of the quarter after the window's first quarter (202412..202609 -> 20250101 -> rows 2024-12 ..) gives the
 #     window plus one earlier row - the ingest drops that row and checks the start and the end.
-# Exit: 0 ok - 1 error - 3 busy / no live session - 4 kicked (twice, or once with -NoRelogin) / unknown dialog
+# Exit: 0 ok - 1 error - 3 busy / no live session / re-login failed - 4 kicked with -NoRelogin / runaway guard / unknown dialog
 param(
   [string]$Template = '',
   [string]$Out = '',
   [string]$From = '20000101',
   [int]$WindowQuarters = 0,
   [switch]$NoRelogin,
+  [int]$KickStall = 30,   # 2026-11-13: runaway guard only - stop after N kicks on one sheet (0 = off; observed kicks 0-3 a day)
   [string]$Work = '',
   [int]$CloseGuardSec = 120
 )
@@ -120,7 +123,22 @@ New-Item -ItemType Directory -Force -Path $Work | Out-Null
 $local = Join-Path $Work 'FundV2_TAX_TS.xlsx'
 Copy-Item -LiteralPath $Template -Destination $local -Force
 $today = Get-Date -Format 'yyyy-MM-dd'
-$xl = $null; $wb = $null; $xp = 0; $tk = 0; $rc = 1; $relogged = $false
+$xl = $null; $wb = $null; $xp = 0; $tk = 0; $rc = 1
+# 2026-11-13 (Dohoon decision QW-NIGHT-SESSION-ENSURE-20261113): kick -> -LoginOnly -> retry the sheet, no limit.
+#   LoginOnlyCmd is a variable so the test harness can replace it (08_Tests/scenarios/test_scn_qw_kick_relogin.sh).
+$script:LoginOnlyCmd = { & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'qw_refresh.ps1') -LoginOnly }
+$script:Kicks = 0
+function Resolve-Kick([string]$sheet) {
+  while ($true) {
+    $script:Kicks++
+    if ($KickStall -gt 0 -and $script:Kicks -ge $KickStall) { $script:rc = 4; throw "kicked $($script:Kicks) times on $sheet - runaway guard (-KickStall $KickStall)" }
+    Say "duplicate-login dialog -> qw_refresh.ps1 -LoginOnly and retry $sheet (kick $($script:Kicks), no limit - Dohoon 11-13)"
+    $lo = @(& $script:LoginOnlyCmd | ForEach-Object { Say "  $_"; "$_" })
+    if (QW-Alive) { return }
+    $end = @($lo | Where-Object { $_ -match 'LOGIN-ONLY END' }) | Select-Object -Last 1
+    if (-not ("$end" -match 'logins_ok=[1-9]')) { $script:rc = 3; throw "re-login failed on $sheet (no successful login)" }
+  }
+}
 try {
   $xl = New-Object -ComObject Excel.Application
   $xl.Visible = $true; $xl.DisplayAlerts = $false; $xl.EnableEvents = $true; $xl.AskToUpdateLinks = $false
@@ -133,7 +151,8 @@ try {
   $lastC = ColName (1 + $nk)
   Say "tickers=$nk last column=$lastC"
   foreach ($r in $runs) {
-    for ($attempt = 1; $attempt -le 2; $attempt++) {
+    $script:Kicks = 0
+    for ($attempt = 1; ; $attempt++) {
       $ws = $wb.Worksheets.Item($r.sheet); $ws.Activate()
       $ws.Range('B5').Value2 = $From; $ws.Range('B6').Value2 = 'CPD-1TD'; $ws.Range('B10').Value2 = $r.code
       [void]$ws.Range("B12:$($lastC)12").ClearContents(); $ws.Range("B12:$($lastC)12").Value2 = 'FQ0'
@@ -155,14 +174,7 @@ try {
       # refreshed = stamp moved AND dated today (a same-day rerun keeps today's old stamp if the refresh silently did nothing)
       if (-not $kicked -and (QW-Alive) -and $after -ne $before -and $after -like "*$today*" -and $num -gt 0) { break }
       if ($kicked -and $NoRelogin) { $rc = 4; throw "kicked on $($r.sheet) - no re-login here (-NoRelogin; re-login belongs to the driver)" }
-      if ($kicked -and -not $relogged -and $attempt -eq 1) {
-        Say "duplicate-login dialog -> qw_refresh.ps1 -LoginOnly (once) and retry $($r.sheet)"
-        & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'qw_refresh.ps1') -LoginOnly | ForEach-Object { Say "  $_" }
-        $relogged = $true
-        if (-not (QW-Alive)) { throw 'relogin failed' }
-        continue
-      }
-      if ($kicked) { $rc = 4; throw "kicked again on $($r.sheet) - stop (no login war)" }
+      if ($kicked) { Resolve-Kick $r.sheet; continue }
       if (Other-Dialog) { $rc = 4; throw "unknown Quantiwise dialog on $($r.sheet)" }
       if (-not (QW-Alive)) { $rc = 3; throw "session lost on $($r.sheet)" }
       throw "sheet $($r.sheet) not refreshed (B1 '$after' numeric=$num)"

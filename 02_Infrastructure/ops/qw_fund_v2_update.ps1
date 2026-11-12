@@ -12,11 +12,14 @@
 #    qw_peer_refresh.ps1 -> qw_fund_v2_ingest.py --db <name>.
 #  Time-series DB (2026-11-09, Dohoon 'beobinse B code pateu-do jeonggi gaengsin-e neocha'): registry
 #    fundamentals_v2.ts_dbs[] with update.window_quarters (FundV2_TAX, tax B codes) -> DATA_Key sync of the full book ->
-#    qw_fund_v2_tax_ts.ps1 -WindowQuarters N -NoRelogin (full book as template -> update book) ->
+#    qw_fund_v2_tax_ts.ps1 -WindowQuarters N (full book as template -> update book; re-logs in itself on kicks) ->
 #    qw_fund_v2_tax_ingest.py --window (same window_merge / revisions as the Peer DBs). Selected as -Only <update.db>.
 #  Failure policy (2026-11-09): one DB's failure does not block the other DBs. A session / busy / precondition stop
-#    (step rc 3, or 4 = kicked) ends the run - every later DB needs the same session. A kicked session is NOT
-#    re-logged here - re-login belongs to qw_refresh.ps1 Ensure-Login (once per run; Dohoon 11-06: no login war).
+#    (step rc 3) ends the run - every later DB needs the same session.
+#  Kicks (2026-11-13 Dohoon decision QW-NIGHT-SESSION-ENSURE-20261113 'no limit on re-logins; always re-login at once when the office PC
+#    logs in'; replaces the 11-06 'no login war' rule): a peer refresh that ends kicked (rc 4) -> qw_refresh.ps1 -LoginOnly -> re-run that
+#    refresh, no limit. Stops only on a login that never comes alive (logins_ok 0 -> rc 3, account-lock guard) or the runaway guard
+#    QVEST_QW_KICK_STALL (default 30 kicks in one step; 0 = off). The tax time-series step re-logs in per sheet itself (no -NoRelogin).
 #  Usage: powershell -File qw_fund_v2_update.ps1 [-Only FundV2_BS_upd,FundV2_TAX_upd,...] [-WhatIf]
 #  Exit: 0 all done | 1 any DB failed | 3 precondition / busy / kicked / loader gate refused (nothing else failed)
 # ==============================================================================
@@ -44,6 +47,29 @@ $script:failed = @(); $script:refused = @(); $script:stopped = $false
 function Step-Why([int]$rc) { switch ($rc) { 3 { 'precondition / busy / no live session' } 4 { 'session kicked by another login - re-login via qw_refresh.ps1, then re-run' } default { "rc $rc" } } }
 function Step-Stop([string]$name, [string]$step, [int]$rc) { Write-Host "[fund-upd] $name $step rc=$rc - stop the run ($(Step-Why $rc))"; $script:stopped = $true }
 function Step-Fail([string]$name, [string]$step, [int]$rc) { Write-Host "[fund-upd] $name $step rc=$rc - this DB failed; continue with the others"; $script:failed += $name }
+# 2026-11-13: re-login on kicks, no limit (see header). Invoke-Relogin parses the -LoginOnly END line (alive / logins_ok).
+$KICK_STALL = if ($env:QVEST_QW_KICK_STALL) { [int]$env:QVEST_QW_KICK_STALL } else { 30 }
+function Invoke-Relogin {
+  $out = @(& powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $OPS "qw_refresh.ps1") -LoginOnly 2>&1 | ForEach-Object { "$_" })
+  $end = @($out | Where-Object { $_ -match 'LOGIN-ONLY END' }) | Select-Object -Last 1
+  Write-Host "[fund-upd] re-login: $end"
+  $lok = 0; if ("$end" -match 'logins_ok=(\d+)') { $lok = [int]$Matches[1] }
+  return [pscustomobject]@{ alive = ("$end" -match 'alive=True'); logins_ok = $lok }
+}
+function Invoke-QwStep([scriptblock]$Step, [string]$name, [string]$label) {
+  $kicks = 0
+  while ($true) {
+    & $Step | Out-Host; $src = $LASTEXITCODE   # child output -> host (else it becomes part of the return value)
+    if ($src -ne 4) { return $src }
+    do {
+      $kicks++
+      if ($KICK_STALL -gt 0 -and $kicks -ge $KICK_STALL) { Write-Host "[fund-upd] $name $label kicked $kicks times - runaway guard (QVEST_QW_KICK_STALL=$KICK_STALL)"; return 4 }
+      Write-Host "[fund-upd] $name $label kicked (#$kicks) -> re-login and re-run (no limit - Dohoon 11-13)"
+      $r = Invoke-Relogin
+      if (-not $r.alive -and $r.logins_ok -eq 0) { Write-Host "[fund-upd] $name re-login failed (no successful login) - stop"; return 3 }
+    } while (-not $r.alive)
+  }
+}
 
 foreach ($d in $upd) {
   if ($script:stopped) { break }
@@ -56,8 +82,7 @@ foreach ($d in $upd) {
   & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $OPS "qw_datakey_sync.ps1") -Only $name
   $rc = $LASTEXITCODE
   if ($rc -eq 3) { Step-Stop $name 'dk-sync' $rc; break } elseif ($rc -ne 0) { Step-Fail $name 'dk-sync' $rc; continue }
-  & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $OPS "qw_peer_refresh.ps1") -Book $book
-  $rc = $LASTEXITCODE
+  $rc = Invoke-QwStep { & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $OPS "qw_peer_refresh.ps1") -Book $book } $name 'refresh'
   if ($rc -eq 3 -or $rc -eq 4) { Step-Stop $name 'refresh' $rc; break } elseif ($rc -ne 0) { Step-Fail $name 'refresh' $rc; continue }
   & $PY -X utf8 (Join-Path $ROOT "02_Infrastructure\data\qw_fund_v2_ingest.py") --db $name
   $rc = $LASTEXITCODE
@@ -71,12 +96,12 @@ foreach ($t in $tsu) {
   $full = Join-Path $fvDir "$($t.file)"
   $ubook = Join-Path $fvDir "$($t.update.file)"
   $wq = [int]$t.update.window_quarters
-  if ($WhatIf) { Write-Host "[fund-upd] $name -> dk-sync $($t.name), qw_fund_v2_tax_ts.ps1 -WindowQuarters $wq -NoRelogin -> $ubook, tax ingest --window (WhatIf)"; continue }
+  if ($WhatIf) { Write-Host "[fund-upd] $name -> dk-sync $($t.name), qw_fund_v2_tax_ts.ps1 -WindowQuarters $wq -> $ubook, tax ingest --window (WhatIf)"; continue }
   if (-not (Test-Path -LiteralPath $full)) { Step-Fail $name 'template' 1; Write-Host "  full book missing: $full (run the full collection first)"; continue }
   & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $OPS "qw_datakey_sync.ps1") -Only "$($t.name)"
   $rc = $LASTEXITCODE
   if ($rc -eq 3) { Step-Stop $name 'dk-sync' $rc; break } elseif ($rc -ne 0) { Step-Fail $name 'dk-sync' $rc; continue }
-  & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $OPS "qw_fund_v2_tax_ts.ps1") -Template $full -Out $ubook -WindowQuarters $wq -NoRelogin
+  & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $OPS "qw_fund_v2_tax_ts.ps1") -Template $full -Out $ubook -WindowQuarters $wq
   $rc = $LASTEXITCODE
   if ($rc -eq 3 -or $rc -eq 4) { Step-Stop $name 'collect' $rc; break } elseif ($rc -ne 0) { Step-Fail $name 'collect' $rc; continue }
   & $PY -X utf8 (Join-Path $ROOT "02_Infrastructure\data\qw_fund_v2_tax_ingest.py") --root $ROOT --window --book $ubook

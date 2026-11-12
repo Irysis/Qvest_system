@@ -47,6 +47,8 @@ run(){ # $1 = 드라이버 출력(| 구분) · $2 = 오늘 · 나머지 = env �
 END_ALIVE="===== LOGIN-ONLY END 13:43:25 / alive=True / kicks=0 ====="
 END_DEAD="===== LOGIN-ONLY END 13:43:25 / alive=False / kicks=0 ====="
 END_KICK2="===== LOGIN-ONLY END 13:43:25 / alive=False / kicks=2 ====="
+END_KICK2_OK1="===== LOGIN-ONLY END 13:43:25 / alive=False / kicks=2 / logins_ok=1 ====="   # (11-13) 재로그인 살아남 뒤 다시 밀림
+END_KICK1_OK0="===== LOGIN-ONLY END 13:43:25 / alive=False / kicks=1 / logins_ok=0 ====="   # (11-13) 종료 알림은 닫았지만 로그인 자체가 실패
 LOGIN="[login] no session -> launching + login"
 ST="$T/r/.cache/qw_session_ensure.json"
 
@@ -66,10 +68,17 @@ r=$(run "$END_ALIVE" 2026-11-11)
 [ "$r" = "0|QSE state=alive alive=True kicks=0" ] && [ "$(calls)" = "2" ] && ok "T6b 드라이버 오류는 그날을 잠그지 않는다(다음 호출이 다시 확인)" || ng "T6b" "$r calls=$(calls)"
 mkroot; r=$(run "$END_ALIVE" 2026-11-11 QVEST_QW_SESSION_ENSURE=0)
 [ "$r" = "10|QSE state=disabled alive=? kicks=0" ] && [ "$(calls)" = "0" ] && [ ! -f "$ST" ] && ok "T7 스위치 끔 → 드라이버를 부르지 않는다 · rc 10 · 표식 없음" || ng "T7" "$r calls=$(calls)"
-mkroot; r=$(run "[login] kicked again in this run - another device is using this ID; not competing (stop)|$END_KICK2" 2026-11-11)
-[ "$r" = "3|QSE state=login_failed alive=False kicks=2" ] && ok "T8a 두 번 밀려 드라이버가 멈춤 → rc 3 · kicks 기록" || ng "T8a" "$r"
-r=$(run "$END_ALIVE" 2026-11-11)
-[ "${r%%|*}" = "3" ] && [ "$(calls)" = "1" ] && ok "T8b 그날은 다시 경쟁하지 않는다" || ng "T8b" "$r calls=$(calls)"
+## T8 (2026-11-13 도훈 결정 QW-NIGHT-SESSION-ENSURE-20261113 — 재로그인 횟수 제한 없음): 재로그인 뒤 다시 밀림은 그날을 잠그지 않는다 · 로그인 자체 실패만 잠근다
+mkroot; r=$(run "$LOGIN|$END_KICK2_OK1" 2026-11-11)
+[ "$r" = "3|QSE state=kicked_again alive=False kicks=2" ] && grep -q '"result":"kicked_again"' "$ST" && ok "T8a 재로그인 살아남 뒤 다시 밀림(logins_ok 1) → rc 3 · state=kicked_again(로그인 실패 아님)" || ng "T8a" "$r"
+r=$(run "$LOGIN|$END_ALIVE" 2026-11-11)
+[ "$r" = "0|QSE state=logged_in alive=True kicks=0" ] && [ "$(calls)" = "2" ] && ok "T8b 같은 날 다음 호출도 다시 재로그인한다(횟수 제한 없음)" || ng "T8b" "$r calls=$(calls)"
+mkroot; r=$(run "$LOGIN|$END_KICK1_OK0" 2026-11-11)
+[ "$r" = "3|QSE state=login_failed alive=False kicks=1" ] && ok "T8c 종료 알림을 닫았지만 로그인 자체가 실패(logins_ok 0) → login_failed · 그날 잠금(계정 잠금 방지 유지)" || ng "T8c" "$r"
+r=$(run "$LOGIN|$END_ALIVE" 2026-11-11)
+[ "${r%%|*}" = "3" ] && [ "$(calls)" = "1" ] && ok "T8d 로그인 실패한 날은 다시 누르지 않는다" || ng "T8d" "$r calls=$(calls)"
+mkroot; r=$(run "$LOGIN|$END_KICK2" 2026-11-11)
+[ "$r" = "3|QSE state=login_failed alive=False kicks=2" ] && ok "T8e logins_ok 없는 옛 드라이버 끝 줄 → 종전대로 login_failed(보수적)" || ng "T8e" "$r"
 mkroot; rm -f "$T/r/02_Infrastructure/hooks/qvest_hook_router.py"; r=$(run "$END_ALIVE" 2026-11-11)
 [ "${r%%|*}" = "3" ] && [ "$(calls)" = "0" ] && ok "T9 루트 표지 없음 → rc 3 · 드라이버를 부르지 않는다" || ng "T9" "$r calls=$(calls)"
 
@@ -86,6 +95,18 @@ io.open(sys.argv[2], "w", encoding="utf-8", newline="").write(s.replace(a, 'if f
 PYM
 mkroot "$MUT"; run "$LOGIN|$END_DEAD" 2026-11-11 >/dev/null; r=$(run "$LOGIN|$END_DEAD" 2026-11-11)
 [ -s "$MUT" ] && [ "$(calls)" = "2" ] && ok "M1 [돌연변이] 가드를 뗀 사본 → 같은 날 로그인을 다시 누른다(가드가 실제로 막고 있었다)" || ng "M1" "$r calls=$(calls)"
+
+## M2 [돌연변이 · 11-13] '재로그인 뒤 다시 밀림' 분기를 뗀 사본 → T8a 꼴이 login_failed 로 접힌다(분기가 실제로 가르고 있었다)
+MUT2="$T/qse_mut2.sh"
+"$PYB" - "$SRC" "$MUT2" <<'PYM'
+import io, sys
+s = io.open(sys.argv[1], encoding="utf-8", newline="").read()
+a = 'if [ -n "$LOK" ] && [ "$LOK" -gt 0 ]; then'
+assert s.count(a) == 1, s.count(a)
+io.open(sys.argv[2], "w", encoding="utf-8", newline="").write(s.replace(a, 'if false; then'))
+PYM
+mkroot "$MUT2"; r=$(run "$LOGIN|$END_KICK2_OK1" 2026-11-11)
+[ -s "$MUT2" ] && [ "$r" = "3|QSE state=login_failed alive=False kicks=2" ] && ok "M2 [돌연변이] kicked_again 분기 삭제 → T8a 꼴이 login_failed(그날 잠금)로 접힌다 — T8a 는 그 분기의 발화다" || ng "M2" "$r"
 
 emit
 [ "$FAIL" = "0" ]
