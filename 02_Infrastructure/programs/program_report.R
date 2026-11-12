@@ -32,14 +32,14 @@ prep_fmt_ratio <- function(x, digits = 2L) {
 PREP_VERDICT_WORD <- c(strong = "강함", normal = "보통", weak = "약함", insufficient = "판정 불가")
 prep_verdict_word <- function(v) .prep_or(unname(PREP_VERDICT_WORD[v]), "판정 불가")
 
-## 시가총액 · 노출 매칭 대조군 귀속(MC8 · contracts/matched_controls.R::mc_attribution) — 라벨 · 상태를 사람 말로(내부 코드 비노출)
+## 무작위 대조 포트폴리오(시가총액 · 노출 일치) 귀속(MC8 · contracts/matched_controls.R::mc_attribution) — 라벨 · 상태를 사람 말로(내부 코드 비노출)
 PREP_DEFENSE_WORD <- c(selection_defense = "선택 방어", size_defense = "크기 방어",
                        exposure_defense = "노출 방어", no_defense = "방어 없음", insufficient = "판정 불가(위기 2번 미만)")
 PREP_CONTROL_STATUS_WORD <- c(not_applicable_long_short = "롱숏 전략이라 대조 정의 밖", no_crises = "위기 구간 없음",
                               no_holdings = "보유 기록 없음", no_windows = "보유창에 수익일 없음",
                               no_basket = "크기 바스켓을 못 만듦")
 
-# 위기 줄에 붙일 크기+노출 매칭 대조군의 하락노출 — 값만 괄호로(이름은 섹션 머리 1번 · 도훈 10-17) · 없으면 빈 문자열
+# 위기 줄에 붙일 크기+노출 무작위 대조 포트폴리오의 하락노출 — 값만 괄호로(이름은 섹션 머리 1번 · 도훈 10-17) · 없으면 빈 문자열
 .prep_ctrl_capture <- function(ctrl, peaks) {
   out <- rep("", length(peaks))
   pc <- if (is.list(ctrl) && is.list(ctrl[["size_exposure_matched"]])) ctrl[["size_exposure_matched"]][["per_crisis"]] else NULL
@@ -54,13 +54,13 @@ PREP_CONTROL_STATUS_WORD <- c(not_applicable_long_short = "롱숏 전략이라 �
 # 대조 한 줄 — 귀속 라벨(attribution)이 정본, 구 단일 대조(size_matched) 라벨은 하위 호환
 .prep_controls_line <- function(ctrl, window) {
   if (is.null(ctrl) || identical(ctrl[["status"]], "not_provided"))
-    return("시가총액·노출 매칭 대조군 없음 — 방어가 실력인지 크기·노출 효과인지 아직 모른다")
+    return("무작위 대조 포트폴리오(시가총액·노출 일치) 없음 — 방어가 실력인지 크기·노출 효과인지 아직 모른다")
   att <- ctrl[["attribution"]]
   aw <- if (is.list(att)) att[[window]] else NULL
   if (is.list(aw) && !is.null(aw[["label"]])) {
     a <- suppressWarnings(as.numeric(.prep_or(att[["placebo_alpha"]], NA_real_)))
     top <- if (is.finite(a)) prep_fmt_pct(1 - a, 0L, signed = FALSE) else "대부분"
-    return(sprintf("시가총액·노출 매칭 대조군: %s — 같은 크기 분포·평균 노출로 무작위로 고른 포트폴리오의 %s보다 덜 빠진 위기 %s · 같은 평균 노출의 시장보다 덜 빠진 위기 %s · 시장보다 덜 빠진 위기 %s (평균 노출 %s)",
+    return(sprintf("무작위 대조 포트폴리오(시가총액·노출 일치): %s — 같은 크기 분포·평균 노출로 무작위로 고른 포트폴리오의 %s보다 덜 빠진 위기 %s · 같은 평균 노출의 시장보다 덜 빠진 위기 %s · 시장보다 덜 빠진 위기 %s (평균 노출 %s)",
                    .prep_or(unname(PREP_DEFENSE_WORD[aw[["label"]]]), "판정 불가"), top,
                    prep_fmt_pct(aw[["share_beats_size_exposure"]], 0L, signed = FALSE),
                    prep_fmt_pct(aw[["share_beats_exposure"]], 0L, signed = FALSE),
@@ -69,10 +69,10 @@ PREP_CONTROL_STATUS_WORD <- c(not_applicable_long_short = "롱숏 전략이라 �
   }
   sm <- ctrl[["size_matched"]]
   if (is.list(sm) && !is.null(sm[["label"]]))
-    return(sprintf("시가총액 매칭 대조군: %s(위기 %s에서 대조보다 덜 빠짐)",
+    return(sprintf("무작위 대조 포트폴리오(시가총액 일치): %s(위기 %s에서 대조보다 덜 빠짐)",
                    if (identical(sm[["label"]], "selection_defense")) "선택 방어" else "크기·노출 방어",
                    prep_fmt_pct(sm[["share_beats"]], 0L, signed = FALSE)))
-  paste0("시가총액·노출 매칭 대조군 판정 불가 — ", .prep_or(unname(PREP_CONTROL_STATUS_WORD[.prep_or(ctrl[["status"]], "")]), "대조 생성 실패"))
+  paste0("무작위 대조 포트폴리오(시가총액·노출 일치) 판정 불가 — ", .prep_or(unname(PREP_CONTROL_STATUS_WORD[.prep_or(ctrl[["status"]], "")]), "대조 생성 실패"))
 }
 
 # 경로에서 프로젝트 루트를 떼고 슬래시로 통일 — 절대경로 유출 방지(감사 10-13: 윈도 경로 혼합으로 제거 실패)
@@ -93,7 +93,7 @@ prep_card_digest <- function(card, window = c("overall", "visible", "test"), max
                   prep_fmt_ratio(V$crisis_dd_capture_worst), prep_fmt_ratio(V$bull_up_capture_median),
                   prep_verdict_word(V$verdict))
   ## 위기 1개 = 1줄(글머리표). 공용 표 렌더러는 모바일 가독성 때문에 2열 상한이라 5열 표를 못 쓴다.
-  ##   줄에는 값만 — 열 이름(시장 → 전략 · 하락노출 · 괄호 = 매칭 대조군)은 섹션 머리에 1번(도훈 10-17 "같은 텍스트가 계속 들어가면 별로")
+  ##   줄에는 값만 — 열 이름(시장 → 전략 · 하락노출 · 괄호 = 무작위 대조 포트폴리오)은 섹션 머리에 1번(도훈 10-17 "같은 텍스트가 계속 들어가면 별로")
   lines <- character(0); omitted <- 0L; has_ctrl <- FALSE
   if (!is.null(cr) && nrow(cr)) {
     cr <- as.data.table(cr)
@@ -120,7 +120,7 @@ prep_card_digest <- function(card, window = c("overall", "visible", "test"), max
     "베타 하락장 / 상승장" = sprintf("%s / %s", prep_fmt_ratio(S$beta_down), prep_fmt_ratio(S$beta_up)),
     "롤링 3년 통과율" = if (is.finite(.prep_or(card$rolling$pass_life, NA_real_))) prep_fmt_pct(card$rolling$pass_life, 0L, signed = FALSE) else "—")
   ctrl_line <- .prep_controls_line(card$controls, window)
-  lines_heading <- paste0("위기별 낙폭 — 시장 → 전략 · 하락노출", if (has_ctrl) "(괄호 = 시가총액·노출 매칭 대조군)" else "")
+  lines_heading <- paste0("위기별 낙폭 — 시장 → 전략 · 하락노출", if (has_ctrl) "(괄호 = 무작위 대조 포트폴리오(시가총액·노출 일치))" else "")
   list(headline = head, lines = lines, lines_heading = lines_heading, omitted = omitted, kv = kv, controls = ctrl_line,
        verdict = .prep_or(V$verdict, "insufficient"))
 }
