@@ -99,7 +99,7 @@ prep_card_digest <- function(card, window = c("overall", "visible", "test"), max
     cr <- as.data.table(cr)
     w_sel <- window
     if (w_sel != "overall") cr <- cr[cr$window == w_sel]
-    lab_w <- c(visible = "보는 창", test = "시험 창", straddle = "걸침")
+    lab_w <- c(visible = "IS", test = "OOS", straddle = "IS·OOS 걸침")
     ctl <- if (nrow(cr)) .prep_ctrl_capture(card$controls, cr$peak_date) else character(0)
     has_ctrl <- any(nzchar(ctl))
     if (nrow(cr)) lines <- sprintf("%s~%s(%s) %s → %s · %s%s%s",
@@ -206,7 +206,7 @@ prep_crisis_chart <- function(card, path, window = "overall", root = NULL) {
                                 limits = c(-1.3 * m, 0.45 * m), expand = ggplot2::expansion(mult = 0)) +   # 0 오른쪽 = 하락노출 값 자리(눈금 없음)
     ggplot2::labs(title = "위기별 낙폭 — 시장(KOSPI200) vs 전략",
                   subtitle = paste0("막대 = 위기 구간 고점→저점 낙폭\n하락노출(오른쪽 숫자) = 전략 낙폭 ÷ 시장 낙폭 — 1.00 = 시장만큼 · 낮을수록 방어",
-                                    if (is.finite(div_x)) sprintf("\n점선 위 = 보는 창 · 아래 = 시험 창(정보 경계 %s 이후)", .prep_or(card$cfg$tau_d, "τ_D")) else ""),
+                                    if (is.finite(div_x)) sprintf("\n점선 위 = IS · 아래 = OOS(%s 이후)", .prep_or(card$cfg$tau_d, "τ_D")) else ""),
                   caption = "위기 = KOSPI200 Lunde-Timmermann 20/20 · 수치 = 행동 카드(계약 산출) · 사건명 = 06_Registry/crisis_event_names.json", x = NULL, y = NULL) +
     ggplot2::theme_minimal(base_family = fam, base_size = 12.5) +
     ggplot2::theme(legend.position = "top", legend.justification = "left", legend.title = ggplot2::element_blank(),
