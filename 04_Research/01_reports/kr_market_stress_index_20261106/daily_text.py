@@ -296,7 +296,7 @@ def build_markdown(meta, d, st, eps, cv, nsr, rob, day, peaks):
     #   (같은 기준일 · passed). 없거나 불통과면 이 절 없이 발행한다(규칙 기반 핵심 요약은 그대로).
     cm = _commentary(day)
     if cm:
-        A(f"#### 오늘의 총평 — AI 작성({cm['model_label']}) · 숫자 출처 자동 검사 통과")
+        A(f"#### 오늘의 총평 — AI 작성({cm['model_label']})")
         A("")
         A(cm["text"])
         A("")
