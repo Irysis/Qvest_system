@@ -1,0 +1,1945 @@
+{
+  "schema": "fc_own_spec_v0",
+  "spec_id": "FC_TOTAL_ICW",
+  "spec_md5": "6f184c7680b15de0fd048396ed137701",
+  "core": {
+    "spec_id": "FC_TOTAL_ICW",
+    "kind": "total_icw",
+    "families": [
+      "quality",
+      "defense",
+      "liquidity",
+      "momentum",
+      "accrual",
+      "value",
+      "growth",
+      "investor_flow",
+      "risk",
+      "crowding",
+      "consensus",
+      "technical",
+      "regime",
+      "leverage"
+    ],
+    "rule_version": "fcc_rule_t1_v0",
+    "generator_md5": "6b2a6e45e33abb59be8609df1886b209",
+    "view_builder": "factor_combinable.R v1.1",
+    "view_cfg_version": "fc_v1.1",
+    "read": {
+      "direction": "registry",
+      "missing": "na",
+      "dedup": false,
+      "family": false
+    },
+    "ic": {
+      "accessor": "factor_db_connector.R::compute_rolling_ic_all",
+      "min_months": 36,
+      "max_months": 120,
+      "weight": "max(s_reg * ICIR, 0)"
+    },
+    "start_rule": "rp_start_date_else_measurement_axis_active_epoch_start_date",
+    "members_from": [
+      {
+        "spec_id": "FC_FAM_quality",
+        "spec_md5": "760a6c2b085acaf4bb6d54466372e0fc",
+        "engine_md5": "44ee47336a59440b802df7f8b806ce12"
+      },
+      {
+        "spec_id": "FC_FAM_defense",
+        "spec_md5": "134ad7493e469cd5b2143477047143be",
+        "engine_md5": "9ce4d35e0abcafe3bcae50fb403f776f"
+      },
+      {
+        "spec_id": "FC_FAM_liquidity",
+        "spec_md5": "634f512aa295e738e92b3734ee5fdfcc",
+        "engine_md5": "025542f5add248da990b54ede664b5ed"
+      },
+      {
+        "spec_id": "FC_FAM_momentum",
+        "spec_md5": "77647b211c8ab0693886ac8cae61ac17",
+        "engine_md5": "c01054627224104417203bed9713dca7"
+      },
+      {
+        "spec_id": "FC_FAM_accrual",
+        "spec_md5": "935faa8b111a83677adcc9738edbd82c",
+        "engine_md5": "fb3e57168e808786a59e12fc37231069"
+      },
+      {
+        "spec_id": "FC_FAM_value",
+        "spec_md5": "ed743d9f844bcadef7e6ae8682bc96c7",
+        "engine_md5": "faba4b417a0757942ef20a44bdae36ed"
+      },
+      {
+        "spec_id": "FC_FAM_growth",
+        "spec_md5": "4b257838b94469fda62906c23a751263",
+        "engine_md5": "25e5b0737fcaf17d83f2d4cb39e2dfb5"
+      },
+      {
+        "spec_id": "FC_FAM_investor_flow",
+        "spec_md5": "778e55ce963708b4a0970592f8ad793f",
+        "engine_md5": "a0c3c6348cdf641e54bbf82538844c20"
+      },
+      {
+        "spec_id": "FC_FAM_risk",
+        "spec_md5": "e19ea261ef455e48eca8f6ff121a53a7",
+        "engine_md5": "95fe3b0f46d27adbecea3e9a41c65077"
+      },
+      {
+        "spec_id": "FC_FAM_crowding",
+        "spec_md5": "224366fb8c4e4edfb20b3288060abd22",
+        "engine_md5": "d558c7c7d48f86aa57a62022a3fc89b5"
+      },
+      {
+        "spec_id": "FC_FAM_consensus",
+        "spec_md5": "6b1aa93d9ee02b4a1877d8a764f4cdfc",
+        "engine_md5": "2e1d57186c64bf58ba9255943d9406b2"
+      },
+      {
+        "spec_id": "FC_FAM_technical",
+        "spec_md5": "3333340cebfc22f5834600cb12a28164",
+        "engine_md5": "2d98ab8ab4412c54f9659909b64b939a"
+      },
+      {
+        "spec_id": "FC_FAM_regime",
+        "spec_md5": "8a679abd718c7c07ac13fcf49a17083f",
+        "engine_md5": "2422c1c492d528f1944c4cef9003dd08"
+      },
+      {
+        "spec_id": "FC_FAM_leverage",
+        "spec_md5": "70bc9dc098542d8e4f18c465cb91f758",
+        "engine_md5": "8899e5934fcf11e22289a1364975e383"
+      },
+      {
+        "spec_id": "FC_TOTAL_EW",
+        "spec_md5": "8986cd3ead68d1993064449273c8f5fe",
+        "engine_md5": "55e6f27f1b660ef349d1f95ec2b98d75"
+      }
+    ],
+    "members": [
+      {
+        "id": "Q01_GPA",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "Q02_ROE",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "Q03_ROA",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "Q04_Piotroski_F",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "Q05_Accrual",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "Q06_Asset_Growth",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "Q07_Earnings_Stability",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "Q08_Composite_Quality",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "Q09_CFOA",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "Q10_Gross_Margin",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "Q11_Net_Margin",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "Q12_Asset_Turnover",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "Q13_Fin_Leverage",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "Q14_Current_Ratio",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "Q15_Debt_to_Equity",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "Q16_Debt_to_Assets",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "Q17_ROIC",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "Q18_Op_Leverage",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "Q19_Cash_to_Assets",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "Q20_Net_Equity_Issuance",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "Q23_Sustainable_Growth",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "Q24_Altman_Z",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "Q25_Ohlson_O",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "Q26_RnD_Intensity",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "Q27_CapEx_to_Rev",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "Q28_Cash_Conversion",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "Q29_Inventory_Turnover",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "Q30_Receivables_Turnover",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "Q31_WC_to_Assets",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "Q32_Interest_Coverage",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "Q33_Earnings_Persistence",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "Q35_CashBased_OpProf",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "XF_DU01_NetMargin",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "XF_DU02_AssetTurnover",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "XF_EF01_InventoryTurnover",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "XF_EF02_DaysPayable",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "XF_EF03_DaysReceivable",
+        "s_reg": -1,
+        "family": "quality"
+      },
+      {
+        "id": "XF_EF04_CCC",
+        "s_reg": -1,
+        "family": "quality"
+      },
+      {
+        "id": "XF_PR01_EBITDA_Margin",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "XF_PR02_RetainedEarnings_Ratio",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "XF_PR03_TaxRate",
+        "s_reg": -1,
+        "family": "quality"
+      },
+      {
+        "id": "XF_PR04_NetInterestMargin",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "XF_PR05_EBITDA_to_Assets",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "XF_Q06_Op_Margin",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "XF_RI01_RnD_to_Revenue",
+        "s_reg": 1,
+        "family": "quality"
+      },
+      {
+        "id": "XF_RI02_CapEx_proxy",
+        "s_reg": -1,
+        "family": "quality"
+      },
+      {
+        "id": "XF_RI03_SGA_to_Revenue",
+        "s_reg": -1,
+        "family": "quality"
+      },
+      {
+        "id": "D01_IdioVol",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D02_Beta",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D03_RealVol",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D04_Downside_Beta",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D05_MaxRet",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D06_Upside_Beta",
+        "s_reg": -1,
+        "family": "defense"
+      },
+      {
+        "id": "D07_Beta_Asymmetry",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D09_Dimson_Beta",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D10_Blume_Adj_Beta",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D11_FP_Beta",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D12_Beta_126d",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D13_Beta_63d",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D14_Beta_Change",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D15_Cond_Bear_Beta",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D16_Coskewness",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D17_Cokurtosis",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D18_BAB_Rank",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D19_EW_Beta_63",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D20_EW_Beta_126",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D21_CAPM_Alpha",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D22_Tracking_Error",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D23_Info_Ratio",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D24_Systematic_Risk_Prop",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D25_Left_Tail_Beta",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D26_Right_Tail_Beta",
+        "s_reg": -1,
+        "family": "defense"
+      },
+      {
+        "id": "D27_Beta_Stability",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D28_Unlevered_Beta",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D29_Accounting_Beta",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D30_FM_Beta_21d",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D31_Relative_Beta",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D33_Beta_Persistence",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D34_RealVol_21d",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D35_RealVol_63d",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D36_RealVol_126d",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D37_Parkinson_Vol",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D38_GarmanKlass_Vol",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D39_RogersSatchell_Vol",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D40_YangZhang_Vol",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D41_Vol_of_Vol",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D42_EWMA_Vol",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D43_Skewness",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D44_Kurtosis",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D45_Downside_Dev",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D46_Sortino",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D47_CVaR_5pct",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D48_VaR_5pct",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D49_VaR_1pct",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D50_MaxDrawdown",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D51_Ulcer_Index",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D52_MinRet",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D53_Range_Vol",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D54_Neg_Ret_Prop",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D55_Vol_Trend",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D56_Up_Vol",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D57_Down_Vol",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "D58_Vol_Asymmetry",
+        "s_reg": -1,
+        "family": "defense"
+      },
+      {
+        "id": "D60_Leverage",
+        "s_reg": 1,
+        "family": "defense"
+      },
+      {
+        "id": "L01_Amihud",
+        "s_reg": -1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L02_Turnover",
+        "s_reg": -1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L03_Volume_Mom",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L04_Bid_Ask_Proxy",
+        "s_reg": -1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L05_Dollar_Volume",
+        "s_reg": -1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L06_Zero_Trade_Days",
+        "s_reg": -1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L07_Zero_Return_Days",
+        "s_reg": -1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L08_Roll_Spread",
+        "s_reg": -1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L09_Amihud_20d",
+        "s_reg": -1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L10_Amihud_Ratio",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L11_Kyle_Lambda",
+        "s_reg": -1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L12_PS_Gamma",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L13_Vol_Variance_Ratio",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L14_Price_Impact",
+        "s_reg": -1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L15_Turnover_252d",
+        "s_reg": -1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L16_Turnover_Vol",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L17_LOT_Measure",
+        "s_reg": -1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L18_Eff_Spread_Proxy",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L19_Price_Delay",
+        "s_reg": -1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L20_Trade_Frequency",
+        "s_reg": -1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L21_Market_Depth",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L22_Ret_Autocorr",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L23_Vol_Autocorr",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L24_Range_per_Vol",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L25_Amihud_Vol",
+        "s_reg": -1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L26_Log_MktCap",
+        "s_reg": -1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L27_Price_Level",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L28_Vol_Mom_63d",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L29_Illiq_Change",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L31_Vol_Concentration",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L32_Ret_Vol_Corr",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L33_AbsRet_Vol_Corr",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L34_Vol_Spike_Ratio",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L35_Reversal_Intensity",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L36_CLV_Stability",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L37_Relative_Vol",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L38_DolVol_Mom",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L39_Overnight_Spread",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L40_VWAP_Spread",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L41_Intraday_Vol_Proxy",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L42_Vol_Skewness",
+        "s_reg": -1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L43_Turnover_Change",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L44_Vol_Ret_Asymmetry",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L45_Composite_Liquidity",
+        "s_reg": -1,
+        "family": "liquidity"
+      },
+      {
+        "id": "M01_Mom_12_1",
+        "s_reg": 1,
+        "family": "momentum"
+      },
+      {
+        "id": "M02_Mom_6_1",
+        "s_reg": 1,
+        "family": "momentum"
+      },
+      {
+        "id": "M03_Mom_3_1",
+        "s_reg": 1,
+        "family": "momentum"
+      },
+      {
+        "id": "M04_Mom_1",
+        "s_reg": -1,
+        "family": "momentum"
+      },
+      {
+        "id": "M05_Trended_Mom",
+        "s_reg": 1,
+        "family": "momentum"
+      },
+      {
+        "id": "M06_High_52w",
+        "s_reg": 1,
+        "family": "momentum"
+      },
+      {
+        "id": "M07_IndMom",
+        "s_reg": 1,
+        "family": "momentum"
+      },
+      {
+        "id": "M08_Residual_Mom",
+        "s_reg": 1,
+        "family": "momentum"
+      },
+      {
+        "id": "M09_Composite_Mom",
+        "s_reg": 1,
+        "family": "momentum"
+      },
+      {
+        "id": "M10_Intermediate_Mom",
+        "s_reg": 1,
+        "family": "momentum"
+      },
+      {
+        "id": "M11_ST_Reversal",
+        "s_reg": -1,
+        "family": "momentum"
+      },
+      {
+        "id": "M12_LR_Reversal",
+        "s_reg": -1,
+        "family": "momentum"
+      },
+      {
+        "id": "M13_VolAdj_Mom",
+        "s_reg": 1,
+        "family": "momentum"
+      },
+      {
+        "id": "M14_RiskAdj_Mom",
+        "s_reg": 1,
+        "family": "momentum"
+      },
+      {
+        "id": "M15_Mom_3",
+        "s_reg": 1,
+        "family": "momentum"
+      },
+      {
+        "id": "M16_Trend_Factor",
+        "s_reg": 1,
+        "family": "momentum"
+      },
+      {
+        "id": "M17_Low_52w",
+        "s_reg": 1,
+        "family": "momentum"
+      },
+      {
+        "id": "M18_RSI",
+        "s_reg": -1,
+        "family": "momentum"
+      },
+      {
+        "id": "M19_MACD",
+        "s_reg": 1,
+        "family": "momentum"
+      },
+      {
+        "id": "M20_Keller_Mom",
+        "s_reg": 1,
+        "family": "momentum"
+      },
+      {
+        "id": "M21_Seasonality",
+        "s_reg": 1,
+        "family": "momentum"
+      },
+      {
+        "id": "M22_Max_Return",
+        "s_reg": -1,
+        "family": "momentum"
+      },
+      {
+        "id": "M23_Acceleration",
+        "s_reg": 1,
+        "family": "momentum"
+      },
+      {
+        "id": "M24_Sector_Rel_Mom",
+        "s_reg": 1,
+        "family": "momentum"
+      },
+      {
+        "id": "M25_Earnings_Mom_Streak",
+        "s_reg": 1,
+        "family": "momentum"
+      },
+      {
+        "id": "M26_Revenue_Mom",
+        "s_reg": 1,
+        "family": "momentum"
+      },
+      {
+        "id": "M27_Analyst_Rev_Mom",
+        "s_reg": 1,
+        "family": "momentum"
+      },
+      {
+        "id": "M28_OP_Rev_Mom",
+        "s_reg": 1,
+        "family": "momentum"
+      },
+      {
+        "id": "M30_Mom_10d",
+        "s_reg": -1,
+        "family": "momentum"
+      },
+      {
+        "id": "M32_Composite_Mom_v2",
+        "s_reg": 1,
+        "family": "momentum"
+      },
+      {
+        "id": "AC01_Total_Accruals_CF",
+        "s_reg": 1,
+        "family": "accrual"
+      },
+      {
+        "id": "AC02_Total_Accruals_BS",
+        "s_reg": 1,
+        "family": "accrual"
+      },
+      {
+        "id": "AC03_WC_Accruals",
+        "s_reg": 1,
+        "family": "accrual"
+      },
+      {
+        "id": "AC04_NCO_Accruals",
+        "s_reg": 1,
+        "family": "accrual"
+      },
+      {
+        "id": "AC05_NOA",
+        "s_reg": 1,
+        "family": "accrual"
+      },
+      {
+        "id": "AC06_Comprehensive_Accruals",
+        "s_reg": 1,
+        "family": "accrual"
+      },
+      {
+        "id": "AC07_Operating_Accruals",
+        "s_reg": 1,
+        "family": "accrual"
+      },
+      {
+        "id": "AC08_Financial_Accruals",
+        "s_reg": -1,
+        "family": "accrual"
+      },
+      {
+        "id": "AC09_NNI",
+        "s_reg": 1,
+        "family": "accrual"
+      },
+      {
+        "id": "AC10_Pct_Accruals",
+        "s_reg": 1,
+        "family": "accrual"
+      },
+      {
+        "id": "AC12_Inventory_Accruals",
+        "s_reg": 1,
+        "family": "accrual"
+      },
+      {
+        "id": "AC13_Abnormal_Accruals",
+        "s_reg": 1,
+        "family": "accrual"
+      },
+      {
+        "id": "AC14_Discretionary_Accruals",
+        "s_reg": 1,
+        "family": "accrual"
+      },
+      {
+        "id": "AC15_NonDiscretionary_Accruals",
+        "s_reg": 1,
+        "family": "accrual"
+      },
+      {
+        "id": "AC16_BS_vs_CF_Diff",
+        "s_reg": 1,
+        "family": "accrual"
+      },
+      {
+        "id": "AC17_Accrual_Reversal",
+        "s_reg": 1,
+        "family": "accrual"
+      },
+      {
+        "id": "AC19_Receivables_Accruals",
+        "s_reg": 1,
+        "family": "accrual"
+      },
+      {
+        "id": "AC20_Payables_Accruals",
+        "s_reg": 1,
+        "family": "accrual"
+      },
+      {
+        "id": "AC21_CF_to_Accrual_Ratio",
+        "s_reg": 1,
+        "family": "accrual"
+      },
+      {
+        "id": "AC22_Accrual_Volatility",
+        "s_reg": 1,
+        "family": "accrual"
+      },
+      {
+        "id": "AC23_Accrual_Persistence",
+        "s_reg": 1,
+        "family": "accrual"
+      },
+      {
+        "id": "AC24_NOA_Growth",
+        "s_reg": 1,
+        "family": "accrual"
+      },
+      {
+        "id": "AC25_Accrual_Size_Interaction",
+        "s_reg": 1,
+        "family": "accrual"
+      },
+      {
+        "id": "V01_BM",
+        "s_reg": 1,
+        "family": "value"
+      },
+      {
+        "id": "V02_EP",
+        "s_reg": 1,
+        "family": "value"
+      },
+      {
+        "id": "V03_CFP",
+        "s_reg": 1,
+        "family": "value"
+      },
+      {
+        "id": "V04_fPER",
+        "s_reg": -1,
+        "family": "value"
+      },
+      {
+        "id": "V05_fPBR",
+        "s_reg": -1,
+        "family": "value"
+      },
+      {
+        "id": "V06_fDY",
+        "s_reg": 1,
+        "family": "value"
+      },
+      {
+        "id": "V07_EV_EBITDA",
+        "s_reg": -1,
+        "family": "value"
+      },
+      {
+        "id": "V08_PSR",
+        "s_reg": -1,
+        "family": "value"
+      },
+      {
+        "id": "V09_PEG",
+        "s_reg": -1,
+        "family": "value"
+      },
+      {
+        "id": "V10_FCF_Yield",
+        "s_reg": 1,
+        "family": "value"
+      },
+      {
+        "id": "V11_Shareholder_Yield",
+        "s_reg": 1,
+        "family": "value"
+      },
+      {
+        "id": "V12_Composite_Value",
+        "s_reg": 1,
+        "family": "value"
+      },
+      {
+        "id": "V13_EV_Sales",
+        "s_reg": -1,
+        "family": "value"
+      },
+      {
+        "id": "V14_EBIT_EV",
+        "s_reg": 1,
+        "family": "value"
+      },
+      {
+        "id": "V15_NetDebt_Adj_EP",
+        "s_reg": 1,
+        "family": "value"
+      },
+      {
+        "id": "V16_Tobins_Q",
+        "s_reg": -1,
+        "family": "value"
+      },
+      {
+        "id": "V17_Payout_Ratio",
+        "s_reg": 1,
+        "family": "value"
+      },
+      {
+        "id": "V18_AM",
+        "s_reg": 1,
+        "family": "value"
+      },
+      {
+        "id": "V19_Debt_to_Market",
+        "s_reg": 1,
+        "family": "value"
+      },
+      {
+        "id": "V20_SP",
+        "s_reg": 1,
+        "family": "value"
+      },
+      {
+        "id": "V21_Composite_Equity_Issuance",
+        "s_reg": -1,
+        "family": "value"
+      },
+      {
+        "id": "V22_FCFF_EV",
+        "s_reg": 1,
+        "family": "value"
+      },
+      {
+        "id": "V23_RAFI_Weight",
+        "s_reg": 1,
+        "family": "value"
+      },
+      {
+        "id": "V24_Residual_Income",
+        "s_reg": 1,
+        "family": "value"
+      },
+      {
+        "id": "GR01_Revenue_Growth",
+        "s_reg": 1,
+        "family": "growth"
+      },
+      {
+        "id": "GR02_Earnings_Growth",
+        "s_reg": 1,
+        "family": "growth"
+      },
+      {
+        "id": "GR03_Asset_Growth",
+        "s_reg": 1,
+        "family": "growth"
+      },
+      {
+        "id": "GR04_GPA_Growth",
+        "s_reg": 1,
+        "family": "growth"
+      },
+      {
+        "id": "GR05_ROE_Growth",
+        "s_reg": 1,
+        "family": "growth"
+      },
+      {
+        "id": "GR06_OCF_Growth",
+        "s_reg": 1,
+        "family": "growth"
+      },
+      {
+        "id": "GR07_Composite_Growth",
+        "s_reg": 1,
+        "family": "growth"
+      },
+      {
+        "id": "IN01_CapEx_to_Assets",
+        "s_reg": 1,
+        "family": "growth"
+      },
+      {
+        "id": "IN02_CapEx_to_Revenue",
+        "s_reg": 1,
+        "family": "growth"
+      },
+      {
+        "id": "IN03_RD_to_Market",
+        "s_reg": 1,
+        "family": "growth"
+      },
+      {
+        "id": "IN04_Net_Equity_Issuance",
+        "s_reg": 1,
+        "family": "growth"
+      },
+      {
+        "id": "IN05_Net_Debt_Issuance",
+        "s_reg": 1,
+        "family": "growth"
+      },
+      {
+        "id": "IN06_Investment_to_Assets",
+        "s_reg": 1,
+        "family": "growth"
+      },
+      {
+        "id": "MK01_CAPM_Beta",
+        "s_reg": -1,
+        "family": "growth"
+      },
+      {
+        "id": "Q21_Revenue_Growth",
+        "s_reg": 1,
+        "family": "growth"
+      },
+      {
+        "id": "Q22_Earnings_Growth",
+        "s_reg": 1,
+        "family": "growth"
+      },
+      {
+        "id": "Q34_GP_Growth",
+        "s_reg": 1,
+        "family": "growth"
+      },
+      {
+        "id": "XF_GD01_GrossProfit_Growth",
+        "s_reg": 1,
+        "family": "growth"
+      },
+      {
+        "id": "XF_GD02_OpProfit_Growth",
+        "s_reg": 1,
+        "family": "growth"
+      },
+      {
+        "id": "XF_GD03_OCF_Growth",
+        "s_reg": 1,
+        "family": "growth"
+      },
+      {
+        "id": "XF_GD04_Dividend_Growth",
+        "s_reg": 1,
+        "family": "growth"
+      },
+      {
+        "id": "INV01_Foreign_NetBuy_20d",
+        "s_reg": 1,
+        "family": "investor_flow"
+      },
+      {
+        "id": "INV02_Foreign_NetBuy_60d",
+        "s_reg": 1,
+        "family": "investor_flow"
+      },
+      {
+        "id": "INV03_Inst_NetBuy_20d",
+        "s_reg": 1,
+        "family": "investor_flow"
+      },
+      {
+        "id": "INV04_Inst_NetBuy_60d",
+        "s_reg": 1,
+        "family": "investor_flow"
+      },
+      {
+        "id": "INV05_Foreign_Momentum",
+        "s_reg": 1,
+        "family": "investor_flow"
+      },
+      {
+        "id": "INV06_Inst_Momentum",
+        "s_reg": 1,
+        "family": "investor_flow"
+      },
+      {
+        "id": "INV07_Retail_Contrarian",
+        "s_reg": 1,
+        "family": "investor_flow"
+      },
+      {
+        "id": "INV08_Foreign_Inst_Agreement",
+        "s_reg": 1,
+        "family": "investor_flow"
+      },
+      {
+        "id": "INV09_Flow_Persistence",
+        "s_reg": 1,
+        "family": "investor_flow"
+      },
+      {
+        "id": "INV10_Smart_Money_Flow",
+        "s_reg": 1,
+        "family": "investor_flow"
+      },
+      {
+        "id": "INV11_Foreign_Concentration",
+        "s_reg": 1,
+        "family": "investor_flow"
+      },
+      {
+        "id": "INV12_Supply_Demand_Imbalance",
+        "s_reg": 1,
+        "family": "investor_flow"
+      },
+      {
+        "id": "INV13_Foreign_Resid_Individual_126d",
+        "s_reg": 1,
+        "family": "investor_flow"
+      },
+      {
+        "id": "INV13_Foreign_Resid_Individual_21d",
+        "s_reg": 1,
+        "family": "investor_flow"
+      },
+      {
+        "id": "INV13_Foreign_Resid_Individual_63d",
+        "s_reg": 1,
+        "family": "investor_flow"
+      },
+      {
+        "id": "R01_VaR_95",
+        "s_reg": -1,
+        "family": "risk"
+      },
+      {
+        "id": "R02_VaR_99",
+        "s_reg": -1,
+        "family": "risk"
+      },
+      {
+        "id": "R03_CVaR_95",
+        "s_reg": -1,
+        "family": "risk"
+      },
+      {
+        "id": "R04_CVaR_99",
+        "s_reg": -1,
+        "family": "risk"
+      },
+      {
+        "id": "R05_Tail_Risk",
+        "s_reg": 1,
+        "family": "risk"
+      },
+      {
+        "id": "R06_MDD",
+        "s_reg": 1,
+        "family": "risk"
+      },
+      {
+        "id": "R07_Downside_Dev",
+        "s_reg": 1,
+        "family": "risk"
+      },
+      {
+        "id": "R08_Semi_Variance",
+        "s_reg": 1,
+        "family": "risk"
+      },
+      {
+        "id": "R09_Coskewness",
+        "s_reg": -1,
+        "family": "risk"
+      },
+      {
+        "id": "R10_Cokurtosis",
+        "s_reg": 1,
+        "family": "risk"
+      },
+      {
+        "id": "R11_Systematic_Risk",
+        "s_reg": 1,
+        "family": "risk"
+      },
+      {
+        "id": "R12_Idiosyncratic_Risk",
+        "s_reg": 1,
+        "family": "risk"
+      },
+      {
+        "id": "R13_NCSKEW",
+        "s_reg": -1,
+        "family": "risk"
+      },
+      {
+        "id": "R14_DUVOL",
+        "s_reg": -1,
+        "family": "risk"
+      },
+      {
+        "id": "R15_Sortino",
+        "s_reg": 1,
+        "family": "risk"
+      },
+      {
+        "id": "R16_Calmar",
+        "s_reg": 1,
+        "family": "risk"
+      },
+      {
+        "id": "R17_Market_Leverage",
+        "s_reg": -1,
+        "family": "risk"
+      },
+      {
+        "id": "R18_Book_Leverage",
+        "s_reg": 1,
+        "family": "risk"
+      },
+      {
+        "id": "R19_Composite_Risk",
+        "s_reg": 1,
+        "family": "risk"
+      },
+      {
+        "id": "CR01_Sector_Comovement",
+        "s_reg": 1,
+        "family": "crowding"
+      },
+      {
+        "id": "CR02_Volume_Concentration",
+        "s_reg": -1,
+        "family": "crowding"
+      },
+      {
+        "id": "CR04_Ownership_Concentration",
+        "s_reg": -1,
+        "family": "crowding"
+      },
+      {
+        "id": "CR05_Short_Pressure_Proxy",
+        "s_reg": 1,
+        "family": "crowding"
+      },
+      {
+        "id": "CR06_DTC_Proxy",
+        "s_reg": -1,
+        "family": "crowding"
+      },
+      {
+        "id": "CR07_Momentum_Crowding",
+        "s_reg": 1,
+        "family": "crowding"
+      },
+      {
+        "id": "CR08_Volume_Price_Divergence",
+        "s_reg": 1,
+        "family": "crowding"
+      },
+      {
+        "id": "CR09_Money_Flow_Ratio",
+        "s_reg": 1,
+        "family": "crowding"
+      },
+      {
+        "id": "CR10_Convergence_Premium",
+        "s_reg": 1,
+        "family": "crowding"
+      },
+      {
+        "id": "CR11_Idiosyncratic_Return",
+        "s_reg": 1,
+        "family": "crowding"
+      },
+      {
+        "id": "SE01_Volatility_Uncertainty",
+        "s_reg": 1,
+        "family": "crowding"
+      },
+      {
+        "id": "SE02_Consensus_Revision",
+        "s_reg": 1,
+        "family": "crowding"
+      },
+      {
+        "id": "TR01_ADX_Proxy",
+        "s_reg": 1,
+        "family": "crowding"
+      },
+      {
+        "id": "TR02_Trend_Consistency",
+        "s_reg": 1,
+        "family": "crowding"
+      },
+      {
+        "id": "C01_SUE",
+        "s_reg": 1,
+        "family": "consensus"
+      },
+      {
+        "id": "C02_EPS_Chg_1m",
+        "s_reg": 1,
+        "family": "consensus"
+      },
+      {
+        "id": "C03_EPS_Chg_3m",
+        "s_reg": 1,
+        "family": "consensus"
+      },
+      {
+        "id": "C04_ESBR",
+        "s_reg": 1,
+        "family": "consensus"
+      },
+      {
+        "id": "C05_ESCR",
+        "s_reg": 1,
+        "family": "consensus"
+      },
+      {
+        "id": "C06_TP_Gap",
+        "s_reg": 1,
+        "family": "consensus"
+      },
+      {
+        "id": "C07_TP_Mom",
+        "s_reg": 1,
+        "family": "consensus"
+      },
+      {
+        "id": "C08_Coverage",
+        "s_reg": 1,
+        "family": "consensus"
+      },
+      {
+        "id": "C09_Earnings_Surprise_Sq",
+        "s_reg": 1,
+        "family": "consensus"
+      },
+      {
+        "id": "C11_Earnings_Streak",
+        "s_reg": 1,
+        "family": "consensus"
+      },
+      {
+        "id": "C12_Estimate_Dispersion_Proxy",
+        "s_reg": -1,
+        "family": "consensus"
+      },
+      {
+        "id": "C16_EPS_Acceleration",
+        "s_reg": 1,
+        "family": "consensus"
+      },
+      {
+        "id": "C18_Earnings_CAR_3d",
+        "s_reg": 1,
+        "family": "consensus"
+      },
+      {
+        "id": "C19_Composite_Earnings",
+        "s_reg": 1,
+        "family": "consensus"
+      },
+      {
+        "id": "T01_RSI14",
+        "s_reg": -1,
+        "family": "technical"
+      },
+      {
+        "id": "T03_BB20",
+        "s_reg": 1,
+        "family": "technical"
+      },
+      {
+        "id": "T04_OBV21",
+        "s_reg": 1,
+        "family": "technical"
+      },
+      {
+        "id": "T05_MFI14",
+        "s_reg": 1,
+        "family": "technical"
+      },
+      {
+        "id": "T06_PMA5",
+        "s_reg": 1,
+        "family": "technical"
+      },
+      {
+        "id": "T07_PMA20",
+        "s_reg": 1,
+        "family": "technical"
+      },
+      {
+        "id": "T08_PMA60",
+        "s_reg": 1,
+        "family": "technical"
+      },
+      {
+        "id": "T09_PMA120",
+        "s_reg": 1,
+        "family": "technical"
+      },
+      {
+        "id": "T10_RSI28",
+        "s_reg": -1,
+        "family": "technical"
+      },
+      {
+        "id": "T13_Gap",
+        "s_reg": 1,
+        "family": "technical"
+      },
+      {
+        "id": "T14_HLRange",
+        "s_reg": -1,
+        "family": "technical"
+      },
+      {
+        "id": "T15_AutoCorr",
+        "s_reg": -1,
+        "family": "technical"
+      },
+      {
+        "id": "MA03_Rate_Sensitivity",
+        "s_reg": -1,
+        "family": "regime"
+      },
+      {
+        "id": "MA04_YieldCurve_Sensitivity",
+        "s_reg": 1,
+        "family": "regime"
+      },
+      {
+        "id": "RE04_HighVol_Beta",
+        "s_reg": 1,
+        "family": "regime"
+      },
+      {
+        "id": "RE05_LowVol_Beta",
+        "s_reg": 1,
+        "family": "regime"
+      },
+      {
+        "id": "RE06_Beta_Asymmetry",
+        "s_reg": 1,
+        "family": "regime"
+      },
+      {
+        "id": "RE07_Crisis_Beta",
+        "s_reg": 1,
+        "family": "regime"
+      },
+      {
+        "id": "RE08_Down_Market_Excess",
+        "s_reg": 1,
+        "family": "regime"
+      },
+      {
+        "id": "RE09_Capture_Ratio",
+        "s_reg": 1,
+        "family": "regime"
+      },
+      {
+        "id": "XF_DU03_EquityMultiplier",
+        "s_reg": -1,
+        "family": "leverage"
+      },
+      {
+        "id": "XF_LL01_DebtToCapital",
+        "s_reg": -1,
+        "family": "leverage"
+      },
+      {
+        "id": "XF_LL02_NetDebt",
+        "s_reg": -1,
+        "family": "leverage"
+      },
+      {
+        "id": "XF_LL03_CashRatio",
+        "s_reg": 1,
+        "family": "leverage"
+      },
+      {
+        "id": "XF_LL04_QuickRatio",
+        "s_reg": 1,
+        "family": "leverage"
+      },
+      {
+        "id": "XF_LL05_WorkingCapital",
+        "s_reg": 1,
+        "family": "leverage"
+      }
+    ]
+  },
+  "n_members": 334,
+  "n_members_by_family": {
+    "quality": 47,
+    "defense": 57,
+    "liquidity": 44,
+    "momentum": 30,
+    "accrual": 23,
+    "value": 24,
+    "growth": 21,
+    "investor_flow": 15,
+    "risk": 19,
+    "crowding": 14,
+    "consensus": 14,
+    "technical": 12,
+    "regime": 8,
+    "leverage": 6
+  },
+  "family_root": "FC:total",
+  "root_paper": {
+    "url": "https://doi.org/10.1201/9781420010794",
+    "title": "Quantitative Equity Portfolio Management: Modern Techniques and Applications",
+    "paper_key": "FC_TOTAL_ICW"
+  },
+  "literature": [
+    {
+      "use": "ic_weight",
+      "rule": "결합 가중을 팩터의 IC · IC 변동성(ICIR)으로 — 다요인 알파 모형의 IC 기반 결합",
+      "ref": "Qian, Hua & Sorensen (2007) Quantitative Equity Portfolio Management: Modern Techniques and Applications, Chapman & Hall/CRC (다요인 알파 모형 장)",
+      "url": "https://doi.org/10.1201/9781420010794"
+    },
+    {
+      "use": "positive_part",
+      "rule": "지난 성과가 양(+)인 팩터에만 가중(시계열 팩터 모멘텀 — 음의 팩터를 뒤집지 않고 뺀다)",
+      "ref": "Ehsani & Linnainmaa (2022) Factor Momentum and the Momentum Factor, JF 77(3):1877-1919",
+      "url": "https://doi.org/10.1111/jofi.13131"
+    },
+    {
+      "use": "transform",
+      "rule": "매 시점 횡단면 순위 → [−1, 1] · 동순위 평균(결합용 뷰 저장 변환 — T0 와 같다)",
+      "ref": "Gu, Kelly & Xiu (2020) Empirical Asset Pricing via Machine Learning, RFS 33(5):2223-2273",
+      "url": "https://doi.org/10.1093/rfs/hhaa009"
+    },
+    {
+      "use": "family_unit",
+      "rule": "팩터를 주제(가족)로 묶어 합성 — 가족 균형(T0 와 같은 단위)",
+      "ref": "Jensen, Kelly & Pedersen (2023) Is There a Replication Crisis in Finance?, JF 78(5):2465-2518",
+      "url": "https://doi.org/10.1111/jofi.13249"
+    }
+  ],
+  "ic": {
+    "accessor": "factor_db_connector.R::compute_rolling_ic_all",
+    "min_months": 36,
+    "max_months": 120,
+    "weight": "max(s_reg * ICIR, 0)",
+    "basis": "정본 접근자 compute_rolling_ic_all 의 기본값(min_months 36 · max_months 120) 그대로 — 새 숫자 없음. 결합용 뷰 ic_asof 부호(빌드 .load_ic_direction_cached(asof, 36L))와 같은 최소 36개월. 설계 §4-2 T1 '기존 창 36~120개월'."
+  },
+  "composite": {
+    "transform": "cross_sectional_rank_to_pm1(결합용 뷰 · registry 방향)",
+    "member_weight": "max(s_reg * ICIR, 0)",
+    "family_score": "weighted_mean_of_available_members",
+    "total": "family_weight_mean_member_weight",
+    "fallback": "all_family_weights_zero -> T0 total",
+    "missing": "drop_ticker_date (fc_load_month missing = na)"
+  },
+  "output": "FACTORS(Date, Ticker, Score) — Date = 결합용 뷰의 그 달 as-of · 점수 결측 종목 제외 · PORTFOLIO 없음",
+  "t0_counterpart": "FC_TOTAL_EW",
+  "rule_notes": [
+    "구성원 334개 = T0 사양 FC_TOTAL_EW(P1R03 선언 · spec_md5 8986cd3ead68d1993064449273c8f5fe)과 같다 — 구성원 · 부호 · 가족은 그 사양에서 옮겼고 등록부를 다시 읽지 않았다.",
+    "가중 = max(s_reg × ICIR, 0) — ICIR 은 엔진 실행 때 그 달 as-of 로 정본 접근자(compute_rolling_ic_all · IC 원장 Usable_Date ≤ as-of)가 낸다. 생성기는 IC · 성과를 읽지 않았다.",
+    "부호는 등록부 기대수익 부호로 고정(C13) — as-of IC 가 등록부 방향과 반대인 구성원은 뒤집지 않고 가중 0 이다.",
+    "토탈 T1 = 가족 가중 W_f(그 달 가족 구성원 가중의 평균) × 가족 T1 점수의 가중 평균 · W_f = 0 인 가족은 빠진다 · 모든 W_f = 0 인 달은 T0(가족 등가중).",
+    "ICIR 이 모두 같으면 T0 와 같은 점수다(T1 은 T0 를 품는다 · 차이 = as-of IC 정보 하나).",
+    "IC 원장의 한계(설계 §9): IC 는 전 종목 · 원값 · 1개월 지평 — 측정 축(전 종목 + 위생 · 동전주 바닥) 위의 IC 가 아니다(PIT 문제 아님 · 품질 문제).",
+    "진단 파일 fce_diag.csv 는 IC 에서 나온 값을 담으므로 정보 경계(06_Registry/behavior_card.json::tau_d) 이전 행만 쓴다."
+  ],
+  "decision": "FACTOR-SPINE-STAGE1-20261112",
+  "design": "04_Research/01_reports/factor_spine_design_20261111/README.md",
+  "generator": {
+    "path": "02_Infrastructure/factor_db/fc_combiner_gen.R",
+    "md5": "6b2a6e45e33abb59be8609df1886b209"
+  },
+  "inputs": {
+    "view_cfg": {
+      "path": "06_Registry/factor_combinable.json",
+      "md5": "08e1194adf2e478edfd5ee1c5e5e1b34"
+    },
+    "t0_own_spec_md5": [
+      {
+        "spec_id": "FC_FAM_quality",
+        "own_spec_md5": "0fc0d378202ea77d834280ceec6add56"
+      },
+      {
+        "spec_id": "FC_FAM_defense",
+        "own_spec_md5": "c972b3cc6868853fcf0a7bca722ba5b6"
+      },
+      {
+        "spec_id": "FC_FAM_liquidity",
+        "own_spec_md5": "8bb56ef288210ae19c812c7737fe6d8b"
+      },
+      {
+        "spec_id": "FC_FAM_momentum",
+        "own_spec_md5": "d75aa8fc6bf669c84ac64a55b012f729"
+      },
+      {
+        "spec_id": "FC_FAM_accrual",
+        "own_spec_md5": "171d92b2f8eb3a58d249e16949ee11ee"
+      },
+      {
+        "spec_id": "FC_FAM_value",
+        "own_spec_md5": "70f937b19d5c222b6fbcd64a7d72c1cb"
+      },
+      {
+        "spec_id": "FC_FAM_growth",
+        "own_spec_md5": "f4e523a2e374ba6328fdc71b5f2415a5"
+      },
+      {
+        "spec_id": "FC_FAM_investor_flow",
+        "own_spec_md5": "aea76b2635466c1f0c34c0176aae3ba8"
+      },
+      {
+        "spec_id": "FC_FAM_risk",
+        "own_spec_md5": "5c540bc13420de6c3c406996a62c4662"
+      },
+      {
+        "spec_id": "FC_FAM_crowding",
+        "own_spec_md5": "f6e0c4ff431147de95ce9e36ccc20d4f"
+      },
+      {
+        "spec_id": "FC_FAM_consensus",
+        "own_spec_md5": "b312b4ab5fd772b5621498143dddc8ef"
+      },
+      {
+        "spec_id": "FC_FAM_technical",
+        "own_spec_md5": "d2c6404d61793402b399f8be0cddf3e5"
+      },
+      {
+        "spec_id": "FC_FAM_regime",
+        "own_spec_md5": "ab2f10abd7d56dc4169da6491f080a86"
+      },
+      {
+        "spec_id": "FC_FAM_leverage",
+        "own_spec_md5": "46c8b69588b1beb516370d5e482d03cd"
+      },
+      {
+        "spec_id": "FC_TOTAL_EW",
+        "own_spec_md5": "c623e7646a0200b37317c145296ea12e"
+      }
+    ]
+  },
+  "engine": {
+    "path": "04_Research/strategies/FC_TOTAL_ICW/engine.R",
+    "md5": "ebf7daac07b169dfa9ccbcf9359bdcec"
+  },
+  "declared_at": "2026-11-13T07:23:37+0900"
+}

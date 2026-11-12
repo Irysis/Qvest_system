@@ -1,0 +1,243 @@
+{
+  "schema": "fc_own_spec_v0",
+  "spec_id": "FC_FAM_value_ICW",
+  "spec_md5": "ec5f9a7c2416f744ceb336d8b553e322",
+  "core": {
+    "spec_id": "FC_FAM_value_ICW",
+    "kind": "family_icw",
+    "families": [
+      "value"
+    ],
+    "rule_version": "fcc_rule_t1_v0",
+    "generator_md5": "6b2a6e45e33abb59be8609df1886b209",
+    "view_builder": "factor_combinable.R v1.1",
+    "view_cfg_version": "fc_v1.1",
+    "read": {
+      "direction": "registry",
+      "missing": "na",
+      "dedup": false,
+      "family": false
+    },
+    "ic": {
+      "accessor": "factor_db_connector.R::compute_rolling_ic_all",
+      "min_months": 36,
+      "max_months": 120,
+      "weight": "max(s_reg * ICIR, 0)"
+    },
+    "start_rule": "rp_start_date_else_measurement_axis_active_epoch_start_date",
+    "members_from": [
+      {
+        "spec_id": "FC_FAM_value",
+        "spec_md5": "ed743d9f844bcadef7e6ae8682bc96c7",
+        "engine_md5": "faba4b417a0757942ef20a44bdae36ed"
+      }
+    ],
+    "members": [
+      {
+        "id": "V01_BM",
+        "s_reg": 1,
+        "family": "value"
+      },
+      {
+        "id": "V02_EP",
+        "s_reg": 1,
+        "family": "value"
+      },
+      {
+        "id": "V03_CFP",
+        "s_reg": 1,
+        "family": "value"
+      },
+      {
+        "id": "V04_fPER",
+        "s_reg": -1,
+        "family": "value"
+      },
+      {
+        "id": "V05_fPBR",
+        "s_reg": -1,
+        "family": "value"
+      },
+      {
+        "id": "V06_fDY",
+        "s_reg": 1,
+        "family": "value"
+      },
+      {
+        "id": "V07_EV_EBITDA",
+        "s_reg": -1,
+        "family": "value"
+      },
+      {
+        "id": "V08_PSR",
+        "s_reg": -1,
+        "family": "value"
+      },
+      {
+        "id": "V09_PEG",
+        "s_reg": -1,
+        "family": "value"
+      },
+      {
+        "id": "V10_FCF_Yield",
+        "s_reg": 1,
+        "family": "value"
+      },
+      {
+        "id": "V11_Shareholder_Yield",
+        "s_reg": 1,
+        "family": "value"
+      },
+      {
+        "id": "V12_Composite_Value",
+        "s_reg": 1,
+        "family": "value"
+      },
+      {
+        "id": "V13_EV_Sales",
+        "s_reg": -1,
+        "family": "value"
+      },
+      {
+        "id": "V14_EBIT_EV",
+        "s_reg": 1,
+        "family": "value"
+      },
+      {
+        "id": "V15_NetDebt_Adj_EP",
+        "s_reg": 1,
+        "family": "value"
+      },
+      {
+        "id": "V16_Tobins_Q",
+        "s_reg": -1,
+        "family": "value"
+      },
+      {
+        "id": "V17_Payout_Ratio",
+        "s_reg": 1,
+        "family": "value"
+      },
+      {
+        "id": "V18_AM",
+        "s_reg": 1,
+        "family": "value"
+      },
+      {
+        "id": "V19_Debt_to_Market",
+        "s_reg": 1,
+        "family": "value"
+      },
+      {
+        "id": "V20_SP",
+        "s_reg": 1,
+        "family": "value"
+      },
+      {
+        "id": "V21_Composite_Equity_Issuance",
+        "s_reg": -1,
+        "family": "value"
+      },
+      {
+        "id": "V22_FCFF_EV",
+        "s_reg": 1,
+        "family": "value"
+      },
+      {
+        "id": "V23_RAFI_Weight",
+        "s_reg": 1,
+        "family": "value"
+      },
+      {
+        "id": "V24_Residual_Income",
+        "s_reg": 1,
+        "family": "value"
+      }
+    ]
+  },
+  "n_members": 24,
+  "n_members_by_family": {
+    "value": 24
+  },
+  "family_root": "FC:value",
+  "root_paper": {
+    "url": "https://doi.org/10.1201/9781420010794",
+    "title": "Quantitative Equity Portfolio Management: Modern Techniques and Applications",
+    "paper_key": "FC_FAM_value_ICW"
+  },
+  "literature": [
+    {
+      "use": "ic_weight",
+      "rule": "결합 가중을 팩터의 IC · IC 변동성(ICIR)으로 — 다요인 알파 모형의 IC 기반 결합",
+      "ref": "Qian, Hua & Sorensen (2007) Quantitative Equity Portfolio Management: Modern Techniques and Applications, Chapman & Hall/CRC (다요인 알파 모형 장)",
+      "url": "https://doi.org/10.1201/9781420010794"
+    },
+    {
+      "use": "positive_part",
+      "rule": "지난 성과가 양(+)인 팩터에만 가중(시계열 팩터 모멘텀 — 음의 팩터를 뒤집지 않고 뺀다)",
+      "ref": "Ehsani & Linnainmaa (2022) Factor Momentum and the Momentum Factor, JF 77(3):1877-1919",
+      "url": "https://doi.org/10.1111/jofi.13131"
+    },
+    {
+      "use": "transform",
+      "rule": "매 시점 횡단면 순위 → [−1, 1] · 동순위 평균(결합용 뷰 저장 변환 — T0 와 같다)",
+      "ref": "Gu, Kelly & Xiu (2020) Empirical Asset Pricing via Machine Learning, RFS 33(5):2223-2273",
+      "url": "https://doi.org/10.1093/rfs/hhaa009"
+    },
+    {
+      "use": "family_unit",
+      "rule": "팩터를 주제(가족)로 묶어 합성 — 가족 균형(T0 와 같은 단위)",
+      "ref": "Jensen, Kelly & Pedersen (2023) Is There a Replication Crisis in Finance?, JF 78(5):2465-2518",
+      "url": "https://doi.org/10.1111/jofi.13249"
+    }
+  ],
+  "ic": {
+    "accessor": "factor_db_connector.R::compute_rolling_ic_all",
+    "min_months": 36,
+    "max_months": 120,
+    "weight": "max(s_reg * ICIR, 0)",
+    "basis": "정본 접근자 compute_rolling_ic_all 의 기본값(min_months 36 · max_months 120) 그대로 — 새 숫자 없음. 결합용 뷰 ic_asof 부호(빌드 .load_ic_direction_cached(asof, 36L))와 같은 최소 36개월. 설계 §4-2 T1 '기존 창 36~120개월'."
+  },
+  "composite": {
+    "transform": "cross_sectional_rank_to_pm1(결합용 뷰 · registry 방향)",
+    "member_weight": "max(s_reg * ICIR, 0)",
+    "family_score": "weighted_mean_of_available_members",
+    "total": null,
+    "fallback": "all_member_weights_zero -> T0 family (equal)",
+    "missing": "drop_ticker_date (fc_load_month missing = na)"
+  },
+  "output": "FACTORS(Date, Ticker, Score) — Date = 결합용 뷰의 그 달 as-of · 점수 결측 종목 제외 · PORTFOLIO 없음",
+  "t0_counterpart": "FC_FAM_value",
+  "rule_notes": [
+    "구성원 24개 = T0 사양 FC_FAM_value(P1R03 선언 · spec_md5 ed743d9f844bcadef7e6ae8682bc96c7)과 같다 — 구성원 · 부호 · 가족은 그 사양에서 옮겼고 등록부를 다시 읽지 않았다.",
+    "가중 = max(s_reg × ICIR, 0) — ICIR 은 엔진 실행 때 그 달 as-of 로 정본 접근자(compute_rolling_ic_all · IC 원장 Usable_Date ≤ as-of)가 낸다. 생성기는 IC · 성과를 읽지 않았다.",
+    "부호는 등록부 기대수익 부호로 고정(C13) — as-of IC 가 등록부 방향과 반대인 구성원은 뒤집지 않고 가중 0 이다.",
+    "가족 T1 = 구성원 가중 평균 · 그 달 가족 구성원 가중이 모두 0 이면 등가중(T0 와 같은 값)으로 둔다 — 대체한 달은 진단에 표식.",
+    "ICIR 이 모두 같으면 T0 와 같은 점수다(T1 은 T0 를 품는다 · 차이 = as-of IC 정보 하나).",
+    "IC 원장의 한계(설계 §9): IC 는 전 종목 · 원값 · 1개월 지평 — 측정 축(전 종목 + 위생 · 동전주 바닥) 위의 IC 가 아니다(PIT 문제 아님 · 품질 문제).",
+    "진단 파일 fce_diag.csv 는 IC 에서 나온 값을 담으므로 정보 경계(06_Registry/behavior_card.json::tau_d) 이전 행만 쓴다."
+  ],
+  "decision": "FACTOR-SPINE-STAGE1-20261112",
+  "design": "04_Research/01_reports/factor_spine_design_20261111/README.md",
+  "generator": {
+    "path": "02_Infrastructure/factor_db/fc_combiner_gen.R",
+    "md5": "6b2a6e45e33abb59be8609df1886b209"
+  },
+  "inputs": {
+    "view_cfg": {
+      "path": "06_Registry/factor_combinable.json",
+      "md5": "08e1194adf2e478edfd5ee1c5e5e1b34"
+    },
+    "t0_own_spec_md5": [
+      {
+        "spec_id": "FC_FAM_value",
+        "own_spec_md5": "70f937b19d5c222b6fbcd64a7d72c1cb"
+      }
+    ]
+  },
+  "engine": {
+    "path": "04_Research/strategies/FC_FAM_value_ICW/engine.R",
+    "md5": "8356f16ba33d143417fc87e42ec125c2"
+  },
+  "declared_at": "2026-11-13T07:27:14+0900"
+}

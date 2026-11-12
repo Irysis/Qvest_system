@@ -1,0 +1,198 @@
+{
+  "schema": "fc_own_spec_v0",
+  "spec_id": "FC_FAM_investor_flow_ICW",
+  "spec_md5": "98f19ce444774e6be1e70fde82629647",
+  "core": {
+    "spec_id": "FC_FAM_investor_flow_ICW",
+    "kind": "family_icw",
+    "families": [
+      "investor_flow"
+    ],
+    "rule_version": "fcc_rule_t1_v0",
+    "generator_md5": "6b2a6e45e33abb59be8609df1886b209",
+    "view_builder": "factor_combinable.R v1.1",
+    "view_cfg_version": "fc_v1.1",
+    "read": {
+      "direction": "registry",
+      "missing": "na",
+      "dedup": false,
+      "family": false
+    },
+    "ic": {
+      "accessor": "factor_db_connector.R::compute_rolling_ic_all",
+      "min_months": 36,
+      "max_months": 120,
+      "weight": "max(s_reg * ICIR, 0)"
+    },
+    "start_rule": "rp_start_date_else_measurement_axis_active_epoch_start_date",
+    "members_from": [
+      {
+        "spec_id": "FC_FAM_investor_flow",
+        "spec_md5": "778e55ce963708b4a0970592f8ad793f",
+        "engine_md5": "a0c3c6348cdf641e54bbf82538844c20"
+      }
+    ],
+    "members": [
+      {
+        "id": "INV01_Foreign_NetBuy_20d",
+        "s_reg": 1,
+        "family": "investor_flow"
+      },
+      {
+        "id": "INV02_Foreign_NetBuy_60d",
+        "s_reg": 1,
+        "family": "investor_flow"
+      },
+      {
+        "id": "INV03_Inst_NetBuy_20d",
+        "s_reg": 1,
+        "family": "investor_flow"
+      },
+      {
+        "id": "INV04_Inst_NetBuy_60d",
+        "s_reg": 1,
+        "family": "investor_flow"
+      },
+      {
+        "id": "INV05_Foreign_Momentum",
+        "s_reg": 1,
+        "family": "investor_flow"
+      },
+      {
+        "id": "INV06_Inst_Momentum",
+        "s_reg": 1,
+        "family": "investor_flow"
+      },
+      {
+        "id": "INV07_Retail_Contrarian",
+        "s_reg": 1,
+        "family": "investor_flow"
+      },
+      {
+        "id": "INV08_Foreign_Inst_Agreement",
+        "s_reg": 1,
+        "family": "investor_flow"
+      },
+      {
+        "id": "INV09_Flow_Persistence",
+        "s_reg": 1,
+        "family": "investor_flow"
+      },
+      {
+        "id": "INV10_Smart_Money_Flow",
+        "s_reg": 1,
+        "family": "investor_flow"
+      },
+      {
+        "id": "INV11_Foreign_Concentration",
+        "s_reg": 1,
+        "family": "investor_flow"
+      },
+      {
+        "id": "INV12_Supply_Demand_Imbalance",
+        "s_reg": 1,
+        "family": "investor_flow"
+      },
+      {
+        "id": "INV13_Foreign_Resid_Individual_126d",
+        "s_reg": 1,
+        "family": "investor_flow"
+      },
+      {
+        "id": "INV13_Foreign_Resid_Individual_21d",
+        "s_reg": 1,
+        "family": "investor_flow"
+      },
+      {
+        "id": "INV13_Foreign_Resid_Individual_63d",
+        "s_reg": 1,
+        "family": "investor_flow"
+      }
+    ]
+  },
+  "n_members": 15,
+  "n_members_by_family": {
+    "investor_flow": 15
+  },
+  "family_root": "FC:investor_flow",
+  "root_paper": {
+    "url": "https://doi.org/10.1201/9781420010794",
+    "title": "Quantitative Equity Portfolio Management: Modern Techniques and Applications",
+    "paper_key": "FC_FAM_investor_flow_ICW"
+  },
+  "literature": [
+    {
+      "use": "ic_weight",
+      "rule": "결합 가중을 팩터의 IC · IC 변동성(ICIR)으로 — 다요인 알파 모형의 IC 기반 결합",
+      "ref": "Qian, Hua & Sorensen (2007) Quantitative Equity Portfolio Management: Modern Techniques and Applications, Chapman & Hall/CRC (다요인 알파 모형 장)",
+      "url": "https://doi.org/10.1201/9781420010794"
+    },
+    {
+      "use": "positive_part",
+      "rule": "지난 성과가 양(+)인 팩터에만 가중(시계열 팩터 모멘텀 — 음의 팩터를 뒤집지 않고 뺀다)",
+      "ref": "Ehsani & Linnainmaa (2022) Factor Momentum and the Momentum Factor, JF 77(3):1877-1919",
+      "url": "https://doi.org/10.1111/jofi.13131"
+    },
+    {
+      "use": "transform",
+      "rule": "매 시점 횡단면 순위 → [−1, 1] · 동순위 평균(결합용 뷰 저장 변환 — T0 와 같다)",
+      "ref": "Gu, Kelly & Xiu (2020) Empirical Asset Pricing via Machine Learning, RFS 33(5):2223-2273",
+      "url": "https://doi.org/10.1093/rfs/hhaa009"
+    },
+    {
+      "use": "family_unit",
+      "rule": "팩터를 주제(가족)로 묶어 합성 — 가족 균형(T0 와 같은 단위)",
+      "ref": "Jensen, Kelly & Pedersen (2023) Is There a Replication Crisis in Finance?, JF 78(5):2465-2518",
+      "url": "https://doi.org/10.1111/jofi.13249"
+    }
+  ],
+  "ic": {
+    "accessor": "factor_db_connector.R::compute_rolling_ic_all",
+    "min_months": 36,
+    "max_months": 120,
+    "weight": "max(s_reg * ICIR, 0)",
+    "basis": "정본 접근자 compute_rolling_ic_all 의 기본값(min_months 36 · max_months 120) 그대로 — 새 숫자 없음. 결합용 뷰 ic_asof 부호(빌드 .load_ic_direction_cached(asof, 36L))와 같은 최소 36개월. 설계 §4-2 T1 '기존 창 36~120개월'."
+  },
+  "composite": {
+    "transform": "cross_sectional_rank_to_pm1(결합용 뷰 · registry 방향)",
+    "member_weight": "max(s_reg * ICIR, 0)",
+    "family_score": "weighted_mean_of_available_members",
+    "total": null,
+    "fallback": "all_member_weights_zero -> T0 family (equal)",
+    "missing": "drop_ticker_date (fc_load_month missing = na)"
+  },
+  "output": "FACTORS(Date, Ticker, Score) — Date = 결합용 뷰의 그 달 as-of · 점수 결측 종목 제외 · PORTFOLIO 없음",
+  "t0_counterpart": "FC_FAM_investor_flow",
+  "rule_notes": [
+    "구성원 15개 = T0 사양 FC_FAM_investor_flow(P1R03 선언 · spec_md5 778e55ce963708b4a0970592f8ad793f)과 같다 — 구성원 · 부호 · 가족은 그 사양에서 옮겼고 등록부를 다시 읽지 않았다.",
+    "가중 = max(s_reg × ICIR, 0) — ICIR 은 엔진 실행 때 그 달 as-of 로 정본 접근자(compute_rolling_ic_all · IC 원장 Usable_Date ≤ as-of)가 낸다. 생성기는 IC · 성과를 읽지 않았다.",
+    "부호는 등록부 기대수익 부호로 고정(C13) — as-of IC 가 등록부 방향과 반대인 구성원은 뒤집지 않고 가중 0 이다.",
+    "가족 T1 = 구성원 가중 평균 · 그 달 가족 구성원 가중이 모두 0 이면 등가중(T0 와 같은 값)으로 둔다 — 대체한 달은 진단에 표식.",
+    "ICIR 이 모두 같으면 T0 와 같은 점수다(T1 은 T0 를 품는다 · 차이 = as-of IC 정보 하나).",
+    "IC 원장의 한계(설계 §9): IC 는 전 종목 · 원값 · 1개월 지평 — 측정 축(전 종목 + 위생 · 동전주 바닥) 위의 IC 가 아니다(PIT 문제 아님 · 품질 문제).",
+    "진단 파일 fce_diag.csv 는 IC 에서 나온 값을 담으므로 정보 경계(06_Registry/behavior_card.json::tau_d) 이전 행만 쓴다."
+  ],
+  "decision": "FACTOR-SPINE-STAGE1-20261112",
+  "design": "04_Research/01_reports/factor_spine_design_20261111/README.md",
+  "generator": {
+    "path": "02_Infrastructure/factor_db/fc_combiner_gen.R",
+    "md5": "6b2a6e45e33abb59be8609df1886b209"
+  },
+  "inputs": {
+    "view_cfg": {
+      "path": "06_Registry/factor_combinable.json",
+      "md5": "08e1194adf2e478edfd5ee1c5e5e1b34"
+    },
+    "t0_own_spec_md5": [
+      {
+        "spec_id": "FC_FAM_investor_flow",
+        "own_spec_md5": "aea76b2635466c1f0c34c0176aae3ba8"
+      }
+    ]
+  },
+  "engine": {
+    "path": "04_Research/strategies/FC_FAM_investor_flow_ICW/engine.R",
+    "md5": "1c89f598f30d00905d943b259fac4c8a"
+  },
+  "declared_at": "2026-11-13T07:27:14+0900"
+}

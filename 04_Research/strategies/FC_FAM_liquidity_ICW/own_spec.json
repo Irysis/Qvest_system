@@ -1,0 +1,343 @@
+{
+  "schema": "fc_own_spec_v0",
+  "spec_id": "FC_FAM_liquidity_ICW",
+  "spec_md5": "f3cab925b9f5ff86f4d92c95e6daee17",
+  "core": {
+    "spec_id": "FC_FAM_liquidity_ICW",
+    "kind": "family_icw",
+    "families": [
+      "liquidity"
+    ],
+    "rule_version": "fcc_rule_t1_v0",
+    "generator_md5": "6b2a6e45e33abb59be8609df1886b209",
+    "view_builder": "factor_combinable.R v1.1",
+    "view_cfg_version": "fc_v1.1",
+    "read": {
+      "direction": "registry",
+      "missing": "na",
+      "dedup": false,
+      "family": false
+    },
+    "ic": {
+      "accessor": "factor_db_connector.R::compute_rolling_ic_all",
+      "min_months": 36,
+      "max_months": 120,
+      "weight": "max(s_reg * ICIR, 0)"
+    },
+    "start_rule": "rp_start_date_else_measurement_axis_active_epoch_start_date",
+    "members_from": [
+      {
+        "spec_id": "FC_FAM_liquidity",
+        "spec_md5": "634f512aa295e738e92b3734ee5fdfcc",
+        "engine_md5": "025542f5add248da990b54ede664b5ed"
+      }
+    ],
+    "members": [
+      {
+        "id": "L01_Amihud",
+        "s_reg": -1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L02_Turnover",
+        "s_reg": -1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L03_Volume_Mom",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L04_Bid_Ask_Proxy",
+        "s_reg": -1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L05_Dollar_Volume",
+        "s_reg": -1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L06_Zero_Trade_Days",
+        "s_reg": -1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L07_Zero_Return_Days",
+        "s_reg": -1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L08_Roll_Spread",
+        "s_reg": -1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L09_Amihud_20d",
+        "s_reg": -1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L10_Amihud_Ratio",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L11_Kyle_Lambda",
+        "s_reg": -1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L12_PS_Gamma",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L13_Vol_Variance_Ratio",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L14_Price_Impact",
+        "s_reg": -1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L15_Turnover_252d",
+        "s_reg": -1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L16_Turnover_Vol",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L17_LOT_Measure",
+        "s_reg": -1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L18_Eff_Spread_Proxy",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L19_Price_Delay",
+        "s_reg": -1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L20_Trade_Frequency",
+        "s_reg": -1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L21_Market_Depth",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L22_Ret_Autocorr",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L23_Vol_Autocorr",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L24_Range_per_Vol",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L25_Amihud_Vol",
+        "s_reg": -1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L26_Log_MktCap",
+        "s_reg": -1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L27_Price_Level",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L28_Vol_Mom_63d",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L29_Illiq_Change",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L31_Vol_Concentration",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L32_Ret_Vol_Corr",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L33_AbsRet_Vol_Corr",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L34_Vol_Spike_Ratio",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L35_Reversal_Intensity",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L36_CLV_Stability",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L37_Relative_Vol",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L38_DolVol_Mom",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L39_Overnight_Spread",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L40_VWAP_Spread",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L41_Intraday_Vol_Proxy",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L42_Vol_Skewness",
+        "s_reg": -1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L43_Turnover_Change",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L44_Vol_Ret_Asymmetry",
+        "s_reg": 1,
+        "family": "liquidity"
+      },
+      {
+        "id": "L45_Composite_Liquidity",
+        "s_reg": -1,
+        "family": "liquidity"
+      }
+    ]
+  },
+  "n_members": 44,
+  "n_members_by_family": {
+    "liquidity": 44
+  },
+  "family_root": "FC:liquidity",
+  "root_paper": {
+    "url": "https://doi.org/10.1201/9781420010794",
+    "title": "Quantitative Equity Portfolio Management: Modern Techniques and Applications",
+    "paper_key": "FC_FAM_liquidity_ICW"
+  },
+  "literature": [
+    {
+      "use": "ic_weight",
+      "rule": "결합 가중을 팩터의 IC · IC 변동성(ICIR)으로 — 다요인 알파 모형의 IC 기반 결합",
+      "ref": "Qian, Hua & Sorensen (2007) Quantitative Equity Portfolio Management: Modern Techniques and Applications, Chapman & Hall/CRC (다요인 알파 모형 장)",
+      "url": "https://doi.org/10.1201/9781420010794"
+    },
+    {
+      "use": "positive_part",
+      "rule": "지난 성과가 양(+)인 팩터에만 가중(시계열 팩터 모멘텀 — 음의 팩터를 뒤집지 않고 뺀다)",
+      "ref": "Ehsani & Linnainmaa (2022) Factor Momentum and the Momentum Factor, JF 77(3):1877-1919",
+      "url": "https://doi.org/10.1111/jofi.13131"
+    },
+    {
+      "use": "transform",
+      "rule": "매 시점 횡단면 순위 → [−1, 1] · 동순위 평균(결합용 뷰 저장 변환 — T0 와 같다)",
+      "ref": "Gu, Kelly & Xiu (2020) Empirical Asset Pricing via Machine Learning, RFS 33(5):2223-2273",
+      "url": "https://doi.org/10.1093/rfs/hhaa009"
+    },
+    {
+      "use": "family_unit",
+      "rule": "팩터를 주제(가족)로 묶어 합성 — 가족 균형(T0 와 같은 단위)",
+      "ref": "Jensen, Kelly & Pedersen (2023) Is There a Replication Crisis in Finance?, JF 78(5):2465-2518",
+      "url": "https://doi.org/10.1111/jofi.13249"
+    }
+  ],
+  "ic": {
+    "accessor": "factor_db_connector.R::compute_rolling_ic_all",
+    "min_months": 36,
+    "max_months": 120,
+    "weight": "max(s_reg * ICIR, 0)",
+    "basis": "정본 접근자 compute_rolling_ic_all 의 기본값(min_months 36 · max_months 120) 그대로 — 새 숫자 없음. 결합용 뷰 ic_asof 부호(빌드 .load_ic_direction_cached(asof, 36L))와 같은 최소 36개월. 설계 §4-2 T1 '기존 창 36~120개월'."
+  },
+  "composite": {
+    "transform": "cross_sectional_rank_to_pm1(결합용 뷰 · registry 방향)",
+    "member_weight": "max(s_reg * ICIR, 0)",
+    "family_score": "weighted_mean_of_available_members",
+    "total": null,
+    "fallback": "all_member_weights_zero -> T0 family (equal)",
+    "missing": "drop_ticker_date (fc_load_month missing = na)"
+  },
+  "output": "FACTORS(Date, Ticker, Score) — Date = 결합용 뷰의 그 달 as-of · 점수 결측 종목 제외 · PORTFOLIO 없음",
+  "t0_counterpart": "FC_FAM_liquidity",
+  "rule_notes": [
+    "구성원 44개 = T0 사양 FC_FAM_liquidity(P1R03 선언 · spec_md5 634f512aa295e738e92b3734ee5fdfcc)과 같다 — 구성원 · 부호 · 가족은 그 사양에서 옮겼고 등록부를 다시 읽지 않았다.",
+    "가중 = max(s_reg × ICIR, 0) — ICIR 은 엔진 실행 때 그 달 as-of 로 정본 접근자(compute_rolling_ic_all · IC 원장 Usable_Date ≤ as-of)가 낸다. 생성기는 IC · 성과를 읽지 않았다.",
+    "부호는 등록부 기대수익 부호로 고정(C13) — as-of IC 가 등록부 방향과 반대인 구성원은 뒤집지 않고 가중 0 이다.",
+    "가족 T1 = 구성원 가중 평균 · 그 달 가족 구성원 가중이 모두 0 이면 등가중(T0 와 같은 값)으로 둔다 — 대체한 달은 진단에 표식.",
+    "ICIR 이 모두 같으면 T0 와 같은 점수다(T1 은 T0 를 품는다 · 차이 = as-of IC 정보 하나).",
+    "IC 원장의 한계(설계 §9): IC 는 전 종목 · 원값 · 1개월 지평 — 측정 축(전 종목 + 위생 · 동전주 바닥) 위의 IC 가 아니다(PIT 문제 아님 · 품질 문제).",
+    "진단 파일 fce_diag.csv 는 IC 에서 나온 값을 담으므로 정보 경계(06_Registry/behavior_card.json::tau_d) 이전 행만 쓴다."
+  ],
+  "decision": "FACTOR-SPINE-STAGE1-20261112",
+  "design": "04_Research/01_reports/factor_spine_design_20261111/README.md",
+  "generator": {
+    "path": "02_Infrastructure/factor_db/fc_combiner_gen.R",
+    "md5": "6b2a6e45e33abb59be8609df1886b209"
+  },
+  "inputs": {
+    "view_cfg": {
+      "path": "06_Registry/factor_combinable.json",
+      "md5": "08e1194adf2e478edfd5ee1c5e5e1b34"
+    },
+    "t0_own_spec_md5": [
+      {
+        "spec_id": "FC_FAM_liquidity",
+        "own_spec_md5": "8bb56ef288210ae19c812c7737fe6d8b"
+      }
+    ]
+  },
+  "engine": {
+    "path": "04_Research/strategies/FC_FAM_liquidity_ICW/engine.R",
+    "md5": "6d5f8e0299fe28ecd808c0aeba70d684"
+  },
+  "declared_at": "2026-11-13T07:27:14+0900"
+}

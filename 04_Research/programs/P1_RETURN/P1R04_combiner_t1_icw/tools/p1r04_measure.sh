@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# P1R04 측정 감시 셸(2026-11-13 · 결합기 T1 · 15칸 CPU) — 세션 밖 분리 실행용. P1R03 새벽 셸(p1r03_dawn_measure.sh)을 본떴다.
+#   측정 · 평가 = round_core 실행기(round.sh measure --now — 배리어 · 핀 · 신선도 · 칸 지문 · 평가 연쇄). 이 셸은 시작 조건과 지문 대조만 더한다.
+#   시작 조건(모두):
+#     · 시각 — 아침 체인(07:10) 앞뒤 05:55~08:00 · 밤 체인(00:03) 앞뒤 22:48~01:30 에는 시작하지 않는다(예상 소요 60분이 체인과 겹치지 않게).
+#       판 2 시드 감시가 아직 일을 들고 있으면(상태 W · M) 그 낮 창 08:20~11:45 도 비운다(메모리 — 한 번에 무거운 작업 하나).
+#     · 밤/아침 체인 미실행 · 리프레시 배리어 free · 판 2 시드 측정 중 아님 · 가용 메모리 ≥ 10 GB(셀 워커 정점 7.45 GB · 11-03 실측)
+#     · fresh-check 신선 · 결합용 뷰 마지막 달 ≥ 팩터 DB 마지막 달
+#     · 데이터 지문(equality + 결합용 뷰 record + IC 원장 md5)이 10분 이상 그대로 — 결합용 뷰 · IC 원장(T1 엔진의 두 입력)은 칸 지문 밖이다.
+#   예상 소요 근거: P1R03 실측 칸당 2.5~3.6분(11-13 06:43~07:28 · 15칸 45분) + T1 의 달마다 IC 접근자 호출(시험 실측 4달 2초 안팎) → 45~70분.
+#   끝나면: 측정 앞뒤 뷰 · IC 원장 지문이 같으면 이정표 1통(푸시 · 기계 판정 요약 '해석 전'). 판정 해석 · 판단 T2 · 철학 P2 · 정식 보고 · 닫기는 세션.
+#   종료: 0 끝 · 1 measure 실패 · 6 대기 상한(기본 40시간) · 7 측정 중 뷰 · IC 원장 바뀜(재측정 — 기저 캐시까지 비운다 · DESIGN §8).
+main() {
+  set -u
+  local ROOTP=/c/Users/99922/OneDrive/Quant_Module_Moltbot; cd "$ROOTP" || exit 2
+  local RD=04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw RS=04_Research/programs/_lib/round_core/round.sh
+  local FPS=04_Research/programs/_lib/round_core/v3/fingerprint.sh MS=04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/tools/p1r04_milestone.R
+  local ICL=.cache/factor_db/factor_ic_monthly.parquet
+  local LOG=.cache/scheduler_logs/p1r04_measure_$(date +%Y%m%d_%H%M%S).log ST=.cache/scheduler_logs/p1r04_measure_state.txt
+  local SEED_ST=.cache/scheduler_logs/p1s02_seed_watch_state.txt MAXW=${P1R04_MAX_WAIT_S:-144000} T0=$(date +%s) last=0
+  local why nowm mg rc fp fp_prev="" fp_t=0 vl dl v0 v1
+  log() { printf '%s %s\n' "$(date '+%F %T')" "$*" >> "$LOG"; }
+  st() { printf '%s\t%s\tlog=%s\n' "$(date '+%F %T')" "$*" "$LOG" > "$ST"; }
+  running() { local s; s=$(timeout 90 powershell.exe -NoProfile -NonInteractive -Command "(Get-ScheduledTask -TaskName '$1').State" 2>/dev/null | tr -d '\r\n ')
+    [ -z "$s" ] && return 0; [ "$s" = "Running" ]; }   # 판독 실패 = 실행 중으로 본다(닫힘)
+  inpfp() { { bash "$FPS" record .cache/factor_combinable; md5sum "$ICL" | cut -c1-32; } 2>/dev/null | md5sum | cut -c1-32; }
+  fpnow() { { bash "$FPS" equality; inpfp; } 2>/dev/null | md5sum | cut -c1-32; }
+  ms() { timeout 300 Rscript "$MS" "$@" >> "$LOG" 2>&1 || log "이정표 발송 rc=$?"; }
+  log "시작 · pid $$ · 체인 앞뒤 · 시드 창(시드 일 남았을 때) 제외 · 메모리 ≥ 10 GB · 지문(뷰 + IC 원장 포함) 10분 안정 · 뷰 마지막 달 ≥ 팩터 DB"; st "대기 — 시작"
+  while :; do
+    [ $(( $(date +%s) - T0 )) -gt "$MAXW" ] && { log "대기 상한"; st "대기 상한 — 끝"; exit 6; }
+    why=""; nowm=$((10#$(date +%H) * 60 + 10#$(date +%M)))
+    { [ "$nowm" -ge 355 ] && [ "$nowm" -lt 480 ]; } && why="아침 체인 앞뒤(${nowm}분)"
+    { [ "$nowm" -ge 1368 ] || [ "$nowm" -lt 90 ]; } && why="밤 체인 앞뒤(${nowm}분)"
+    [ -z "$why" ] && [ "$nowm" -ge 500 ] && [ "$nowm" -le 705 ] && grep -qE $'\t''(W|M)[ :(]' "$SEED_ST" 2>/dev/null && why="판 2 시드 낮 창(시드 일 남음 · ${nowm}분)"
+    [ -z "$why" ] && running Qvest_DailyRefresh && why="밤 체인 실행 중"
+    [ -z "$why" ] && running Qvest_MorningBrief && why="아침 체인 실행 중"
+    [ -z "$why" ] && { bash 02_Infrastructure/ops/refresh_barrier.sh status 2>/dev/null | grep -q "state=free" || why="리프레시 배리어 held"; }
+    [ -z "$why" ] && grep -qE "M 측정 중|W\(follow\)|W 대기\(P1S02_E3_RX0\)" "$SEED_ST" 2>/dev/null && why="판 2 시드 측정 중 · E3 직후 대기"
+    if [ -z "$why" ]; then mg=$(timeout 90 powershell.exe -NoProfile -NonInteractive -Command "[math]::Floor((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory/1MB)" 2>/dev/null | tr -d '\r\n ')
+      { [ -n "$mg" ] && [ "$mg" -ge 10 ]; } 2>/dev/null || why="가용 메모리 ${mg:-?}GB < 10GB"; fi
+    [ -z "$why" ] && { bash "$RS" - fresh-check >> "$LOG" 2>&1 || why="자료 낡음(fresh-check)"; }
+    if [ -z "$why" ]; then
+      vl=$(grep -o '"last": *"[0-9]\{6\}"' .cache/factor_combinable/fc_meta.json 2>/dev/null | grep -o '[0-9]\{6\}' | head -1)
+      dl=$(ls .cache/factor_db/ 2>/dev/null | grep -E '^factor_db_[0-9]{6}\.parquet$' | sort | tail -1 | grep -o '[0-9]\{6\}')
+      { [ -n "$vl" ] && [ -n "$dl" ] && [ "$vl" -ge "$dl" ]; } || why="결합용 뷰 마지막 달 ${vl:-?} < 팩터 DB ${dl:-?}"
+    fi
+    if [ -z "$why" ]; then
+      fp=$(fpnow)
+      if [ "$fp" != "$fp_prev" ]; then fp_prev=$fp; fp_t=$(date +%s); why="데이터 지문 새로 읽음 — 10분 안정 대기"
+      elif [ $(( $(date +%s) - fp_t )) -lt 600 ]; then why="데이터 지문 안정 대기($(( $(date +%s) - fp_t ))초)"; fi
+    else fp_prev=""; fi
+    if [ -z "$why" ]; then
+      v0=$(inpfp); log "조건 서면 — measure(--now) 시작 · 입력(뷰 + IC 원장) ${v0} · 가용 메모리 ${mg}GB"; st "측정 중 — 15칸"
+      bash "$RS" "$RD" measure --now >> "$LOG" 2>&1; rc=$?
+      v1=$(inpfp); log "measure rc=$rc · 입력 끝 ${v1}"
+      if [ "$rc" != "0" ]; then st "측정 실패 rc=$rc — 세션 확인"; ms failed "round.sh measure rc=$rc" "로그 $LOG"; exit 1; fi
+      if [ "$v0" != "$v1" ]; then st "측정 중 결합용 뷰 · IC 원장 바뀜 — 재측정 필요(세션)"; ms input_changed "시작 $v0" "끝 $v1"; exit 7; fi
+      ms measured "측정 · 평가 끝(round.sh measure rc 0)" "로그 $LOG"
+      st "끝 — 측정 · 평가(판정 해석 · 판단 T2 · 철학 P2 · 보고 · 닫기 = 세션)"; exit 0
+    fi
+    [ $(( $(date +%s) - last )) -ge 900 ] && { log "대기 — $why"; st "대기 — $why"; last=$(date +%s); }
+    sleep 120
+  done
+}
+main "$@"
+exit $?
