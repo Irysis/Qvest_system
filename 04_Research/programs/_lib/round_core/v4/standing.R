@@ -21,6 +21,12 @@
 ##     (자체 사양 입구 판 1 이 레인 입구 판 2(P1S02 · 코어 v3)를 막지 않게 — v3 는 갈래를 모르지만 1 < 2 라 막지 않는다).
 ##   ③ 원장 줄 머리에 track · 자격 통과 표(rc_standing_qualified)에 origin · own_spec · families · source_rounds · superfan_pass_p2 · track ·
 ##     paper_title · paper_url 열(P4 기저 풀의 철학 P2 영수증 · 저위험 확인 · 원천 시행 회계가 읽는다).
+##   v4 출시 전 수리(11-13 · 격리 점검 isolation_review_v4.md M1 · R1 · R3 · R5 · S6 · 판단 T4 C-20261113-035 · 036 · P1S03 감독 C-046 · 049 · 058):
+##   ④ 자체 사양 여부 = 엔진 속성(원장 갈래 own_spec ∨ 엔진 폴더 own_spec.json — 열 own_spec_engine · 시드 · 손 항목도) · 못 채운 행 = own_resolved FALSE
+##   ⑤ 원천 라운드 = 엔진 md5 칸 ∪ 같은 계보(family_root) 칸을 가진 P1 라운드(.rcs_own_source — 다시 만든 엔진도 앞선 계보 시행을 물려받는다)
+##   ⑥ enqueue 시행 수 = 원천 칸(같은 md5 · 변형 · 같은 계보)이 있으면 max(계보 최댓값, 원천 라운드 칸 수 — 사슬 원천 시행과 같은 집합) · 아니면 그 위에 +1
+##   ⑦ 입구 사유 own_spec_family_mismatch · own_spec_undeclared · 자체 사양 갈래 판정은 RELEASES 출시 판 ≥ v4 뒤에만(v3 기저 풀이 관문 없이 읽지 않게)
+##   ⑧ 통과 보고 = 판정 줄(판정 두 조건) / 보고 열(판정 아님) / OOS 줄 분리 · report.pass = daily_summary 허용 · 결론 범위 앞 P1 표준 철학 줄 · 자체 사양 판 생성기 자동 핀.
 
 RC_STANDING_LEDGER_SCHEMA <- "rc_standing_ledger_v1"
 ## v4 입구 원천 · 갈래 — 레인 인계(lane_handoff → 갈래 lane) · 자체 사양(own_spec → 갈래 own_spec). 판 번호 · 옛 판 받기 정지는 갈래 안에서만.
@@ -47,6 +53,9 @@ RC_STANDING_SIGN_IDS <- c("ic_sign", "sign_ic", "ic_dir", "ic_direction", "flip_
 RC_STANDING_W_TOL <- 1e-9          # 보유 비중 수치 허용오차(cell_eval.R rc_axis_audit 과 같은 크기)
 RC_STANDING_MIN_BYTES <- 200L      # 엔진 파일 하한(검증기 rf_replication_verify.R 'engine_too_small' 과 같은 값)
 RC_STANDING_MAX_FAILS <- 2L        # 인프라 실패 · 지문 불일치 재측정 횟수(round.sh measure 의 '1회 재측정'과 같은 뜻 — 2번째 실패면 사람이 본다)
+RC_STANDING_REPORT_PASS <- c("push_each", "daily_summary")   # v4 통과 보고 단위(판단 T1 C-20261113-058 — 30 항목이 한 번에 흐르는 판의 통과마다 push 를 일 요약 1통으로)
+## v4 통과 보고의 보고 열 고정 문구(철학 P1 C-20261113-046 · 도훈 결정 CHARTER-GAP-LOWBETA-DEFENSE-LABEL-20261113 — 위기 하락노출 = 판정 아님 · 방어 근거 아님)
+RC_STANDING_REPORT_NOTE <- "시장 대비 귀속 전 원값 — 시가총액 × β 무작위 대조 포트폴리오 미측정 · 방어 주장 없음(도훈 결정 CHARTER-GAP-LOWBETA-DEFENSE-LABEL-20261113)"
 RC_STANDING_SCAN_DEFAULT <- list(source = "lane_handoff", lane_root = "04_Research/strategies", dir_glob = "RP_AUTO_*",
                                  routed_program = "P1_RETURN", audit_admit = list("faithful", "adapted"),
                                  orientation_admit = list("engine_native"), long_leg_window = "visible",
@@ -80,7 +89,9 @@ RC_STANDING_REASONS <- c(
   paper_meta_missing = "논문 url · 제목 · 키를 정하지 못했다(자체 사양 = own_spec root_paper 의 url · title · paper_key 중 빈 것)",
   own_spec_missing = "자체 사양(own_spec.json) 없음 · 판독 불가 · schema 가 fc_own_spec_v0 아님 · core 의 md5 ≠ spec_md5(생성기와 같은 직렬화 — 손 편집 · 손상)(v4 · 자체 사양 입구)",
   own_generator_unknown = "자체 사양의 생성기(generator.path)가 이 판의 생성기 목록(scan.generators) 밖이다(v4 · 자체 사양 입구)",
-  own_generator_mismatch = "생성기 대조 실패 — 지금 생성기 파일 md5 ≠ core.generator_md5 · 엔진 파일 md5 ≠ own_spec engine.md5 · own_spec 에서 그 생성기의 본문 함수로 다시 만든 본문 md5 ≠ 엔진 파일 md5 · 생성기 적재 · 본문 생성 실패 중 하나 이상(v4 · 자체 사양 입구 — 엔진 본문 = 생성기 산출이어야 한다)")
+  own_generator_mismatch = "생성기 대조 실패 — 지금 생성기 파일 md5 ≠ core.generator_md5 · 엔진 파일 md5 ≠ own_spec engine.md5 · own_spec 에서 그 생성기의 본문 함수로 다시 만든 본문 md5 ≠ 엔진 파일 md5 · 생성기 적재 · 본문 생성 실패 중 하나 이상(v4 · 자체 사양 입구 — 엔진 본문 = 생성기 산출이어야 한다)",
+  own_spec_family_mismatch = "원천 칸(이 엔진 md5 를 칸으로 등록한 P1 라운드 칸)의 계보(칸 사양 selection_accounting.family_root)가 own_spec family_root 와 다르다 — 시행 회계 계보가 갈린다(v4 · 격리 점검 R1)",
+  own_spec_undeclared = "선언 기록이 없다 — ① 등록부 선언 줄(origin = own_spec · kind ≠ engine · engine_path · engine_md5 = 지금 엔진) ② own_spec.json decision 이 결정 기록부에 status = resolved ③ 이 엔진 md5 를 칸으로 등록한 P1 라운드 중 하나도 없다(v4 · 설계 factor_spine_design_20261111 §3-6 (a) · 격리 점검 R3 — 계보 승계는 시행 회계일 뿐 선언이 아니다)")
 RC_STANDING_VIS_COLS <- c("engine", "code", "status", "t_alpha_vis", "alpha_ann_vis", "beta_vis", "port_t_vis", "n_vis", "uc_vis", "cagr_vis",
                           "dd_capture_median_vis", "dd_capture_worst_vis", "n_crisis_vis", "error")
 .RCS <- new.env(parent = emptyenv())
@@ -174,6 +185,9 @@ rc_standing_validate <- function(spec, root = rc_root(), check_pin = TRUE, check
   if (!isTRUE(sc[["exclude_combination"]])) .rcs_err("결합 제외(exclude_combination)는 끌 수 없다")
   if (!is.logical(sc[["pit_static"]]) || length(sc[["pit_static"]]) != 1L) .rcs_err("scan.pit_static 은 논리값 1개")
   rj <- cfg[["rejudge_prior_editions"]]; if (!is.logical(rj) || length(rj) != 1L) .rcs_err("rejudge_prior_editions 는 논리값 1개")
+  ## v4(판단 T1 C-20261113-058): 통과 보고 단위 — push_each(통과마다 push 1통 · 기본) | daily_summary(통과도 일 요약 1통)
+  rp <- cfg[["report"]][["pass"]]
+  if (!is.null(rp) && !(is.character(rp) && length(rp) == 1L && rp %in% RC_STANDING_REPORT_PASS)) .rcs_err("standing_cfg.report.pass 는 ", paste(RC_STANDING_REPORT_PASS, collapse = " | "))
   if (!identical(spec[["selection"]][["rule"]], "none")) .rcs_err("상설 판의 selection.rule 은 none(자격 목록 = P4 후보 · 선택 없음)")
   tw <- rc_rules_test_window_use(spec[["rules"]]); if (length(tw)) .rcs_err("판정 규칙이 시험 창 열을 쓴다(τ_D): ", paste(tw, collapse = ","))
   qr <- spec[["qualify_rule"]] %||% "qualify"
@@ -330,11 +344,16 @@ rc_standing_known <- function(program, root = rc_root()) {
 ##     한 갈래 판의 시드(reference)가 다른 갈래 엔진일 때 · rejudge_prior_editions = TRUE 판 · 엔진이 바뀌어(md5) 판 사이 중복 막기(rc_standing_known)를 지날 때.
 ##   ② 열 추가(P4 기저 풀 v4 관문 재료 · 성과 수치 없음): track · origin(인계 origin · 없으면 lane · 시드 = seed) · own_spec · own_spec_md5 · families · source_rounds ·
 ##     superfan_pass_p2(그 항목 superfan 기록 중 kind = pass 이고 codes 에 그 code 가 있는 것의 p2 id 들) · paper_title · paper_url(항목 paper = 칸 사양 root_paper).
-rc_standing_qualified <- function(program = "P1_RETURN", root = rc_root(), sa_root = Sys.getenv("RC_SA_ROOT", root)) {
+##   ③(출시 전 수리 · 격리 점검 M1 · 판단 T4 C-20261113-035): own_spec_engine = 엔진 속성(행 갈래 own_spec ∨ 엔진 폴더에 own_spec.json) — origin(시드 = seed)과 따로 둔다.
+##     자체 사양 행의 families · source_rounds · own_spec 이 인계 기록에 없으면(시드 · 손 항목 · 옛 줄) 그 자리에서 채운다(families = own_spec.json core.families ·
+##     형식 · core md5 확인 / source_rounds = .rcs_own_source — 엔진 md5 ∪ 계보). 못 채우면 own_resolved = FALSE(기저 풀이 own_spec_unresolved 로 뺀다 · fail-closed).
+##     family_root = 항목 계보(자체 사양 = own_spec family_root · 레인 = paper_key). registry_path = 원천 라운드 판독용 등록부(채울 때만 읽는다).
+rc_standing_qualified <- function(program = "P1_RETURN", root = rc_root(), sa_root = Sys.getenv("RC_SA_ROOT", root), registry_path = NULL) {
   fs <- unique(c(Sys.glob(file.path(sa_root, "stage_artifacts/programs", program, "*", "standing_ledger.jsonl")),
                  Sys.glob(file.path(root, "stage_artifacts/programs", program, "*", "standing_ledger.jsonl"))))
   rows <- list()
   jn <- function(x) { v <- as.character(unlist(x)); v <- v[!is.na(v) & nzchar(v)]; paste(v, collapse = ",") }
+  SRC <- NULL; src_of <- function() { if (is.null(SRC)) SRC <<- tryCatch(rc_standing_source_cells(program, root, registry_path), error = function(e) e); SRC }
   for (f in fs) {
     recs <- tryCatch(rc_standing_ledger_read(f), error = function(e) { warning("[round_core standing] 사슬이 끊긴 원장은 읽지 않는다: ", f); NULL })
     if (is.null(recs)) next
@@ -351,7 +370,14 @@ rc_standing_qualified <- function(program = "P1_RETURN", root = rc_root(), sa_ro
       csp <- .rcs_str(it[["cell_spec"]]); cmd <- .rcs_str(it[["cell_spec_md5"]]); con <- rc_standing_construction(csp, cmd, root)
       ho <- it[["handoff"]]; if (!is.list(ho)) ho <- list()
       org <- if (identical(.rcs_str(it[["source"]]), "seed")) "seed" else .rcs_or(.rcs_str(ho[["origin"]]), "lane")
-      own <- identical(org, "own_spec")
+      trk <- .rcs_or(.rcs_str(it[["track"]]), trk_f); fam <- .rcs_str(it[["family_root"]])
+      ea <- if (is.na(ep)) NA_character_ else rc_abs(.rcs_repo_rel(ep, root), root)
+      own <- identical(trk, "own_spec") || identical(.rcs_str(ho[["origin"]]), "own_spec") || (!is.na(ea) && file.exists(file.path(dirname(ea), "own_spec.json")))
+      oi <- if (own && (is.null(ho[["families"]]) || is.null(ho[["own_spec"]]))) .rcs_own_info(ea, root) else NULL
+      fams <- if (!own) NA_character_ else if (!is.null(ho[["families"]])) jn(ho[["families"]]) else if (isTRUE(oi$ok)) jn(oi$families) else NA_character_
+      srcr <- if (!own) NA_character_ else if (!is.null(ho[["source_rounds"]])) jn(ho[["source_rounds"]]) else {
+        S <- src_of(); if (inherits(S, "error")) NA_character_ else jn(.rcs_own_source(S, em, fam)$rounds) }
+      ores <- own && !is.na(fams) && nzchar(fams) && !is.na(srcr)
       sfp <- unlist(lapply(it[["superfan"]], function(s) if (identical(.rcs_str(s[["kind"]]), "pass") && it[["code"]] %in% as.character(unlist(s[["codes"]])))
                                                          .rcs_str(s[["p2"]]) else NULL))
       rows[[length(rows) + 1L]] <- data.table(round_id = .rcs_str(it[["round_id"]]), edition = suppressWarnings(as.integer(.rcs_str(it[["edition"]]))),
@@ -361,9 +387,10 @@ rc_standing_qualified <- function(program = "P1_RETURN", root = rc_root(), sa_ro
                                               uc_vis = suppressWarnings(as.numeric(.rcs_str(v[["visible"]][["uc_vis"]]))),   # 보는 창 상승 포착(판정 기록 · P4 기저 풀 현금 기계 판독)
                                               cell_spec = if (is.na(csp)) NA_character_ else .rcs_repo_rel(csp, root), cell_spec_md5 = cmd,
                                               construction = con$construction, treatment_axes = paste(con$axes, collapse = ","), construction_why = con$why,
-                                              track = .rcs_or(.rcs_str(it[["track"]]), trk_f), origin = org,
-                                              own_spec = if (own) .rcs_str(ho[["own_spec"]]) else NA_character_, own_spec_md5 = if (own) .rcs_str(ho[["own_spec_md5"]]) else NA_character_,
-                                              families = if (own) jn(ho[["families"]]) else NA_character_, source_rounds = if (own) jn(ho[["source_rounds"]]) else NA_character_,
+                                              track = trk, origin = org,
+                                              own_spec = if (!own) NA_character_ else .rcs_or(.rcs_str(ho[["own_spec"]]), .rcs_or(.rcs_str(oi$own_spec), NA_character_)),
+                                              own_spec_md5 = if (!own) NA_character_ else .rcs_or(.rcs_str(ho[["own_spec_md5"]]), .rcs_or(.rcs_str(oi$own_spec_md5), NA_character_)),
+                                              families = fams, source_rounds = srcr, own_spec_engine = own, own_resolved = ores, family_root = fam,
                                               superfan_pass_p2 = jn(sfp), paper_title = .rcs_str(it[["paper"]][["title"]]), paper_url = .rcs_str(it[["paper"]][["url"]]),
                                               .q = isTRUE(v[["qualify"]]))
     }
@@ -389,7 +416,8 @@ rc_standing_qualified <- function(program = "P1_RETURN", root = rc_root(), sa_ro
                engine_md5 = character(0), engine_same = logical(0), artifacts = character(0), paper_key = character(0), verdict_at = character(0), ledger = character(0),
                uc_vis = numeric(0), cell_spec = character(0), cell_spec_md5 = character(0), construction = character(0), treatment_axes = character(0),
                construction_why = character(0), track = character(0), origin = character(0), own_spec = character(0), own_spec_md5 = character(0),
-               families = character(0), source_rounds = character(0), superfan_pass_p2 = character(0), paper_title = character(0), paper_url = character(0))
+               families = character(0), source_rounds = character(0), own_spec_engine = logical(0), own_resolved = logical(0), family_root = character(0),
+               superfan_pass_p2 = character(0), paper_title = character(0), paper_url = character(0))
 }
 ## 시각 문자열 벡터 → POSIXct(판독 불가 = NA) — 원장 'at' 형식(%Y-%m-%dT%H:%M:%S%z)
 .rcs_time_vec <- function(s) { s <- as.character(s); out <- suppressWarnings(as.POSIXct(s, format = "%Y-%m-%dT%H:%M:%S%z")); out[is.na(s) | !nzchar(s)] <- NA; out }
@@ -720,9 +748,11 @@ rc_standing_orient_admitted <- function(admit) { a <- unlist(admit); if ("engine
 ##   v3: axis = 그 판의 측정 축 id(rc_standing_scan 이 standing_cfg.generator_pin.canon.measurement_axis 를 넘긴다) — 폭 문턱의 배수를 정한다.
 ##     NULL 이면 정본 활성 축(constraint_defaults.json::measurement_axis.active — 등록된 판은 맥락 검사가 핀 = 활성을 이미 확인한다)
 ##   v4: scan.source = "own_spec" 이면 자체 사양 입구(.rcs_scan_own_dir)로 간다 — 레인 인계 · 폭 · 격자 · 롱 레그 판독이 없다(레인 갈래 동작은 v3 그대로).
-rc_standing_lane_candidates <- function(sc, root = rc_root(), registry_path = NULL, tau = "2022-12-31", lane_root = NULL, axis = NULL) {
+##     decision_register · src = 자체 사양 입구만(선언 검사 · 원천 칸 표 — src 를 넘기면 다시 읽지 않는다) · 레인 갈래는 쓰지 않는다
+rc_standing_lane_candidates <- function(sc, root = rc_root(), registry_path = NULL, tau = "2022-12-31", lane_root = NULL, axis = NULL,
+                                        decision_register = NULL, src = NULL) {
   lr <- lane_root %||% rc_abs(sc[["lane_root"]], root)
-  if (identical(.rcs_str(sc[["source"]]), "own_spec")) return(rc_standing_own_candidates(sc, root, registry_path, tau, lr))
+  if (identical(.rcs_str(sc[["source"]]), "own_spec")) return(rc_standing_own_candidates(sc, root, registry_path, tau, lr, decision_register = decision_register, src = src))
   dirs <- sort(Sys.glob(file.path(lr, sc[["dir_glob"]] %||% "RP_AUTO_*"))); dirs <- dirs[dir.exists(dirs)]
   H <- rc_standing_handoffs(pr_load(root, registry_path))
   ax <- axis %||% rc_ref_value("02_Infrastructure/worktask/constraint_defaults.json::measurement_axis.active", root)
@@ -734,34 +764,116 @@ rc_standing_lane_candidates <- function(sc, root = rc_root(), registry_path = NU
 ## ── v4 자체 사양 입구(scan.source = own_spec) ──────────────────────────────────────────
 ## 원천 라운드의 칸(v4) — 등록부 프로그램 라운드 중 등록된 사전등록(파일 md5 = 등록부 prereg_md5 · 상설 판 제외)의 칸마다
 ##   칸 사양(md5 = 사전등록 칸 md5) base_signal.path 의 엔진과 그 엔진의 등록 md5(사전등록 핀 pins.files — 측정 전에 고정된 바이트)를 모은다.
-##   반환 data.table(round_id, code, engine_path(저장소 상대), engine_md5, family_root, n_family). 성과를 읽지 않는다(사전등록 · 칸 사양만).
+##   반환 data.table(round_id, code, role, spec(저장소 상대), engine_path(저장소 상대), engine_md5, family_root, n_family). 성과를 읽지 않는다(사전등록 · 칸 사양만).
 ##   핀에 그 엔진이 없는 사전등록(옛 형식 — P1R01 · P1R02)은 싣지 않는다(등록 바이트를 모르면 같은 엔진이라고 단정하지 않는다).
+##   출시 전 수리(격리 점검 R4 (ii)): 속성 rounds = data.table(round_id, n_cells = 사전등록 칸 수 — 사슬 원천 시행 · enqueue 시행 수가 같은 수를 센다) ·
+##     unverified = data.table(round_id, engine_md5, why) — 사전등록 md5 ≠ 등록부 · 칸 사양 검증 실패(파일 없음 · md5 ≠ 등록 · 판독 불가 · 엔진 경로 없음)인 라운드의
+##     핀 md5 가운데 검증된 칸이 덮지 못한 것(그 엔진을 쟀을 수 있는데 확인이 안 된다) · 사전등록 파일 없음 · 판독 불가 = engine_md5 "*"(모든 엔진 — fail-closed).
 rc_standing_source_cells <- function(program = "P1_RETURN", root = rc_root(), registry_path = NULL) {
   R <- pr_get(pr_load(root, registry_path), program)[["rounds"]] %||% list()
-  sar <- Sys.getenv("RC_SA_ROOT", root); rows <- list()
+  sar <- Sys.getenv("RC_SA_ROOT", root); rows <- list(); rn <- list(); uv <- list()
+  unv <- function(rid, m, why) { m <- unique(m[!is.na(m) & nzchar(m)]); if (length(m)) uv[[length(uv) + 1L]] <<- data.table(round_id = rid, engine_md5 = m, why = why) }
   for (r in R) {
     rid <- .rcs_str(r[["round_id"]]); rel <- .rcs_str(r[["prereg"]]); if (is.na(rid) || is.na(rel)) next
-    f <- c(file.path(sar, rel), rc_abs(rel, root)); f <- f[file.exists(f)][1]; if (is.na(f)) next
-    rm5 <- .rcs_str(r[["prereg_md5"]]); if (is.na(rm5) || !identical(rc_md5(f), rm5)) next          # 등록본이 아니다(R2)
-    p <- tryCatch(rc_json_read(f), error = function(e) NULL); if (!is.list(p) || isTRUE(p[["spec"]][["standing"]])) next
+    f <- c(file.path(sar, rel), rc_abs(rel, root)); f <- f[file.exists(f)][1]
+    if (is.na(f)) { unv(rid, "*", "사전등록 파일 없음"); next }
+    p <- tryCatch(rc_json_read(f), error = function(e) NULL)
+    if (!is.list(p)) { unv(rid, "*", "사전등록 판독 불가"); next }
+    if (isTRUE(p[["spec"]][["standing"]])) next
     pins <- p[["pins"]][["files"]] %||% list()
     pp <- vapply(pins, function(x) .rcs_or(.rcs_str(x[["path"]]), ""), ""); pm <- vapply(pins, function(x) .rcs_or(.rcs_str(x[["md5"]]), NA_character_), "")
     pp <- vapply(pp, function(x) if (nzchar(x)) .rcs_repo_rel(x, root) else "", "")
-    for (c in p[["cells"]] %||% list()) {
-      sp <- .rcs_str(c[["spec"]]); if (is.na(sp)) next
+    rm5 <- .rcs_str(r[["prereg_md5"]])
+    if (is.na(rm5) || !identical(rc_md5(f), rm5)) { unv(rid, pm, "사전등록 md5 ≠ 등록부(R2)"); next }          # 등록본이 아니다(R2)
+    cells <- p[["cells"]] %||% list(); rn[[length(rn) + 1L]] <- data.table(round_id = rid, n_cells = length(cells))
+    okm <- character(0); bad <- FALSE
+    for (c in cells) {
+      sp <- .rcs_str(c[["spec"]]); if (is.na(sp)) next                                                     # 공유 측정 칸(사양 없음)
       spa <- rc_abs(.rcs_repo_rel(sp, root), root)
-      if (!file.exists(spa) || !identical(rc_md5(spa), .rcs_str(c[["md5"]]))) next                 # 칸 사양 = 등록본(R2)
-      cs <- tryCatch(rc_json_read(spa), error = function(e) NULL); if (!is.list(cs)) next
-      ep <- .rcs_str(cs[["base_signal"]][["path"]]); if (is.na(ep)) next
-      er <- .rcs_repo_rel(ep, root); k <- match(er, pp); if (is.na(k) || is.na(pm[k])) next
-      sa <- cs[["selection_accounting"]]
-      rows[[length(rows) + 1L]] <- data.table(round_id = rid, code = .rcs_str(c[["code"]]), engine_path = er, engine_md5 = pm[k],
-                                              family_root = .rcs_str(sa[["family_root"]]),
+      if (!file.exists(spa) || !identical(rc_md5(spa), .rcs_str(c[["md5"]]))) { bad <- TRUE; next }       # 칸 사양 = 등록본(R2)
+      cs <- tryCatch(rc_json_read(spa), error = function(e) NULL); if (!is.list(cs)) { bad <- TRUE; next }
+      ep <- .rcs_str(cs[["base_signal"]][["path"]]); if (is.na(ep)) { bad <- TRUE; next }
+      er <- .rcs_repo_rel(ep, root); k <- match(er, pp); if (is.na(k) || is.na(pm[k])) next                # 핀에 엔진 없음(옛 형식) — 단정하지 않는다
+      sa <- cs[["selection_accounting"]]; okm <- c(okm, pm[k])
+      rows[[length(rows) + 1L]] <- data.table(round_id = rid, code = .rcs_str(c[["code"]]), role = .rcs_or(.rcs_str(c[["role"]]), "variant"),
+                                              spec = .rcs_repo_rel(sp, root), engine_path = er, engine_md5 = pm[k], family_root = .rcs_str(sa[["family_root"]]),
                                               n_family = suppressWarnings(as.integer(.rcs_str(sa[["n_family_at_registration"]]))))
     }
+    if (bad) unv(rid, setdiff(pm, okm), "칸 사양 검증 실패(파일 없음 · md5 ≠ 등록 · 판독 불가 · 엔진 경로 없음)")
   }
-  if (length(rows)) rbindlist(rows) else
-    data.table(round_id = character(0), code = character(0), engine_path = character(0), engine_md5 = character(0), family_root = character(0), n_family = integer(0))
+  out <- if (length(rows)) rbindlist(rows) else
+    data.table(round_id = character(0), code = character(0), role = character(0), spec = character(0), engine_path = character(0), engine_md5 = character(0),
+               family_root = character(0), n_family = integer(0))
+  setattr(out, "rounds", if (length(rn)) rbindlist(rn) else data.table(round_id = character(0), n_cells = integer(0)))
+  setattr(out, "unverified", if (length(uv)) unique(rbindlist(uv)) else data.table(round_id = character(0), engine_md5 = character(0), why = character(0)))
+  out
+}
+## 자체 사양 엔진 하나의 원천 라운드(출시 전 수리 · 판단 T4 C-20261113-035 ② · 036 · 격리 점검 R1 · R4) — src = rc_standing_source_cells 산출(속성 포함)
+##   rounds = 이 엔진 md5 를 칸으로 등록한 라운드 ∪ 같은 계보(family_root) 칸을 가진 라운드(역할 무관 — 다시 만든 엔진(새 md5)도 앞선 계보 시행을 물려받는다)
+##   md5_rounds = 이 엔진 md5 칸이 있는 라운드 · n_cells = rounds 의 사전등록 칸 수 합(사슬 원천 시행 = 그 라운드 전 칸 — 같은 집합의 크기)
+##   remeasure = 이 엔진 md5 를 변형(variant) 칸으로 · 같은 계보로 회계한 원천 칸이 있다(상설 칸 = 그 시행의 재측정 · +1 없음)
+##   mismatch = 이 엔진 md5 칸 가운데 계보 ≠ fam 인 칸의 라운드(입구 own_spec_family_mismatch) · unverified = 검증 불가 라운드(이 md5 또는 "*")
+.rcs_own_source <- function(src, emd5, fam) {
+  S <- if (is.data.frame(src)) as.data.table(src) else data.table(round_id = character(0), code = character(0), role = character(0), engine_md5 = character(0), family_root = character(0))
+  e0 <- .rcs_str(emd5); f0 <- .rcs_str(fam)
+  mc <- if (!is.na(e0)) S[S$engine_md5 %in% e0] else S[0]
+  lc <- if (!is.na(f0)) S[S$family_root %in% f0] else S[0]
+  rounds <- sort(unique(c(mc$round_id, lc$round_id)))
+  RN <- attr(src, "rounds"); UV <- attr(src, "unverified")
+  n <- if (length(rounds) && is.data.frame(RN)) sum(as.integer(RN$n_cells[RN$round_id %in% rounds])) else 0L
+  uvr <- if (is.data.frame(UV) && nrow(UV)) as.data.table(UV)[engine_md5 %in% c(e0, "*")] else NULL
+  list(rounds = rounds, md5_rounds = sort(unique(mc$round_id)), n_cells = as.integer(n), unknown = setdiff(rounds, if (is.data.frame(RN)) RN$round_id else character(0)),
+       remeasure = nrow(mc[mc$role %in% "variant" & mc$family_root %in% f0]) > 0L,
+       mismatch = sort(unique(mc$round_id[!(mc$family_root %in% f0)])), unverified = if (is.null(uvr) || !nrow(uvr)) NULL else uvr)
+}
+## 엔진 옆 own_spec.json 판독(형식 · core md5 = spec_md5 — 생성기 직렬화) — 자격 통과 표 채우기 · 시드 인계 기록이 쓴다(입구 판독은 .rcs_scan_own_dir 가 따로 더 본다)
+.rcs_own_info <- function(ea, root) {
+  ea <- .rcs_str(ea); f <- if (is.na(ea)) NA_character_ else file.path(dirname(ea), "own_spec.json")
+  if (is.na(f) || !file.exists(f)) return(list(exists = FALSE, ok = FALSE, families = character(0)))
+  os <- tryCatch(rc_json_read(f), error = function(e) NULL)
+  ok <- is.list(os) && identical(.rcs_str(os[["schema"]]), RC_STANDING_OWN_SCHEMA) && is.list(os[["core"]]) && length(os[["core"]]) > 0L &&
+    identical(.rcs_own_core_md5(os[["core"]]), .rcs_str(os[["spec_md5"]]))
+  gp <- if (ok) .rcs_str(os[["generator"]][["path"]]) else NA_character_
+  list(exists = TRUE, ok = ok, own_spec = .rcs_repo_rel(f, root), own_spec_md5 = rc_md5(f), generator = if (is.na(gp)) NA_character_ else .rcs_repo_rel(gp, root),
+       families = if (ok) as.character(unlist(os[["core"]][["families"]])) else character(0), family_root = if (ok) .rcs_str(os[["family_root"]]) else NA_character_,
+       declared_at = if (ok) .rcs_str(os[["declared_at"]]) else NA_character_, decision = if (ok) .rcs_str(os[["decision"]]) else NA_character_)
+}
+## 등록부 자체 사양 선언 줄(설계 §3-6 (a) · 격리 점검 R3) — 모든 프로그램 큐 · 소비 목록 · 미분류 보류에서 origin = own_spec 이고 kind ≠ engine 인 줄
+##   (kind = engine 줄은 기저 풀 · 레인 스캔이 레인 엔진으로 읽는다 — 선언 줄은 kind = own_spec 으로 적는다). 반환 data.table(engine_path · engine_md5 · at · decl_key) | NULL
+##   (열 이름 key 는 data.table() 의 예약 인자라 decl_key 로 적는다 — rc_standing_handoffs 의 ho_key 와 같은 이유)
+.rcs_own_declarations <- function(reg, root) {
+  one <- function(it) {
+    if (!is.list(it) || !identical(.rcs_str(it[["origin"]]), "own_spec") || identical(.rcs_str(it[["kind"]]), "engine")) return(NULL)
+    ep <- .rcs_str(it[["engine_path"]]); if (is.na(ep)) return(NULL)
+    data.table(engine_path = .rcs_repo_rel(gsub("\\\\", "/", ep), root), engine_md5 = .rcs_str(it[["engine_md5"]]),
+               at = .rcs_str(it[["declared_at"]] %||% it[["enqueued_at"]]), decl_key = .rcs_str(it[["key"]]))
+  }
+  rows <- list()
+  for (p in reg[["programs"]] %||% list()) for (w in c("queue", "consumed")) for (it in p[[w]] %||% list()) rows[[length(rows) + 1L]] <- one(it)
+  for (it in reg[["paper_routing"]][["unrouted"]] %||% list()) rows[[length(rows) + 1L]] <- one(it)
+  rows <- Filter(Negate(is.null), rows)
+  if (length(rows)) rbindlist(rows, fill = TRUE) else NULL
+}
+## 자체 사양 인계 기록(스캔 행 · 시드 공통 — 격리 점검 M1 · 판단 T4 C-035) — 엔진 경로(저장소 밖이면 절대) · 원천 칸 표 S
+.rcs_own_handoff <- function(ea, fam, root, S) {
+  oi <- .rcs_own_info(ea, root); em <- if (!is.na(ea) && file.exists(ea)) rc_md5(ea) else NA_character_
+  o <- .rcs_own_source(S, em, fam)
+  c(list(origin = "own_spec", own_spec = .rcs_or(.rcs_str(oi$own_spec), NA_character_), own_spec_md5 = .rcs_or(.rcs_str(oi$own_spec_md5), NA_character_),
+         generator = .rcs_or(.rcs_str(oi$generator), NA_character_)),
+    if (isTRUE(oi$ok)) list(families = as.list(oi$families)),                     # 판독 불가면 families 를 적지 않는다 — 자격 통과 표가 다시 보고 못 채우면 own_resolved = FALSE
+    list(source_rounds = as.list(o$rounds), declared_at = .rcs_or(.rcs_str(oi$declared_at), NA_character_)))
+}
+## v4 출시 전 수리(격리 점검 R5) — 자체 사양 갈래 판정은 RELEASES.json 의 출시 판 ≥ v4 뒤에만. 출시 전에는 사양 없는 호출의 기본 판(RELEASES 마지막 판 = v3)이
+##   상설 원장의 통과를 철학 P2 · 저위험 관문 없이 기저 풀 자격으로 읽는다(v3 rc_standing_qualified 는 원장 형식이 같아 갈래를 모른다). 레인 갈래는 막지 않는다.
+.rcs_release_guard <- function(track, releases_path = file.path(dirname(RC_DIR), "RELEASES.json")) {
+  if (!identical(track, "own_spec")) return(invisible(TRUE))
+  R <- tryCatch(rc_json_read(releases_path), error = function(e) NULL)
+  v <- unlist(lapply(R[["releases"]] %||% list(), function(r) if (identical(.rcs_str(r[["status"]]), "released")) .rcs_str(r[["version"]]) else NULL))
+  n <- suppressWarnings(as.integer(sub("^v", "", v[!is.na(v) & grepl("^v[0-9]+$", v)])))
+  if (!length(n) || max(n) < 4L)
+    .rcs_err("자체 사양 갈래 판정 거부 — RELEASES.json 의 출시 판이 v4 미만이다(", if (length(n)) paste0("v", max(n)) else "판독 불가", "). 출시 전에는 v3 기저 풀(사양 없는 호출의 기본 판)이 ",
+             "이 원장의 통과를 철학 P2 · 저위험 관문 없이 읽는다 — RELEASES 에 v4 항목을 넣은 뒤 판정한다(격리 점검 R5)")
+  invisible(TRUE)
 }
 ## 자체 사양 core md5 — 생성기와 같은 직렬화(fc_engine_gen.R .fce_core_json · fc_combiner_gen.R .fcc_core_json: toJSON auto_unbox · digits NA · null/na "null")의 UTF-8 바이트 md5
 .rcs_own_core_md5 <- function(core) .rcs_md5s(as.character(toJSON(core, auto_unbox = TRUE, digits = NA, null = "null", na = "null")))
@@ -785,7 +897,9 @@ rc_standing_source_cells <- function(program = "P1_RETURN", root = rc_root(), re
 ##   사유: own_spec_missing · own_generator_unknown · own_generator_mismatch + 공통(no_engine · engine_parse_failed · output_contract_unknown ·
 ##   portfolio_only_base · dynamic_sign · pit_static · paper_meta_missing). 레인 점수 패널 · 레인 보유가 없으므로 폭 · 격자 · 롱 레그 사유는 붙이지 않는다
 ##   (측정의 실효 시작 규칙 · 측정 관문 rc_standing_base_alignment 가 가른다).
-.rcs_scan_own_dir <- function(d, sc, root, tau, gens = .rcs_own_generators(sc[["generators"]], root), src = NULL) {
+##   출시 전 수리: 사유 own_spec_family_mismatch(격리 점검 R1) · own_spec_undeclared(R3 — decl = list(lines = .rcs_own_declarations, D = 결정 기록부)) ·
+##   source_rounds = 엔진 md5 ∪ 계보(.rcs_own_source · 판단 T4 C-20261113-035 ②) · 열 source_md5_rounds · n_source_cells · remeasure · declared.
+.rcs_scan_own_dir <- function(d, sc, root, tau, gens = .rcs_own_generators(sc[["generators"]], root), src = NULL, decl = NULL) {
   nm <- basename(d); ep <- file.path(d, "engine.R"); spf <- file.path(d, "own_spec.json"); rs <- character(0); det <- character(0)
   has_eng <- file.exists(ep) && isTRUE(file.info(ep)$size >= RC_STANDING_MIN_BYTES)
   if (!has_eng) rs <- c(rs, "no_engine")
@@ -829,7 +943,16 @@ rc_standing_source_cells <- function(program = "P1_RETURN", root = rc_root(), re
   rp <- if (is.list(os) && is.list(os[["root_paper"]])) os[["root_paper"]] else list()
   pa <- list(url = .rcs_str(rp[["url"]]), title = .rcs_str(rp[["title"]]), paper_key = .rcs_str(rp[["paper_key"]]))
   if (anyNA(unlist(pa))) rs <- c(rs, "paper_meta_missing")
-  sr <- if (!is.na(emd5) && !is.null(src) && nrow(src)) sort(unique(src[engine_md5 == emd5]$round_id)) else character(0)
+  fr0 <- if (os_ok) .rcs_str(os[["family_root"]]) else NA_character_                    # 사양을 못 읽으면 계보를 모른다(계보 판독 · 불일치 검사 없음 — own_spec_missing 이 이미 뺀다)
+  o <- .rcs_own_source(src, emd5, fr0); sr <- o$rounds
+  if (os_ok && !is.na(emd5) && length(o$mismatch)) { rs <- c(rs, "own_spec_family_mismatch"); det <- c(det, paste0("원천 칸 계보 ≠ ", .rcs_or(fr0, "없음"), ": ", paste(o$mismatch, collapse = ","))) }
+  ## 선언(R3) — ① 등록부 선언 줄(같은 경로 · 같은 md5) ② own_spec decision = 결정 기록부 resolved ③ 이 엔진 md5 의 원천 라운드 ≥ 1(계보만으로는 선언 아님)
+  dl <- decl$lines; dw <- character(0)
+  if (!is.na(emd5) && is.data.frame(dl) && nrow(dl) && any(dl$engine_path == .rcs_repo_rel(ep, root) & dl$engine_md5 %in% emd5 & !is.na(dl$at))) dw <- c(dw, "registry")
+  dc <- if (os_ok) .rcs_str(os[["decision"]]) else NA_character_
+  if (!is.na(dc) && isTRUE(.rcp4_decision_resolved(dc, decl$D))) dw <- c(dw, paste0("decision:", dc))
+  if (length(o$md5_rounds)) dw <- c(dw, "source_round")
+  if (has_eng && os_ok && !length(dw)) { rs <- c(rs, "own_spec_undeclared"); det <- c(det, "선언 기록 없음(등록부 선언 줄 · 결정 id resolved · 엔진 md5 원천 라운드 모두 없음)") }
   fams <- if (os_ok) as.character(unlist(os[["core"]][["families"]])) else character(0)
   data.table(dir = nm, engine = rc_rel(ep, root), engine_md5 = emd5, base_id = NA_character_, program = .rcs_str(sc[["routed_program"]]),
              where = "own_spec", at = if (is.list(os)) .rcs_str(os[["declared_at"]]) else NA_character_, eligible = !length(rs), reasons = paste(unique(rs), collapse = ";"),
@@ -842,22 +965,27 @@ rc_standing_source_cells <- function(program = "P1_RETURN", root = rc_root(), re
              fidelity = "own_spec", audit_item = NA_character_, audit_file = NA_character_, has_short = FALSE, artifacts = NA_character_,
              family_root = if (is.list(os)) .rcs_str(os[["family_root"]]) else NA_character_, own_spec = rc_rel(spf, root),
              own_spec_md5 = if (file.exists(spf)) rc_md5(spf) else NA_character_, generator = .rcs_or(gk, NA_character_),
-             families = paste(fams, collapse = ","), source_rounds = paste(sr, collapse = ","), own_detail = paste(det, collapse = " | "))
+             families = paste(fams, collapse = ","), source_rounds = paste(sr, collapse = ","), source_md5_rounds = paste(o$md5_rounds, collapse = ","),
+             n_source_cells = o$n_cells, remeasure = isTRUE(o$remeasure), declared = paste(dw, collapse = ","), own_detail = paste(det, collapse = " | "))
 }
-## 자체 사양 입구 전체 판독 — 디렉터리마다 1행 · 생성기는 경로마다 한 번 적재 · 원천 라운드 칸 표는 한 번 만든다
-rc_standing_own_candidates <- function(sc, root = rc_root(), registry_path = NULL, tau = "2022-12-31", lane_root = NULL) {
+## 자체 사양 입구 전체 판독 — 디렉터리마다 1행 · 생성기는 경로마다 한 번 적재 · 원천 라운드 칸 표 · 선언 판독(등록부 선언 줄 · 결정 기록부)은 한 번 만든다
+##   decision_register = 결정 기록부 경로(기본 06_Registry/decision_register.json · 판독 불가 = 결정 선언 없음 — fail-closed) · src = 원천 칸 표(넘기면 다시 읽지 않는다)
+rc_standing_own_candidates <- function(sc, root = rc_root(), registry_path = NULL, tau = "2022-12-31", lane_root = NULL, decision_register = NULL, src = NULL) {
   lr <- lane_root %||% rc_abs(sc[["lane_root"]], root)
   dirs <- sort(Sys.glob(file.path(lr, sc[["dir_glob"]] %||% "FC_*"))); dirs <- dirs[dir.exists(dirs)]
   if (!length(dirs)) return(data.table(dir = character(0), eligible = logical(0), reasons = character(0), engine_md5 = character(0), at = character(0)))
   gens <- .rcs_own_generators(sc[["generators"]], root)
-  src <- rc_standing_source_cells(.rcs_or(.rcs_str(sc[["routed_program"]]), "P1_RETURN"), root, registry_path)
-  rbindlist(lapply(dirs, .rcs_scan_own_dir, sc = sc, root = root, tau = tau, gens = gens, src = src), fill = TRUE)
+  src <- src %||% rc_standing_source_cells(.rcs_or(.rcs_str(sc[["routed_program"]]), "P1_RETURN"), root, registry_path)
+  decl <- list(lines = .rcs_own_declarations(pr_load(root, registry_path), root),
+               D = tryCatch(rc_json_read(decision_register %||% file.path(root, "06_Registry/decision_register.json")), error = function(e) NULL))
+  rbindlist(lapply(dirs, .rcs_scan_own_dir, sc = sc, root = root, tau = tau, gens = gens, src = src, decl = decl), fill = TRUE)
 }
 
 ## ── 항목 넣기 · R2 대조 ─────────────────────────────────────────────────────
 ## 엔진 1개 → 칸 사양(등록 생성 함수 · 재량 없음) + 원장 enqueue. 같은 엔진(md5)은 이 판에서 한 번, 옛 판에 있으면 넣지 않는다(rejudge 판 제외)
+##   src = 원천 칸 표(rc_standing_source_cells — 스캔이 한 번 만든 것을 넘긴다 · 없으면 맥락 등록부로 만든다 · 자체 사양 행만 쓴다)
 rc_standing_enqueue <- function(engine_path, paper, family_root, round_dir, handoff = list(), tags = list(), source = c("scan", "manual"),
-                                engine_label = NULL, root = rc_root(), registry_path = NULL, ctx = NULL) {
+                                engine_label = NULL, root = rc_root(), registry_path = NULL, ctx = NULL, src = NULL) {
   source <- match.arg(source)
   ctx <- ctx %||% rc_standing_context(round_dir, root, registry_path, mode = "enqueue"); root <- ctx$root
   ep_rel <- .rcs_repo_rel(engine_path, root); ep <- rc_abs(ep_rel, root)
@@ -876,19 +1004,37 @@ rc_standing_enqueue <- function(engine_path, paper, family_root, round_dir, hand
   code <- sprintf("%s_%s_%s", ctx$tag, gsub("[^A-Za-z0-9]+", "_", pp$paper_key), substr(emd5, 1L, 6L))
   if (!is.null(I[[code]])) .rcs_err("항목 code 충돌: ", code)
   lane_n <- rc_standing_lane_n(handoff[["artifacts"]]); nf0 <- rc_standing_nf_prior(fam, root)
-  ## v4 시행 수 — 자체 사양 엔진(handoff origin = own_spec)의 원천 라운드(source_rounds = 같은 엔진 md5 를 칸으로 등록 · 측정한 P1 라운드)가 있으면
-  ##   같은 표준 구성의 같은 시행을 다시 재는 것이라 계보 최댓값 그대로(+1 하지 않는다 · 원천 라운드가 그 계보로 회계했을 때 = nf0 ≥ 1).
-  ##   원천 라운드가 없거나 그 계보 회계가 없으면 레인과 같은 규칙(+1). 근거 문장은 원장에 남는다(rc_standing_regen_md5 가 같은 사양을 다시 만든다).
-  own <- identical(.rcs_str(handoff[["origin"]]), "own_spec")
-  srcr <- as.character(unlist(handoff[["source_rounds"]])); srcr <- srcr[!is.na(srcr) & nzchar(srcr)]
-  if (own && length(srcr) && nf0 >= 1L) {
-    nf <- as.integer(nf0)
-    basis <- sprintf("%s 상설 자격(판 %s · 자체 사양 입구): 계보 %s 의 앞선 사전등록 · 상설 원장 회계 최댓값 %d 그대로 — 같은 엔진(md5)을 원천 라운드 %s 가 같은 표준 구성으로 등록 · 측정했다(같은 시행의 재측정 · 이 칸 +1 없음)",
-                     ctx$tag, ctx$cfg[["edition"]], fam, nf0, paste(srcr, collapse = ","))
+  ## v4 시행 수(출시 전 수리 · 판단 T4 C-20261113-036 · 격리 점검 R1 · M1) — 자체 사양 행 = 엔진 속성(인계 origin own_spec ∨ 맥락 갈래 own_spec ∨ 엔진 폴더 own_spec.json).
+  ##   원천 라운드 = 인계 source_rounds ∪ 지금 등록부의 엔진 md5 · 계보 칸 라운드(.rcs_own_source) · 원천 칸 수 n = 그 라운드 사전등록 칸 수 합(사슬 원천 시행과 같은 집합).
+  ##   ① 이 엔진 md5 를 변형 칸 · 같은 계보로 회계한 원천 칸이 있으면 = 같은 시행의 재측정 → n_family = max(계보 최댓값, n)(+1 없음 · 상설 행과 사슬이 같은 시행 수)
+  ##   ② 아니면(원천 없음 · 계보만 · reference 로만) = 새 시행 → max(계보 최댓값, n, 레인 회계 하한) + 1(원천 없으면 레인 규칙과 같다).
+  ##   원천 칸 계보 ≠ 이 계보 · own_spec family_root ≠ 이 계보 · 등록부에 없는 원천 라운드 = 멈춘다(fail-closed). 근거 문장은 원장에 남는다(rc_standing_regen_md5).
+  oi <- .rcs_own_info(ep, root)
+  own <- identical(.rcs_str(handoff[["origin"]]), "own_spec") || identical(ctx$track, "own_spec") || isTRUE(oi$exists)
+  if (own) {
+    if (isTRUE(oi$ok) && !identical(oi$family_root, fam)) .rcs_err("자체 사양 계보 불일치 — own_spec family_root ", .rcs_or(oi$family_root, "없음"), " ≠ 넣는 계보 ", fam)
+    S <- src %||% rc_standing_source_cells(.rcs_or(.rcs_str(ctx$spec[["program"]]), "P1_RETURN"), root, ctx$registry_path)
+    o <- .rcs_own_source(S, emd5, fam)
+    if (length(o$mismatch)) .rcs_err("자체 사양 계보 불일치(own_spec_family_mismatch) — 원천 칸 계보 ≠ ", fam, ": ", paste(o$mismatch, collapse = ","))
+    hr <- as.character(unlist(handoff[["source_rounds"]])); hr <- hr[!is.na(hr) & nzchar(hr)]
+    srcr <- sort(unique(c(hr, o$rounds))); RN <- attr(S, "rounds")
+    unk <- setdiff(srcr, if (is.data.frame(RN)) RN$round_id else character(0))
+    if (length(unk)) .rcs_err("원천 라운드가 등록부의 등록된 P1 라운드가 아니다(사전등록 판독 불가 · 상설 판 · 미등록): ", paste(unk, collapse = ","))
+    nsc <- if (length(srcr)) sum(as.integer(RN$n_cells[RN$round_id %in% srcr])) else 0L
+    ## 인계 기록 = 자체 사양 기록(원장 판독자 — 자격 통과 표 · 기저 풀 — 가 같은 원천 라운드 · 가족을 읽게)
+    handoff[["origin"]] <- "own_spec"; handoff[["source_rounds"]] <- as.list(srcr)
+    if (is.null(handoff[["families"]]) && isTRUE(oi$ok)) handoff[["families"]] <- as.list(oi$families)
+    if (is.null(handoff[["own_spec"]]) && isTRUE(oi$exists)) { handoff[["own_spec"]] <- oi$own_spec; handoff[["own_spec_md5"]] <- oi$own_spec_md5 }
+  }
+  if (own && isTRUE(o$remeasure)) {
+    nf <- as.integer(max(nf0, nsc))
+    basis <- sprintf("%s 상설 자격(판 %s · 자체 사양 입구): 계보 %s 의 앞선 사전등록 · 상설 원장 회계 최댓값 %d 와 원천 라운드 %s 의 칸 수 %d(사슬 원천 시행과 같은 집합) 중 큰 값 — 같은 엔진(md5)을 원천 라운드 %s 가 변형 칸 · 같은 계보로 회계했다(같은 시행의 재측정 · 이 칸 +1 없음)",
+                     ctx$tag, ctx$cfg[["edition"]], fam, nf0, paste(srcr, collapse = ","), nsc, paste(o$md5_rounds, collapse = ","))
   } else if (own) {
-    nf <- as.integer(max(nf0, lane_n) + 1L)
-    basis <- sprintf("%s 상설 자격(판 %s · 자체 사양 입구): 계보 %s 의 앞선 사전등록 · 상설 원장 회계 최댓값 %d 와 레인 회계 하한 %d 중 큰 값 + 이 칸 1(원천 라운드 %s)",
-                     ctx$tag, ctx$cfg[["edition"]], fam, nf0, lane_n, if (length(srcr)) paste0(paste(srcr, collapse = ","), " — 이 계보로 회계하지 않음") else "없음")
+    nf <- as.integer(max(nf0, nsc, lane_n) + 1L)
+    basis <- sprintf("%s 상설 자격(판 %s · 자체 사양 입구): 계보 %s 의 앞선 사전등록 · 상설 원장 회계 최댓값 %d · 원천 라운드 칸 수 %d · 레인 회계 하한 %d 중 큰 값 + 이 칸 1(원천 라운드 %s)",
+                     ctx$tag, ctx$cfg[["edition"]], fam, nf0, nsc, lane_n,
+                     if (length(srcr)) paste0(paste(srcr, collapse = ","), " — 이 엔진 md5 를 변형 칸 · 같은 계보로 회계한 원천 칸 없음") else "없음")
   } else {
     nf <- as.integer(max(nf0, lane_n) + 1L)
     basis <- sprintf("%s 상설 자격(판 %s): 계보 %s 의 앞선 사전등록 · 상설 원장 회계 최댓값 %d 와 레인 측정 %d(대표 + 변형) 중 큰 값 + 이 칸 1",
@@ -905,20 +1051,28 @@ rc_standing_enqueue <- function(engine_path, paper, family_root, round_dir, hand
   invisible(list(code = code, status = "enqueued", spec = sp))
 }
 ## 시드(등록본 칸 · reference) — 원장에 없으면 넣는다(사양 · md5 = 등록본 그대로)
-.rcs_enqueue_seeds <- function(ctx, I) {
-  out <- character(0)
+##   출시 전 수리(격리 점검 M1 · 판단 T4 C-20261113-035): 자체 사양 시드(맥락 갈래 own_spec ∨ 엔진 폴더 own_spec.json)는 스캔 행과 같은 인계 기록
+##   (origin own_spec · own_spec · own_spec_md5 · generator · families · source_rounds · declared_at)을 함께 적는다 — 시드 행도 기저 풀 관문 · 사슬 원천 시행 대상.
+.rcs_enqueue_seeds <- function(ctx, I, src = NULL) {
+  out <- character(0); S <- src
   for (c in ctx$pre[["cells"]]) {
     if (!is.null(I[[c[["code"]]]])) next
-    ep <- NA_character_; emd5 <- NA_character_; pp <- NULL; fam <- NA_character_; nf <- NA_integer_
+    ep <- NA_character_; emd5 <- NA_character_; pp <- NULL; fam <- NA_character_; nf <- NA_integer_; ho <- NULL
     if (!is.null(c[["spec"]])) {
       cs <- rc_json_read(rc_abs(c[["spec"]], ctx$root)); p <- .rcs_str(cs[["base_signal"]][["path"]])
       if (!is.na(p)) { ep <- .rcs_repo_rel(p, ctx$root); emd5 <- rc_md5(rc_abs(ep, ctx$root)) }
       pp <- cs[["root_paper"]]; fam <- .rcs_str(cs[["selection_accounting"]][["family_root"]])
       nf <- suppressWarnings(as.integer(.rcs_str(cs[["selection_accounting"]][["n_family_at_registration"]])))
+      ea <- if (is.na(ep)) NA_character_ else rc_abs(ep, ctx$root)
+      if (!is.na(ea) && file.exists(ea) && (identical(ctx$track, "own_spec") || file.exists(file.path(dirname(ea), "own_spec.json")))) {
+        if (is.null(S)) S <- rc_standing_source_cells(.rcs_or(.rcs_str(ctx$spec[["program"]]), "P1_RETURN"), ctx$root, ctx$registry_path)
+        ho <- .rcs_own_handoff(ea, fam, ctx$root, S)
+      }
     }
     rc_standing_append(ctx, c(list(event = "enqueue", code = c[["code"]], engine = c[["engine"]], role = c[["role"]] %||% "reference", source = "seed",
                                    engine_path = ep, engine_md5 = emd5, paper = pp, family_root = fam, n_family = nf),
-                              if (!is.null(c[["spec"]])) list(cell_spec = c[["spec"]], cell_spec_md5 = c[["md5"]]) else list(source_results = c[["source_results"]])))
+                              if (!is.null(c[["spec"]])) list(cell_spec = c[["spec"]], cell_spec_md5 = c[["md5"]]) else list(source_results = c[["source_results"]]),
+                              if (!is.null(ho)) list(handoff = ho)))
     out <- c(out, c[["code"]])
   }
   out
@@ -960,17 +1114,19 @@ rc_standing_scan <- function(round_dir, root = rc_root(), registry_path = NULL, 
   } else { ctx <- rc_standing_context(round_dir, root, registry_path, mode = "enqueue"); S <- ctx$spec }
   cfg <- S[["standing_cfg"]]
   t0 <- Sys.time()
+  own <- identical(.rcs_str(cfg[["scan"]][["source"]]), "own_spec")
+  ## 자체 사양 판 = 원천 칸 표를 한 번 만들어 입구 판독 · 시드 · enqueue 가 같이 쓴다(같은 등록부 시점 · 다시 읽지 않는다)
+  SRC <- if (own || identical(ctx$track, "own_spec")) rc_standing_source_cells(S[["program"]], root, registry_path) else NULL
   C <- rc_standing_lane_candidates(cfg[["scan"]], root, registry_path, S[["tau_d"]], lane_root,
-                                   axis = .rcs_str(cfg[["generator_pin"]][["canon"]][["measurement_axis"]]) %||% NA_character_)   # v3 — 그 판의 측정 축(없으면 폭 문턱이 멈춘다)
+                                   axis = .rcs_str(cfg[["generator_pin"]][["canon"]][["measurement_axis"]]) %||% NA_character_, src = SRC)   # v3 — 그 판의 측정 축(없으면 폭 문턱이 멈춘다)
   K <- rc_standing_known(S[["program"]], root)
   if (isTRUE(cfg[["rejudge_prior_editions"]])) K <- K[round_id == S[["round_id"]]]
   C[, status := ifelse(!eligible, "excluded", ifelse(engine_md5 %in% K$engine_md5, "known", "new"))]
   enq <- character(0)
   if (!dry_run) {
-    enq <- .rcs_enqueue_seeds(ctx, rc_standing_items(rc_standing_ledger_read(ctx$ledger)))
+    enq <- .rcs_enqueue_seeds(ctx, rc_standing_items(rc_standing_ledger_read(ctx$ledger)), src = SRC)
     nw <- C[status == "new"][order(at, na.last = TRUE)]
     if (!is.null(max_new)) nw <- head(nw, as.integer(max_new))
-    own <- identical(.rcs_str(cfg[["scan"]][["source"]]), "own_spec")
     spl <- function(s) { v <- strsplit(.rcs_or(.rcs_str(s), ""), ",", fixed = TRUE)[[1]]; as.list(v[nzchar(v)]) }
     for (i in seq_len(nrow(nw))) {
       r <- nw[i]
@@ -982,7 +1138,7 @@ rc_standing_scan <- function(round_dir, root = rc_root(), registry_path = NULL, 
       x <- rc_standing_enqueue(rc_abs(r$engine, root), list(url = r$url, title = r$title, paper_key = r$paper_key), if (own) r$family_root else r$paper_key, round_dir,
                                handoff = ho,
                                tags = list(orientation = r$orientation, outputs = r$outputs, long_leg = r$long_leg, breadth = r$breadth, grid = r$grid, url_source = r$url_source),
-                               source = "scan", root = root, registry_path = registry_path, ctx = ctx)
+                               source = "scan", root = root, registry_path = registry_path, ctx = ctx, src = SRC)
       if (identical(x$status, "enqueued")) enq <- c(enq, x$code)
     }
     rc_standing_append(ctx, list(event = "scan", n_dirs = nrow(C), n_eligible = sum(C$eligible), n_new = nrow(nw), enqueued = as.list(enq),
@@ -1129,8 +1285,10 @@ rc_standing_measure_item <- function(round_dir, code, root = rc_root(), registry
 }
 
 ## ── 판정(칸 평가 → 등록 규칙 기계 적용 → 원장 · 판정 파일) ──────────────────────────────
-rc_standing_judge <- function(round_dir, root = rc_root(), registry_path = NULL, eval_fun = rc_eval_cell) {
+##   v4 출시 전 수리(격리 점검 R5): 자체 사양 갈래는 RELEASES 출시 판 ≥ v4 일 때만 판정한다(.rcs_release_guard — releases_path 는 시험만 바꾼다)
+rc_standing_judge <- function(round_dir, root = rc_root(), registry_path = NULL, eval_fun = rc_eval_cell, releases_path = file.path(dirname(RC_DIR), "RELEASES.json")) {
   ctx <- rc_standing_context(round_dir, root, registry_path); t0 <- Sys.time()
+  .rcs_release_guard(ctx$track, releases_path)
   I <- rc_standing_items(rc_standing_ledger_read(ctx$ledger))
   todo <- Filter(.rcs_judgeable, I); if (!length(todo)) return(invisible(list(judged = character(0))))
   ok <- list()
@@ -1220,50 +1378,75 @@ rc_standing_visible_write <- function(ctx) {
 }
 
 ## ── 보고(통과 = 엔진마다 push 1통 · 미달 · 미시험 = 일 요약 1통(무음) — qvest-telegram §0.1 · §0.4) ──────────────
-rc_standing_report <- function(round_dir, send = FALSE, day = format(Sys.Date()), root = rc_root(), registry_path = NULL, sender = NULL) {
-  ctx <- rc_standing_context(round_dir, root, registry_path)
+##   v4 출시 전 수리(철학 P1 C-20261113-046 · 판단 T1 C-20261113-058 · qvest-telegram §0.2 표기 — IS/OOS · 동일가중 · 하락노출):
+##   ① 판정 줄 = 판정 두 조건(IS β-통제 t(α) · IS 상승 포착률)만 ② 보고 열(판정 아님) = IS 하락노출 중앙 · 최악 · 위기 수 · IS β + 고정 문구 RC_STANDING_REPORT_NOTE
+##   ③ OOS 유지 = 판정 줄 밖 사람 쪽 줄 ④ standing_cfg.report.pass = daily_summary 면 통과도 일 요약 1통(통과가 있으면 그 요약을 push · 통과마다 push 없음).
+##   ctx = 맥락(시험이 보고 단위를 바꿔 넘긴다 · 없으면 등록본에서 만든다).
+rc_standing_report <- function(round_dir, send = FALSE, day = format(Sys.Date()), root = rc_root(), registry_path = NULL, sender = NULL, ctx = NULL) {
+  ctx <- ctx %||% rc_standing_context(round_dir, root, registry_path)
   recs <- rc_standing_ledger_read(ctx$ledger); I <- rc_standing_items(recs)
   scl <- Filter(function(r) identical(r[["event"]], "scan"), recs); scl <- if (length(scl)) scl[[length(scl)]] else NULL
+  pmode <- .rcs_or(.rcs_str(ctx$cfg[["report"]][["pass"]]), "push_each")
+  if (!(pmode %in% RC_STANDING_REPORT_PASS)) .rcs_err("standing_cfg.report.pass 는 ", paste(RC_STANDING_REPORT_PASS, collapse = " | "))
   J <- Filter(function(it) !is.null(it[["verdict"]]) && !length(it[["reported"]]), I)
+  by_day <- function(it) substr(.rcs_str(it[["verdict"]][["at"]]), 1L, 10L) <= day
   pass <- Filter(function(it) isTRUE(it[["verdict"]][["qualify"]]), J)
-  fail <- Filter(function(it) !isTRUE(it[["verdict"]][["qualify"]]) && substr(.rcs_str(it[["verdict"]][["at"]]), 1L, 10L) <= day, J)
+  fail <- Filter(function(it) !isTRUE(it[["verdict"]][["qualify"]]) && by_day(it), J)
+  dpass <- if (identical(pmode, "daily_summary")) Filter(by_day, pass) else list()
+  if (identical(pmode, "daily_summary")) pass <- list()
   snd <- sender %||% function(...) { if (!exists("prep_send", mode = "function")) invisible(capture.output(suppressMessages(source(file.path(root, "02_Infrastructure/programs/program_report.R"))))); prep_send(...) }
   nm <- function(it) .rcs_or(.rcs_str(it[["paper"]][["title"]]), it[["engine"]])
   num <- function(x, d = 2L) { x <- suppressWarnings(as.numeric(unlist(x))[1]); if (is.finite(x)) sub("^-", "−", formatC(x, format = "f", digits = d)) else "NA" }
   thr <- function(id) { for (r in ctx$pre[["rules_resolved"]]) for (k in c(list(r), r[["of"]] %||% list())) if (identical(k[["id"]], id)) return(num(k[["value"]])); "NA" }
+  oos <- function(it) { fv <- tryCatch(rc_json_read(rc_abs(it[["verdict"]][["verdict_file"]], root))[["row"]], error = function(e) list())   # 사람 쪽 판정 파일
+                        if (isTRUE(fv[["test_hold"]])) "예" else if (isFALSE(fv[["test_hold"]])) "아니오" else "판정 불가" }
+  vline <- function(v) sprintf("IS β-통제 t(α) %s ≥ %s · IS 상승 포착률 %s ≥ %s", num(v[["t_alpha_vis"]]), thr("q_t_alpha"), num(v[["uc_vis"]]), thr("q_uc"))
+  rline <- function(v) sprintf("IS 하락노출 중앙 %s(최악 %s · 위기 %s번) · IS β %s", num(v[["dd_capture_median_vis"]]), num(v[["dd_capture_worst_vis"]]),
+                               num(v[["n_crisis_vis"]], 0L), num(v[["beta_vis"]]))
+  oline <- function(it) sprintf("OOS 유지(OOS 연 알파 > 0): %s", oos(it))
+  one <- function(heading, x) if (length(x) >= 2L) list(heading = heading, type = "bullet", items = unname(x)) else list(heading = heading, type = "text", body = x[1])
+  nmax <- .rcs_or(.rcs_str(ctx$cfg[["generator_pin"]][["canon"]][["max_names"]]), "?")
+  prev <- sprintf("%s → 표준 구성(롱온리 %s종 동일가중 · 활성 측정 축)", if (identical(ctx$track, "own_spec")) "자체 사양 엔진(생성기 산출)" else "충실구현 레인 산출", nmax)
   art <- rc_rel(ctx$P$results, root)
   for (it in pass) {
     v <- it[["verdict"]][["visible"]]
-    fv <- tryCatch(rc_json_read(rc_abs(it[["verdict"]][["verdict_file"]], root))[["row"]], error = function(e) list())   # 사람 쪽 보고(시험 창 유지)
     snd(program = "수익 엔진", target = sprintf("%s(%s)", nm(it), .rcs_or(.rcs_str(it[["paper"]][["paper_key"]]), it[["code"]])),
-        status = list(stage = sprintf("상설 자격 판정(%s · 판 %s)", ctx$tag, ctx$cfg[["edition"]]), position = it[["code"]],
-                      previous = if (identical(ctx$track, "own_spec")) "자체 사양 엔진(생성기 산출 · own_spec) → 표준 구성(롱온리 · 활성 측정 축)" else
-                        "충실구현 레인 산출 → 표준 구성(롱온리 · 활성 측정 축)"),
-        verdict_line = sprintf("자격 통과 — 보는 창 β-통제 t(α) %s ≥ %s · 상승 포착률 %s ≥ %s · 위기 하락노출 중앙 %s(최악 %s · 위기 %s번) · 시험 창 유지 %s",
-                               num(v[["t_alpha_vis"]]), thr("q_t_alpha"), num(v[["uc_vis"]]), thr("q_uc"), num(v[["dd_capture_median_vis"]]),
-                               num(v[["dd_capture_worst_vis"]]), num(v[["n_crisis_vis"]], 0L),
-                               if (isTRUE(fv[["test_hold"]])) "예" else if (isFALSE(fv[["test_hold"]])) "아니오" else "판정 불가"),
+        status = list(stage = sprintf("상설 자격 판정(%s · 에디션 %s)", ctx$tag, ctx$cfg[["edition"]]), position = it[["code"]], previous = prev),
+        verdict_line = paste0("자격 통과 — ", vline(v)),
+        extra = list(list(heading = "보고 열(판정 아님)", type = "text", body = paste0(rline(v), " — ", RC_STANDING_REPORT_NOTE)),
+                     list(heading = "OOS(사람 쪽 보고 · 판정 아님)", type = "text", body = oline(it))),
         next_step = "P4 수익 엔진 후보 · Superfan 판단 T2 · 철학 P2(즉시)", artifact = art, push = TRUE, dry_run = !isTRUE(send), root = root)
     if (isTRUE(send)) rc_standing_append(ctx, list(event = "reported", kind = "push", codes = list(it[["code"]])))
   }
-  if (length(fail)) {
+  if (length(fail) || length(dpass)) {
     ln <- vapply(fail, function(it) { v <- it[["verdict"]]; vv <- v[["visible"]]
       if (identical(.rcs_str(v[["status"]]), "evaluated"))
-        sprintf("%s — 미달 · t(α) %s · 상승 포착률 %s", nm(it), num(vv[["t_alpha_vis"]]), num(vv[["uc_vis"]]))
+        sprintf("%s — 미달 · IS β-통제 t(α) %s · IS 상승 포착률 %s", nm(it), num(vv[["t_alpha_vis"]]), num(vv[["uc_vis"]]))
       else sprintf("%s — 미시험(%s)", nm(it), paste(c(.rcs_str(v[["status"]]), unlist(v[["r2"]])), collapse = " · ")) }, character(1))
     nf <- sum(vapply(fail, function(it) identical(.rcs_str(it[["verdict"]][["status"]]), "evaluated"), logical(1)))
-    sec <- if (length(ln) >= 2L) list(heading = "엔진별 판정(보는 창)", type = "bullet", items = unname(ln)) else list(heading = "엔진별 판정(보는 창)", type = "text", body = ln[1])
+    lp <- vapply(dpass, function(it) sprintf("%s — 자격 통과 · %s", nm(it), vline(it[["verdict"]][["visible"]])), character(1))
+    lr <- vapply(dpass, function(it) sprintf("%s — %s", nm(it), rline(it[["verdict"]][["visible"]])), character(1))
+    lo <- vapply(dpass, function(it) sprintf("%s — %s", nm(it), oline(it)), character(1))
     ex <- scl[["excluded"]]
-    ent <- if (is.null(scl)) NULL else list(heading = "입구(레인 스캔 — 판정 아님)", type = "text",
+    ent <- if (is.null(scl)) NULL else list(heading = sprintf("입구(%s 스캔 — 판정 아님)", if (identical(ctx$track, "own_spec")) "자체 사양" else "레인"), type = "text",
       body = sprintf("마지막 스캔: 디렉터리 %s · 입구 통과 %s · 새로 넣음 %d%s", .rcs_str(scl[["n_dirs"]]), .rcs_str(scl[["n_eligible"]]), length(scl[["enqueued"]]),
                      if (length(ex)) paste0(" · 제외 사유 ", paste(sprintf("%s %s", names(ex), unlist(ex)), collapse = " · ")) else ""))
-    snd(program = "수익 엔진", target = sprintf("상설 자격 일 요약 %s — 미달 %d · 미시험 %d", day, nf, length(fail) - nf),
-        status = list(stage = sprintf("상설 자격 일 요약(%s · 판 %s)", ctx$tag, ctx$cfg[["edition"]]), position = sprintf("%d건", length(fail)), previous = "—"),
-        verdict_line = sprintf("자격 미달 %d · 미시험 %d(통과는 따로 보냈다)", nf, length(fail) - nf), extra = Filter(Negate(is.null), list(sec, ent)),
-        next_step = "Superfan 판단 T2 · 철학 P2 일 묶음 1회", artifact = art, push = FALSE, dry_run = !isTRUE(send), root = root)
-    if (isTRUE(send)) rc_standing_append(ctx, list(event = "reported", kind = "daily_summary", day = day, codes = as.list(vapply(fail, function(it) it[["code"]], ""))))
+    secs <- Filter(Negate(is.null), list(if (length(lp)) one("자격 통과(IS 판정)", lp),
+                                         if (length(lr)) list(heading = "보고 열(판정 아님)", type = "bullet", items = unname(c(lr, RC_STANDING_REPORT_NOTE))),
+                                         if (length(lo)) one("OOS(사람 쪽 보고 · 판정 아님)", lo),
+                                         if (length(ln)) one("엔진별 판정(IS)", ln), ent))
+    np <- length(dpass)
+    snd(program = "수익 엔진", target = sprintf("상설 자격 일 요약 %s — %s미달 %d · 미시험 %d", day, if (np) sprintf("통과 %d · ", np) else "", nf, length(fail) - nf),
+        status = list(stage = sprintf("상설 자격 일 요약(%s · 에디션 %s)", ctx$tag, ctx$cfg[["edition"]]), position = sprintf("%d건", length(fail) + np), previous = if (np) prev else "—"),
+        verdict_line = if (np) sprintf("자격 통과 %d · 미달 %d · 미시험 %d(통과 보고 = 일 요약 1통)", np, nf, length(fail) - nf) else
+                         sprintf("자격 미달 %d · 미시험 %d(통과는 따로 보냈다)", nf, length(fail) - nf), extra = secs,
+        next_step = if (np) "P4 수익 엔진 후보(통과) · Superfan 판단 T2 · 철학 P2(통과 즉시) · 미달 일 묶음 1회" else "Superfan 판단 T2 · 철학 P2 일 묶음 1회",
+        artifact = art, push = np > 0L, dry_run = !isTRUE(send), root = root)
+    if (isTRUE(send)) rc_standing_append(ctx, list(event = "reported", kind = "daily_summary", day = day,
+                                                   codes = as.list(c(vapply(dpass, function(it) it[["code"]], ""), vapply(fail, function(it) it[["code"]], "")))))
   }
-  invisible(list(pass = vapply(pass, function(it) it[["code"]], ""), fail = vapply(fail, function(it) it[["code"]], ""), sent = isTRUE(send)))
+  invisible(list(pass = c(vapply(pass, function(it) it[["code"]], ""), vapply(dpass, function(it) it[["code"]], "")),
+                 fail = vapply(fail, function(it) it[["code"]], ""), mode = pmode, sent = isTRUE(send)))
 }
 
 ## ── Superfan(규약 §11 · §12 상설 자격 절) — 통과 = 즉시 T2 · P2 · 미달 = 일 묶음 1회 ──────────────
@@ -1326,25 +1509,33 @@ rc_standing_seed_respec <- function(like, code, n_family, n_trials_basis, root =
 ## 골격 — round_spec.json(standing: true · 규칙 = P1 템플릿 · 스캔 규칙 · 생성 함수 핀 · 행동 카드 설정 사본) — 시드 칸 사양은 호출자가 먼저 쓴다
 ##   v4: scan$source = "own_spec" 이면 자체 사양 입구 기본값(RC_STANDING_SCAN_OWN_DEFAULT)에서 시작하고 track = "own_spec" · 회계 문구를 그 입구 것으로 적는다.
 ##     판 번호(edition)는 입구 갈래마다 1 부터(자체 사양 입구 첫 판 = edition 1 — round_id 는 P1S03_… 여도).
+##   출시 전 수리: ① 결론 범위 = P1 표준 철학 줄(RC_P1_PHILOSOPHY_LINES · 철학 C-20261113-049) 뒤에 호출자 줄 ② 자체 사양 판은 scan.generators 를 pins.files 에
+##     자동으로 넣는다(생성기가 바뀌면 판정 경로 핀이 갈려 새 판 — 격리 점검 S6 · orientation_layer 허용 조건 ② 가 생성기 본문에 달려 있다) ③ report = 보고 단위(통과 push_each | daily_summary).
 rc_init_standing_p1 <- function(round_dir, round_id, seeds, purpose, hypothesis, edition = 1L, scan = list(), exposures = list(),
-                                conclusion_scope = list(), tests = list(), bcfg = "06_Registry/behavior_card.json", root = rc_root()) {
+                                conclusion_scope = list(), tests = list(), bcfg = "06_Registry/behavior_card.json", root = rc_root(),
+                                report = list(pass = "push_each", fail = "daily_summary")) {
   sp_path <- file.path(round_dir, "round_spec.json")
   if (file.exists(sp_path)) .rcs_err("이미 사양이 있다 — 덮어쓰지 않는다: ", round_dir)
   dir.create(file.path(round_dir, "specs"), recursive = TRUE, showWarnings = FALSE)
   own <- identical(.rcs_str(scan[["source"]]), "own_spec")
   sc <- if (own) RC_STANDING_SCAN_OWN_DEFAULT else RC_STANDING_SCAN_DEFAULT; sc[names(scan)] <- scan   # 얕은 덮어쓰기(modifyList 는 이름 없는 목록을 덮지 않는다 — orientation_admit 등)
   acc <- if (own) list(family_root = "own_spec.family_root",
-                       rule = "n_family = 원천 라운드(같은 엔진 md5 를 칸으로 등록한 P1 라운드)가 그 계보로 회계했으면 계보 앞선 사전등록 · 상설 원장 회계 최댓값 그대로(같은 시행의 재측정) · 아니면 max(그 최댓값, 레인 회계 하한 1) + 1 · 시드 = 무가산")
+                       rule = paste0("원천 라운드 = 이 엔진 md5 를 칸으로 등록한 P1 라운드 ∪ 같은 계보(family_root) 칸을 가진 P1 라운드 · n = 그 라운드 사전등록 칸 수 합(사슬 원천 시행과 같은 집합). ",
+                                     "이 엔진 md5 를 변형 칸 · 같은 계보로 회계한 원천 칸이 있으면 n_family = max(계보 앞선 사전등록 · 상설 원장 회계 최댓값, n)(같은 시행의 재측정 · +1 없음) · ",
+                                     "아니면 max(그 최댓값, n, 레인 회계 하한 1) + 1 · 원천 칸 계보 ≠ own_spec family_root = 입구 제외(own_spec_family_mismatch) · 시드 = 무가산"))
          else list(family_root = "paper_key", rule = "n_family = max(계보 앞선 사전등록 · 상설 원장 회계 최댓값, 레인 측정 수(대표 + 변형)) + 1 · 시드 = 무가산")
   cfg <- list(edition = as.integer(edition), program = "P1_RETURN", track = if (own) "own_spec" else "lane", generator = "rc_p1_cell_spec",
               generator_pin = rc_standing_generator_pin(root), scan = sc, accounting = acc,
-              rejudge_prior_editions = FALSE, report = list(pass = "push_each", fail = "daily_summary"),
+              rejudge_prior_editions = FALSE, report = report,
               superfan = list(on_register = list("T1", "P1"), on_pass = list("T2", "P2"), on_fail = "daily_batch"))
   spec <- list(schema = RC_SPEC_SCHEMA, program = "P1_RETURN", round_id = round_id, template = "p1_qualification", core_version = RC_VERSION,
                tau_d = "2022-12-31", purpose = purpose, hypothesis = hypothesis, standing = TRUE, standing_cfg = cfg, cells = seeds,
                rules = .rcs_p1_template_rules(root),
                selection = list(rule = "none", text = "선택 없음 — 자격 엔진 목록이 P4 수익 엔진 후보(P4 에서 고를 때 시행 수로 센다)"),
-               exposures = exposures, conclusion_scope = conclusion_scope, changes_after_review = list(), changes_after_superfan = list(), tests = tests)
+               exposures = exposures, conclusion_scope = c(as.list(RC_P1_PHILOSOPHY_LINES), as.list(unlist(conclusion_scope))),
+               changes_after_review = list(), changes_after_superfan = list(), tests = tests)
+  if (own) spec[["pins"]] <- list(files = as.list(unique(vapply(sc[["generators"]], function(g) .rcs_repo_rel(.rcs_or(.rcs_str(g[["path"]]), ""), root), ""))),
+                                  basis = "자체 사양 입구 생성기(scan.generators) 자동 핀 — 입구가 엔진 본문을 다시 만들어 대조하는 함수(코어 v4 · 격리 점검 S6)")
   if (!is.null(bcfg)) { dst <- file.path(round_dir, "behavior_card_cfg_at_prereg.json")
     if (!file.exists(dst) && !isTRUE(file.copy(rc_abs(bcfg, root), dst))) .rcs_err("행동 카드 설정 사본 실패: ", bcfg)
     spec[["behavior_card_cfg"]] <- rc_rel(dst, root) }
@@ -1371,7 +1562,9 @@ rc_standing_rules_md <- function(spec, root = rc_root()) {
                 paste(unlist(sc[["orientation_admit"]]), collapse = " · "), if (isTRUE(sc[["pit_static"]])) "켬" else "끔"),
         "- 입구 판독: 생성기 목록 안(own_generator_unknown) · 지금 생성기 md5 = core.generator_md5 · 엔진 md5 = own_spec engine.md5 · own_spec 에서 생성기 본문 함수로 다시 만든 본문 md5 = 엔진 md5(own_generator_mismatch). 레인 인계 · 감사 판정 · 폭 · 격자 · 롱 레그 판독은 없다(측정의 실효 시작 규칙 · 기저 정합 관문이 가른다).",
         "- orientation_layer 허용 조건(이 입구에서만): ① 엔진 본문 = 생성기 산출(재생성 md5 대조 — 손 편집 · 부호 층 변조는 own_generator_mismatch) ② 본문의 실행 단정(부호 = 등록부 s_reg 고정 · 가중 유한 · 비음수 — 어기면 엔진이 멈춘다).",
-        "- 원천 라운드(source_rounds) = 같은 엔진(등록 md5 · 사전등록 핀)을 칸으로 등록한 P1 라운드 — 있으면 같은 시행의 재측정이라 계보 시행 수를 더하지 않는다. 기저 풀 · 사슬은 원천 라운드의 모든 칸을 사슬 시행 집합에 넣는다(빠지면 사슬 등록 거부).")
+        "- 원천 라운드(source_rounds) = 같은 엔진(등록 md5 · 사전등록 핀)을 칸으로 등록한 P1 라운드 ∪ 같은 계보(family_root) 칸을 가진 P1 라운드(다시 만든 엔진도 앞선 계보 시행을 물려받는다). 시행 수 = 원천 칸(같은 md5 · 변형 · 같은 계보)이 있으면 max(계보 최댓값, 원천 라운드 칸 수) · 아니면 그 위에 +1. 기저 풀 · 사슬은 원천 라운드의 모든 칸을 사슬 시행 집합에 넣는다(빠지거나 검증 불가 · 갈음 없는 낡은 판이면 사슬 등록 거부).",
+        "- 선언(own_spec_undeclared): 등록부 선언 줄(origin = own_spec · kind ≠ engine · 같은 경로 · 같은 md5) · own_spec decision 이 결정 기록부 resolved · 이 엔진 md5 의 원천 라운드 중 하나. 원천 칸 계보 ≠ own_spec family_root = own_spec_family_mismatch.",
+        "- 자체 사양 갈래 판정은 RELEASES.json 출시 판 ≥ v4 뒤에만(그 전에는 v3 기저 풀이 관문 없이 읽는다 — 격리 점검 R5).")
     else sprintf("- 원천: `%s/%s` 디렉터리 × 등록부 인계 기록(kind = engine) · 인계 프로그램 = %s · 허용 감사 판정 = %s · 허용 방향 층 = %s · 롱 레그 창 = %s(τ_D %s 이전) · PIT 정적 검사 = %s",
             sc[["lane_root"]], sc[["dir_glob"]], sc[["routed_program"]], paste(unlist(sc[["audit_admit"]]), collapse = " · "),
             paste(unlist(sc[["orientation_admit"]]), collapse = " · "), sc[["long_leg_window"]], spec[["tau_d"]], if (isTRUE(sc[["pit_static"]])) "켬" else "끔"),

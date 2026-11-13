@@ -5,15 +5,31 @@
 RC_P1_COLS <- c("engine", "code", "status", "t_alpha_vis", "alpha_ann_vis", "beta_vis", "port_t_vis", "n_vis", "uc_vis", "cagr_vis",
                 "t_alpha_test", "alpha_ann_test", "n_test", "uc_test")
 
-## 판정 규칙이 시험 창 열을 쓰는지(τ_D — 선택 · 판정 규칙은 보는 창 정보만) — report(보고 전용)는 허용
+## P1 표준 철학 줄(v4 출시 전 수리 · 철학 Superfan C-20261111-015 · C-20261111-075 · C-20261112-020 · C-20261113-049) — rc_init_p1 · rc_init_standing_p1 의
+##   기본 결론 범위 앞에 붙는다(호출자 줄은 뒤). 생성 함수가 빈 결론 범위로 시작해 판마다 원천 라운드의 철학 줄을 잃던 기전(네 번)의 수리. 지우려면 사유를 사양에 적는다.
+RC_P1_PHILOSOPHY_LINES <- c(
+  "추첨 행운 해당 없음(결정론 엔진) — 소형주 착시(유동성 구간 귀속) · 시가총액 짝 선택 알파는 미측정",
+  "구성원 점수는 값이 있는 것의 평균이다 — 희소 구성원 쏠림은 철학 P2 가 보유 종목 유효 구성원 수로 대조한다",
+  "기저 풀은 IS 상승 포착 중앙값만 읽는다 — 강세 구간별 참여 · 집중 · 숨은 현금은 재지 않는다(도훈 결정 CHARTER-GAP-BULL-PARTICIPATION-UNIT-20261113 = 현행 유지)",
+  "자격 = 헌장 원칙 5(강세 참여 하한) 쪽 · 원칙 6 의 일부(β-통제 알파)다 — 누적 수익의 시장 초과 · Calmar 는 판정하지 않는다 · 통과를 철학 적합으로 보고하지 않는다")
+RC_P1_PHILOSOPHY_SOURCE <- "철학 Superfan C-20261111-015 · C-20261111-075 · C-20261112-020 · C-20261113-049(결론 범위가 원천 라운드의 철학 줄을 잃던 기전 수리)"
+
+## 판정 규칙이 시험 창 열을 쓰는지(τ_D — 선택 · 판정 규칙은 보는 창 정보만) — 최상위 report(보고 전용)는 허용
+##   v4 출시 전 수리(판단 T4 C-20261113-042): 확장 종류는 cols(r)(읽는 판정 표 열 — rules.R rc_rules_test_ids 와 같은 판독)로 본다 · 판정 규칙 안(all_of · any_of 의 of)의
+##   하위 규칙은 종류와 무관하게 본다(판정에 들어가는 값). 판독 실패(cols 오류)는 쓰는 것으로 센다(fail-closed).
 rc_rules_test_window_use <- function(rules) {
   bad <- character(0)
-  walk <- function(r) {
-    if (identical(r[["type"]], "threshold") && grepl("_test$", r[["metric"]])) bad <<- c(bad, r[["id"]])
-    if (r[["type"]] %in% c("all_of", "any_of")) for (k in r[["of"]]) walk(k)
+  cols_of <- function(r) {
+    ext <- .rc_rule_ext(r[["type"]])
+    if (!is.null(ext)) tryCatch(as.character(unlist(ext[["cols"]](r))), error = function(e) "<cols 판독 실패>_test") else as.character(unlist(r[["metric"]]))
   }
-  for (r in rules) walk(r)
-  bad
+  walk <- function(r, top) {
+    if (!is.list(r)) return(invisible(NULL))
+    if (!(top && identical(r[["type"]], "report")) && any(grepl("_test$", cols_of(r)))) bad <<- c(bad, as.character(unlist(r[["id"]])))
+    if ((r[["type"]] %||% "") %in% c("all_of", "any_of")) for (k in r[["of"]] %||% list()) walk(k, FALSE)
+  }
+  for (r in rules) walk(r, TRUE)
+  unique(bad)
 }
 
 rc_p1_table <- function(spec, root = rc_root()) {
@@ -99,7 +115,7 @@ rc_init_p1 <- function(round_dir, round_id, engines, purpose, hypothesis, root =
                       basis = "P1R01 rules.test_window 승계 — 자격 엔진만 · 판정 아님")),
                selection = list(rule = "none", text = "선택 없음 — 자격 엔진 목록이 P4 수익 엔진 후보(P4 에서 고를 때 시행 수로 센다)"),
                exposures = list("Q 는 시험 창(2023~)을 본 상태다 — 선택 · 판정 규칙은 보는 창 열만 쓴다(검사가 강제)"),
-               conclusion_scope = list(), changes_after_review = list(), changes_after_superfan = list(), tests = list())
+               conclusion_scope = as.list(RC_P1_PHILOSOPHY_LINES), changes_after_review = list(), changes_after_superfan = list(), tests = list())   # v4: P1 표준 철학 줄(C-20261113-049)
   rc_json_write(spec, file.path(round_dir, "round_spec.json"))
   tpl <- file.path(dirname(RC_DIR), "templates", "DESIGN_p1.md")
   if (file.exists(tpl)) invisible(file.copy(tpl, file.path(round_dir, "DESIGN.md")))
