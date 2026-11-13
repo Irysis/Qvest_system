@@ -142,9 +142,11 @@ def main():
     b = D[args.base]
     mets = [("ls", "ΔLS (nats/일 · +가 개선)", 1, False), ("crps", "ΔCRPS (% · −가 개선)", -1, True),
             ("twcrps", "Δ왼꼬리 CRPS (% · −가 개선)", -1, True), ("fz0_050", "ΔFZ0 5% (% · −가 개선)", -1, True)]
+    CLIP = 40.0  # % 패널 표시 상한 — 넘는 막대는 잘라 그리고 값을 적는다(축이 한 막대에 먹히지 않게 · 값은 그대로 표기)
     for j, (c, lab, sign, pct) in enumerate(mets):
         ax = fig.add_subplot(gs[0, j])
         w = 0.8 / max(len(segs), 1)
+        clipped = []
         for si, sg in enumerate(segs):
             bs = b[b["seg"] == sg]
             vals, errs = [], []
@@ -153,11 +155,22 @@ def main():
                 diff = d[c].values - bs[c].values
                 mu_, ci = hac_ci(diff)
                 if pct:
-                    den = abs(bs[c].mean()); mu_, ci = mu_ / den * 100, ci / den * 100
+                    den = abs(np.nanmean(bs[c].values)); mu_, ci = mu_ / den * 100, ci / den * 100
                 vals.append(mu_); errs.append(ci)
             x = np.arange(len(ch)) + (si - (len(segs) - 1) / 2) * w
-            ax.bar(x, vals, width=w * 0.9, yerr=errs, capsize=3, color=[colors[m] for m in ch],
+            if pct:
+                for xi, v, e in zip(x, vals, errs):
+                    if abs(v) > CLIP:
+                        clipped.append((xi, v))
+                show_v = [max(-CLIP, min(CLIP, v)) for v in vals]
+                show_e = [0 if abs(v) > CLIP else e for v, e in zip(vals, errs)]
+            else:
+                show_v, show_e = vals, errs
+            ax.bar(x, show_v, width=w * 0.9, yerr=show_e, capsize=3, color=[colors[m] for m in ch],
                    alpha=0.55 if sg == "IS" else 0.95, edgecolor="k", lw=0.4, label=sg)
+        for xi, v in clipped:
+            ax.annotate(f"{v:+.0f}%\n(축 밖)", (xi, np.sign(v) * CLIP * 0.92), ha="center", va="top" if v > 0 else "bottom",
+                        fontsize=7.5, color="#B71C1C")
         ax.axhline(0, color="k", lw=0.8)
         ax.set_xticks(np.arange(len(ch))); ax.set_xticklabels([labels[m] for m in ch], rotation=20, ha="right")
         ax.set_title(T(lab))

@@ -85,12 +85,15 @@ def _finish(d):
 
 
 def fz0_loss(y, v, e, alpha):
-    """Patton, Ziegel & Chen (2019) 식 (6) FZ0: −1/(αe)·1{y≤v}(v−y) + v/e + log(−e) − 1  (e<v<0)."""
+    """Patton, Ziegel & Chen (2019) 식 (6) FZ0: −1/(αe)·1{y≤v}(v−y) + v/e + log(−e) − 1  — ES e < 0 에서만 정의.
+    정의역 밖(e ≥ 0 — 사실상 한 점으로 붕괴한 예측)은 결측(NaN). (11-13 수정: 구판은 e 를 −1e-9 로 눌러 −1천만 같은 값이 나왔다.)
+    e 가 v 보다 아주 조금 큰 수치 오차만 v − 1e-9 로 맞춘다."""
     y = np.asarray(y, float); v = np.asarray(v, float); e = np.asarray(e, float)
-    e = np.minimum(e, v - 1e-9)
-    e = np.minimum(e, -1e-9)
+    e2 = np.where(e < v, e, v - 1e-9)
+    e2 = np.where(e2 < 0, e2, np.nan)
     hit = (y <= v).astype(float)
-    return -hit * (v - y) / (alpha * e) + v / e + np.log(-e) - 1.0
+    with np.errstate(invalid="ignore", divide="ignore"):
+        return -hit * (v - y) / (alpha * e2) + v / e2 + np.log(-e2) - 1.0
 
 
 # ─── 역검정 ────────────────────────────────────────────────────────────────────────────

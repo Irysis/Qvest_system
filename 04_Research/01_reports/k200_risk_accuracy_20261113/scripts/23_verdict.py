@@ -28,10 +28,12 @@ def nw_lag(n):
 
 def dm(la, lb):
     d = np.asarray(la, float) - np.asarray(lb, float)
+    n_nan = int((~np.isfinite(d)).sum())
+    d = d[np.isfinite(d)]  # 점수 정의역 밖(FZ0 의 ES ≥ 0) 날은 짝째 제외 — 제외 수를 함께 기록
     n = len(d); L = nw_lag(n)
     se = math.sqrt(S.nw_lrv(d, L) / n)
     t = d.mean() / se
-    return {"n": n, "lag": L, "mean": float(d.mean()), "se": float(se), "t": float(t),
+    return {"n": n, "n_excluded_undefined": n_nan, "lag": L, "mean": float(d.mean()), "se": float(se), "t": float(t),
             "p_one_better": float(1 - sp_stats.norm.cdf(t)),   # 여기서 d = 이득(클수록 도전 우위)
             "p_two": float(2 * (1 - sp_stats.norm.cdf(abs(t))))}
 

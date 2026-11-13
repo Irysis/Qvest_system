@@ -27,6 +27,7 @@ def main():
     ev = J(C.OUT / "eval_final.json")
     ce = J(C.OUT / "crisis_events_final.json")
     dg = J(C.OUT / "design_IS_diag.json")
+    pa = J(C.OUT / "production_audit.json")
     lab = {c["name"]: c["label"] for c in reg["challengers"]}
     hyp = {c["name"]: c["hypothesis"] for c in reg["challengers"]}
     S_IS, S_OOS = ev["segments"]["IS"], ev["segments"]["OOS"]
@@ -36,8 +37,11 @@ def main():
     # ── 결론 1줄
     if rec:
         r = ver["challengers"][rec]["OOS"]
-        head = (f"OOS 로그 점수 P3 {P['ls']:.4f} → {lab[rec]} {S_OOS[rec]['ls']:.4f} (하루 {r['ls']['mean']:+.4f} · DM t {r['ls']['t']:.2f}) — "
-                f"사전등록 관문 통과 · 채택 권고 · 운영 반영은 도훈 확인 뒤")
+        npass = sum(1 for v in ver["challengers"].values() if v["pass"])
+        head = (f"{hyp[rec]} {lab[rec]} 채택 권고 — OOS 로그 점수 하루 {r['ls']['mean']:+.4f}(t {r['ls']['t']:.2f}) · "
+                f"등록 {ver['k']}건 중 {npass}건 통과 · 반영은 도훈 확인 뒤")
+        if len(head) > 100:
+            head = f"{hyp[rec]} {lab[rec]} 채택 권고 — OOS 로그 점수 하루 {r['ls']['mean']:+.4f}(t {r['ls']['t']:.2f})"
     else:
         head = "등록 3건 모두 사전등록 기준 미달 — 운영 P3 유지"
 
@@ -51,7 +55,7 @@ def main():
         "예측 대상: KOSPI200 다음 거래일 로그수익의 예측 분포 전체 · 정보 집합 = t 종가(15:30)까지 — 07:10 발송 시점의 미국 장 결과는 쓰지 않음",
         f"표본: IS {S_IS['P3']['first']}~2022-12(설계) · OOS 2023-01~{S_OOS['P3']['last'][:7]}(판정) · 모든 모형 같은 {ver['n_common']:,}거래일 · 워크포워드(그날까지 자료만)",
         f"주 지표: 로그 점수(엄격 적정 점수) 차이 · Diebold-Mariano HAC 단측 · Holm 보정(k = {ver['k']})",
-        "관문: FZ0(VaR · ES 결합 점수 · Patton-Ziegel-Chen 2019) 비악화 · VaR 1% · 5% 적중률 비악화 · IS 같은 방향",
+        "관문: A FZ0(VaR · ES 결합 점수 · Patton-Ziegel-Chen 2019) 비악화 · B VaR 1% · 5% 적중률 비악화 · C IS 같은 방향",
         "기준 = P3 재현(운영 코드 · 사양 그대로 · 운영 기록과 소수 6자리 일치) · 등록 전 OOS 집계 비공개",
     ]
 
@@ -62,13 +66,14 @@ def main():
                 f"(Kupiec p {vb['0.05']['kupiec']['p']:.3f}) · 1% 위반 {pct(vb['0.01']['kupiec']['rate'], 2)} "
                 f"(p {vb['0.01']['kupiec']['p']:.3f}) · PIT χ² p {s['pit_chi2_20']['p']:.3f}")
     base = [line("IS", PI), line("OOS", P)]
-    refs = []
+    rk = []
     for seg, SS in (("IS", S_IS), ("OOS", S_OOS)):
         order = sorted(["P3", "GJR", "EWMA"], key=lambda m: -SS[m]["ls"])
-        refs.append(f"{seg} 로그 점수 순위: " + " > ".join(f"{m} {SS[m]['ls']:.4f}" for m in order))
-    base += refs
-    base.append(f"진단(IS): Hansen 꼬리 ν 가 하한 2.5 에 붙은 날 {pct(dg['nu_at_lower_bound_frac'])} · 상한 50 {pct(dg['nu_at_upper_bound_frac'])} — "
-                f"그날의 분위 11점에 분포를 다시 맞추는 2단 구조라 꼬리 모양이 날마다 흔들림")
+        rk.append(f"{seg} " + " · ".join(f"{m} {SS[m]['ls']:.4f}" for m in order))
+    base.append("표준 모형과 비교(로그 점수 높은 순): " + " / ".join(rk))
+    sb = pa["shape_bounds"]; wd = pa["p3_worst_ls_days"][0]
+    base.append(f"분포 층 잡음 — 그날의 분위 11점에 Hansen 을 다시 맞추는 2단 구조라 꼬리 모양이 경계로 튄다(전 기간 {sb['n']:,}일: ν 하한 2.5 {sb['nu_lower_2p5']}일 · "
+                f"ν 상한 50 {sb['nu_upper_50']}일 · λ 경계 {sb['lam_bound_0p98']}일) — 최악 {wd['date']}: λ {wd['lam']:.2f} 로 상승 쪽 확률이 사라진 분포 → 실현 {wd['y']:+.2f}% 에 로그 점수 {wd['ls']:.1f}")
     base.append("진단: P3 특징의 '1일 전 수익'은 실제로 r(t−1) — 당일 수익 r(t)가 직접 들어가지 않음(뉴스 충격 첫 항 누락)")
 
     # ── 판정
@@ -76,38 +81,58 @@ def main():
     for m, r in ver["challengers"].items():
         o = r["OOS"]; g = r["gates"]; h = r["holm"]
         gate_txt = " · ".join(f"{k.split('_')[0]} {'○' if v else '×'}" for k, v in g.items())
-        verdict.append(f"{lab[m]}: OOS 로그 점수 하루 {o['ls']['mean']:+.4f}(t {o['ls']['t']:.2f} · Holm 문턱 {h['threshold']:.4f} · p {h['p']:.2g}) · "
-                       f"FZ0 {o['fz0_gain']['mean']:+.4f} · 관문 {gate_txt} → {'통과' if r['pass'] else '미달'}")
+        verdict.append(f"{hyp[m]} {lab[m]}: OOS 로그 점수 하루 {o['ls']['mean']:+.4f}(t {o['ls']['t']:.2f} · Holm 문턱 {h['threshold']:.4f} · p {h['p']:.2g}) · "
+                       f"FZ0 개선 {o['fz0_gain']['mean']:+.4f} · 관문 {gate_txt} → {'통과' if r['pass'] else '미달'}")
+        csb = pa.get("challenger_shape_bounds", {}).get(m)
+        if csb and not r["pass"]:
+            w6 = csb["worst6"]
+            verdict.append(f"  └ 기전: 매일 분위 11점 → Hansen 재적합 골격에 특징을 더하자 분포가 경계로 무너지는 날이 늘었다"
+                           f"(λ 경계 {pa['shape_bounds']['lam_bound_0p98']} → {csb['lam_bound_0p98']}일 · ν 상한 {pa['shape_bounds']['nu_upper_50']} → {csb['nu_upper_50']}일) — "
+                           f"최악 6일(σ {min(x['sigma'] for x in w6):.2f}~{max(x['sigma'] for x in w6):.2f} · |λ| {min(abs(x['lam']) for x in w6):.2f})이 IS 손실의 {csb['worst6_share_of_IS_sum']:.0%}")
+        rb = pa["robustness"].get(m)
+        if rb and r["pass"]:
+            verdict.append(f"  └ 강건성: 상하위 1% 절사 평균 IS {rb['IS']['trim1_mean']:+.4f} · OOS {rb['OOS']['trim1_mean']:+.4f} · "
+                           f"중앙값 {rb['IS']['median']:+.4f} · {rb['OOS']['median']:+.4f} · 이긴 날 {pct(rb['IS']['frac_better'], 0)} · {pct(rb['OOS']['frac_better'], 0)} · "
+                           f"연도별 양수 {rb['IS']['years_positive'] + rb['OOS']['years_positive']}/{rb['IS']['years'] + rb['OOS']['years']}")
 
     # ── 위기 · 사건
     cr = []
-    for c in ce["crises"]:
-        if c["peak"] < "2019-01-01":
-            continue
-        mm = c["models"]
-        if "P3" not in mm or (rec and rec not in mm):
-            continue
-        b = mm["P3"]
-        txt = f"{c['peak']}→{c['trough']}(−{c['depth']*100:.0f}%): 초입 20일 VaR 5% 위반 P3 {b['onset_hits5']}회"
-        if rec:
-            txt += f" vs {lab[rec]} {mm[rec]['onset_hits5']}회 · 구간 로그 점수 {b['ls']:.3f} vs {mm[rec]['ls']:.3f}"
-        cr.append(txt)
-    al = ce["alerts"].get("-3", {})
+    selc = [c for c in ce["crises"] if c["peak"] >= "2019-01-01" and "P3" in c["models"] and (not rec or rec in c["models"])]
+    if rec and selc:
+        cr.append(f"LT 위기 구간 로그 점수(P3/{hyp[rec]}): " + " · ".join(
+            f"{c['peak'][:7]}(−{c['depth']*100:.0f}%) {c['models']['P3']['ls']:.2f}/{c['models'][rec]['ls']:.2f}" for c in selc))
+        cr.append(f"위기 초입 20일 VaR 5% 위반(P3/{hyp[rec]} · 같은 순서): " + " · ".join(
+            f"{c['models']['P3']['onset_hits5']}/{c['models'][rec]['onset_hits5']}" for c in selc))
+    if rec:
+        sel = [c for c in ce["crises"] if c["peak"] >= "2017-01-01" and "P3" in c["models"] and rec in c["models"]]
+        cr.append(f"선행성(고점 전 20일 하락 확률 ÷ 직전 1년 · P3/{hyp[rec]}): " +
+                  " · ".join(f"{c['peak'][:7]} {c['models']['P3']['pre_p3_vs_base']:.2f}/{c['models'][rec]['pre_p3_vs_base']:.2f}" for c in sel) +
+                  " — 1 미만 = 사전 경보 없음")
+    al = ce.get("alerts_by_seg", {}).get("OOS", {}).get("-3", {})
     if al:
         red = al["red"]; yp = al["yellow_plus"]
-        cr.append(f"운영 경보(다음날 ≤ −3%): 빨강 경보 {red['alerts']}일 적중률 {red['hit_rate']:.2f} · 정밀도 {red['precision']:.2f} / "
-                  f"주의 이상 {yp['alerts']}일 적중률 {yp['hit_rate']:.2f} · 정밀도 {yp['precision']:.2f} · λ 판별력 AUC {al['lambda_auc']:.2f}")
+        cr.append(f"운영 경보 규칙(OOS · 다음날 ≤ −3% {red['events']}회): 빨강 {red['alerts']}일 — 적중률 {red['hit_rate']:.2f} · 정밀도 {red['precision']:.2f} / "
+                  f"주의 이상 {yp['alerts']}일 — 적중률 {yp['hit_rate']:.2f} · 정밀도 {yp['precision']:.2f} · λ 판별력 AUC {al['lambda_auc']:.2f}(σ {al['sigma_auc']:.2f})")
     e3P = S_OOS["P3"]["events"]["-3"]
     ev_line = f"OOS 다음날 ≤ −3% 사건 {e3P['events']}회: P3 AUC {e3P['auc']:.3f} · Brier 기후값 대비 {e3P['bss']:+.3f}"
     if rec:
         e3C = S_OOS[rec]["events"]["-3"]
-        ev_line += f" vs {lab[rec]} AUC {e3C['auc']:.3f} · {e3C['bss']:+.3f}"
+        ev_line += f" vs {hyp[rec]} AUC {e3C['auc']:.3f} · {e3C['bss']:+.3f}"
     cr.append(ev_line)
 
     # ── 운영 · 다음
     ops = ["운영 브리핑(모닝 체인 [6/6] · P3)은 이번 연구 중 바꾸지 않았다"]
+    inc = pa["incident_rows"]
+    if inc:
+        sp = [r["sigma_prod"] for r in inc]; sr = [r["sigma_replica"] for r in inc]
+        mos = {r["date"][:7] for r in inc}
+        dymax = max(x["dy_max"] for x in pa["parity_by_month"] if x["month"] in mos)
+        ops.append(f"운영 결함: {inc[0]['date']}~{inc[-1]['date']} 브리핑 {len(inc)}회가 σ {min(sp):.0f}~{max(sp):.0f}%(현재 자료 재현 {min(sr):.0f}~{max(sr):.0f}%)를 발송 — "
+                   f"당시 벤치마크 자료가 지금과 달랐고(그달 실현 수익 기록 최대 {dymax:.2f}%p 수정) 그런 극단값을 막는 점검이 없었다 · "
+                   f"운영 기록 {pa['n_prod_rows_matched']}행 중 재현과 같은 값은 {pa['parity_exact_from']} 이후 {pa['parity_exact_rows']}행(그 전은 벤치마크 개정 전 자료)")
     if rec:
-        ops.append(f"채택 시 배포: {lab[rec]} 를 스크래치 사본으로 운영 경로에 붙여 며칠 그림자 운용(P3 와 나란히 산출) → 시험 → 원자 교체")
+        ops.append(f"채택 시 배포(도훈 확인 뒤): {lab[rec]} 를 P3 와 나란히 산출하는 그림자 운용 → 시험 → 원자 교체 · 입력 점검(이상 수익 · 예측 σ 와 V-KOSPI 환산 변동성의 괴리) 동시 도입 · "
+                   "λ · ν 가 월 단위 상수가 되므로 브리핑의 '비대칭 · 꼬리' 줄과 λ 경보 문턱은 V-KOSPI 수준 · 하락 확률 기준으로 재설계")
     ops += ["다음 연구 후보: ① 발송 시점 정보(미국 t 일 장) 반영 — 정보 집합 확장이라 별도 등록 ② PIT 재보정(베타 변환) ③ 1일 외 5 · 20일 지평 분리"]
 
     sections = [

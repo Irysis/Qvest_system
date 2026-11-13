@@ -73,17 +73,26 @@ def main():
         out["crises"].append(row)
     # 경보 규칙(P3 만 — 운영 규칙이 P3 모수를 읽는다)
     if "P3" in data:
-        d = data["P3"]
-        p10 = d["p_le_10"]; sg = d["sigma"]; lm = d["lam"]
-        rules = {"red": (sg > 2.8) | (lm < -0.3) | (p10 > 0.01),
-                 "yellow_plus": (sg > 2.0) | (lm < -0.2) | (p10 > 0.005),
-                 "p5_gt_5pct": d["p_le_5"] > 0.05}
-        for thr in (-3.0, -5.0):
-            ev = d["y"] <= thr
-            out["alerts"][str(int(thr))] = {k: S.alert_metrics(v.values, ev.values) for k, v in rules.items()}
-            out["alerts"][str(int(thr))]["lambda_auc"] = S.auc(-lm.values, ev.values.astype(int))
-            out["alerts"][str(int(thr))]["sigma_auc"] = S.auc(sg.values, ev.values.astype(int))
-            out["alerts"][str(int(thr))]["p_auc"] = S.auc(d[f"p_le_{int(-thr)}"].values, ev.values.astype(int))
+        d_all = data["P3"]
+        tau = pd.Timestamp("2022-12-31")
+        subsets = {"ALL": d_all, "IS": d_all[d_all["y_date"] <= tau], "OOS": d_all[d_all["y_date"] > tau]}
+        out["alerts_by_seg"] = {}
+        for sname, d in subsets.items():
+            if len(d) == 0:
+                continue
+            p10 = d["p_le_10"]; sg = d["sigma"]; lm = d["lam"]
+            rules = {"red": (sg > 2.8) | (lm < -0.3) | (p10 > 0.01),
+                     "yellow_plus": (sg > 2.0) | (lm < -0.2) | (p10 > 0.005),
+                     "p5_gt_5pct": d["p_le_5"] > 0.05}
+            blk = {}
+            for thr in (-3.0, -5.0):
+                ev = d["y"] <= thr
+                blk[str(int(thr))] = {k: S.alert_metrics(v.values, ev.values) for k, v in rules.items()}
+                blk[str(int(thr))]["lambda_auc"] = S.auc(-lm.values, ev.values.astype(int))
+                blk[str(int(thr))]["sigma_auc"] = S.auc(sg.values, ev.values.astype(int))
+                blk[str(int(thr))]["p_auc"] = S.auc(d[f"p_le_{int(-thr)}"].values, ev.values.astype(int))
+            out["alerts_by_seg"][sname] = blk
+        out["alerts"] = out["alerts_by_seg"]["ALL"]
     C.write_json(C.OUT / f"crisis_events_{args.tag}.json", out)
     for r in out["crises"]:
         print(f"\n위기 고점 {r['peak']} → 바닥 {r['trough']} 깊이 {r['depth']:.0%}")
