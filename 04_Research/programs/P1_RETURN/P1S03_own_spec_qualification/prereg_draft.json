@@ -1,0 +1,432 @@
+{
+  "schema": "round_core_prereg_v1",
+  "program": "P1_RETURN",
+  "round_id": "P1S03_own_spec_qualification",
+  "status": "draft",
+  "draft_version": 1,
+  "drafted_at": "2026-11-13T09:09:46+0900",
+  "core": {
+    "version": "v4",
+    "manifest_md5": "320611fa0e08dc70e3db51e9e502dcaa"
+  },
+  "spec_md5": "48bd40f4bd68903043e59e0763410597",
+  "spec": {
+    "schema": "round_spec_v1",
+    "program": "P1_RETURN",
+    "round_id": "P1S03_own_spec_qualification",
+    "template": "p1_qualification",
+    "core_version": "v4",
+    "tau_d": "2022-12-31",
+    "purpose": "P1 엔진 자격 규칙(P1R01 승계 · 판 1 · 판 2 · P1R03 · P1R04 와 같은 규칙 · 같은 문턱)을 자체 사양 입구 갈래(track own_spec)의 판 1 로 등록한다. 입구 = 팩터 척추 생성기가 만든 점수 패널 엔진(04_Research/strategies/FC_* · own_spec.json — 카테고리 등가중 합성 T0 · 시점별 IC 가중 결합 T1 · 같은 생성기로 늘어날 결합기 단계)이고, 표준 구성(롱온리 25종 등가중 · 15bps · 유동성 2억 원 · 활성 측정 축)으로 재서 기저 풀(P4 강화 사슬의 기저 · 블렌딩 부품)의 자격을 준다. 기저 풀 자격 = 상설 판 통과만(도훈 결정 P4-BASE-POOL-GRADE-PATH-TAU-20261111) — P1R03 · P1R04 라운드 판정은 연구 질문(합성 · 결합 개선)의 판정이고 기저 자격을 주지 않는다. 시드 = P1R03 자격 엔진 FVALU(밸류 카테고리 등가중)의 같은 판본 재측정 — 이 판 경로가 아는 답(앞선 측정의 자격)을 통과시키는지 보는 양성 대조다(사다리 루프 ① 기준점부터).",
+    "hypothesis": "자격 = IS β-통제 t(α) ≥ tier_graduation 하한 ∧ IS 상승 포착 ≥ 0.55(P1R01 승계 · 위기별 하락노출 · OOS α 는 보고 전용). 기대: 시드 FVALU 는 자격 유지(앞선 측정과 같은 엔진 · 같은 표준 구성 · IS 구간 자료는 수정주가 이음매 수리의 영향 밖 — 차이 = 자료 판 · 팩터 DB 판). 입구로 들어오는 엔진(T0 14 + 토탈 · T1 14 + 토탈)의 판정은 엔진마다 독립 · 선택 없음(자격 목록 = P4 기저 후보). 같은 카테고리의 T0 · T1 은 같은 계보(family_root FC:<카테고리>)다 — 독립 원천 둘로 세지 않는다.",
+    "standing": true,
+    "standing_cfg": {
+      "edition": 1,
+      "program": "P1_RETURN",
+      "track": "own_spec",
+      "generator": "rc_p1_cell_spec",
+      "generator_pin": {
+        "fn": "rc_p1_cell_spec",
+        "fn_md5": "80f8311f3f61e6fd4e8fb5b250521f58",
+        "like": "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/specs/P0R01_E2_C0.json",
+        "like_md5": "080cfea84f6412c244e0eeecfda689de",
+        "canon": {
+          "measurement_axis": "all_hyg_px1000_2000_v1",
+          "max_names": 25,
+          "cost_bps": 15,
+          "liq_min": 200000000,
+          "long_only": true
+        }
+      },
+      "scan": {
+        "source": "own_spec",
+        "lane_root": "04_Research/strategies",
+        "dir_glob": "FC_*",
+        "routed_program": "P1_RETURN",
+        "generators": [
+          {
+            "path": "02_Infrastructure/factor_db/fc_engine_gen.R",
+            "text_fn": "fce_engine_text"
+          },
+          {
+            "path": "02_Infrastructure/factor_db/fc_combiner_gen.R",
+            "text_fn": "fcc_engine_text"
+          }
+        ],
+        "orientation_admit": [
+          "engine_native",
+          "orientation_layer"
+        ],
+        "long_leg_window": "visible",
+        "exclude_combination": true,
+        "pit_static": true
+      },
+      "accounting": {
+        "family_root": "own_spec.family_root",
+        "rule": "n_family = 원천 라운드(같은 엔진 md5 를 칸으로 등록한 P1 라운드)가 그 계보로 회계했으면 계보 앞선 사전등록 · 상설 원장 회계 최댓값 그대로(같은 시행의 재측정) · 아니면 max(그 최댓값, 레인 회계 하한 1) + 1 · 시드 = 무가산"
+      },
+      "rejudge_prior_editions": false,
+      "report": {
+        "pass": "push_each",
+        "fail": "daily_summary"
+      },
+      "superfan": {
+        "on_register": [
+          "T1",
+          "P1"
+        ],
+        "on_pass": [
+          "T2",
+          "P2"
+        ],
+        "on_fail": "daily_batch"
+      }
+    },
+    "cells": [
+      {
+        "code": "P1S03_FVALU_RX0",
+        "engine": "FVALU",
+        "role": "reference",
+        "spec": "04_Research/programs/P1_RETURN/P1S03_own_spec_qualification/specs/P1S03_FVALU_RX0.json"
+      }
+    ],
+    "rules": [
+      {
+        "id": "qualify",
+        "type": "all_of",
+        "label": "수익 엔진 자격",
+        "na": "untested",
+        "of": [
+          {
+            "id": "q_t_alpha",
+            "type": "threshold",
+            "label": "보는 창 β-통제 t(α)",
+            "metric": "t_alpha_vis",
+            "op": ">=",
+            "value_ref": "02_Infrastructure/worktask/constraint_defaults.json::tier_graduation.grade_b_min_portfolio_alpha_t",
+            "na": "untested"
+          },
+          {
+            "id": "q_uc",
+            "type": "threshold",
+            "label": "보는 창 상승 포착",
+            "metric": "uc_vis",
+            "op": ">=",
+            "value": 0.55,
+            "basis": "투자철학 헌장 — 강세 참여 ≥ 55%(P1R01 rules.qualify.uc_floor 승계)",
+            "na": "untested"
+          }
+        ]
+      },
+      {
+        "id": "test_hold",
+        "type": "report",
+        "label": "시험 창 유지(사람 쪽 보고)",
+        "when": "qualify",
+        "metric": "alpha_ann_test",
+        "op": ">",
+        "value": 0,
+        "basis": "P1R01 rules.test_window 승계 — 자격 엔진만 · 판정 아님"
+      }
+    ],
+    "selection": {
+      "rule": "none",
+      "text": "선택 없음 — 자격 엔진 목록이 P4 수익 엔진 후보(P4 에서 고를 때 시행 수로 센다)"
+    },
+    "exposures": [
+      "Q 는 P1R03 의 IS 판정 파일(evaluation_visible.json — 자격 8/15)과 그 파일에 코어 v3 결함으로 남은 보고 규칙 열(test_hold — 자격 칸의 OOS 연 알파 > 0 여부)을 본 상태다(P1R04 노출 고지와 같다). 규칙 · 문턱은 P1 템플릿 승계로 고정(재량 없음) · 코어 v4 는 그 열을 IS 파일에서 뺀다.",
+      "Q 는 P1R03 산출물(T0 15 엔진)의 IS 구간 NAV · 위기 하락노출 · 보유를 P1R04 차트 배치 시험(가짜 짝 · IS 전용 · 판정 무관)에서 본 상태다 — OOS 구간은 그리지 않았다.",
+      "P1R04(T1 15 + 같은 배치 T0 기준 15)는 등록됐고 측정 전이다 — 그 결과는 이 판 등록 시점에 없다.",
+      "팩터 방향 격리 재판정(밸류 · 성장 · 컨센서스 · 쏠림 73 · 성과 무참조 · 11-13)의 결과(불일치 3 · 불명 9)를 본 상태다 — 입구 · 판정 규칙에 쓰지 않는다(결론 범위 방향 줄).",
+      "입구 규칙(자체 사양 입구 기본값 RC_STANDING_SCAN_OWN_DEFAULT · 방향 층 engine_native + orientation_layer)은 코어 v4 의 정적 검사(생성기 재생성 md5 · 본문 실행 단정)로만 정했다 — 성과와 무관.",
+      "Q 는 등록 전 입구 미리보기(scan --dry-run · 사유 코드별 디렉터리 수 · 성과 수치 없음)를 본 상태이며, 미리보기 뒤 입구 규칙을 바꾸지 않았다."
+    ],
+    "conclusion_scope": [
+      "자격 엔진 목록 = P4 기저 후보(활성 측정 축 · 같은 epoch 비교만). 자격 ≠ 권위 등급 · Judge · BOOK.",
+      "미달 = 표준 구성(롱온리 ≤25종 EW · 15bps · 활성 축 · 월말 신호 · 월간 집행)에서 이 규칙 미달 — 그 카테고리 · 결합 방식의 기각이 아니다(연구 질문의 판정은 P1R03 · P1R04 라운드).",
+      "입구 제외(사유 코드) = 측정하지 않음 — 판정이 아니다. 자체 사양 입구 사유: own_spec_missing(사양 없음 · 판독 불가 · core md5 ≠ spec_md5) · own_generator_unknown(생성기 목록 밖 — 새 결합기 생성기는 새 판) · own_generator_mismatch(생성기 · 엔진 md5 불일치 · 재생성 본문 불일치 — 손 편집 · 부호 층 변조).",
+      "시드 FVALU = 양성 대조 — 미달이면 다른 판정을 읽기 전에 판 경로(측정 · 자료 판 · 입구)를 먼저 확인한다. 통과해도 새 증거가 아니다(같은 엔진 · 같은 규칙의 재측정).",
+      "측정 자료 판: RAWDATA 2026-03-30 수정주가 이음매 수리(11-13 수리 세션) 뒤 측정분만 기저 자격을 받는다(판 표식 contracts/factor_db_vintage.R) — 판 폴더 tick_hold 는 수리 완료 신호와 P1R04 측정이 끝난 뒤에 지운다(한 번에 무거운 작업 하나).",
+      "같은 카테고리의 T0 · T1 은 같은 계보다 — 둘 다 통과해도 독립 원천 둘이 아니다. 원천 셈 = P1R03 결론 범위 셈법(토탈 ≠ 원천 · 저위험 4 카테고리(방어 · 위험 · 유동성 · 국면) = 한 원천).",
+      "기저 풀(코어 v4 rc_p4_base_pool)은 통과 칸에 철학 P2 판독(상설 pass 기록의 P2 또는 원천 라운드 영수증 results/philosophy_receipt.json)과 저위험 확인(카테고리가 방어 · 위험 · 국면과 겹치는 엔진 — 토탈 포함 — 은 엔진 단위 release_decision)을 요구한다. P1R03 저β 5(방어 · 위험 · 유동성 · 쏠림 · 토탈)는 도훈 결정 LOWBETA-ENGINES-BASE-USE-20261113 으로 기저 사용 허용 · 표기 '저β 수익 엔진' · 방어 주장 없음. T1 의 같은 카테고리 엔진은 그 결정을 승계하지 않는다(P1R04 철학 C-20261113-027 · 별도 확인).",
+      "'방어' 표기는 크기 × β 짝 대조 통과 ∧ 최대낙폭이 시장보다 뚜렷이 작을 때만이다(도훈 결정 CHARTER-GAP-LOWBETA-DEFENSE-LABEL-20261113) — 이 판의 위기 하락노출 열(원장 · 통과 보고)은 시장 대비 원값이라 방어 근거로 쓰지 않는다.",
+      "팩터 방향: 밸류 · 컨센서스 · 쏠림(과 토탈)에는 방향 격리 재판정 불일치 구성원이 하나씩 있다(V23_RAFI_Weight · C08_Coverage · CR05_Short_Pressure_Proxy). 이 판의 결과는 등록부 방향 결과다. 등록부를 방향 정책 경로로 고치면 그 카테고리 엔진은 새 엔진(md5 변경 · 시행 +1)으로 다시 입구를 지난다.",
+      "자격 = 수익 엔진 자격(IS β-통제 알파 ∧ 강세 참여 하한 — 헌장 원칙 5 · 6 쪽). 위기 방어 · 꾸준함은 판정하지 않는다 — 통과를 철학 적합으로 보고하지 않는다(위기 하락노출 = 보고 열 · 방어 = P4 사슬 몫).",
+      "자격 지표 하나가 계산되지 않아도 다른 지표가 미달이면 미달로 판정한다(어느 값이 와도 미달 — 3치 논리). 모든 자격 지표가 통과이거나 미정인데 하나라도 계산되지 않으면 판정하지 않고 다시 평가한다.",
+      "T1 엔진은 정보계수 이력이 36개월 미만인 팩터에 가중 0 을 주고, 카테고리 전체가 가중 0 이면 그 달은 등가중 점수를 쓴다 — 초기 몇 해의 T1 은 T0 에 가깝거나 일부 카테고리에 쏠린다(엔진 규칙 · 판정 무관).",
+      "시험: 이 판은 새 시험 묶음을 돌리지 않는다(도훈 11-12 · 11-13 — 등록 시험은 직전 결과 + 핀 동일로 갈음). 코어 v4 시험 46/46(11-13 출시 전 · 격리 점검) · 엔진 PIT 값 검사(T0 test_fc_engine_gen.R · T1 test_fc_combiner_gen.R — P1R03 · P1R04 등록 때)를 핀(코어 매니페스트 · 생성기 md5)과 입구의 재생성 md5 대조가 잇는다."
+    ],
+    "changes_after_review": [],
+    "changes_after_superfan": [],
+    "tests": [],
+    "behavior_card_cfg": "04_Research/programs/P1_RETURN/P1S03_own_spec_qualification/behavior_card_cfg_at_prereg.json",
+    "pins": {
+      "files": [
+        "02_Infrastructure/reinforcement/rf_base_cache.R",
+        "02_Infrastructure/reinforcement/rf_base_align.R",
+        "02_Infrastructure/replication/replication_harness.R",
+        "02_Infrastructure/contracts/backtest_result_contract.R",
+        "02_Infrastructure/validation/lookahead_detector.R",
+        "02_Infrastructure/contracts/save_bt_result.R",
+        "02_Infrastructure/reinforcement/rf_rebalance.R",
+        "02_Infrastructure/factor_db/factor_db_connector.R",
+        "02_Infrastructure/portfolio/weight_catalog.R",
+        "02_Infrastructure/factor_db/factor_combinable.R",
+        "02_Infrastructure/factor_db/factor_z_standard.R",
+        "02_Infrastructure/portfolio/advanced_weights.R",
+        "02_Infrastructure/methods/method_registry.R",
+        "02_Infrastructure/factor_db/fc_engine_gen.R",
+        "02_Infrastructure/factor_db/fc_combiner_gen.R",
+        "06_Registry/factor_combinable.json"
+      ],
+      "basis": "pins.R '핀 = 판정에 닿는 전체' — 판 2(P1S02) 목록 승계 + 자체 사양 입구의 판정 경로: 생성기 둘(fc_engine_gen.R · fc_combiner_gen.R — 입구가 엔진 본문을 다시 만들어 대조하는 함수 · 코어 v4 README '생성기 변경을 새 판으로 묶으려면 판 작성자가 pins.files 에 넣는다') · 결합용 뷰 설정(06_Registry/factor_combinable.json — 엔진 입력 뷰의 정의 · P1R03 · P1R04 와 같다). 제외 = factor_registry.json(공유 등록부 — 다른 세션이 맞춤 팩터를 수시로 더한다 · 엔진은 own_spec 의 부호 s_reg 를 고정하고 본문 실행 단정이 뷰 부호와 대조해 어긋나면 멈추므로 조용히 바뀌지 않는다) · 결합용 뷰 저장본 · IC 원장(자료면 — 측정 셸의 데이터 지문 · 기저 캐시 키 · 판 표식이 다룬다)."
+    }
+  },
+  "rules_resolved": [
+    {
+      "id": "qualify",
+      "type": "all_of",
+      "label": "수익 엔진 자격",
+      "na": "untested",
+      "of": [
+        {
+          "id": "q_t_alpha",
+          "type": "threshold",
+          "label": "보는 창 β-통제 t(α)",
+          "metric": "t_alpha_vis",
+          "op": ">=",
+          "value_ref": "02_Infrastructure/worktask/constraint_defaults.json::tier_graduation.grade_b_min_portfolio_alpha_t",
+          "na": "untested",
+          "value": 2,
+          "value_source": "02_Infrastructure/worktask/constraint_defaults.json::tier_graduation.grade_b_min_portfolio_alpha_t"
+        },
+        {
+          "id": "q_uc",
+          "type": "threshold",
+          "label": "보는 창 상승 포착",
+          "metric": "uc_vis",
+          "op": ">=",
+          "value": 0.55,
+          "basis": "투자철학 헌장 — 강세 참여 ≥ 55%(P1R01 rules.qualify.uc_floor 승계)",
+          "na": "untested",
+          "value_source": "근거: 투자철학 헌장 — 강세 참여 ≥ 55%(P1R01 rules.qualify.uc_floor 승계)"
+        }
+      ]
+    },
+    {
+      "id": "test_hold",
+      "type": "report",
+      "label": "시험 창 유지(사람 쪽 보고)",
+      "when": "qualify",
+      "metric": "alpha_ann_test",
+      "op": ">",
+      "value": 0,
+      "basis": "P1R01 rules.test_window 승계 — 자격 엔진만 · 판정 아님",
+      "value_source": "근거: P1R01 rules.test_window 승계 — 자격 엔진만 · 판정 아님",
+      "na": "untested"
+    }
+  ],
+  "sentences": {
+    "qualify": "수익 엔진 자격 = [보는 창 β-통제 t(α): t_alpha_vis >= 2 (02_Infrastructure/worktask/constraint_defaults.json::tier_graduation.grade_b_min_portfolio_alpha_t · 미측정 = 미시험) ∧ 보는 창 상승 포착: uc_vis >= 0.55 (근거: 투자철학 헌장 — 강세 참여 ≥ 55%(P1R01 rules.qualify.uc_floor 승계) · 미측정 = 미시험)] 모두 (미측정 = 미시험)",
+    "test_hold": "시험 창 유지(사람 쪽 보고)(보고 전용 — 판정 아님): 'qualify' 참인 칸만 alpha_ann_test > 0 (근거: P1R01 rules.test_window 승계 — 자격 엔진만 · 판정 아님)"
+  },
+  "pins": {
+    "core": {
+      "version": "v4",
+      "files": {
+        "cell_eval.R": "ae8ad253f11908807c968ba3b526b045",
+        "driver.R": "0d9b5d847ea72b8885e311ca1f49637f",
+        "fingerprint.sh": "10b55bd509f587b6b0b5cfdce3d91b4e",
+        "freshness.R": "ece0989ff76a95ceb454e003d9c63b80",
+        "load.R": "7189776c99f13cd57bac30165d051f96",
+        "measure_cell.R": "1390b6015ae58123d6831489df3a9989",
+        "metrics.R": "8adb024271f00dedc7c9464dcb7f6b7e",
+        "outcomes.R": "71df00a7867f943cd51d166a28911353",
+        "p1.R": "23321bf956961d871a0141c074164c1c",
+        "p2.R": "d9680326f6d0e80d9649aecb3508693d",
+        "p3.R": "0d8ae1e527271cd02c63c030593c14f1",
+        "p4.R": "ada6a39cb3315d46dfdbd26865eeb9ff",
+        "pair.R": "d91be83f2ed42ffc56f8d105119787c6",
+        "pins.R": "dd7269af2e89313c3a957fe18b4eeb55",
+        "register.R": "e29e6be851f0228f4b9db2955e66818f",
+        "rules.R": "7e7520618e331ded3dc06856f37e3136",
+        "rules_p2.R": "3cfea8f932a3ea76e86daa31e152bd1b",
+        "spec.R": "3de905adeac4530b39aff35c2688ab17",
+        "standing.R": "ecf1fcb1ac1fa62e5cab486357d38c64",
+        "util.R": "1dcd37534bb07db45658afcefbf6ca87"
+      },
+      "manifest_md5": "320611fa0e08dc70e3db51e9e502dcaa"
+    },
+    "files": [
+      {
+        "path": "02_Infrastructure/alpha_search/run_paper_replication.R",
+        "md5": "04b181466864da017e66dc9be5cdb52f"
+      },
+      {
+        "path": "02_Infrastructure/backtest_harness.R",
+        "md5": "12b6c29128877c01cd64f1d635716b06"
+      },
+      {
+        "path": "02_Infrastructure/config.R",
+        "md5": "6ec23fe8f355f362b05125be0d154605"
+      },
+      {
+        "path": "02_Infrastructure/contracts/backtest_result_contract.R",
+        "md5": "d1d6f81deb61d7145a20b79fbf355b4c"
+      },
+      {
+        "path": "02_Infrastructure/contracts/behavior_card.R",
+        "md5": "5ee201eb6ec292bd4ad4219514fe310f"
+      },
+      {
+        "path": "02_Infrastructure/contracts/beta_controlled_alpha.R",
+        "md5": "cf44057ab05096ff0424781197af79a8"
+      },
+      {
+        "path": "02_Infrastructure/contracts/diagnosis_packet.R",
+        "md5": "a9dfc1abdf719304f99b6b96bdad3a63"
+      },
+      {
+        "path": "02_Infrastructure/contracts/essence_score.R",
+        "md5": "484a0e4645071d4034353009d03498ae"
+      },
+      {
+        "path": "02_Infrastructure/contracts/grade_v3.R",
+        "md5": "b7ebf22339434bb4b5dae8f4824687ff"
+      },
+      {
+        "path": "02_Infrastructure/contracts/matched_controls.R",
+        "md5": "1b9d8152255231b2e77401f598bbcf14"
+      },
+      {
+        "path": "02_Infrastructure/contracts/measurement_axis.R",
+        "md5": "113e9efc3abeb1b06ac37fa07a9293fd"
+      },
+      {
+        "path": "02_Infrastructure/contracts/save_bt_result.R",
+        "md5": "d724252b67e51612ab91f346bc240425"
+      },
+      {
+        "path": "02_Infrastructure/contracts/tilt_attribution.R",
+        "md5": "54a200bafc3cd7ff99a7d0742094a15b"
+      },
+      {
+        "path": "02_Infrastructure/contracts/tilt_attribution_config.json",
+        "md5": "290303835afa1cc2f76bc4f898ec6493"
+      },
+      {
+        "path": "02_Infrastructure/factor_db/factor_combinable.R",
+        "md5": "077bf8f4e3e89bb09e6b0c82ecef585d"
+      },
+      {
+        "path": "02_Infrastructure/factor_db/factor_db_connector.R",
+        "md5": "fcf7e5296ac33569b6e184b6c3755bec"
+      },
+      {
+        "path": "02_Infrastructure/factor_db/factor_z_standard.R",
+        "md5": "c82870c7fc5e8fc046fa9a68b5a13967"
+      },
+      {
+        "path": "02_Infrastructure/factor_db/fc_combiner_gen.R",
+        "md5": "6b2a6e45e33abb59be8609df1886b209"
+      },
+      {
+        "path": "02_Infrastructure/factor_db/fc_engine_gen.R",
+        "md5": "e31ad11fa6be218017e961c47b06bbdc"
+      },
+      {
+        "path": "02_Infrastructure/methods/method_registry.R",
+        "md5": "a4a8d90b7ce71a4b3ddacf9146286006"
+      },
+      {
+        "path": "02_Infrastructure/ops/rf_cell_worker.R",
+        "md5": "522f7fe2dd6c42c09bcfee4a7f109d23"
+      },
+      {
+        "path": "02_Infrastructure/portfolio/advanced_weights.R",
+        "md5": "9706fcba893fcb3d09a989d5b39de255"
+      },
+      {
+        "path": "02_Infrastructure/portfolio/weight_catalog.R",
+        "md5": "3944fdee95305f664dd864915d4dc396"
+      },
+      {
+        "path": "02_Infrastructure/reinforcement/rf_axes.R",
+        "md5": "861cd5ea2079a8b0bc6c07293a5538ca"
+      },
+      {
+        "path": "02_Infrastructure/reinforcement/rf_base_align.R",
+        "md5": "e9b2852815014592bd7afaff01a33896"
+      },
+      {
+        "path": "02_Infrastructure/reinforcement/rf_base_cache.R",
+        "md5": "3794bc7b6ec5df0ab135da3f082a5afb"
+      },
+      {
+        "path": "02_Infrastructure/reinforcement/rf_cell_engine.R",
+        "md5": "25fa9a4a985280cf20daa49d8b003417"
+      },
+      {
+        "path": "02_Infrastructure/reinforcement/rf_rebalance.R",
+        "md5": "d94bdf3a73f4e15e9041de5ea48120f2"
+      },
+      {
+        "path": "02_Infrastructure/replication/replication_harness.R",
+        "md5": "d0b94e14bc5e579060e0efaf684a232e"
+      },
+      {
+        "path": "02_Infrastructure/validation/lookahead_detector.R",
+        "md5": "044f3ff17c39ca1f1aa756e5cced5a9f"
+      },
+      {
+        "path": "02_Infrastructure/worktask/constraint_defaults.json",
+        "md5": "3397e490367f3113f3a8350ac1c9ba7c"
+      },
+      {
+        "path": "04_Research/programs/P1_RETURN/P1S03_own_spec_qualification/behavior_card_cfg_at_prereg.json",
+        "md5": "6a2a1d21b82858e1ab954fec2085ac32"
+      },
+      {
+        "path": "04_Research/programs/P1_RETURN/P1S03_own_spec_qualification/specs/P1S03_FVALU_RX0.json",
+        "md5": "86737c399185e14b9563bb208d577ff7"
+      },
+      {
+        "path": "04_Research/strategies/FC_FAM_value/engine.R",
+        "md5": "faba4b417a0757942ef20a44bdae36ed"
+      },
+      {
+        "path": "06_Registry/factor_combinable.json",
+        "md5": "08e1194adf2e478edfd5ee1c5e5e1b34"
+      },
+      {
+        "path": "06_Registry/grade_v3.json",
+        "md5": "97f8b60c71445a99203b9ad2135560a5"
+      },
+      {
+        "path": "06_Registry/matched_controls.json",
+        "md5": "f0cf960ab0e6ecebd9c336e61d2b86a7"
+      }
+    ],
+    "packages": {
+      "data.table": "1.18.6.1",
+      "jsonlite": "2.0.0",
+      "arrow": "26.0.0",
+      "PerformanceAnalytics": "2.0.8",
+      "bbdetection": "1.0"
+    },
+    "r_version": "R version 4.6.2 (2026-10-29 ucrt)"
+  },
+  "cells": [
+    {
+      "code": "P1S03_FVALU_RX0",
+      "engine": "FVALU",
+      "role": "reference",
+      "spec": "04_Research/programs/P1_RETURN/P1S03_own_spec_qualification/specs/P1S03_FVALU_RX0.json",
+      "md5": "86737c399185e14b9563bb208d577ff7"
+    }
+  ],
+  "behavior_card_cfg": {
+    "path": "04_Research/programs/P1_RETURN/P1S03_own_spec_qualification/behavior_card_cfg_at_prereg.json",
+    "md5": "6a2a1d21b82858e1ab954fec2085ac32"
+  }
+}
