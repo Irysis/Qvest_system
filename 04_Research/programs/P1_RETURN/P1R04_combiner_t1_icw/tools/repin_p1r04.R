@@ -1,6 +1,6 @@
 ## repin_p1r04.R — P1R04 사전등록 핀 가운데 '바뀐 운영 파일'의 md5 잎만 다시 고정(결과 전 · lean-loop 5 '재개 때 재핀') · 선례 = P2R05 재핀(04_Research/01_reports/env_upgrade_20261109/repin_p2r05.R)
 ##
-## 왜: 등급 v3.5(도훈 결정 GRADE-CR-NOTCH-BETA-SELECTION-20261113 · 등급 v3.5 세션)가 코어 기본 핀(RC_PIN_FILES_DEFAULT) 다섯 파일
+## 왜: 등급 v3.5(도훈 결정 GRADE-CR-NOTCH-BETA-SELECTION-20261113 · 등급 v3.5 세션)가 코어 기본 핀(RC_PIN_FILES_DEFAULT) 여섯 파일
 ##     (grade_v3.R · matched_controls.R · essence_score.R · 06_Registry/grade_v3.json · 06_Registry/matched_controls.json)을 바꾼다 — P1R04 등록(11-13 08:45) 뒤 · 측정 전.
 ##     P1R04 판정(IS β-통제 알파 t · IS 상승 포착률 · 계보 판정 도구의 기준 엔진 대비 증분 알파)은 등급을 읽지 않고, v3.5 는 MC8 기존 필드의 뜻을 바꾸지 않는다(새 필드만)
 ##     → 판정 입력 불변. 칸 측정 기록의 등급(보고 열)은 v3.5 로 채점된다. 등록 문서(사양 · 규칙 · 칸 · 결론 범위)는 그대로다.
@@ -17,7 +17,8 @@ RID <- "P1R04_combiner_t1_icw"
 RD <- file.path(ROOT, "04_Research/programs/P1_RETURN", RID)
 PR <- file.path(ROOT, "stage_artifacts/programs/P1_RETURN", RID, "prereg.json"); PRC <- file.path(RD, "prereg.json")
 ALLOW <- c("02_Infrastructure/contracts/grade_v3.R", "02_Infrastructure/contracts/matched_controls.R", "02_Infrastructure/contracts/essence_score.R",
-           "06_Registry/grade_v3.json", "06_Registry/matched_controls.json")
+           "06_Registry/grade_v3.json", "06_Registry/matched_controls.json",
+           "02_Infrastructure/contracts/diagnosis_packet.R")   # 11-13 v3.5 세션 추가 — IS 요약에 '시가총액 · β 일치 무작위 대조 귀속' 줄 + controls.beta_match 필드(기존 필드 불변 · τ_D 불변성 검사 통과)
 md5 <- function(f) unname(as.character(tools::md5sum(f)))
 rel <- function(p) sub(paste0("^", ROOT, "/"), "", gsub("\\\\", "/", p))
 ser <- function(x) toJSON(x, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = NA)   # round_core rc_json_write 와 같은 직렬화
@@ -56,7 +57,7 @@ cat("[repin p1r04] 재핀 뒤 핀 전체 = 지금 디스크 ✓\n")
 new$repins <- c(pre$repins %||% list(), list(list(
   at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), by = "Q",
   approved = "등급 v3.5 세션 조율(11-13 · 교체 순서 (나) — 지금 교체 · P1R04 는 측정 시작 때 재핀) · lean-loop 5 '막지 않는다 — 재개 때 재핀 · 사전등록 내용은 바꾸지 않는다'",
-  reason = "등급 v3.5(도훈 GRADE-CR-NOTCH-BETA-SELECTION-20261113 — CR '강함' 가점의 선택 방어에 시가총액 × β 짝 요구)로 코어 기본 핀 다섯 파일이 바뀌었다 — 결과 전 · P1R04 판정 입력(IS 알파 t · 상승 포착률 · 기준 엔진 대비 증분 알파)은 등급을 읽지 않는다 · MC8 기존 필드 뜻 불변 · 칸 등급(보고 열)은 v3.5",
+  reason = "등급 v3.5(도훈 GRADE-CR-NOTCH-BETA-SELECTION-20261113 — CR '강함' 가점의 선택 방어에 시가총액 × β 짝 요구)로 코어 기본 핀 여섯 파일(diagnosis_packet.R 포함 — 새 필드만)이 바뀌었다 — 결과 전 · P1R04 판정 입력(IS 알파 t · 상승 포착률 · 기준 엔진 대비 증분 알파)은 등급을 읽지 않는다 · MC8 기존 필드 뜻 불변 · 칸 등급(보고 열)은 v3.5",
   from_md5 = OLD, changed = as.list(CH))))
 NEWF <- tempfile(fileext = ".json"); wr(new, NEWF); NEW <- md5(NEWF)
 chk <- fromJSON(NEWF, simplifyVector = FALSE)
