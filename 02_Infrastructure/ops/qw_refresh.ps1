@@ -477,6 +477,30 @@ function Ensure-Login {
   return $a
 }
 
+# ---- from-override 결합 (2026-11-13 · RAWDATA 2026-03-30 수정주가 이음매의 원인 ① — 이음매 수리 세션 진단 · 수리 = refresh-root-fix) ----
+#  구판 Refresh-One 은 -FromOverride(신규 상장 보충 · .cache/qw_backfill_pending.json → 래퍼)가 앵커 B5 를 조건 없이 갈아 끼웠다.
+#  보충 시작일이 앵커보다 늦으면 창이 오히려 좁아졌다 — OHLCVS qw_base 앵커 20260328 → 보충 20261110(신규 상장 A0162D0 · 11-11 08:24 등록 ·
+#  OHLCVS 가 그 뒤 끝나지 못해 대기열이 안 지워져 11-11 ~ 11-13 수급마다). 좁은 창(11-10~)을 실은 적재기는 창 첫날(03-30)의
+#  원천 전환 이음매를 다시 판정하지 못했고, 전 이력 Ret 재계산이 03-30 처분을 지웠다(RAWDATA 03-30 |Ret|>0.35 351종목).
+#  규칙 = 보충은 창을 넓히기만 한다: B5 = min(앵커 B5, 보충 시작일).
+#    앵커 'done'(next > 목표일) → 보충 시작일(구멍 복구 · 종전대로) · 앵커 'keep'(B5 모름) → 시트마다 min(통합문서 B5, 보충 시작일)
+#    (통합문서 B5 를 못 읽으면 보충 시작일 · 종전대로). 시험 = 08_Tests/data/test_qw_refresh_anchor.ps1 MF1 · RB1 · SB1 · R9~R13 · M17~M20.
+function Read-B5($v) {   # 통합문서 B5 값(이 드라이버는 [double]yyyyMMdd 로 쓴다) -> 'yyyyMMdd' · 빈칸 · 날짜 일련번호 · 글자 -> $null
+  $s = "$v".Trim()
+  if ($s -match '^(\d{8})(\.0+)?$') { return $Matches[1] }
+  return $null
+}
+function Merge-FromOverride($anchorB5, $ovr) {   # 앞선 날 = 넓은 창 · 한쪽이 없으면 다른 쪽
+  if (-not $ovr) { return $anchorB5 }
+  if (-not $anchorB5) { return $ovr }
+  if ([long]$ovr -lt [long]$anchorB5) { return $ovr }
+  return $anchorB5
+}
+function Get-SheetB5($b5, $ovr, $anchorB5, $cell) {   # 이 시트에 쓸 B5($null = 통합문서 값 그대로)
+  if ($ovr -and -not $anchorB5) { return (Merge-FromOverride (Read-B5 $cell) $ovr) }   # keep + 보충: 통합문서 B5 보다 늦추지 않는다
+  return $b5
+}
+
 # ---- refresh one file -> ok | kicked | skip | err ----
 function Refresh-One($f,$target) {
   if (-not (Test-Path $f.path)) { Write-Host "[$($f.name)] missing, skip"; return "skip" }
@@ -486,11 +510,16 @@ function Refresh-One($f,$target) {
   Write-Host "[$($f.name)] anchor $($a.mode): $($a.detail)"
   if ($a.warn) { Write-Host "[$($f.name)] WARN $($a.warn)" }   # 2차(11-06): 뒤처진 출력이 앵커를 붙잡음 · keep — 창 상한은 결정 사항(Get-BookAnchor 주석)
   $b5 = $a.b5
+  $ovr = $null
   if ($FROM_OVR.ContainsKey($f.name)) {
-    Write-Host "[$($f.name)] from-override B5=$($FROM_OVR[$f.name]) (앵커 $($a.mode) $($a.b5) 대신 · 구멍 복구 1회)"
-    $b5 = $FROM_OVR[$f.name]
+    ## ★2026-11-13: 보충은 창을 넓히기만 한다 — B5 = min(앵커, 보충 시작일)(Merge-FromOverride 머리 주석 · 구판 = 조건 없이 갈아 끼움 → OHLCVS 창 좁힘)
+    $ovr = $FROM_OVR[$f.name]
+    $b5 = Merge-FromOverride $a.b5 $ovr
+    $how = if (-not $a.b5) { "anchor $($a.mode) -> per sheet min(workbook B5, $ovr)" } elseif ("$b5" -ne "$($a.b5)") { "earlier than anchor $($a.mode) $($a.b5) -> window widened (hole recovery)" } elseif ("$ovr" -eq "$($a.b5)") { "same day as anchor $($a.mode)" } else { "IGNORED - anchor $($a.mode) B5 $($a.b5) already starts earlier" }
+    Write-Host "[$($f.name)] from-override $ovr : $how (backfill only widens the window - 2026-11-13)"
   } elseif ($a.mode -eq 'done') { Write-Host "[$($f.name)] cache already >= target (all outputs: next $($a.b5) > $target) -> done"; return "ok" }
-  Write-Host ("[{0}] refresh start (B5={1} B6=CPD-1TD) {2}" -f $f.name, $(if($b5){$b5}else{'keep'}), (Get-Date -Format HH:mm:ss))
+  $b5txt = if ($ovr -and -not $a.b5) { "min(workbook,$ovr)" } elseif ($b5) { "$b5" } else { 'keep' }
+  Write-Host ("[{0}] refresh start (B5={1} B6=CPD-1TD) {2}" -f $f.name, $b5txt, (Get-Date -Format HH:mm:ss))
   if ($WhatIf) { return "skip" }
   $xl=$null; $wb=$null; $result="err"
   try {
@@ -499,7 +528,7 @@ function Refresh-One($f,$target) {
     $wb = $xl.Workbooks.Open($f.path)
     foreach ($ws in $wb.Worksheets) {
       $ws.Activate()
-      if ($b5 -and ("$($ws.Range('A5').Value2)" -like "Period*From*")) { $ws.Range("B5").Value2 = [double]$b5 }
+      if ("$($ws.Range('A5').Value2)" -like "Period*From*") { $w5 = Get-SheetB5 $b5 $ovr $a.b5 $ws.Range('B5').Value2; if ($w5) { $ws.Range("B5").Value2 = [double]$w5 } }   # 11-13: keep + 보충 = 시트마다 min(통합문서 B5, 보충일)
       if ("$($ws.Range('A6').Value2)" -like "Period*To*") { $ws.Range("B6").Value2 = "CPD-1TD" }
       foreach ($h in $ws.Hyperlinks) { if ($h.ScreenTip -like "Quantiwise*") { $h.Follow() } }
     }

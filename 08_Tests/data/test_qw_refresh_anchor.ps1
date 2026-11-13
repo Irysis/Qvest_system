@@ -7,12 +7,15 @@
 #   max 10-30 → B5=20261031 · 컨센서스 4지표 10-16 인데 eps_1y 10-19 → B5=20261020.
 #   수리 = 출력 전부의 min(max)+1 · 출력 하나라도 판단 불가면 keep(기존 B5) · 'done' 은 모든 출력이 목표일에 닿았을 때만.
 # 무엇을 재나 (단말 · Excel · 대화상자 감시 · 상태 파일 · 운영 .cache 무접촉):
-#   실제 qw_refresh.ps1 에서 앵커 함수 6개만 AST 로 꺼내 모래상자(%TEMP%) parquet 로 돌린다.
+#   실제 qw_refresh.ps1 에서 앵커 함수 9개만 AST 로 꺼내 모래상자(%TEMP%) parquet 로 돌린다.
 #   A~Q  앵커 사례 — 양성 대조(출력 max 가 다를 때 B5 = min+1 · 전부 목표일 이상이면 done · 경계 = 목표일 당일은 받는다)
 #        + 위반 주입(출력 파일 부재 · 깨짐 · 행 0 · Date 열 없음 · 그룹 행 부재 → keep)
 #   N    계기 사망 주입 — python 부재 · 기동 실패 → keep (판단 불가가 'done' 으로 새지 않는다)
 #   R    Refresh-One 분기 — done → ok · b5/keep → 시작줄 · -FromOverride 가 done 보다 먼저($WhatIf 로 Excel 앞에서 멈춘다)
 #        + WARN 줄(2차) — 뒤처진 출력이 앵커를 붙잡으면 창 일수와 함께 · keep 이면 경고 · done · 고른 출력이면 경고 없음
+#        + 보충 결합(2026-11-13 · RAWDATA 03-30 이음매 원인 ①) R9~R12 — 보충은 창을 넓히기만 한다(B5 = min(앵커, 보충일) · 구판은 갈아 끼워 OHLCVS 창을 좁혔다)
+#          · R13 = 시트 줄이 Get-SheetB5 로 B5 를 정한다(정적)
+#   MF1 · RB1 · SB1  보충 결합 순수 함수 표(Merge-FromOverride · Read-B5 · Get-SheetB5) — keep + 보충의 시트별 min 은 Excel 없이 여기서 잰다
 #   S    책 표 구조 — 순서 · 경로(구판 $FILES 와 같음) · OHLCVS = qw_base · Benchmark 출력 = benchmark.parquet 하나(indices 제외 사유는 드라이버 주석)
 #   G    표 ↔ 적재기 · 파서 **값** 대조(2차 — 원문 모양 무관): R 구문 분석기(parse · 평가는 c()/list() 상수식만)와 python ast 로
 #        CONSENSUS_METRICS 값 · UNIVERSE_SUPPORT_SHEET_META 의 cache_name · SHEETS 2번째 칸 · 'investor_all.parquet' 을 쓰는 적재기 함수의
@@ -24,8 +27,8 @@
 #          c() · := itype 로 다시 쓰자(F3) 거짓 실패했다 — 그 교훈으로 이 축을 다시 짰다.
 #   P    그룹 판독 등가(2차 — 드라이버의 행 그룹 가지치기): 행 그룹 여럿 · 날짜 뒤섞임 · 통계 없음 · 시각형 + 결측 · 그룹 부재 · 열 부재 · 행 0
 #        자료에서 Get-OutputMaxes 결과 = 이 시험이 자료 행에서 직접 계산한 그룹별 max(독립 기준) · 가지치기가 실제로 일어남(읽은 행 그룹 수)
-#   M1~M16 뮤테이션 — 소스 텍스트 치환(치환 1회 성사 단정) 사본에서 지정 검사가 실제로 실패해야 한다(검출력).
-# 사전 점검(카나리아): python 기능 프로브(pyarrow · pandas import) · 함수 6개 추출 · 알려진 max 1건 판독 + 부재 1건 판독 ·
+#   M1~M20 뮤테이션 — 소스 텍스트 치환(치환 1회 성사 단정) 사본에서 지정 검사가 실제로 실패해야 한다(검출력).
+# 사전 점검(카나리아): python 기능 프로브(pyarrow · pandas import) · 함수 9개 추출 · 알려진 max 1건 판독 + 부재 1건 판독 ·
 #   R/python 사실 추출기 카나리아(모양이 제각각인 합성 파일 → 기대값 · 시작/끝 표지 · 작업 수 일치).
 #   실패하면 사례 결과를 내지 않고 preflight 로 끊는다(0/N 을 '검거 실패'로 오독하지 않게).
 # 사용: powershell -NoProfile -ExecutionPolicy Bypass -File 08_Tests/data/test_qw_refresh_anchor.ps1 [-Src <qw_refresh.ps1>] [-RepoRoot <저장소 루트>]
@@ -61,9 +64,9 @@ $script:PY       = $null
 $script:VR       = 'C:\qw_anchor_vroot'   # 표 구조 검사용 가상 루트(존재하지 않아도 된다 · Join-Path 는 드라이브만 확인)
 $script:FACTS    = @{}
 
-$FN_NAMES = @('New-QwBookTable', 'Get-OutputMaxes', 'Add-OneDay', 'Get-BookAnchor', 'Get-QwBaseNext', 'Refresh-One')
+$FN_NAMES = @('New-QwBookTable', 'Get-OutputMaxes', 'Add-OneDay', 'Get-BookAnchor', 'Get-QwBaseNext', 'Read-B5', 'Merge-FromOverride', 'Get-SheetB5', 'Refresh-One')
 function Import-Fns([string]$text) {
-  # 소스 텍스트에서 함수 6개를 AST 로 꺼내 스크립트 범위에 정의한다('function script:<이름>' 으로 바꿔 이 함수 밖에서도 보이게)
+  # 소스 텍스트에서 함수 9개를 AST 로 꺼내 스크립트 범위에 정의한다('function script:<이름>' 으로 바꿔 이 함수 밖에서도 보이게)
   $tok = $null; $err = $null
   $ast = [System.Management.Automation.Language.Parser]::ParseInput($text, [ref]$tok, [ref]$err)
   if ($err -and $err.Count -gt 0) { return ('parse_error: ' + $err[0].Message) }
@@ -763,6 +766,14 @@ $CHECK_DESC['R5_override_other'] = 'Refresh-One: 다른 책 지정(Consensus=...
 $CHECK_DESC['R6_warn_lag']       = 'Refresh-One: 뒤처진 출력이 앵커를 붙잡음 -> WARN 줄에 뒤처진 출력 · 창 17일(B5 20261020 .. 목표 20261105)'
 $CHECK_DESC['R7_no_warn_done']   = 'Refresh-One: done -> WARN 없음'
 $CHECK_DESC['R8_no_warn_even']   = 'Refresh-One: 모든 출력이 같은 날(목표일 전) -> 시작줄 B5=20261031 · WARN 없음'
+$CHECK_DESC['R9_override_narrow']  = 'Refresh-One: 보충 시작일 20261030 이 앵커 B5 20261020 보다 늦음 -> 무시 · 시작줄 B5=20261020 (2026-11-13 · 구판은 창을 좁혔다)'
+$CHECK_DESC['R10_override_widen']  = 'Refresh-One: 보충 시작일 20261001 이 앵커 B5 20261020 보다 이름 -> 넓힘 · 시작줄 B5=20261001'
+$CHECK_DESC['R11_override_keep']   = 'Refresh-One: 앵커 keep + 보충 20261030 -> 시작줄 B5=min(workbook,20261030)(시트마다 통합문서 B5 와 min)'
+$CHECK_DESC['R12_override_qwbase'] = 'Refresh-One: OHLCVS qw_base 앵커 20260328 + 보충 20261110 -> 무시 · 시작줄 B5=20260328 (11-11~13 실사고 재현)'
+$CHECK_DESC['R13_sheet_uses']      = 'Refresh-One 본문: 시트 B5 를 Get-SheetB5 $b5 $ovr $a.b5 <통합문서 B5> 로 정한다(정적 · Excel 없이)'
+$CHECK_DESC['MF1_merge']           = 'Merge-FromOverride: (20260328,20261110)->20260328 · (20261020,20261001)->20261001 · (없음,20261030)->20261030 · (20261020,없음)->20261020 · 같은 날 -> 그날'
+$CHECK_DESC['RB1_readb5']          = 'Read-B5: [double]20260328 · "20260328" · "20260328.0" -> 20260328 · 없음 · "" · "CPD-1TD" · 46109(날짜 일련번호) · "202603281" -> 없음'
+$CHECK_DESC['SB1_sheetb5']         = 'Get-SheetB5: 보충 없음 -> 앵커 B5 그대로(keep 이면 없음) · keep + 보충 -> min(통합문서 B5, 보충일)(못 읽으면 보충일) · 앵커 있음 + 보충 -> 결합된 B5'
 $CHECK_DESC['S1_order']          = '책 순서 = Benchmark,OHLCVS,Universe_Support,Investor_Act,Consensus (구판 $FILES 와 같음)'
 $CHECK_DESC['S2_paths']          = '책 경로 = 구판과 같은 xlsx 5개'
 $CHECK_DESC['S3_kinds']          = 'OHLCVS = qw_base(출력 0) · 나머지 = outputs(출력 >= 1)'
@@ -798,6 +809,38 @@ function Invoke-Check([string]$id) {
       'R6_warn_lag'       { return Invoke-RCase 'A_U_lag' 'Universe_Support' @{} 'skip' '[Universe_Support] WARN anchor held back by lagging outputs [us_sector_lv2=20261019] - window 17d (B5 20261020 .. target 20261105)' }
       'R7_no_warn_done'   { return Invoke-RCase 'J_U_done' 'Universe_Support' @{} 'ok' '-> done' 'WARN' }
       'R8_no_warn_even'   { return Invoke-RCase 'Q_U_even' 'Universe_Support' @{} 'skip' 'refresh start (B5=20261031' 'WARN' }
+      'R9_override_narrow'  { return Invoke-RCase 'A_U_lag' 'Universe_Support' @{ 'Universe_Support' = '20261030' } 'skip' 'refresh start (B5=20261020' }
+      'R10_override_widen'  { return Invoke-RCase 'A_U_lag' 'Universe_Support' @{ 'Universe_Support' = '20261001' } 'skip' 'refresh start (B5=20261001' }
+      'R11_override_keep'   { return Invoke-RCase 'E_U_missing' 'Universe_Support' @{ 'Universe_Support' = '20261030' } 'skip' 'refresh start (B5=min(workbook,20261030)' }
+      'R12_override_qwbase' { return Invoke-RCase 'M_O_qwbase' 'OHLCVS' @{ 'OHLCVS' = '20261110' } 'skip' 'refresh start (B5=20260328' }
+      'R13_sheet_uses' {
+        $body = "$((Get-Item function:Refresh-One).ScriptBlock)"
+        $ok = $body.Contains('Get-SheetB5 $b5 $ovr $a.b5 $ws.Range(''B5'').Value2') -and (-not $body.Contains('$ws.Range("B5").Value2 = [double]$b5'))
+        return @{ ok = $ok; got = "uses_Get-SheetB5=$($body.Contains('Get-SheetB5'))" }
+      }
+      'MF1_merge' {
+        $cs = @(@('20260328', '20261110', '20260328'), @('20261020', '20261001', '20261001'), @($null, '20261030', '20261030'), @('20261020', $null, '20261020'), @('20261020', '20261020', '20261020'))
+        $bad = @(); foreach ($k in $cs) { $g = Merge-FromOverride $k[0] $k[1]; if ("$g" -ne "$($k[2])") { $bad += "($($k[0]),$($k[1]))->$g" } }
+        return @{ ok = ($bad.Count -eq 0); got = "bad=[$($bad -join ' ')]" }
+      }
+      'RB1_readb5' {
+        $cs = @(@([double]20260328, '20260328'), @('20260328', '20260328'), @('20260328.0', '20260328'), @($null, ''), @('', ''), @('CPD-1TD', ''), @([double]46109, ''), @('202603281', ''))
+        $bad = @(); foreach ($k in $cs) { $g = Read-B5 $k[0]; if ("$g" -ne $k[1]) { $bad += "$($k[0])->$g" } }
+        return @{ ok = ($bad.Count -eq 0); got = "bad=[$($bad -join ' ')]" }
+      }
+      'SB1_sheetb5' {
+        # (b5 · 보충 · 앵커 B5 · 통합문서 B5) -> 시트에 쓸 B5('' = 쓰지 않음)
+        $cs = @(
+          @('20261020', $null, '20261020', [double]20261001, '20261020'),
+          @($null, $null, $null, [double]20261001, ''),
+          @('20261030', '20261030', $null, [double]20261015, '20261015'),
+          @('20261030', '20261030', $null, [double]20261101, '20261030'),
+          @('20261030', '20261030', $null, 'CPD-1TD', '20261030'),
+          @('20261020', '20261030', '20261020', [double]20261101, '20261020')
+        )
+        $bad = @(); foreach ($k in $cs) { $g = Get-SheetB5 $k[0] $k[1] $k[2] $k[3]; if ("$g" -ne $k[4]) { $bad += "($($k[0]),$($k[1]),$($k[2]),$($k[3]))->$g" } }
+        return @{ ok = ($bad.Count -eq 0); got = "bad=[$($bad -join ' ')]" }
+      }
       'S1_order' {
         $n = (@(New-QwBookTable $script:VR) | ForEach-Object { $_.name }) -join ','
         return @{ ok = ($n -eq 'Benchmark,OHLCVS,Universe_Support,Investor_Act,Consensus'); got = $n }
@@ -869,6 +912,14 @@ $MUTS = @(
      expect = @('R6_warn_lag'); desc = '창 일수 하루 모자람' }
   @{ id = 'M16'; old = 'if ($held) {'; new = 'if ($true) {'
      expect = @('R8_no_warn_even'); desc = '뒤처진 출력 없어도 WARN' }
+  @{ id = 'M17'; old = '$b5 = Merge-FromOverride $a.b5 $ovr'; new = '$b5 = $ovr'
+     expect = @('R9_override_narrow', 'R12_override_qwbase'); desc = '보충이 앵커를 조건 없이 갈아 끼움(구판 · 11-11~13 OHLCVS 창 좁힘 재현)' }
+  @{ id = 'M18'; old = 'if ([long]$ovr -lt [long]$anchorB5) { return $ovr }'; new = 'if ([long]$ovr -gt [long]$anchorB5) { return $ovr }'
+     expect = @('MF1_merge', 'R9_override_narrow', 'R10_override_widen', 'R4_override'); desc = '결합 min -> max(창을 좁히는 쪽)' }
+  @{ id = 'M19'; old = 'if ($ovr -and -not $anchorB5) { return (Merge-FromOverride (Read-B5 $cell) $ovr) }'; new = 'if ($ovr -and -not $anchorB5) { return $ovr }'
+     expect = @('SB1_sheetb5'); desc = 'keep + 보충이 통합문서 B5 를 무시(시트 창을 좁힐 수 있음)' }
+  @{ id = 'M20'; old = 'Get-SheetB5 $b5 $ovr $a.b5 $ws.Range(''B5'').Value2'; new = '$b5'
+     expect = @('R13_sheet_uses'); desc = '시트 줄이 Get-SheetB5 를 안 씀(keep + 보충 시트별 min 배선 끊김)' }
 )
 
 $SB = Join-Path ([IO.Path]::GetTempPath()) ('qw_anchor_' + [guid]::NewGuid().ToString('N').Substring(0, 10))
@@ -892,7 +943,7 @@ try {
   }
   if (-not $script:PY) { $preflight = 'python_probe_failed(pyarrow/pandas import) candidates=' + ($cands -join ';') }
 
-  # ---- 사전 점검 2: 함수 6개 추출(실제 소스) ----
+  # ---- 사전 점검 2: 함수 9개 추출(실제 소스) ----
   if (-not $preflight) {
     if (-not (Test-Path -LiteralPath $Src)) { $preflight = "src_absent $Src" }
     else {
@@ -925,7 +976,7 @@ try {
       $cr = @(Get-OutputMaxes @(@{ id = 'canary'; path = $canary }, @{ id = 'absent'; path = (Join-Path $SB 'canary\none.parquet') }))
       $cOk = ($cr.Count -eq 2 -and $cr[0].status -eq 'ok' -and $cr[0].ymd -eq '20261019' -and $cr[1].status -eq 'missing')
       if (-not $cOk) { $preflight = 'canary_failed: ' + (($cr | ForEach-Object { "$($_.id)=$($_.status)/$($_.ymd)" }) -join ' ') }
-      else { Say "   preflight OK - python=$($script:PY) · 함수 6개 추출 · 자료 $($items.Count)건 · 카나리아 20261019/missing 판독" }
+      else { Say "   preflight OK - python=$($script:PY) · 함수 9개 추출 · 자료 $($items.Count)건 · 카나리아 20261019/missing 판독" }
     }
   }
 
