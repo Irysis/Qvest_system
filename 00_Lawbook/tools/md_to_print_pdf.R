@@ -93,18 +93,34 @@ img { display: block; max-width: 100%%; max-height: 168mm; margin: 2pt auto 0 au
 html <- sprintf('<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>%s</title><style>%s</style></head><body>%s</body></html>',
                 title, css, body)
 tmp_html <- file.path(tempdir(), "md_print.html"); writeLines(html, tmp_html, useBytes = TRUE)
-edge <- c("C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe", "C:/Program Files/Microsoft/Edge/Application/msedge.exe",
-          "C:/Program Files/Google/Chrome/Application/chrome.exe")
-edge <- edge[file.exists(edge)][1]
-if (is.na(edge)) stop("Edge/Chrome 없음")
-out_abs <- normalizePath(out, winslash = "\\", mustWork = FALSE)
+## 인쇄 브라우저 후보 — 2026-11-13 실사고: Edge 업데이트가 반쯤 끝난 상태(새 판 설치 · 옛 판 시작 프로세스 실행 중)에서
+##   최상위 msedge.exe 가 헤드리스 인쇄를 rc 0 으로 조용히 건너뛰었고, 예전 검사('출력 파일이 있는가')는 지난 판 PDF 를 성공으로 보았다.
+##   → 임시 파일로 인쇄해 실제로 생겼을 때만 결과를 바꾸고, 실패하면 다음 후보(버전 폴더의 Edge → Chrome)로 넘어간다.
+edge <- c("C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe", "C:/Program Files/Microsoft/Edge/Application/msedge.exe")
+for (.root in c("C:/Program Files (x86)/Microsoft/Edge/Application", "C:/Program Files/Microsoft/Edge/Application")) {
+  .vd <- list.dirs(.root, recursive = FALSE, full.names = TRUE)
+  .vd <- .vd[grepl("/[0-9]+(\\.[0-9]+)+$", .vd)]
+  if (length(.vd)) edge <- c(edge, file.path(.vd[order(numeric_version(basename(.vd)), decreasing = TRUE)], "msedge.exe"))
+}
+edge <- unique(c(edge, "C:/Program Files/Google/Chrome/Application/chrome.exe"))
+edge <- edge[file.exists(edge)]
+if (!length(edge)) stop("Edge/Chrome 없음")
 url <- paste0("file:///", normalizePath(tmp_html, winslash = "/"))
-prof <- file.path(tempdir(), "edge_print_profile")
-rc <- system2(edge, c("--headless=new", "--disable-gpu", "--no-pdf-header-footer", "--no-first-run", "--disable-extensions",
-                      "--virtual-time-budget=5000",
-                      paste0("--user-data-dir=", shQuote(normalizePath(prof, winslash = "\\", mustWork = FALSE))),
-                      paste0("--print-to-pdf=", shQuote(out_abs)), url), stdout = TRUE, stderr = TRUE)
-if (!file.exists(out)) { cat(rc, sep = "\n"); stop("PDF 생성 실패") }
+tmp_pdf <- file.path(tempdir(), "md_print_out.pdf")
+ok <- FALSE; rc <- character(0)
+for (.i in seq_along(edge)) {
+  if (file.exists(tmp_pdf)) unlink(tmp_pdf)
+  prof <- file.path(tempdir(), paste0("edge_print_profile_", .i))
+  rc <- system2(edge[.i], c("--headless=new", "--disable-gpu", "--no-pdf-header-footer", "--no-first-run", "--disable-extensions",
+                            "--virtual-time-budget=5000",
+                            paste0("--user-data-dir=", shQuote(normalizePath(prof, winslash = "\\", mustWork = FALSE))),
+                            paste0("--print-to-pdf=", shQuote(normalizePath(tmp_pdf, winslash = "\\", mustWork = FALSE))), url),
+                stdout = TRUE, stderr = TRUE)
+  if (file.exists(tmp_pdf) && file.size(tmp_pdf) > 0) { ok <- TRUE; break }
+  cat(sprintf("[pdf] %s 인쇄 결과 없음 — 다음 후보\n", edge[.i]))
+}
+if (!ok) { cat(rc, sep = "\n"); stop("PDF 생성 실패") }
+if (!file.copy(tmp_pdf, out, overwrite = TRUE)) stop("PDF 를 출력 경로에 쓰지 못함(다른 프로그램에 열려 있는지 확인): ", out)
 cat(sprintf("[pdf] %s · %.0f KB\n", out, file.size(out) / 1024))
 ## 생성 뒤 검사(서식 규칙) — 갈린 표 · 대체 글꼴. QVEST_PY(PyMuPDF) 가 없으면 건너뛴다고 적는다.
 py <- Sys.getenv("QVEST_PY")

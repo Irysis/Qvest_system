@@ -140,15 +140,22 @@ def render_pdf(md_path):
     cmd = [RSCRIPT, "--no-save", PDF_TOOL, md_path, pdf, "portrait"]
     env = dict(os.environ)
     env.setdefault("PYTHONUTF8", "1")
-    t0 = time.time() - 2
-    r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", env=env, cwd=ROOT)
-    for t in (r.stdout + r.stderr).strip().splitlines()[-6:]:
-        log("  pdf:", t[:220])
-    if r.returncode != 0 or not os.path.exists(pdf):
-        raise RuntimeError(f"PDF 생성 실패 rc={r.returncode}")
-    # 11-13 실사고: 변환이 rc 0 인데 새 파일을 못 써(이전 PDF 가 열려 잠김 등) 지난 판 PDF 가 그대로 남았다 — 이번에 쓴 파일인지 확인한다.
-    if os.path.getmtime(pdf) < t0:
-        raise RuntimeError(f"PDF 가 갱신되지 않음(이전 판 그대로 · 파일이 다른 프로그램에 열려 있는지 확인) — {pdf}")
+    # 11-13 실사고: Edge 헤드리스 인쇄가 가끔 파일을 쓰지 못하고도 rc 0 이고, 변환 도구는 '파일 존재'만 봐서 지난 판 PDF 가 그대로 남았다.
+    #   → 새 임시 이름으로 만들고, 실제로 생겼는지 확인한 뒤 원래 이름으로 교체한다. 실패하면 한 번 더 시도한다.
+    tmp = pdf[:-4] + ".rendering.pdf"
+    for attempt in (1, 2):
+        if os.path.exists(tmp):
+            os.remove(tmp)
+        cmd[4] = tmp                       # [Rscript, --no-save, 도구, md, 출력 pdf, 방향]
+        r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", env=env, cwd=ROOT)
+        for t in (r.stdout + r.stderr).strip().splitlines()[-6:]:
+            log("  pdf:", t[:220])
+        if r.returncode == 0 and os.path.exists(tmp) and os.path.getsize(tmp) > 10_000:
+            os.replace(tmp, pdf)
+            return pdf
+        log(f"  pdf: ★{attempt}회차 PDF 미생성(rc={r.returncode}) — {'다시 시도' if attempt == 1 else '포기'}")
+        time.sleep(5)
+    raise RuntimeError(f"PDF 생성 실패(2회) — {pdf}")
     return pdf
 
 
