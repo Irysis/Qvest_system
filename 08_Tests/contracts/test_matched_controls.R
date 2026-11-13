@@ -261,7 +261,7 @@ pcB <- as.data.table(rB$card$controls$size_exposure_matched$per_crisis)
 crB <- as.data.table(rB$card$crises)
 expB <- paste0(" (", vapply(pcB$control_dd_capture[match(as.Date(crB$peak_date), as.Date(pcB$peak_date))], prep_fmt_ratio, character(1)), ")")
 chk("K4 위기 줄에 크기+노출 짝 하락노출이 붙는다 — 머리 범례 '(괄호 = 크기·노출 짝 대조)' + 줄마다 그 위기의 짝 값",
-    grepl("(괄호 = 크기·노출 짝 대조)", dB$lines_heading, fixed = TRUE) && length(dB$lines) == nrow(crB) && nrow(crB) >= 2L &&
+    grepl("(괄호 = 무작위 대조 포트폴리오(시가총액·노출 일치))", dB$lines_heading, fixed = TRUE) && length(dB$lines) == nrow(crB) && nrow(crB) >= 2L &&
       !anyNA(match(as.Date(crB$peak_date), as.Date(pcB$peak_date))) &&
       all(mapply(function(l, e) grepl(e, l, fixed = TRUE), dB$lines, expB)) && all(grepl(" \\([-−]?[0-9]+\\.[0-9]+\\)", dB$lines)),
     sprintf("(머리=%s · 줄=%s)", dB$lines_heading, paste(dB$lines, collapse = " | ")))
@@ -279,7 +279,7 @@ dB0 <- prep_card_digest(bc_card(rB$S, rB$B, cfg = bcfg))
 chk("K4b 대조 미제공 카드 → 머리 범례 없음 · 줄에 괄호 값 없음(빈 범례를 내지 않는다)",
     length(dB0$lines) >= 2L && !grepl("괄호", dB0$lines_heading, fixed = TRUE) && !any(grepl(" \\([-−]?[0-9]+\\.[0-9]+\\)", dB0$lines)),
     sprintf("(머리=%s · 줄=%s)", dB0$lines_heading, paste(dB0$lines, collapse = " | ")))
-chk("K5 대조 미제공 카드 → '대조 없음'", grepl("대조 없음", prep_card_digest(bc_card(rB$S, rB$B, cfg = bcfg))$controls))
+chk("K5 대조 미제공 카드 → '대조 포트폴리오 없음'", grepl("무작위 대조 포트폴리오(시가총액·노출 일치) 없음", fixed = TRUE, prep_card_digest(bc_card(rB$S, rB$B, cfg = bcfg))$controls))
 chk("K6 창 선택이 귀속 창을 따른다(시험 창 문장도 라벨을 낸다)", grepl("크기 방어", prep_card_digest(rB$card, "test")$controls))
 
 cat("\n=== L. 산출물 디렉터리 경로(mc_card) — 파일 판독 · 명세 · 저장 왕복 ===\n")
