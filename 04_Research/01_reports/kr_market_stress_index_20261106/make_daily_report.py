@@ -19,6 +19,7 @@ import os
 import shutil
 import subprocess
 import sys
+import time
 
 import numpy as np
 import pandas as pd
@@ -139,11 +140,15 @@ def render_pdf(md_path):
     cmd = [RSCRIPT, "--no-save", PDF_TOOL, md_path, pdf, "portrait"]
     env = dict(os.environ)
     env.setdefault("PYTHONUTF8", "1")
+    t0 = time.time() - 2
     r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", env=env, cwd=ROOT)
     for t in (r.stdout + r.stderr).strip().splitlines()[-6:]:
         log("  pdf:", t[:220])
     if r.returncode != 0 or not os.path.exists(pdf):
         raise RuntimeError(f"PDF 생성 실패 rc={r.returncode}")
+    # 11-13 실사고: 변환이 rc 0 인데 새 파일을 못 써(이전 PDF 가 열려 잠김 등) 지난 판 PDF 가 그대로 남았다 — 이번에 쓴 파일인지 확인한다.
+    if os.path.getmtime(pdf) < t0:
+        raise RuntimeError(f"PDF 가 갱신되지 않음(이전 판 그대로 · 파일이 다른 프로그램에 열려 있는지 확인) — {pdf}")
     return pdf
 
 
