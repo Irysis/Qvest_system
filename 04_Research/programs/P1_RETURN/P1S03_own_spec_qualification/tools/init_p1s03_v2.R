@@ -9,8 +9,21 @@ stopifnot(identical(RC_VERSION, "v4"))
 root <- rc_root()
 rd <- "04_Research/programs/P1_RETURN/P1S03_own_spec_qualification"
 f1 <- file.path(rd, "specs/P1S03_FVALU_RX0.json")
-SEED_MD5 <- "86737c39"                                     # 초안 v1 시드 칸 사양(격리 점검 v1 재계산) — v2 에서 바뀌면 안 된다
-if (!startsWith(rc_md5(f1), SEED_MD5)) stop("시드 칸 사양 md5 가 초안 v1 과 다르다 — 중단")
+## 시드 칸 사양 다시 만들기(코어 v4 출시판 rc_standing_own_seed_spec — 변경분 점검 2 M3 · 판단 T4 C-036: 자체 사양 시드도 같은 엔진 스캔 행과 같은 시행 수 규칙)
+##   바뀌는 잎은 selection_accounting 의 n_family_at_registration · n_trials_basis 두 칸뿐이어야 한다(엔진 · 구성 · 축 · 라벨 불변 — 아니면 중단)
+old_seed <- rc_json_read(f1)
+new_seed <- rc_standing_own_seed_spec("04_Research/programs/P1_RETURN/P1R03_factor_family_composites/specs/P1R03_FVALU_C0.json", "P1S03_FVALU_RX0", root = root)
+cj <- function(x) as.character(jsonlite::toJSON(x, auto_unbox = TRUE, null = "null", digits = NA))
+leaf <- function(a, b, path) {
+  if (is.list(a) && is.list(b) && !is.null(names(a)) && !is.null(names(b))) unlist(lapply(union(names(a), names(b)), function(k) leaf(a[[k]], b[[k]], paste0(path, ".", k))))
+  else if (identical(cj(a), cj(b))) character(0) else path
+}
+ch <- leaf(old_seed, new_seed, "seed")
+if (!all(ch %in% c("seed.selection_accounting.n_family_at_registration", "seed.selection_accounting.n_trials_basis")))
+  stop("시드 칸 사양이 시행 회계 밖에서 바뀐다 — 중단: ", paste(setdiff(ch, c("seed.selection_accounting.n_family_at_registration", "seed.selection_accounting.n_trials_basis")), collapse = ", "))
+rc_json_write(new_seed, f1)
+cat(sprintf("[init_p1s03_v2] 시드 칸 사양 다시 만듦 — n_family %s → %s · md5 %s\n", old_seed$selection_accounting$n_family_at_registration,
+            new_seed$selection_accounting$n_family_at_registration, rc_md5(f1)))
 seeds <- list(list(code = "P1S03_FVALU_RX0", engine = "FVALU", role = "reference", spec = f1))
 VINT <- "RAWDATA-SEAM-0330-REPAIR-20261113"                 # 판 표식 id(06_Registry/factor_db_vintage.json) — 사양 글에 τ_D 뒤 날짜를 쓰지 않는다(F-4)
 
@@ -44,7 +57,7 @@ conclusion_scope <- list(
   "입구 제외(사유 코드) = 측정하지 않음 — 판정이 아니다. 자체 사양 입구 사유: own_spec_missing(사양 없음 · 판독 불가 · schema ≠ fc_own_spec_v0 · core md5 ≠ spec_md5) · own_generator_unknown(생성기 목록 밖 — 새 결합기 생성기는 새 판) · own_generator_mismatch(생성기 · 엔진 md5 불일치 · 재생성 본문 불일치 — 손 편집 · 부호 층 변조) · 코어 v4 의 선언 · 계보 검사 사유.",
   paste0("시드 FVALU = 양성 대조. 아는 답 = 같은 사양 · 같은 자료 판에서 잰 P1R04_FVALU_R0 의 IS 값(t_alpha_vis · uc_vis · beta_vis)과 같음(결정론 엔진 · 같은 표준 구성 — 부동소수 허용 1e-9). ",
          "세션이 tick_hold 를 둔 채 scan → 시드만 measure-item → judge 로 시드를 먼저 판정 · 대조하고, 같으면 tick_hold 를 지운다(DESIGN §8 — 무인 틱은 대기 항목을 한 번에 판정 · 발송한다). ",
-         "다르면 자료 판 · 판 경로 원인을 확인하기 전에는 나머지 판정을 읽지 않는다. 통과해도 새 증거가 아니다 — 시드 무가산 = 결정론 재측정이라 새 시행이 아니다."),
+         "다르면 자료 판 · 판 경로 원인을 확인하기 전에는 나머지 판정을 읽지 않는다. 통과해도 새 증거가 아니다 — 원장 회계는 무가산(결정론 재측정 · 새 시행 아님)이고, 칸의 시행 수 n_family 는 같은 엔진 스캔 행과 같은 규칙(rc_standing_own_nf · 판단 C-036 · 원천 P1R03 + P1R04)이다."),
   paste0("T0 15 의 기대 = P1R03 · P1R04 같은 배치 기준 칸과 같은 판정. 판정이 다른 칸은 '원천 판정과 다름' 표식을 달고, 자료 판 원인(판 표식 · 팩터 DB 판)을 기록한 뒤에만 기저 풀에서 쓴다. ",
          "T1 15 는 P1R04 변형 칸과 같은 판정이 기대값이다(같은 엔진 · 같은 구성 · 같은 자료 판)."),
   paste0("측정 자료 판: 판 표식 ", VINT, "(06_Registry/factor_db_vintage.json) 뒤 측정분만 기저 자격을 받는다(contracts/factor_db_vintage.R). 사슬 원천 시행도 낡은 산출은 같은 엔진 · 같은 구성의 현재 판 산출로 갈음한다(코어 v4 · 판단 T1 C-20261113-054)."),
