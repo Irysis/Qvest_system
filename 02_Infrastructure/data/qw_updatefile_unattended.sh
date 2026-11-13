@@ -19,6 +19,11 @@
 #   (보충 원천이 없으니 미완료 = 그날 RAWDATA 정체 — 조용히 넘어가지 않는다).
 # 계약: 리프레시를 멈추지 않는다 — 시간 상한(진행 인지) · 실패해도 경보 줄만. 종료 코드 0 = 어떤 파일이든 전진(호출부가 [0b] 적재를 한 번 더) ·
 #   10 = 건너뜀 · 전진 없음. 마지막 줄 = 'QWUF<TAB>state=…<TAB>only=…<TAB>advanced=…<TAB>rc=…' · 기록 .cache/qw_updatefile_unattended.json
+# ★(2026-11-13 도훈 결정 QW-NIGHT-SESSION-ENSURE-20261113 "밤 갱신에도 재로그인 켜주고, 재로그인 횟수에 제한두지마. 회사컴 로그인 발생하면
+#   항상 바로 재로그인해") 드라이버를 -SkipLogin 없이 부른다 — 라운드마다 Ensure-Login(살아 있으면 무동작 · 중복 로그인 종료 대화상자 →
+#   단말 재기동 → 저장된 자격으로 로그인) · 끊길 때마다 다시 로그인해 이어 받는다(횟수 제한 없음 · 폭주 방지 = 드라이버 -KickStall).
+#   위 -SkipLogin 서술(10-16 안 A · 08-29 잠금 대책)은 사료다. 저장 안 된 비밀번호로 누르는 경로는 드라이버의 SAVEUSERPW 사전 점검이 막는다(exit 3).
+#   구 동작(-SkipLogin) = QWUF_SKIP_LOGIN=1.
 # 끄기: QVEST_QW_UPDATEFILE_UNATTENDED=0
 # 사용: bash qw_updatefile_unattended.sh <벤치 정본 수급 rc> <python>
 #   검사 주입(검사 전용): QWUF_REFRESH_CMD(수급 명령 — 기본 powershell.exe … qw_refresh.ps1) · QWUF_STATE · QWUF_US_PARQUET · QWUF_TIMEOUT · QWUF_LOG
@@ -106,11 +111,12 @@ fi
 [ -n "$OVR" ] && echo "[qwuf] 신규 상장 보충 창(qw_backfill_pending.json) → -FromOverride $OVR"
 T0_TS=$(date '+%Y-%m-%dT%H:%M:%S')
 QW_OUT=$(mktemp)
-XARGS=(); [ -n "$OVR" ] && XARGS=(-FromOverride "$OVR")   # 호출 줄은 하나로 둔다(검사 8 — -SkipLogin 고정 불변식)
+XARGS=(); [ -n "$OVR" ] && XARGS=(-FromOverride "$OVR")   # 호출 줄은 하나로 둔다(검사 8 — 재로그인 정책 불변식)
+SKIPL=(); [ "${QWUF_SKIP_LOGIN:-0}" = "1" ] && SKIPL=(-SkipLogin)   # 11-13 도훈 결정: 기본 = 재로그인(-SkipLogin 없음)
 # ★(2026-11-08 · BUILD_20261108.md §2) QWUF_GROUP=ext → 드라이버 -Group ext(등록부 qw_updatefile_registry.json 의 glossary 질의서 DB).
 #   호출부(daily_refresh.sh [1pre-ext])가 QWUF_ONLY(만든 DB 이름) · QWUF_LOG(별도 기록)를 같이 준다. 기본 core = 동작 불변.
 [ "${QWUF_GROUP:-core}" = "ext" ] && XARGS+=(-Group ext)
-"${CMD[@]}" -SkipLogin -Only "$ONLY" -MaxRounds 2 ${XARGS[@]+"${XARGS[@]}"} > "$QW_OUT" 2>&1 &
+"${CMD[@]}" ${SKIPL[@]+"${SKIPL[@]}"} -Only "$ONLY" -MaxRounds 2 ${XARGS[@]+"${XARGS[@]}"} > "$QW_OUT" 2>&1 &
 qpid=$!
 t0=$(date +%s); last=-1; stall=0; cut=""
 while kill -0 "$qpid" 2>/dev/null; do

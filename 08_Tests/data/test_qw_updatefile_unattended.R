@@ -40,9 +40,11 @@ if (length(r1b$calls) == 1L && length(r1c$calls) == 1L && grepl("state=advanced"
 r2 <- run("0", us_old, env = c(QVEST_QW_UPDATEFILE_UNATTENDED = "0"))
 if (identical(as.integer(r2$rc), 10L) && !length(r2$calls) && grepl("state=disabled", r2$last)) ok("2 QVEST_QW_UPDATEFILE_UNATTENDED=0 → 꺼짐") else ng("2", paste(r2$rc, r2$last))
 r3 <- run("0", us_old)
-if (identical(as.integer(r3$rc), 0L) && length(r3$calls) == 1L && grepl("-SkipLogin", r3$calls, fixed = TRUE) && grepl("-MaxRounds 2", r3$calls, fixed = TRUE) &&
+if (identical(as.integer(r3$rc), 0L) && length(r3$calls) == 1L && !grepl("-SkipLogin", r3$calls, fixed = TRUE) && grepl("-MaxRounds 2", r3$calls, fixed = TRUE) &&
     grepl("-Only OHLCVS,Universe_Support,Investor_Act,Consensus", r3$calls, fixed = TRUE) && grepl("state=advanced", r3$last) && grepl("advanced=2", r3$last))
-  ok("3 rc=0 → 4종(주가 · 위생 먼저) · -SkipLogin · -MaxRounds 2 · 전진 2 → 0(호출부 재적재)") else ng("3", paste(r3$rc, r3$calls, r3$last))
+  ok("3 rc=0 → 4종(주가 · 위생 먼저) · 재로그인 켬(-SkipLogin 없음 · 11-13 도훈 결정) · -MaxRounds 2 · 전진 2 → 0(호출부 재적재)") else ng("3", paste(r3$rc, r3$calls, r3$last))
+r3s <- run("0", us_old, env = c(QWUF_SKIP_LOGIN = "1"))
+if (length(r3s$calls) == 1L && grepl("-SkipLogin", r3s$calls, fixed = TRUE)) ok("3s QWUF_SKIP_LOGIN=1 → -SkipLogin(구 동작 손잡이)") else ng("3s", paste(r3s$calls))
 r4 <- run("0", us_new)
 if (identical(as.integer(r4$rc), 0L) && grepl("-Only OHLCVS,Universe_Support,Investor_Act,Consensus", r4$calls, fixed = TRUE))
   ok("4 Universe_Support 가 최신(10-15)이어도 4종 매일 — 월말 조건 퇴역(위생 플래그도 매일)") else ng("4", paste(r4$calls))
@@ -92,8 +94,9 @@ if (grepl("done=4/4\tincomplete=0", r11a$last, fixed = TRUE) && grepl("done=3/4\
   ok("11 done D/N · 미완료(D<N · rc≠0) 표식 = 마지막 줄 · 기록 json") else ng("11", paste(r11a$last, r11b$last, r11c$last))
 src <- readLines(SH, warn = FALSE, encoding = "UTF-8")
 cl <- grep('"\\$\\{CMD\\[@\\]\\}"', src, value = TRUE)
-if (length(cl) == 1L && grepl("-SkipLogin", cl, fixed = TRUE) && !any(grepl("Ensure-Login|-SkipLogin:\\$false", src)))
-  ok("8 수급 호출 줄은 하나 · -SkipLogin 고정(로그인 클릭 경로 없음)") else ng("8", paste(cl, collapse = " | "))
+skl <- grep('^SKIPL=\\(\\); \\[ "\\$\\{QWUF_SKIP_LOGIN:-0\\}" = "1" \\] && SKIPL=\\(-SkipLogin\\)', src)
+if (length(cl) == 1L && !grepl("-SkipLogin", cl, fixed = TRUE) && grepl("SKIPL[@]", cl, fixed = TRUE) && length(skl) == 1L)
+  ok("8 수급 호출 줄은 하나 · 재로그인 정책 = 기본 켬(-SkipLogin 은 QWUF_SKIP_LOGIN=1 일 때만 · 11-13 도훈 결정 QW-NIGHT-SESSION-ENSURE-20261113)") else ng("8", paste(cl, collapse = " | "))
 
 ## B — 신규 상장 보충 대기열(2026-11-08 · BUILD_20261108.md §1 · data/qw_backfill_pending.py)
 ##   B1 대기열의 Time Series DB → 수급 호출에 -FromOverride <DB>=<시작일> · Peer DB(Fundamental)은 넘기지 않는다 · 끝낸 DB(ts ≥ 시작)은 지운다
