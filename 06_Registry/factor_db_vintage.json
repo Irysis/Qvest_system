@@ -115,6 +115,14 @@
       "decision": "FACTOR-DB-INV-PANEL-RECOMPUTE-20261111(도훈 11-11 '빨간 시험 3건 이 세션에서 해결해' — INV13 시험의 해소 = 수급 계열 재계산)",
       "note": "투자자 패널에 99종목 이력(2023-05-17~)이 보충된 뒤 수급 계열 15팩터를 다시 계산하지 않아 저장값이 옛 패널 기준이었다 — 영향 달 42개(202305~지난달) + 이번 달 재계산 완료 · 잃은 쓰기 없음 · IC 재계산 · 대응표 rc 0 · 결합용 뷰(증분) rc 0. 그 앞 달은 패널이 같아 불변(건식 실행 201906 · 202304 = 바뀐 행 0).",
       "evidence": "04_Research/01_reports/factor_db_inv_panel_recompute_20261111/repair_spec.json · 08_Tests/factor_db/test_inv13_beta_asof.R A1 · B2 · G:/OneDrive/Quant_Module_Moltbot/.cache/scheduler_logs/subset_worker_inv_20261111_185144.jsonl"
+    },
+    {
+      "id": "RAWDATA-SEAM-0330-REPAIR-20261113",
+      "completed_at": "2026-11-13T09:36:10+09:00",
+      "scope": "all",
+      "decision": "RAWDATA-SEAM-0330-REPAIR-20261113(도훈 11-13 '원천 이음매 결함 수리를 바로 시작해주고')",
+      "note": "RAWDATA 2026-03-30 원천 이음매(퀀티 base → 증분 수출본) 처분이 11-11 11:28 적재부터 지워져 Ret 이 생비율이었다(351종 |Ret|>0.35 · 동일가중 +66%) — 적재기 수리(창 한정 재계산 · 전 전환점 재판정 · 쓰기 전 감사) + 소급 정정(11-13 09:07 · Ret 352행) 뒤 파생 재빌드: FF 요인(941e6a63d006) · 팩터 DB 202611 · IC 월간 원장 · 결합용 뷰. 오염 창 = 11-11 11:28 ~ 이 완료 시각(09-07 14:30 ~ 11-11 11:28 RAWDATA 는 깨끗 · 그 앞 측정은 앞 항목들로 이미 낡음). 범위 = 전체(수익 계열 · IC 방향 · Ret 연쇄 팩터가 거의 모든 측정에 닿는다). ★가격 수준 기반 팩터(M05 · M06 · M16 · M17 · M19)의 수준 이음매는 이 수리 범위 밖(결정 대기 D1).",
+      "evidence": "04_Research/01_reports/rawdata_seam_20260330_repair_20261113/README.md · .cache/rawdata_seam_audit/audit_after_repair_20261113_090726.json · .cache/seam_scale_guard/seam_apply_quantiwise_to_quantiwise_update_20260330_20261113_090621.json"
     }
   ]
 }

@@ -293,6 +293,34 @@ seam_scale_report <- function(dt, seam_date, cfg = seam_guard_config()) {
   seam_scan_report(dt, as.Date(seam_date), cfg)
 }
 
+#' Ret 재계산 — ★교체한 창(from 이후) 행만 다시 센다 (2026-11-13 · 원천 이음매 결함 수리).
+#'
+#' ★왜 (실측 2026-11-13): incremental_ohlcvs 는 `Ret := Close / shift(Close) - 1` 을 **전 이력**에 다시 셌고,
+#'   가드는 이번 창의 첫날(min(update_dates))과 이번에 바뀐 source 전환점만 고쳤다. 그래서 지난 적재가 고친
+#'   이음매(2026-03-30 · rescale 280 · block 79 — 11-11 00:12 사이드카)를 다음 적재의 전 이력 재계산이 생비율로
+#'   되돌렸다. 신규 상장 보충 창(qw_backfill_pending.json · -FromOverride OHLCVS=20261110)이 증분 창을 03-28~ 에서
+#'   11-10~ 로 좁힌 11-11 11:28 적재부터 매번 그랬다(03-30 |Ret|>0.35 351종 · 등가중 +66% · 같은 날 KOSPI200 −3.1%).
+#' 창 밖 행은 이번 적재가 Close 를 바꾸지 않았으므로 **저장된 Ret 이 정본**이다 — 지난 가드 처분이 거기 산다.
+#' 창 첫 행은 종목 안 직전 행(창 밖)의 Close 를 앵커로 쓴다 — 그 자리가 이번 창의 이음매이고 가드가 판정한다.
+#' @param dt   Date/Ticker/Close(+Ret) data.table — 제자리 수정
+#' @param from 교체한 창의 첫날(보통 min(update_dates)). 없으면 stop — 전 이력 재계산으로 조용히 떨어지지 않는다.
+#' @return dt (attr "ret_recompute" = list(from, n_rows))
+seam_ret_recompute_window <- function(dt, from) {
+  stopifnot(is.data.table(dt), all(c("Date", "Ticker", "Close") %in% names(dt)))
+  from <- as.Date(from)
+  if (length(from) != 1L || is.na(from))
+    stop("[seam_guard] Ret 재계산 창의 첫날이 없다 — 전 이력 재계산으로 떨어지지 않는다")
+  if (!"Ret" %in% names(dt)) dt[, Ret := NA_real_]
+  if (!is.double(dt$Ret)) dt[, Ret := as.numeric(Ret)]
+  setorder(dt, Ticker, Date)
+  dt[, .seam_ret_new := Close / shift(Close) - 1, by = Ticker]
+  w <- which(dt$Date >= from)
+  if (length(w)) set(dt, i = w, j = "Ret", value = dt$.seam_ret_new[w])
+  dt[, .seam_ret_new := NULL]
+  attr(dt, "ret_recompute") <- list(from = as.character(from), n_rows = length(w))
+  dt
+}
+
 #' 판정표의 처분을 Ret 에 적용한다 (Ret 재계산 **뒤**).
 #'
 #' rescale_ret : Ret := ratio / canonical_scale - 1  (조정계수 재정렬 — 벤치가 canonical
@@ -379,4 +407,4 @@ seam_report_print <- function(rep, label = "") {
   invisible(rep)
 }
 
-cat("[seam_scale_guard] Loaded. seam_scale_report() / seam_detect() / seam_detect_changed() / seam_apply_actions() / seam_write_sidecar()\n")
+cat("[seam_scale_guard] Loaded. seam_scale_report() / seam_detect() / seam_detect_changed() / seam_ret_recompute_window() / seam_apply_actions() / seam_write_sidecar()\n")

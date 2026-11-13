@@ -66,6 +66,15 @@
 #     4 미등록 xlsx 만 있음 · 1 그 밖의 오류. run_r 은 0 이 아니면 DR_FAILED 에 'r<N>(rc=…)' 를 싣고 체인을 계속한다(호출부 무변경).
 #     거부 · 미등록은 전부 처리 · 기록한 **뒤** 끝에서 R 오류로 알린다 — 잡히면(tryCatch · 시험) 평범한 오류이고,
 #     비대화형에서 잡히지 않고 끝나면 options(error=) 가 그 종료 코드로 내보낸다(대화형 세션은 끄지 않는다).
+#   ▸ **원천 이음매 결함 수리 (2026-11-13 · 도훈 "원천 이음매 결함 수리를 바로 시작해주고")** — 아래 OHLCVS 가드 블록:
+#     구판은 `Ret := Close / shift(Close) - 1` 을 **전 이력**에 다시 셌고 가드는 이번 창의 첫날 · 이번에 바뀐 source 전환점만
+#     고쳤다 → 지난 적재가 고친 이음매가 다음 적재마다 생비율로 되살아났다. 신규 상장 보충 창(.cache/qw_backfill_pending.json →
+#     -FromOverride OHLCVS=20261110)이 창을 03-28~ 에서 11-10~ 로 좁힌 11-11 11:28 적재부터 2026-03-30 이 그랬다
+#     (|Ret|>0.35 351종 · 등가중 +66% · 같은 날 KOSPI200 −3.1% · P1R03 엔진 하루 +75%).
+#     수리 ① Ret 재계산 = 교체한 창 행만(seam_ret_recompute_window — 창 밖 저장값 = 지난 가드 처분이 정본)
+#          ② 바뀐 경계만이 아니라 모든 source 전환점을 매번 재판정(Close 에서만 판정 → 멱등)
+#          ③ 쓰기 전 전 이력 감사(rawdata_seam_audit.R — 주식수 지문 · 새 단절 = Ret NA + [SEAM_ALARM] · 사이드카).
+#     시험 = 08_Tests/data/test_seam_window_ret.R(좁은 창 · 창 안 이음매 · 돌연변이) · test_rawdata_seam_audit.R.
 #
 # 사용법:
 #   source("02_Infrastructure/incremental_update_file.R")
@@ -474,8 +483,14 @@ incremental_ohlcvs <- function() {
       for (i in seq_len(nrow(.chg)))
         cat(sprintf("  [seam_guard] 경계 신설/이동: %s (%s -> %s)\n",
                     as.character(.chg$seam_date[i]), .chg$from[i], .chg$to[i]))
-    } else cat("  [seam_guard] source 전환점 변화 없음 — min(update_dates) 만 훑는다\n")
-    sort(unique(c(as.Date(min(update_dates)), as.Date(.chg$seam_date))))
+    } else cat("  [seam_guard] source 전환점 변화 없음\n")
+    # ★(2026-11-13 · 원천 이음매 결함 수리) 바뀐 경계만이 아니라 **모든** source 전환점을 매번 다시 판정한다.
+    #   창이 좁아지면(11-11 11:28~ · 신규 상장 보충 -FromOverride OHLCVS=20261110) 창 밖에 남은 경계(03-30)를
+    #   아무도 다시 보지 않았다. 판정은 Close 에서만 나오므로 다시 재도 멱등이다(같은 Close → 같은 처분).
+    .all <- seam_detect(raw)
+    cat(sprintf("  [seam_guard] source 전환점 %d개 전부 재판정: %s\n", nrow(.all),
+                paste(as.character(.all$seam_date), collapse = ", ")))
+    sort(unique(c(as.Date(min(update_dates)), as.Date(.chg$seam_date), as.Date(.all$seam_date))))
   }, error = function(e) {
     cat(sprintf("  ⛔ [seam_guard] 경계 재도출 실패 (%s) — min(update_dates) 로 후퇴\n",
                 conditionMessage(e)))
@@ -497,9 +512,11 @@ incremental_ohlcvs <- function() {
     } else seam_reps[[as.character(sd_)]] <- r
   }
 
-  # Ret 재계산
+  # Ret 재계산 — ★교체한 창(min(update_dates) 이후) 행만 (2026-11-13 · seam_ret_recompute_window 주석).
+  #   구판은 전 이력을 다시 셌다 → 창 밖 이음매(03-30)에 지난 적재가 내린 처분을 생비율로 되돌렸다(11-11 11:28~).
+  if (!exists("seam_ret_recompute_window", mode = "function")) source(file.path(DATA_DIR, "seam_scale_guard.R"))
   setorder(raw, Ticker, Date)
-  raw[, Ret := Close / shift(Close) - 1, by = Ticker]
+  raw <- seam_ret_recompute_window(raw, min(update_dates))
 
   for (nm in names(seam_reps)) {
     rp <- seam_reps[[nm]]
@@ -531,6 +548,24 @@ incremental_ohlcvs <- function() {
   #   2024-12-30)까지 덮었다. 지금은 결측 채움 + (킬스위치 해제 시) 불일치 정정만 한다.
   if (!exists("rawdata_bm_ret_sync_dt")) source(file.path(DATA_DIR, "rawdata_bm_ret_sync.R"))
   raw <- rawdata_bm_ret_sync_dt(raw, bench = bm[, .(Date, BM_Ret)], tag = "incr_ohlcvs/bm_ret")$dt
+
+  ## ★원천 이음매 감사(2026-11-13) — 가드 뒤에도 남은 조정기준 단절을 **전 이력**에서 다시 찾는다(rawdata_seam_audit.R).
+  ##   지문 = 발행주식수(Size/Close) 점프 ∧ 시총 연속 ∧ 저장 Ret 이 생비율 그대로. 등록부(basis_break_registry.json)에 실린
+  ##   원천 내부 단절은 '알려진 것'으로 세기만 하고, 새로 나타난 것은 Ret := NA(가드 block_ret 와 같은 처분 = 측정 차단) +
+  ##   [SEAM_ALARM] 표지 + 사이드카(.cache/rawdata_seam_audit/). 감사 실패도 [SEAM_ALARM] — 통과로 접지 않는다.
+  .aud <- tryCatch({
+    if (!exists("rsa_audit", mode = "function")) source(file.path(DATA_DIR, "rawdata_seam_audit.R"))
+    rsa_audit(raw)
+  }, error = function(e) {
+    cat(sprintf("  ⛔ [SEAM_ALARM] [seam_audit] 감사 실패(%s) — 미측정(통과로 접지 않는다)\n", conditionMessage(e)))
+    NULL
+  })
+  if (!is.null(.aud)) {
+    raw <- rsa_block_new(raw, .aud)
+    rsa_print(.aud, "incr_ohlcvs")
+    .asc <- tryCatch(rsa_write_sidecar(.aud, "incr_ohlcvs"), error = function(e) NA_character_)
+    cat(sprintf("  [seam_audit] 사이드카: %s\n", .asc))
+  }
 
   # 저장
   setorder(raw, Date, Ticker)

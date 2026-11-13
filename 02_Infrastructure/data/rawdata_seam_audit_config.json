@@ -1,0 +1,20 @@
+{
+  "schema": "rawdata_seam_audit_config_v1",
+  "_purpose": "RAWDATA 원천 이음매 감사(rawdata_seam_audit.R) 상수 — 2026-11-13 원천 이음매 결함 수리(도훈 \"원천 이음매 결함 수리를 바로 시작해주고\"). ★이음매 판정 상수(SEAM_MAX_RET · BASIS_SHARES_TOL)는 여기 두지 않는다 — seam_guard_config.json 단일 정본을 그대로 읽는다(같은 상수를 두 번 정의하면 한쪽만 고쳐진다).",
+  "DAY_FRAC_OFF_ALARM": 0.02,
+  "_DAY_FRAC_OFF_ALARM": "하루 경보 — 그날 유한 Ret 중 |Ret| > SEAM_MAX_RET 비율. ★데이터 근거(2026-11-13 실측 · RAWDATA 2000-01-04~2026-11-12 · 6,620일): 비율 q99 0.198% · q99.9 0.471% · 이음매 밖 최댓값 0.825%(2010-04-28 · 14/1,698) · 2026-03-30 이음매 13.78%(351/2,548). 문턱은 그 빈 골짜기(0.825% ~ 13.78%)의 아래쪽 — 이음매 밖 최댓값의 2.4배 · 이음매의 1/7 — 에 놓았다. 0.01~0.10 어디에 놓아도 과거 판정(경보일 = 2026-03-30 하루)은 같다.",
+  "DAY_N_OFF_MIN": 10,
+  "_DAY_N_OFF_MIN": "하루 경보의 개수 바닥 — 비율 문턱과 함께만 작동한다(둘 다 넘어야 경보). 종목 수가 적던 초기 표본에서 한두 종목이 비율을 흔드는 것을 막는다. 이음매 밖 최댓값(14)보다 작고, 2000년 표본(약 1,065종목) × DAY_FRAC_OFF_ALARM ≈ 21 보다도 작아 비율 문턱이 실제 판정을 정한다.",
+  "RET_MATCH_TOL": 1e-09,
+  "_RET_MATCH_TOL": "'저장된 Ret 이 생비율 그대로다' 판정의 상대 허용오차 — Ret 은 적재기가 같은 식(Close / 직전 행 Close − 1)으로 센 부동소수점이라 손대지 않은 행은 정확히 같고, 가드가 고친 행(rescale = 배율을 나눈 값 · block = NA)은 배율만큼 다르다. 추정이 아니라 동일성 판정이다.",
+  "KNOWN_REGISTRY": "06_Registry/basis_break_registry.json",
+  "_KNOWN_REGISTRY": "이미 등재된 원천 내부 기준 단절(basis_break_scan.R · 2026-09-07 · 도훈 A안 — 원천 내부 단절은 Ret 무처치 · 유동성 창 차단). verdict = adjustment_basis_break 이고 날짜가 scope.source_transition_seams(원천 전환 이음매 — 가드 소관 · 반드시 고쳐져야 한다) 밖인 항목만 '알려진 것'으로 센다(경보 없음 · 차단 없음 · 세기만). 실측 101행(2000년 이후 89).",
+  "MAX_LIST": 500,
+  "_MAX_LIST": "사이드카에 싣는 새 단절 행 상한(전부는 counts 에 센다).",
+  "SIDECAR_DIR": ".cache/rawdata_seam_audit",
+  "_consumers": [
+    "02_Infrastructure/data/incremental_update_file.R::incremental_ohlcvs (쓰기 전 감사 · 새 단절 Ret NA + [SEAM_ALARM])",
+    "Rscript 02_Infrastructure/data/rawdata_seam_audit.R (CLI · 종료 0 정상 · 3 경보 · 1 판독 불가)"
+  ],
+  "_owner": "Q 2026-11-13(원천 이음매 결함 수리 · 도훈 지시). 문턱 변경 = 데이터 재측정 근거와 함께."
+}

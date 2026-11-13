@@ -9,15 +9,20 @@
 #   경계는 증분 수출마다 전진하므로 날짜를 박은 국소 수리는 원리적으로 못 버틴다
 #   (벤치 배관이 07-27 을 고치고 08-09 에 07-29 로 재발한 전례).
 #
-# ★무인 루프와의 충돌 규약 (도훈 2026-09-07):
-#   Qvest_ReinforceAutoLoop(8분 주기)가 .cache/rawdata.parquet 을 읽는다. 재빌드 중
-#   읽히면 절단된 파일을 볼 수 있으므로, --apply 는 06_Registry/reinforce_auto_config.json
-#   의 enabled=false (킬스위치 하강) 를 **재도출로 확인**한 뒤에만 진행한다.
+# ★2026-11-13 개정(원천 이음매 결함 수리 · 도훈 "원천 이음매 결함 수리를 바로 시작해주고"):
+#   ① 이음매 처분 뒤 **전 이력 감사**(rawdata_seam_audit.R)를 같은 표에 돌린다 — 적재기와 같은 처분(새 기준 단절 = Ret NA).
+#      건식 실행도 감사 결과를 보고한다(무엇이 차단될지).
+#   ② APPLY 는 리프레시 배리어 writer 잠금 아래에서만(QVEST_SEAM_REPAIR_LOCKED=1 — seam_repair_locked.sh 가 잠금을 쥐고 켠다).
+#      구 킬스위치(reinforce_auto_config.enabled)는 무인 레인을 막지 못했다(11-13 실측: enabled=false 인데 충실구현 레인 측정 중) —
+#      측정 러너가 실제로 읽는 것은 배리어다. 킬스위치 검사는 남긴다(추가 안전망).
+#   ③ 교체는 tmp → 이름 바꾸기 + **재시도**(Windows 는 매핑이 열린 파일의 교체를 거부한다 · 오류 1224) + 교체 **뒤 재판독 검증**
+#      (구판은 file.remove 실패를 무시하고 "APPLY 완료"를 찍을 수 있었다 — 썼다 ≠ 바뀌었다).
+#   ④ 파일 이름 대소문자 유지(.cache/RAWDATA.parquet — 지우고 새로 만들면 소문자 이름으로 바뀐다).
 #
 # 사용법 (dry-run):
 #   cd <root> && Rscript -e 'source("02_Infrastructure/data/seam_scale_repair.R")'
-# 실쓰기 (킬스위치 하강 후):
-#   SEAM_REPAIR_APPLY=1 Rscript -e 'source("02_Infrastructure/data/seam_scale_repair.R")'
+# 실쓰기 (배리어 writer 잠금 아래):
+#   bash 02_Infrastructure/data/seam_repair_locked.sh --apply
 #==============================================================================
 
 suppressPackageStartupMessages({
@@ -26,8 +31,14 @@ suppressPackageStartupMessages({
 
 if (!exists("PROJECT_ROOT")) source("02_Infrastructure/config.R")
 source(file.path(DATA_DIR, "seam_scale_guard.R"))
+source(file.path(DATA_DIR, "rawdata_seam_audit.R"))
 
-SEAM_REPAIR_RAWDATA <- file.path(CACHE_DIR, "rawdata.parquet")
+#' 실제 파일 이름(대소문자 그대로) — 없으면 기본 이름
+.seam_repair_raw_path <- function() {
+  hit <- list.files(CACHE_DIR, pattern = "^rawdata\\.parquet$", ignore.case = TRUE, full.names = TRUE)
+  if (length(hit)) hit[1] else file.path(CACHE_DIR, "RAWDATA.parquet")
+}
+SEAM_REPAIR_RAWDATA <- .seam_repair_raw_path()
 
 # ★seam_detect() 는 2026-09-07 에 **가드 정본(seam_scale_guard.R)으로 이관**했다.
 #   소비자가 셋(이 도구 · incremental_update_file 의 덮어쓰기 후 재검사 · 우선순위 배관)이라
@@ -38,6 +49,17 @@ seam_autoloop_enabled <- function(root = PROJECT_ROOT) {
   p <- file.path(root, "06_Registry", "reinforce_auto_config.json")
   if (!file.exists(p)) return(NA)
   isTRUE(jsonlite::fromJSON(p)$enabled)
+}
+
+#' 저장된 파일의 이음매 창 Ret 이 메모리의 정정본과 같은가 — 교체 뒤 재판독 검증.
+.seam_repair_verify_file <- function(path, expect, dates) {
+  x <- as.data.table(read_parquet(path, col_select = tidyselect::all_of(c("Date", "Ticker", "Ret")), mmap = FALSE))
+  x[, Date := as.Date(Date)]
+  x <- x[Date %in% dates]
+  m <- merge(expect[, .(Date, Ticker, Ret_e = Ret)], x, by = c("Date", "Ticker"), all = TRUE)
+  ok_n <- nrow(m) == nrow(expect)
+  same <- (is.na(m$Ret) & is.na(m$Ret_e)) | (!is.na(m$Ret) & !is.na(m$Ret_e) & abs(m$Ret - m$Ret_e) <= 1e-12)
+  list(ok = isTRUE(ok_n && all(same)), n = nrow(m), n_diff = sum(!same))
 }
 
 seam_repair_run <- function(apply_writes = FALSE, raw_path = SEAM_REPAIR_RAWDATA) {
@@ -54,11 +76,14 @@ seam_repair_run <- function(apply_writes = FALSE, raw_path = SEAM_REPAIR_RAWDATA
          "재빌드 중 rawdata.parquet 이 읽히면 절단본을 보게 된다. ",
          "킬스위치를 내린 뒤 다시 부를 것.")
   }
+  if (apply_writes && !identical(Sys.getenv("QVEST_SEAM_REPAIR_LOCKED"), "1"))
+    stop("[seam_repair] APPLY 거부 — 리프레시 배리어 writer 잠금 밖이다. ",
+         "bash 02_Infrastructure/data/seam_repair_locked.sh --apply 로 부를 것(측정 러너가 읽는 것은 배리어다).")
 
   if (!file.exists(raw_path)) stop("[seam_repair] rawdata 부재: ", raw_path)
-  raw <- as.data.table(read_parquet(raw_path))
+  raw <- as.data.table(read_parquet(raw_path, mmap = FALSE))
   raw[, Date := as.Date(Date)]
-  cat(sprintf("  rawdata: %s rows | %s ~ %s\n", format(nrow(raw), big.mark = ","),
+  cat(sprintf("  rawdata: %s | %s rows | %s ~ %s\n", basename(raw_path), format(nrow(raw), big.mark = ","),
               min(raw$Date), max(raw$Date)))
 
   seams <- seam_detect(raw)
@@ -103,28 +128,49 @@ seam_repair_run <- function(apply_writes = FALSE, raw_path = SEAM_REPAIR_RAWDATA
     cat("\n")
   }
 
+  # ── 전 이력 감사(같은 처분을 얹은 뒤) ─────────────────────────────────────────
+  #   건식 실행 = 가벼운 사본(Date · Ticker · Close · Size · Ret)에 처분을 얹어 잰다 · APPLY = 본표에 얹고 잰 뒤 새 단절 차단.
+  tgt <- if (apply_writes) raw else raw[, .(Date, Ticker, Close, Size, Ret)]
+  for (lbl in names(reports)) tgt <- seam_apply_actions(tgt, reports[[lbl]])
+  aud <- rsa_audit(tgt)
+  rsa_print(aud, if (apply_writes) "repair_apply" else "repair_dryrun")
+  cat(sprintf("  [seam_audit] 사이드카: %s\n", rsa_write_sidecar(aud, if (apply_writes) "repair_apply" else "repair_dryrun")))
+  if (nrow(aud$days_alarm))
+    cat("  ⚠ 처분 뒤에도 집단 극단 수익일이 남았다 — 차단 대상이 아니므로(어느 종목인지 모른다) 사람 확인이 필요하다\n")
+
   if (!apply_writes) {
-    cat("[seam_repair] DRY-RUN 종료 — rawdata.parquet 미변경.\n")
-    return(invisible(list(seams = seams, reports = reports, applied = FALSE)))
+    cat(sprintf("[seam_repair] DRY-RUN 종료 — %s 미변경 · 감사 차단 예정 %d행\n", basename(raw_path), nrow(aud$hits_new)))
+    return(invisible(list(seams = seams, reports = reports, audit = aud, applied = FALSE)))
   }
 
   # ── 실쓰기 ────────────────────────────────────────────────────────────────
-  bak <- file.path(CACHE_DIR, sprintf("rawdata_pre_seamguard_%s.parquet",
-                                      format(Sys.Date(), "%Y%m%d")))
-  if (!file.exists(bak)) { file.copy(raw_path, bak); cat(sprintf("  백업: %s\n", basename(bak))) }
+  raw <- rsa_block_new(tgt, aud)
+  cat(sprintf("  [seam_audit] 새 기준 단절 차단 %d행(Ret := NA)\n", attr(raw, "seam_audit_blocked")))
+  bak <- file.path(CACHE_DIR, sprintf("rawdata_pre_seamguard_%s.parquet", format(Sys.Date(), "%Y%m%d")))
+  if (!file.exists(bak)) { stopifnot(file.copy(raw_path, bak)); cat(sprintf("  백업: %s\n", basename(bak))) }
   else cat(sprintf("  백업 존재(재사용): %s\n", basename(bak)))
 
-  for (lbl in names(reports)) raw <- seam_apply_actions(raw, reports[[lbl]])
-
+  vdates <- sort(unique(c(as.Date(unlist(lapply(reports, function(r) r$dates))), aud$hits_new$Date)))
+  expect <- raw[Date %in% vdates, .(Date, Ticker, Ret)]
   setorder(raw, Date, Ticker)
-  tmp <- paste0(raw_path, ".tmp", Sys.getpid())
+  tmp <- file.path(dirname(raw_path), sprintf(".%s.seamrepair.%d", basename(raw_path), Sys.getpid()))
   write_parquet(raw, tmp)
-  n_tmp <- nrow(read_parquet(tmp))          # "썼다" 와 "읽을 수 있는 것을 썼다" 는 다르다
+  n_tmp <- nrow(read_parquet(tmp, col_select = "Date", mmap = FALSE))   # "썼다" 와 "읽을 수 있는 것을 썼다" 는 다르다
   if (n_tmp != nrow(raw)) { file.remove(tmp); stop("[seam_repair] tmp 검증 실패 — 정본 미갱신") }
-  if (file.exists(raw_path)) file.remove(raw_path)
-  file.rename(tmp, raw_path)
-  cat(sprintf("[seam_repair] APPLY 완료: %s rows\n", format(nrow(raw), big.mark = ",")))
-  invisible(list(seams = seams, reports = reports, applied = TRUE))
+  tries <- as.integer(Sys.getenv("QVEST_SEAM_REPAIR_TRIES", "30")); wait_s <- as.numeric(Sys.getenv("QVEST_SEAM_REPAIR_WAIT_S", "20"))
+  done <- FALSE
+  for (t in seq_len(tries)) {
+    done <- isTRUE(suppressWarnings(file.rename(tmp, raw_path)))   # Windows MoveFileEx(REPLACE_EXISTING) — 이름 대소문자 유지
+    if (done) break
+    cat(sprintf("  … 교체 실패(%d/%d) — 다른 프로세스가 파일을 잡고 있다(매핑) · %.0f초 뒤 재시도\n", t, tries, wait_s))
+    Sys.sleep(wait_s)
+  }
+  if (!done) { file.remove(tmp); stop("[seam_repair] 교체 실패 — 정본 미갱신(백업 그대로 · 재시도 필요)") }
+  v <- .seam_repair_verify_file(raw_path, expect, vdates)
+  if (!v$ok) stop(sprintf("[seam_repair] 교체 뒤 재판독 불일치(%d/%d행) — 백업 %s 로 되돌릴 것", v$n_diff, v$n, basename(bak)))
+  cat(sprintf("[seam_repair] APPLY 완료: %s rows · 교체 뒤 재판독 %d행 일치(이음매 창 %s)\n", format(nrow(raw), big.mark = ","),
+              v$n, paste(as.character(range(vdates)), collapse = " ~ ")))
+  invisible(list(seams = seams, reports = reports, audit = aud, applied = TRUE, backup = bak))
 }
 
 .seam_repair_apply_flag <- function() {
