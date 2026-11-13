@@ -1,5 +1,5 @@
-## P1R04 결과 보고 차트 묶음 — 결합기 T1(시점별 IC 가중) 15 엔진 vs 같은 날 재측정한 등가중 기준 15 엔진
-##   (표준 구성 = 롱온리 25종 등가중 · 월말 신호 · 15bps · 20일 평균 거래대금 ≥ 2억 원 · 전 종목 위생 유니버스 — P1R03 과 같다)
+## P1R04 결과 보고 차트 묶음 — 결합기 T1(시점별 IC 가중) 15 엔진 vs 같은 날 재측정한 동일가중 기준 15 엔진
+##   (표준 구성 = 롱온리 25종 동일가중 · 월말 신호 · 15bps · 20일 평균 거래대금 ≥ 2억 원 · 전 종목 위생 유니버스 — P1R03 과 같다)
 ##   실행(저장소 루트 · 측정 · 평가 · 짝 읽기 뒤): Rscript 04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/tools/p1r04_charts.R [라운드 폴더]
 ##   P1R04_CHARTS_IS_ONLY=1 → OOS 요소(OOS 값 · OOS 음영 · 전기간 등급)를 빼고 그린다. 다음 단계를 설계하는 세션은 이 판으로 배치만 확인한다(τ_D).
 ##   출력: <라운드>/report/charts/*.png(IS 전용 = report/charts_is/) · 마지막 표준 출력 줄 = JSON 배열 [{"file","caption"}](prep_send charts 인자용)
@@ -83,7 +83,7 @@ LOWRISK <- c("defense", "risk", "liquidity", "regime")
 MISDIR <- c(value = "V23_RAFI_Weight", consensus = "C08_Coverage", crowding = "CR05_Short_Pressure_Proxy")   # 방향 격리 재판정 불일치 3(11-13 · DESIGN §10)
 OOS_LAB <- sprintf("OOS(%s~ · 보고 전용)", format(TAU + 1, "%Y"))
 IS_LAB <- sprintf("IS(첫 체결일 ~ %s)", format(TAU))
-STD_CAP <- "표준 구성 = 롱온리 25종 등가중 · 월말 신호 · 15bps · 20일 평균 거래대금 ≥ 2억 원 · 전 종목 위생 유니버스"
+STD_CAP <- "표준 구성 = 롱온리 25종 동일가중 · 월말 신호 · 15bps · 20일 평균 거래대금 ≥ 2억 원 · 전 종목 위생 유니버스"
 lin_lab <- function(ln) ifelse(ln %in% LOWRISK, paste0(CATN[ln], " *"), CATN[ln])
 
 ## ---- 엔진 30 · 결과 · 판정 표 ------------------------------------------------------------------
@@ -122,10 +122,10 @@ if (!is.null(PT)) L <- merge(L, PT[, intersect(c("lineage", "status", PNUM, PLOG
 for (k in PNUM) L[, (k) := if (k %in% names(L)) suppressWarnings(as.numeric(get(k))) else NA_real_]
 for (k in PLOG) L[, (k) := if (k %in% names(L)) as.logical(get(k)) else NA]
 if (!"status" %in% names(L)) L[, status := NA_character_]
-ORD <- L[order(-d_t_vis, -t1, na.last = TRUE)]$lineage                    # 표시 순서 = IS 짝 증분 t 내림차순
+ORD <- L[order(-d_t_vis, -t1, na.last = TRUE)]$lineage                    # 표시 순서 = IS 증분 알파 t 내림차순
 N_MEAS <- sum(!is.na(CE$artifacts)); N_ALL <- nrow(CE)
 partial_note <- if (N_MEAS == N_ALL) "" else sprintf(" · 측정 %d/%d(중간 판독)", N_MEAS, N_ALL)
-cat(sprintf("[p1r04_charts] %s · 측정 %d/%d · 판정 표 %s · 짝 읽기 %s\n", if (IS_ONLY) "IS 전용" else "IS + OOS", N_MEAS, N_ALL,
+cat(sprintf("[p1r04_charts] %s · 측정 %d/%d · 판정 표 %s · 결합 개선 판정 파일 %s\n", if (IS_ONLY) "IS 전용" else "IS + OOS", N_MEAS, N_ALL,
             if (is.null(VT)) "없음" else "있음", if (is.null(PT)) "없음" else "있음"), file = stderr())
 
 ## ---- 수익 · NAV 계열(산출물) --------------------------------------------------------------------
@@ -149,8 +149,8 @@ same_out <- function(ln) {
 }
 L[, same := vapply(lineage, same_out, logical(1))]
 L[, gap := status %in% "evaluated" & !same & !(is.finite(d_t_vis) & is.finite(uc_t1) & is.finite(uc_t0))]
-VV <- switch(as.character(PR$verdict %||% "?"), support = "지지 — 결합 개선", falsified = "반증 — 개선 없음", untested = "미시험 — 측정 안 된 짝 있음", "판독 불가(짝 읽기 없음)")
-if (any(L$gap) && !identical(PR$verdict, "support")) VV <- "미시험 — 값이 빈 짝(사전등록 정정 기록)"
+VV <- switch(as.character(PR$verdict %||% "?"), support = "지지 — 결합 개선", falsified = "반증 — 개선 없음", untested = "미시험 — 측정 안 된 카테고리 있음", "판독 불가(결합 개선 판정 파일 없음)")
+if (any(L$gap) && !identical(PR$verdict, "support")) VV <- "미시험 — 값이 빈 카테고리(사전등록 정정 기록)"
 ## OOS 짝 증분(보고 전용 · 계약 rc_pair_alpha 의 test)
 L[, `:=`(dt_test = NA_real_, da_test = NA_real_)]
 if (!IS_ONLY) {
@@ -161,11 +161,11 @@ if (!IS_ONLY) {
   }
 }
 RULE_LINE <- sprintf("엔진 자격(사전등록) = IS β-통제 알파 t ≥ %s ∧ IS 상승 포착률 ≥ %s", f2(TH_T, 1), f2(TH_UC, 2))
-PAIR_RULE <- sprintf("결합 개선(사전등록) = IC 가중 − 등가중 월 수익 차의 IS β-통제 알파 t ≥ %s 인 짝이 2개 이상 또는 토탈 짝 — 상승 포착률 손실(기준의 %s%% 아래) · 위기 하락노출 악화 · 소형주 쪽 이동인 짝은 세지 않는다",
+PAIR_RULE <- sprintf("결합 개선(사전등록) = IC 가중 − 동일가중 월 수익 차의 IS β-통제 알파 t ≥ %s 인 카테고리가 2개 이상 또는 토탈 — 상승 포착률 손실(기준의 %s%% 아래) · 위기 하락노출 악화 · 소형주 쪽 이동인 카테고리는 세지 않는다",
                      f2(TH_T, 1), formatC(100 * KEEP, format = "d"))
 
 ## =============================================================================================
-## 1. 짝 증분 — IC 가중 − 등가중 월 수익 차의 IS β-통제 알파 t
+## 1. 짝 증분 — IC 가중 − 동일가중 월 수익 차의 IS β-통제 알파 t
 ## =============================================================================================
 D1 <- L[is.finite(d_t_vis) | gap | same | !(status %in% "evaluated")]
 if (!is.null(PT) && nrow(D1)) {
@@ -191,27 +191,27 @@ if (!is.null(PT) && nrow(D1)) {
     scale_fill_manual(values = c("셈 대상(문턱 ∧ 제외 표식 없음)" = C_PASS, "문턱 넘음 · 제외 표식" = C_TAG, "문턱 미달" = "#c9c7bf", "미시험" = "#e6e4dc"), drop = FALSE, name = NULL) +
     scale_x_continuous(limits = c(lo - 0.3, hi + 2.6)) + coord_cartesian(clip = "off") +
     guides(fill = guide_legend(nrow = 2)) +
-    LB(W1, 12, title = "결합 개선 — IC 가중 − 등가중 짝 증분 알파 t(IS)", cap_pt = 7.6,
-         subtitle = paste0("판정: ", VV, " · 셈 대상 ", sum(D1$st == "셈 대상(문턱 ∧ 제외 표식 없음)"), " / 짝 ", nrow(D1),
-                           " · 토탈 짝 ", if (isTRUE(L[lineage == "total"]$counted)) "셈 대상" else "셈 밖", partial_note, "\n",
-                           "막대 = 같은 날 측정한 두 엔진의 월 수익 차(IC 가중 − 등가중)를 KOSPI200 에 회귀한 β-통제 알파 t(NW lag 3) · ", IS_LAB, "\n",
+    LB(W1, 12, title = "결합 개선 — 기준 엔진(동일가중) 대비 증분 알파 t(IS)", cap_pt = 7.6,
+         subtitle = paste0("판정: ", VV, " · 셈 대상 ", sum(D1$st == "셈 대상(문턱 ∧ 제외 표식 없음)"), " / 카테고리 ", nrow(D1),
+                           " · 토탈 ", if (isTRUE(L[lineage == "total"]$counted)) "셈 대상" else "셈 밖", partial_note, "\n",
+                           "막대 = 같은 날 측정한 두 엔진(IC 가중 · 동일가중 기준 엔진)의 월 수익 차(IC 가중 − 동일가중)를 KOSPI200 에 회귀한 β-통제 알파 t(NW lag 3) · ", IS_LAB, "\n",
                            "제외 표식: 참여↓ = 상승 포착률 손실 · 위기↑ = 위기 하락노출 악화 · 소형주 = 크기 성분↑ ∧ 선택 성분↓ · * = 저위험 카테고리",
-                           if (!IS_ONLY) paste0("\n속 빈 점 = ", OOS_LAB, " 짝 증분 t — 판정에 쓰지 않는다") else ""),
-         x = "짝 증분 β-통제 알파 t", y = NULL,
+                           if (!IS_ONLY) paste0("\n속 빈 점 = ", OOS_LAB, " 증분 알파 t — 판정에 쓰지 않는다") else ""),
+         x = "기준 엔진 대비 증분 β-통제 알파 t", y = NULL,
          caption = paste0(PAIR_RULE, "\n출처: results/pair_reading_visible.json(사전등록 고정 도구 tools/p1r04_pair_reading.R)",
                           if (!IS_ONLY) " · OOS = round_core 계약 rc_pair_alpha(test)" else "", "\n", STD_CAP)) +
     th() + theme(panel.grid.major.y = element_blank(), axis.text.y = element_text(size = 11.5, colour = INK), plot.margin = margin(14, 14, 8, 10),
                  plot.caption = element_text(size = 7.6, colour = MUTED, hjust = 0, lineheight = 1.1))
   if (!IS_ONLY && any(is.finite(D1$dt_test)))
-    g <- g + geom_point(data = D1[is.finite(dt_test)], aes(x = dt_test, shape = "OOS 짝 증분 t(보고 전용)"), size = 3, stroke = 1, colour = INK, fill = "white") +
-      scale_shape_manual(values = c("OOS 짝 증분 t(보고 전용)" = 21), name = NULL)
+    g <- g + geom_point(data = D1[is.finite(dt_test)], aes(x = dt_test, shape = "OOS 증분 알파 t(보고 전용)"), size = 3, stroke = 1, colour = INK, fill = "white") +
+      scale_shape_manual(values = c("OOS 증분 알파 t(보고 전용)" = 21), name = NULL)
   add(save_png(g, "01_pair_increment.png", 3.4 + 0.36 * nrow(D1), w = 7.6),
-      sprintf("결합 개선 판정 — IC 가중 − 등가중 짝 증분 알파 t(IS · 문턱 %s) · %s · 셈 대상 %d / 짝 %d%s", f2(TH_T, 1), VV,
+      sprintf("결합 개선 판정 — 기준 엔진(동일가중) 대비 증분 알파 t(IS · 문턱 %s) · %s · 셈 대상 %d / 카테고리 %d%s", f2(TH_T, 1), VV,
               sum(D1$st == "셈 대상(문턱 ∧ 제외 표식 없음)"), nrow(D1), if (!IS_ONLY) paste0(" · 속 빈 점 = ", OOS_LAB) else ""))
-} else skip("01_pair_increment", "짝 읽기(results/pair_reading_visible.json) 없음")
+} else skip("01_pair_increment", "결합 개선 판정 파일(results/pair_reading_visible.json) 없음")
 
 ## =============================================================================================
-## 2. 자격 이동 — 등가중(같은 날) → IC 가중 · x = IS 상승 포착률 · y = IS β-통제 알파 t
+## 2. 자격 이동 — 동일가중(같은 날) → IC 가중 · x = IS 상승 포착률 · y = IS β-통제 알파 t
 ## =============================================================================================
 D2 <- L[is.finite(t1) & is.finite(uc1) & is.finite(t0) & is.finite(uc0)]
 if (nrow(D2)) {
@@ -225,26 +225,26 @@ if (nrow(D2)) {
     geom_vline(xintercept = TH_UC, linetype = "dashed", colour = INK2, linewidth = 0.45) +
     geom_hline(yintercept = 0, colour = "#c3c2b7", linewidth = 0.4) +
     geom_segment(aes(x = uc0, y = t0, xend = uc1, yend = t1), colour = MUTED, linewidth = 0.5, arrow = arrow(length = unit(5, "pt"), type = "closed")) +
-    geom_point(aes(uc0, t0, shape = "등가중(같은 날 재측정)"), size = 2.6, colour = C_T0, stroke = 1) +
+    geom_point(aes(uc0, t0, shape = "동일가중(같은 날 재측정)"), size = 2.6, colour = C_T0, stroke = 1) +
     geom_point(aes(uc1, t1, colour = vf), size = 3.6) +
     ggrepel::geom_text_repel(aes(uc1, t1, label = lin_lab(lineage)), family = FAM, size = 3.7, colour = INK, seed = 7, box.padding = 0.45,
                              point.padding = 0.3, min.segment.length = 0.2, segment.colour = MUTED, max.overlaps = 50) +
     scale_colour_manual(values = c("IC 가중 자격 통과" = C_PASS, "IC 가중 자격 미달" = C_FAIL, "미시험" = C_NA), drop = TRUE) +
-    scale_shape_manual(values = c("등가중(같은 날 재측정)" = 1)) +
+    scale_shape_manual(values = c("동일가중(같은 날 재측정)" = 1)) +
     scale_x_continuous(limits = c(xr[1] - xp, xr[2] + xp), labels = function(x) f2(x, 2)) + scale_y_continuous(limits = c(yr[1] - yp, yr[2] + yp)) +
     guides(colour = guide_legend(order = 1), shape = guide_legend(order = 2)) +
-    LB(7.2, 12, title = "자격 이동 — 등가중 → IC 가중(같은 카테고리 · 같은 날)",
-         subtitle = paste0(RULE_LINE, "\n화살표 = 같은 카테고리의 등가중 엔진(속 빈 점) → IC 가중 엔진(색 점) · ", IS_LAB,
-                           "\n자격 통과: IC 가중 ", n1, " / ", nrow(D2), " · 등가중(같은 날) ", n0, " / ", nrow(D2), " · * = 저위험 카테고리", partial_note),
+    LB(7.2, 12, title = "자격 이동 — 동일가중 → IC 가중(같은 카테고리 · 같은 날)",
+         subtitle = paste0(RULE_LINE, "\n화살표 = 같은 카테고리의 동일가중 엔진(속 빈 점) → IC 가중 엔진(색 점) · ", IS_LAB,
+                           "\n자격 통과: IC 가중 ", n1, " / ", nrow(D2), " · 동일가중(같은 날) ", n0, " / ", nrow(D2), " · * = 저위험 카테고리", partial_note),
          x = "IS 상승 포착률(강세 국면 중앙값 · KOSPI200 대비)", y = "IS β-통제 알파 t(NW)",
-         caption = paste0("출처: results/", if (IS_ONLY) "evaluation_visible" else "verdict", ".json(round_core v3 판정 표 · IC 가중 = 변형 엔진 · 등가중 = 짝 기준 엔진)\n", STD_CAP)) +
+         caption = paste0("출처: results/", if (IS_ONLY) "evaluation_visible" else "verdict", ".json(round_core v3 판정 표 · IC 가중 = 변형 엔진 · 동일가중 = 기준 엔진)\n", STD_CAP)) +
     th() + theme(legend.box = "horizontal")
   add(save_png(g, "02_qualification_shift.png", 7.2),
-      sprintf("자격 이동 지도 — 등가중 → IC 가중(같은 날 측정) · IS 상승 포착률 × β-통제 알파 t · 자격 통과 IC 가중 %d · 등가중 %d / %d", n1, n0, nrow(D2)))
+      sprintf("자격 이동 지도 — 동일가중 → IC 가중(같은 날 측정) · IS 상승 포착률 × β-통제 알파 t · 자격 통과 IC 가중 %d · 동일가중 %d / %d", n1, n0, nrow(D2)))
 } else skip("02_qualification_shift", "판정 표의 알파 t · 상승 포착률 없음 — 평가 전")
 
 ## =============================================================================================
-## 3. 누적 상대 성과 — IC 가중 ÷ 등가중(같은 카테고리)
+## 3. 누적 상대 성과 — IC 가중 ÷ 동일가중(같은 카테고리)
 ## =============================================================================================
 RW <- rbindlist(lapply(unique(L$lineage), function(ln) {
   a <- SR[lineage == ln & role == "variant", .(date, r1 = ret_net)]; b <- SR[lineage == ln & role == "reference", .(date, r0 = ret_net)]
@@ -264,29 +264,29 @@ if (nrow(RW)) {
     facet_wrap(~panel, ncol = 3) +
     scale_y_log10(labels = function(x) sprintf("×%.2f", x)) +
     scale_x_date(breaks = as.Date(c("2000-01-01", "2010-01-01", "2020-01-01")), date_labels = "%Y") +
-    LB(7.6, 11, title = "누적 상대 성과 — IC 가중 ÷ 등가중(같은 카테고리)",
-         subtitle = paste0("값 = IC 가중 엔진 누적 순가치 ÷ 같은 카테고리 등가중 엔진 누적 순가치(겹치는 거래일 · 로그 축) · ×1 = 같은 성과\n",
-                           "위로 갈수록 시점별 IC 가중이 등가중을 이긴 것 · 패널 순서 = IS 짝 증분 t 내림차순",
+    LB(7.6, 11, title = "누적 상대 성과 — IC 가중 ÷ 동일가중(같은 카테고리)",
+         subtitle = paste0("값 = IC 가중 엔진 누적 순가치 ÷ 같은 카테고리 동일가중 엔진 누적 순가치(겹치는 거래일 · 로그 축) · ×1 = 같은 성과\n",
+                           "위로 갈수록 시점별 IC 가중이 동일가중을 이긴 것 · 패널 순서 = IS 증분 알파 t 내림차순",
                            if (!IS_ONLY) paste0("\n음영 = ", OOS_LAB, " · 점선 = IS/OOS 경계 ", format(TAU)) else "", partial_note),
          x = NULL, y = "상대 누적 가치(로그)",
-         caption = paste0("출처: 산출물 03_period_returns.csv(ret_net · 15bps 순) — 일별 복리 · 기술 통계 · 판정 아님(판정 = 짝 증분 알파 t · 1번 그림)\n", STD_CAP)) +
+         caption = paste0("출처: 산출물 03_period_returns.csv(ret_net · 15bps 순) — 일별 복리 · 기술 통계 · 판정 아님(판정 = 기준 엔진 대비 증분 알파 t · 1번 그림)\n", STD_CAP)) +
     th(11) + theme(strip.text = element_text(size = 9.5, colour = INK, hjust = 0), panel.spacing = unit(8, "pt"), axis.text = element_text(size = 8))
   if (!IS_ONLY && is.finite(DATA_END) && DATA_END > TAU)
     g <- g + annotate("rect", xmin = TAU, xmax = DATA_END, ymin = 0, ymax = Inf, fill = TEST_FILL, alpha = 0.7) +
       geom_vline(xintercept = TAU, colour = MUTED, linewidth = 0.3, linetype = "dashed")
   add(save_png(g, "03_relative_wealth.png", 10.2, w = 7.6),
-      sprintf("누적 상대 성과 — IC 가중 ÷ 등가중 %d 짝(로그 축 · ×1 = 같은 성과)%s", length(lv), if (!IS_ONLY) paste0(" · 음영 = ", OOS_LAB) else ""))
-} else skip("03_relative_wealth", "두 엔진이 모두 측정된 짝이 없다")
+      sprintf("누적 상대 성과 — IC 가중 ÷ 동일가중 %d 카테고리(로그 축 · ×1 = 같은 성과)%s", length(lv), if (!IS_ONLY) paste0(" · 음영 = ", OOS_LAB) else ""))
+} else skip("03_relative_wealth", "IC 가중 · 동일가중이 모두 측정된 카테고리가 없다")
 
 ## =============================================================================================
-## 4. 누적 수익 — IC 가중 · 등가중 · KOSPI200
+## 4. 누적 수익 — IC 가중 · 동일가중 · KOSPI200
 ## =============================================================================================
 if (nrow(SR)) {
   N4 <- rbindlist(lapply(unique(L$lineage), function(ln) {
     a <- SR[lineage == ln & role == "variant"]; b <- SR[lineage == ln & role == "reference"]
     out <- list()
     if (nrow(a)) out[[1]] <- rbind(data.table(date = a$date[1] - 1L, v = 1), a[, .(date, v = nav_net)])[, who := "IC 가중"]
-    if (nrow(b)) out[[2]] <- rbind(data.table(date = b$date[1] - 1L, v = 1), b[, .(date, v = nav_net)])[, who := "등가중(같은 날)"]
+    if (nrow(b)) out[[2]] <- rbind(data.table(date = b$date[1] - 1L, v = 1), b[, .(date, v = nav_net)])[, who := "동일가중(같은 날)"]
     k <- if (nrow(a)) a else b
     if (nrow(k)) out[[3]] <- rbind(data.table(date = k$date[1] - 1L, v = 1), k[, .(date, v = benchmark_nav)])[, who := "KOSPI200"]
     if (!length(out)) return(NULL)
@@ -296,20 +296,20 @@ if (nrow(SR)) {
   e4w <- dcast(e4, lineage ~ who, value.var = "v")
   gx <- function(col) if (col %in% names(e4w)) e4w[[col]] else rep(NA_real_, nrow(e4w))
   mul <- function(x) ifelse(!is.finite(x), "–", paste0(ifelse(x < 1, formatC(x, format = "f", digits = 2), formatC(x, format = "f", digits = 1)), "x"))
-  plab4 <- setNames(sprintf("%s\nIC %s · 등가중 %s · 시장 %s", lin_lab(e4w$lineage), mul(gx("IC 가중")), mul(gx("등가중(같은 날)")), mul(gx("KOSPI200"))), e4w$lineage)
+  plab4 <- setNames(sprintf("%s\nIC %s · 동일가중 %s · 시장 %s", lin_lab(e4w$lineage), mul(gx("IC 가중")), mul(gx("동일가중(같은 날)")), mul(gx("KOSPI200"))), e4w$lineage)
   lv4 <- intersect(ORD, e4w$lineage)
   N4[, panel := factor(plab4[lineage], levels = plab4[lv4])]
-  N4[, who := factor(who, levels = c("IC 가중", "등가중(같은 날)", "KOSPI200"))]
+  N4[, who := factor(who, levels = c("IC 가중", "동일가중(같은 날)", "KOSPI200"))]
   g <- ggplot(N4, aes(date, v, colour = who, linetype = who)) +
     geom_hline(yintercept = 1, colour = "#c3c2b7", linewidth = 0.25) +
     geom_line(linewidth = 0.5) +
     facet_wrap(~panel, ncol = 3) +
     scale_y_log10(breaks = 10^(-3:4), labels = function(x) paste0(trimws(formatC(x, format = "fg", digits = 3, big.mark = ",")), "x")) +
     scale_x_date(breaks = as.Date(c("2000-01-01", "2010-01-01", "2020-01-01")), date_labels = "%Y") +
-    scale_colour_manual(values = c("IC 가중" = C_T1, "등가중(같은 날)" = C_T0, "KOSPI200" = C_BENCH)) +
-    scale_linetype_manual(values = c("IC 가중" = "solid", "등가중(같은 날)" = "22", "KOSPI200" = "solid")) +
-    LB(7.6, 11, title = "누적 수익 — IC 가중 · 등가중 · KOSPI200(15bps 순)",
-         subtitle = paste0("로그 축 · 1x = 각 엔진 첫 체결일 직전 · 패널 제목 아래 = ", if (IS_ONLY) "IS 끝" else "자료 끝", " 누적 배수 · 패널 순서 = IS 짝 증분 t 내림차순",
+    scale_colour_manual(values = c("IC 가중" = C_T1, "동일가중(같은 날)" = C_T0, "KOSPI200" = C_BENCH)) +
+    scale_linetype_manual(values = c("IC 가중" = "solid", "동일가중(같은 날)" = "22", "KOSPI200" = "solid")) +
+    LB(7.6, 11, title = "누적 수익 — IC 가중 · 동일가중 · KOSPI200(15bps 순)",
+         subtitle = paste0("로그 축 · 1x = 각 엔진 첫 체결일 직전 · 패널 제목 아래 = ", if (IS_ONLY) "IS 끝" else "자료 끝", " 누적 배수 · 패널 순서 = IS 증분 알파 t 내림차순",
                            if (!IS_ONLY) paste0("\n음영 = ", OOS_LAB, " · 점선 = IS/OOS 경계 ", format(TAU), " · 자료 끝 ", format(DATA_END)) else "", partial_note),
          x = NULL, y = "누적 가치(로그)",
          caption = paste0("출처: 산출물 02_nav.csv(nav_net) · 05_benchmark_returns.csv(benchmark_nav) — 정규화 없이 그대로 · 기술 통계 · 판정 아님\n", STD_CAP)) +
@@ -318,11 +318,11 @@ if (nrow(SR)) {
     g <- g + annotate("rect", xmin = TAU, xmax = DATA_END, ymin = 0, ymax = Inf, fill = TEST_FILL, alpha = 0.7) +
       geom_vline(xintercept = TAU, colour = MUTED, linewidth = 0.3, linetype = "dashed")
   add(save_png(g, "04_cumulative_vs_kospi200.png", 11.0, w = 7.6),
-      sprintf("누적 수익 — IC 가중(실선) · 등가중(점선) · KOSPI200(회색) %d 카테고리 · 로그 축%s", length(lv4), if (!IS_ONLY) paste0(" · 음영 = ", OOS_LAB) else ""))
+      sprintf("누적 수익 — IC 가중(실선) · 동일가중(점선) · KOSPI200(회색) %d 카테고리 · 로그 축%s", length(lv4), if (!IS_ONLY) paste0(" · 음영 = ", OOS_LAB) else ""))
 } else skip("04_cumulative_vs_kospi200", "측정 끝난 엔진이 없다")
 
 ## =============================================================================================
-## 5. 행동 변화 — IC 가중 − 등가중(IS): 상승 포착률 · 위기 하락노출 · β · 크기 성분 · 선택 성분
+## 5. 행동 변화 — IC 가중 − 동일가중(IS): 상승 포착률 · 위기 하락노출 · β · 크기 성분 · 선택 성분
 ## =============================================================================================
 if (!is.null(PT)) {
   M5 <- c(uc = "Δ 상승 포착률\n(강세 국면 중앙값)", dd = "Δ 위기 하락노출\n(위기 중앙값)", beta = "Δ β", ew = "Δ 크기 성분\n(연율 · 동일가중 − 시총가중)", sel = "Δ 선택 성분\n(연율)")
@@ -347,21 +347,21 @@ if (!is.null(PT)) {
       scale_colour_manual(values = c("개선 쪽" = C_GOOD, "악화 쪽" = C_BAD, "제외 표식" = C_TAG, "참고" = MUTED)) +
       scale_y_discrete(labels = function(x) lin_lab(x)) +
       scale_x_continuous(expand = expansion(mult = 0.45)) +
-      LB(10.4, 10.5, title = "행동 변화 — IC 가중 − 등가중(IS · 같은 카테고리)",
+      LB(10.4, 10.5, title = "행동 변화 — IC 가중 − 동일가중(IS · 같은 카테고리)",
            subtitle = paste0("상승 포착률 ↑ · 위기 하락노출 ↓ · 선택 성분 ↑ = 개선 쪽(파랑) · 크기 성분 ↑ = 소형주 쪽 이동 · β = 참고(회색)\n",
-                             "주황 = 결합 개선 판정에서 그 짝을 빼는 제외 표식(상승 포착률 손실 · 위기 하락노출 악화 · 소형주 쪽 이동) · ", IS_LAB, partial_note),
+                             "주황 = 결합 개선 판정에서 그 카테고리를 빼는 제외 표식(상승 포착률 손실 · 위기 하락노출 악화 · 소형주 쪽 이동) · ", IS_LAB, partial_note),
            x = NULL, y = NULL,
            caption = paste0("출처: results/pair_reading_visible.json(IS 진단 패킷 — 행동 카드 · 노출 분해 · 계약 산출 · 손계산 없음)\n",
                             "위기 하락노출 = 위기 구간 전략 낙폭 ÷ 시장 낙폭(LT 20/20 위기 중앙값) · 크기 성분 = 동일가중 − 시총가중 수익 차 · 선택 성분 = 노출 분해의 종목 선택 몫")) +
       th(10.5) + theme(panel.grid.major.y = element_blank(), axis.text.y = element_text(size = 10, colour = INK), strip.text = element_text(size = 9, colour = INK, lineheight = 1.05),
                        axis.text.x = element_text(size = 7.5), panel.spacing = unit(10, "pt"))
     add(save_png(g, "05_behavior_delta.png", 5.6, w = 10.4),
-        "행동 변화(IC 가중 − 등가중 · IS) — 상승 포착률 · 위기 하락노출 · β · 크기 성분 · 선택 성분 · 주황 = 결합 개선 판정의 제외 표식")
-  } else skip("05_behavior_delta", "짝 행동 값이 비었다")
-} else skip("05_behavior_delta", "짝 읽기 없음")
+        "행동 변화(IC 가중 − 동일가중 · IS) — 상승 포착률 · 위기 하락노출 · β · 크기 성분 · 선택 성분 · 주황 = 결합 개선 판정의 제외 표식")
+  } else skip("05_behavior_delta", "행동 값이 비었다")
+} else skip("05_behavior_delta", "결합 개선 판정 파일 없음")
 
 ## =============================================================================================
-## 6. 위기별 하락노출 변화 — 위기(행) × 카테고리(열) · IC 가중 − 등가중
+## 6. 위기별 하락노출 변화 — 위기(행) × 카테고리(열) · IC 가중 − 동일가중
 ## =============================================================================================
 ev_names <- function(peaks) {
   reg <- rj(file.path(ROOT, "06_Registry/crisis_event_names.json")); out <- rep("", length(peaks))
@@ -401,12 +401,12 @@ if (nrow(C6)) {
     geom_text(data = B6, label = "–", family = FAM, size = 2.7, colour = MUTED) +
     geom_text(aes(label = txt), family = FAM, size = 2.7, colour = INK) +
     scale_fill_gradient2(low = C_POS, mid = C_MID, high = C_NEG, midpoint = 0, limits = c(-0.5, 0.5), oob = scales::squish,
-                         name = "Δ 하락노출(IC 가중 − 등가중)", breaks = c(-0.5, -0.25, 0, 0.25, 0.5), labels = c("≤−.50", "−.25", "0", "+.25", "≥+.50")) +
+                         name = "Δ 하락노출(IC 가중 − 동일가중)", breaks = c(-0.5, -0.25, 0, 0.25, 0.5), labels = c("≤−.50", "−.25", "0", "+.25", "≥+.50")) +
     scale_x_discrete(labels = function(x) lin_lab(x)) +
     facet_grid(wf ~ ., scales = "free_y", space = "free_y", switch = "y") +
-    LB(7.8, 11, title = "위기별 하락노출 변화 — IC 가중 − 등가중",
+    LB(7.8, 11, title = "위기별 하락노출 변화 — IC 가중 − 동일가중",
          subtitle = paste0("값 = 위기 구간 낙폭 ÷ KOSPI200 낙폭(하락노출)의 차이 · 파랑(음수) = IC 가중이 그 위기에서 덜 잃었다 · 빨강 = 더 잃었다\n",
-                           "위기 = KOSPI200 Lunde-Timmermann 20/20 첫 통과 구간 · 귀속 전 원값(β · 크기 미통제) — 방어 근거 아님\n열 순서 = IS 짝 증분 t 내림차순",
+                           "위기 = KOSPI200 Lunde-Timmermann 20/20 첫 통과 구간 · 귀속 전 원값(β · 크기 미통제) — 방어 근거 아님\n열 순서 = IS 증분 알파 t 내림차순",
                            if (!IS_ONLY) paste0(" · 아래 면 = ", OOS_LAB) else paste0(" · ", IS_LAB), partial_note),
          x = NULL, y = NULL,
          caption = paste0("출처: results/<엔진>/", if (IS_ONLY) "visible/diagnosis_packet.json(IS 행동 카드)" else "full/behavior_card.json(행동 카드 · 계약 산출)",
@@ -415,7 +415,7 @@ if (nrow(C6)) {
                    axis.text.y = element_text(size = 9, colour = INK), strip.text.y.left = element_text(angle = 0, size = 9.5, colour = INK2), strip.placement = "outside",
                    legend.key.width = unit(26, "pt"), legend.key.height = unit(8, "pt"))
   add(save_png(g, "06_crisis_delta_heatmap.png", 3.4 + 0.42 * nrow(key), w = 7.8),
-      sprintf("위기별 하락노출 변화(IC 가중 − 등가중) — 위기 %d개 × 카테고리 · 파랑 = IC 가중이 덜 잃음 · 귀속 전 원값 · 방어 근거 아님", nrow(key)))
+      sprintf("위기별 하락노출 변화(IC 가중 − 동일가중) — 위기 %d개 × 카테고리 · 파랑 = IC 가중이 덜 잃음 · 귀속 전 원값 · 방어 근거 아님", nrow(key)))
 } else skip("06_crisis_delta_heatmap", "행동 카드 위기 표 없음 — 평가 전")
 
 ## =============================================================================================
@@ -451,7 +451,7 @@ if (is.null(WT)) WT <- tryCatch({
     if (nrow(Y)) mem_rows[[i]] <- merge(Y[, .(id, family, w)], F[, .(family, sw, n)], by = "family")[, .(asof = format(d), id, family, w, share = fifelse(sw > 0, w / sw, NA_real_), base = 1 / n)]
   }
   out <- list(schema = "p1r04_weight_trace_visible_v1", audience = "IS(τ_D 이전 as-of) 만 · 성과 아님 — 엔진과 같은 식으로 다시 낸 카테고리 가중(토탈 엔진)",
-              rule = "w = max(s_reg × ICIR(as-of 36~120개월), 0) · W_f = 그 달 결합용 뷰에 있는 카테고리 구성원 가중 평균 · 몫 = W_f / Σ W_f(Σ = 0 이면 그 달 등가중 점수 · 몫 없음)",
+              rule = "w = max(s_reg × ICIR(as-of 36~120개월), 0) · W_f = 그 달 결합용 뷰에 있는 카테고리 구성원 가중 평균 · 몫 = W_f / Σ W_f(Σ = 0 이면 그 달 동일가중 점수 · 몫 없음)",
               window = c(format(min(MM$asof)), format(max(MM$asof))), months = rbindlist(fam_rows), misdirected_members = rbindlist(mem_rows),
               elapsed_sec = round(as.numeric(difftime(Sys.time(), t0, units = "secs")), 1))
   lk <- rc_after_tau_leaks(out, TAU); if (length(lk)) stop("가중 추적 출력에 τ_D 뒤 날짜: ", paste(head(lk, 3), collapse = ","))
@@ -471,18 +471,18 @@ if (!is.null(FW) && nrow(FW)) {
   mis_line <- if (!is.null(MW) && nrow(MW)) {
     MW[, `:=`(w = as.numeric(w), share = as.numeric(share), base = as.numeric(base))]
     s <- MW[, .(zero = mean(w <= 0), med = stats::median(share, na.rm = TRUE), base = stats::median(base, na.rm = TRUE)), by = .(id, family)]
-    paste0("방향 재판정 불일치 구성원의 IS 가중: ", paste(sprintf("%s(%s) 가중 0 인 달 %s · 카테고리 안 몫 중앙값 %s(등가중 %s)", s$id, CATN[s$family], pct(s$zero),
+    paste0("방향 재판정 불일치 구성원의 IS 가중: ", paste(sprintf("%s(%s) 가중 0 인 달 %s · 카테고리 안 몫 중앙값 %s(동일가중 %s)", s$id, CATN[s$family], pct(s$zero),
                                                        pct(s$med, 1), pct(s$base, 1)), collapse = " · "))
   } else ""
   g <- ggplot(D7, aes(yf, ff)) +
     geom_tile(aes(fill = ratio), colour = "white", linewidth = 0.5) +
     geom_text(aes(label = txt), family = FAM, size = 3, colour = INK) +
     geom_vline(xintercept = length(unique(Y7$yr)) + 0.5, colour = INK2, linewidth = 0.4) +
-    scale_fill_gradient2(low = C_NEG, mid = C_MID, high = C_POS, midpoint = 1, limits = c(0, 3), oob = scales::squish, name = "몫 ÷ 등가중 몫",
+    scale_fill_gradient2(low = C_NEG, mid = C_MID, high = C_POS, midpoint = 1, limits = c(0, 3), oob = scales::squish, name = "몫 ÷ 동일가중 몫",
                          breaks = c(0, 1, 2, 3), labels = c("0", "×1", "×2", "≥×3")) +
     scale_y_discrete(labels = function(x) lin_lab(x)) +
     LB(9.6, 10.5, cap_pt = 7.4, title = "카테고리 가중 추이 — 토탈 IC 가중 엔진(IS)",
-         subtitle = paste0("값 = 그해 달마다 카테고리가 받은 결합 가중 몫의 평균 ÷ 등가중 몫(1/", nf, ") · 파랑 = 등가중보다 무겁게 · 빨강 = 가볍게(0 = 가중 0)\n",
+         subtitle = paste0("값 = 그해 달마다 카테고리가 받은 결합 가중 몫의 평균 ÷ 동일가중 몫(1/", nf, ") · 파랑 = 동일가중보다 무겁게 · 빨강 = 가볍게(0 = 가중 0)\n",
                            "가중 = 카테고리 구성원의 as-of ICIR 양의 부분 평균(이력 36개월 미만 · 등록 방향과 반대로 움직인 팩터 = 0) · 엔진과 같은 식으로 다시 냈다 · ",
                            sprintf("%s ~ %s", WT$window[[1]], WT$window[[2]])),
          x = NULL, y = NULL,
@@ -492,11 +492,11 @@ if (!is.null(FW) && nrow(FW)) {
                      axis.text.y = element_text(size = 10, colour = INK), legend.key.width = unit(26, "pt"), legend.key.height = unit(8, "pt"),
                      plot.caption = element_text(size = 7.4, colour = MUTED, hjust = 0, lineheight = 1.1))
   add(save_png(g, "07_category_weight_trace.png", 5.8, w = 9.6),
-      paste0("카테고리 가중 추이 — 토탈 IC 가중 엔진이 해마다 각 카테고리에 실은 무게(등가중 대비 배수 · IS)", if (nzchar(mis_line)) " · 방향 재판정 불일치 구성원 가중 병기" else ""))
+      paste0("카테고리 가중 추이 — 토탈 IC 가중 엔진이 해마다 각 카테고리에 실은 무게(동일가중 대비 배수 · IS)", if (nzchar(mis_line)) " · 방향 재판정 불일치 구성원 가중 병기" else ""))
 } else skip("07_category_weight_trace", "가중 추적 없음")
 
 ## =============================================================================================
-## 8. 포트폴리오 차이 — 보유 겹침 · 월 수익 상관(IC 가중 vs 등가중)
+## 8. 포트폴리오 차이 — 보유 겹침 · 월 수익 상관(IC 가중 vs 동일가중)
 ## =============================================================================================
 hold <- function(dir) { h <- tryCatch(fread(file.path(dir, "04_holdings.csv"), select = c("date", "ticker")), error = function(e) NULL); if (is.null(h)) return(NULL)
   h[, date := as.Date(date)]; if (IS_ONLY) h <- h[date <= TAU]; unique(h) }
@@ -513,8 +513,8 @@ P8 <- rbindlist(lapply(seq_len(nrow(L)), function(i) {
 }), fill = TRUE)
 if (nrow(P8)) {
   D8 <- melt(P8, id.vars = c("lineage", "w"), measure.vars = c("overlap", "rho"), variable.name = "m", value.name = "v")[is.finite(v)]
-  D8[, mf := factor(fifelse(m == "overlap", "보유 겹침(리밸일 평균 · IC 가중 종목 중 등가중에도 있는 몫)", "월 수익 상관"),
-                    levels = c("보유 겹침(리밸일 평균 · IC 가중 종목 중 등가중에도 있는 몫)", "월 수익 상관"))]
+  D8[, mf := factor(fifelse(m == "overlap", "보유 겹침(리밸일 평균 · IC 가중 종목 중 동일가중에도 있는 몫)", "월 수익 상관"),
+                    levels = c("보유 겹침(리밸일 평균 · IC 가중 종목 중 동일가중에도 있는 몫)", "월 수익 상관"))]
   D8[, catr := factor(lineage, levels = rev(ORD))]
   D8[, wf := factor(fifelse(w == "IS", IS_LAB, OOS_LAB), levels = c(IS_LAB, OOS_LAB))]
   g <- ggplot(D8, aes(v, catr, fill = wf)) +
@@ -524,18 +524,18 @@ if (nrow(P8)) {
     scale_fill_manual(values = setNames(c(C_T1, "#b9b7ae"), c(IS_LAB, OOS_LAB)), drop = TRUE) +
     scale_x_continuous(limits = c(0, 1.15), breaks = c(0, 0.25, 0.5, 0.75, 1), labels = function(x) f2(x, 2)) +
     scale_y_discrete(labels = function(x) lin_lab(x)) +
-    LB(9.0, 10.5, title = "포트폴리오 차이 — IC 가중 vs 등가중(같은 카테고리)",
-         subtitle = paste0("보유 겹침 = 리밸일마다 IC 가중 25종 중 등가중 25종에도 든 비율의 평균 · 1.00 = 같은 포트폴리오\n",
-                           "겹침이 낮고 상관이 낮을수록 시점별 IC 가중이 실제로 다른 종목을 골랐다 · 패널 순서 = IS 짝 증분 t 내림차순", partial_note),
+    LB(9.0, 10.5, title = "포트폴리오 차이 — IC 가중 vs 동일가중(같은 카테고리)",
+         subtitle = paste0("보유 겹침 = 리밸일마다 IC 가중 25종 중 동일가중 25종에도 든 비율의 평균 · 1.00 = 같은 포트폴리오\n",
+                           "겹침이 낮고 상관이 낮을수록 시점별 IC 가중이 실제로 다른 종목을 골랐다 · 패널 순서 = IS 증분 알파 t 내림차순", partial_note),
          x = NULL, y = NULL,
          caption = paste0("출처: 산출물 04_holdings.csv(date · ticker) · 03_period_returns.csv(ret_net → 월 복리) — 기술 통계 · 판정 아님\n", STD_CAP)) +
     th(10.5) + theme(panel.grid.major.y = element_blank(), axis.text.y = element_text(size = 10, colour = INK), strip.text = element_text(size = 9.5, colour = INK))
   add(save_png(g, "08_portfolio_difference.png", 5.4, w = 9.0),
-      "포트폴리오 차이 — 보유 겹침 · 월 수익 상관(IC 가중 vs 등가중) · 낮을수록 IC 가중이 다른 종목을 골랐다")
-} else skip("08_portfolio_difference", "보유 · 수익 산출물이 짝으로 없다")
+      "포트폴리오 차이 — 보유 겹침 · 월 수익 상관(IC 가중 vs 동일가중) · 낮을수록 IC 가중이 다른 종목을 골랐다")
+} else skip("08_portfolio_difference", "IC 가중 · 동일가중 산출물이 함께 없다")
 
 ## =============================================================================================
-## 9. 성적표 — 카테고리별 IC 가중 · 등가중 · 짝 증분
+## 9. 성적표 — 카테고리별 IC 가중 · 동일가중 · 짝 증분
 ## =============================================================================================
 if (nrow(L) && (any(is.finite(L$t1)) || any(is.finite(L$d_t_vis)))) {
   T9 <- L[match(ORD, lineage)]
@@ -545,15 +545,15 @@ if (nrow(L) && (any(is.finite(L$t1)) || any(is.finite(L$d_t_vis)))) {
                trimws(paste0(ifelse(T9$strength_loss %in% TRUE, "참여↓ ", ""), ifelse(T9$crisis_worse %in% TRUE, "위기↑ ", ""), ifelse(T9$size_tilt %in% TRUE, "소형주", ""))))
   dtv <- ifelse(T9$same %in% TRUE, "0(같은 산출)", mm(f2(T9$d_t_vis, 2)))
   cols <- list(list(h = "카테고리", v = lin_lab(T9$lineage), w = 1.15),
-               list(h = "IC 가중\n자격", v = vlab(T9$q1), w = 0.7), list(h = "등가중\n자격", v = vlab(T9$q0), w = 0.7),
-               list(h = "알파 t\nIC 가중", v = mm(f2(T9$t1, 2)), w = 0.75), list(h = "알파 t\n등가중", v = mm(f2(T9$t0, 2)), w = 0.75),
-               list(h = "짝 증분\n알파 t", v = dtv, w = 0.85), list(h = "짝 증분\n알파 연율", v = mm(pct(T9$d_alpha_ann_vis, 1)), w = 0.8),
-               list(h = "상승 포착률\nIC / 등가중", v = paste0(f2(T9$uc_t1, 2), " / ", f2(T9$uc_t0, 2)), w = 1.05),
-               list(h = "위기 하락노출\nIC / 등가중", v = paste0(f2(T9$dd_med_t1, 2), " / ", f2(T9$dd_med_t0, 2)), w = 1.05),
+               list(h = "IC 가중\n자격", v = vlab(T9$q1), w = 0.7), list(h = "동일가중\n자격", v = vlab(T9$q0), w = 0.7),
+               list(h = "알파 t\nIC 가중", v = mm(f2(T9$t1, 2)), w = 0.75), list(h = "알파 t\n동일가중", v = mm(f2(T9$t0, 2)), w = 0.75),
+               list(h = "기준 대비\n증분 알파 t", v = dtv, w = 0.85), list(h = "기준 대비\n증분 알파 연율", v = mm(pct(T9$d_alpha_ann_vis, 1)), w = 0.8),
+               list(h = "상승 포착률\nIC / 동일가중", v = paste0(f2(T9$uc_t1, 2), " / ", f2(T9$uc_t0, 2)), w = 1.05),
+               list(h = "위기 하락노출\nIC / 동일가중", v = paste0(f2(T9$dd_med_t1, 2), " / ", f2(T9$dd_med_t0, 2)), w = 1.05),
                list(h = "β\nIC 가중", v = f2(T9$b1, 2), w = 0.55), list(h = "제외\n표식", v = ifelse(nzchar(tg), tg, "–"), w = 1.35))
   if (!IS_ONLY) cols <- c(cols, list(list(h = "등급\nIC 가중*", v = ifelse(is.na(T9$grade1), "–", T9$grade1), w = 0.6),
                                      list(h = "OOS 알파 t\nIC 가중*", v = mm(f2(T9$tt1, 2)), w = 0.8),
-                                     list(h = "OOS 짝\n증분 t*", v = mm(f2(T9$dt_test, 2)), w = 0.7)))
+                                     list(h = "OOS 증분\n알파 t*", v = mm(f2(T9$dt_test, 2)), w = 0.7)))
   xw <- vapply(cols, `[[`, numeric(1), "w"); xs <- cumsum(xw) - xw / 2; nr <- nrow(T9); nc <- length(cols)
   G <- rbindlist(lapply(seq_len(nc), function(j) data.table(x = xs[j], y = rev(seq_len(nr)), lab = cols[[j]]$v, j = j)))
   G[, col := INK]
@@ -569,17 +569,17 @@ if (nrow(L) && (any(is.finite(L$t1)) || any(is.finite(L$d_t_vis)))) {
     geom_text(data = H, aes(x, y, label = lab), family = FAM, size = 2.8, colour = INK2, lineheight = 0.9, vjust = 0) +
     geom_hline(yintercept = nr + 0.55, colour = "#c3c2b7", linewidth = 0.4) +
     scale_x_continuous(limits = c(0, sum(xw)), expand = c(0, 0)) + scale_y_continuous(limits = c(0.4, nr + 1.9), expand = c(0, 0)) +
-    LB(if (IS_ONLY) 10.4 else 12.4, 10.5, cap_pt = 7.2, title = "P1R04 성적표 — 시점별 IC 가중 결합 vs 등가중 결합(카테고리 14 + 토탈)",
-         subtitle = paste0(RULE_LINE, "\n판정: ", VV, " · 행 순서 = IS 짝 증분 t 내림차순 · 파랑 = 문턱 충족 · * 카테고리 = 저위험 · 값은 모두 IS",
+    LB(if (IS_ONLY) 10.4 else 12.4, 10.5, cap_pt = 7.2, title = "P1R04 성적표 — 시점별 IC 가중 결합 vs 동일가중 결합(카테고리 14 + 토탈)",
+         subtitle = paste0(RULE_LINE, "\n판정: ", VV, " · 행 순서 = IS 증분 알파 t 내림차순 · 파랑 = 문턱 충족 · * 카테고리 = 저위험 · 값은 모두 IS",
                            if (!IS_ONLY) paste0(" · * 열 = 전기간 등급 · ", OOS_LAB) else "", partial_note),
-         caption = paste0("출처: results/", if (IS_ONLY) "evaluation_visible" else "verdict", ".json(자격 · 알파 t · β) · results/pair_reading_visible.json(짝 증분 · 행동 · 제외 표식)",
-                          if (!IS_ONLY) " · results/<엔진>.json(authoritative_remeasure essence_grade · 등급 v3.4 · 전기간 — 참고) · OOS 짝 증분 = rc_pair_alpha(test)" else "",
+         caption = paste0("출처: results/", if (IS_ONLY) "evaluation_visible" else "verdict", ".json(자격 · 알파 t · β) · results/pair_reading_visible.json(기준 엔진 대비 증분 알파 · 행동 · 제외 표식)",
+                          if (!IS_ONLY) " · results/<엔진>.json(authoritative_remeasure essence_grade · 등급 v3.4 · 전기간 — 참고) · OOS 증분 알파 = rc_pair_alpha(test)" else "",
                           "\n제외 표식: 참여↓ = 상승 포착률 손실 · 위기↑ = 위기 하락노출 악화 · 소형주 = 크기 성분↑ ∧ 선택 성분↓")) +
     th(10.5) + theme(axis.text = element_blank(), panel.grid = element_blank(), panel.grid.major = element_blank(), axis.title = element_blank(),
                      plot.subtitle = element_text(size = 9, colour = INK2, lineheight = 1.15), plot.caption = element_text(size = 7.2, colour = MUTED, hjust = 0, lineheight = 1.1))
   add(save_png(g, "09_scorecard.png", 2.8 + 0.33 * nr, w = if (IS_ONLY) 10.4 else 12.4),
-      paste0("성적표 — 카테고리별 IC 가중 · 등가중 자격 · 알파 t · 짝 증분 · 상승 포착률 · 위기 하락노출 · β · 제외 표식", if (!IS_ONLY) paste0(" · 전기간 등급 · ", OOS_LAB, " 알파 t(보고 전용)") else ""))
-} else skip("09_scorecard", "판정 표 · 짝 읽기 없음")
+      paste0("성적표 — 카테고리별 IC 가중 · 동일가중 자격 · 알파 t · 기준 엔진 대비 증분 알파 · 상승 포착률 · 위기 하락노출 · β · 제외 표식", if (!IS_ONLY) paste0(" · 전기간 등급 · ", OOS_LAB, " 알파 t(보고 전용)") else ""))
+} else skip("09_scorecard", "판정 표 · 결합 개선 판정 파일 없음")
 
 ## =============================================================================================
 ## 10. IC 가중 엔진 초과수익 상관 — IS 월간(KOSPI200 차감) · 결합 재료 지도

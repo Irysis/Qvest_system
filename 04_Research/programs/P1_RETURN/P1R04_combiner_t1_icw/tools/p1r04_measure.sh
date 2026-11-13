@@ -60,7 +60,7 @@ main() {
       if [ "$v0" != "$v1" ]; then st "측정 중 결합용 뷰 · IC 원장 바뀜 — 재측정 필요(세션)"; ms input_changed "측정 중 입력 데이터(팩터 점수 · 정보계수 이력)가 바뀌어 재측정이 필요하다" "로그 $LOG"; exit 7; fi
       ( cd 04_Research/strategies && timeout 1800 Rscript "$ROOTP/$LRS" "$RD" ) >> "$LOG" 2>&1 || log "저위험 몫 사이드카 rc=$?"
       prl=$( cd 04_Research/strategies && timeout 1800 Rscript "$ROOTP/$PRD" "$RD" 2>> "$LOG" | tail -n 1 ); log "짝 읽기: ${prl:-실패}"
-      if [ -n "$prl" ]; then ms measured "측정 · 평가 완료(IS 판정 · 결합 개선 짝 비교까지)"; else ms measured "측정 · 평가 완료" "결합 개선 짝 비교 도구 실패 — 세션 확인"; fi
+      if [ -n "$prl" ]; then ms measured "측정 · 평가 완료(IS 판정 · 결합 개선 판정까지)"; else ms measured "측정 · 평가 완료" "결합 개선 판정 도구 실패 — 세션 확인"; fi
       st "끝 — 측정 · 평가(판정 해석 · 판단 T2 · 철학 P2 · 보고 · 닫기 = 세션)"; exit 0
     fi
     [ $(( $(date +%s) - last )) -ge 900 ] && { log "대기 — $why"; st "대기 — $why"; last=$(date +%s); }
