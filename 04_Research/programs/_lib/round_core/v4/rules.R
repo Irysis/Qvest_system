@@ -128,27 +128,38 @@ rc_rules_apply <- function(rules, T, eligible = rep(TRUE, nrow(T))) {
 ##   쓰는 일은 rc_rules_test_window_use 가 이미 막지만, 막힌 선언이 들어와도 보는 창 파일에서는 빠진다). 확장 종류는 cols(r)(읽는 판정 표 열)로 본다.
 ##   출시 전 수리(격리 점검 S1 · 판단 T4 C-20261113-042): report 의 when 이 시험 창 규칙이면 그 report 열도 시험 창 규칙이다(when 이 거짓 · 미측정인 칸은 NA —
 ##   그 열의 NA 모양에 시험 창 정보가 실린다) · when 의존은 고정점까지 따라간다(report → report 사슬). cols 판독 실패는 시험 창으로 센다(fail-closed).
-rc_rules_test_ids <- function(rules, rx = "_test$") {
-  out <- character(0)
-  uses <- function(r) {
-    if (!is.list(r)) return(FALSE)
-    ext <- .rc_rule_ext(r[["type"]])
-    m <- if (!is.null(ext)) tryCatch(as.character(unlist(ext[["cols"]](r))), error = function(e) "<cols 판독 실패>_test") else as.character(unlist(r[["metric"]]))
-    hit <- any(grepl(rx, m, perl = TRUE))
-    if ((r[["type"]] %||% "") %in% c("all_of", "any_of")) for (k in r[["of"]] %||% list()) if (isTRUE(uses(k))) hit <- TRUE   # 하위를 모두 훑는다(단락 없음)
-    if (hit) out <<- c(out, as.character(unlist(r[["id"]])))
-    hit
-  }
-  for (r in rules %||% list()) uses(r)
-  repeat {                                                                                  # when 의존 고정점
-    add <- character(0)
-    for (r in rules %||% list()) if (is.list(r) && identical(r[["type"]], "report") && as.character(unlist(r[["when"]]))[1] %in% out &&
-                                      !(as.character(unlist(r[["id"]]))[1] %in% out)) add <- c(add, as.character(unlist(r[["id"]]))[1])
-    if (!length(add)) break
-    out <- c(out, add)
-  }
-  unique(out[!is.na(out) & nzchar(out)])
+##   변경분 점검 2 수리(isolation_review_v4_diff2.md R-B): 앞 규칙의 열(최상위 id — rc_rules_apply 가 판정 표에 붙인다)을 뒤 규칙이 metric · cols 로 읽는 길도
+##   닫힘에 든다(예: metric = "test_hold"). 판별과 판정 규칙 τ_D 검사(p1.R rc_rules_test_window_use)가 같은 고정점(.rc_rules_test_closure)을 쓴다.
+## 규칙 하나(자기 자신만 — 하위 제외)가 읽는 판정 표 열 · 기다리는 규칙(report 의 when). 확장 종류 = cols(r) · 판독 실패 = NA(닿는 것으로 센다 — fail-closed)
+.rc_rule_reads <- function(r) {
+  ext <- .rc_rule_ext(r[["type"]])
+  m <- if (!is.null(ext)) tryCatch(as.character(unlist(ext[["cols"]](r))), error = function(e) NA_character_) else as.character(unlist(r[["metric"]]))
+  c(m, if (identical(r[["type"]], "report")) as.character(unlist(r[["when"]])) else character(0))
 }
+.rc_rules_top_ids <- function(rules) unique(as.character(unlist(lapply(rules %||% list(), function(r) if (is.list(r)) r[["id"]] else NULL))))
+## 규칙 하나가 시험 창 정보에 닿는가 — 읽는 열이 rx(시험 창 이름)에 맞거나, 닿는 집합 S 안의 최상위 규칙 열을 읽거나 기다린다
+.rc_rule_touch <- function(r, S, top, rx = "_test$") {
+  m <- .rc_rule_reads(r)
+  any(is.na(m)) || any(grepl(rx, m[!is.na(m)], perl = TRUE)) || any(m %in% intersect(S, top))
+}
+## 시험 창 닫힘 — 씨앗(시험 창 열을 읽는 규칙) ∪ 닫힘 안 최상위 규칙 열을 읽거나 기다리는 규칙 · 하위가 닿는 상위를 고정점까지. 반환 = 닿는 규칙 id(최상위 · 하위)
+.rc_rules_test_closure <- function(rules, rx = "_test$") {
+  R <- rules %||% list(); top <- .rc_rules_top_ids(R); S <- character(0)
+  walk <- function(r, S) {
+    if (!is.list(r)) return(character(0))
+    out <- character(0); h <- .rc_rule_touch(r, S, top, rx)
+    if ((r[["type"]] %||% "") %in% c("all_of", "any_of")) for (k in r[["of"]] %||% list()) { o <- walk(k, S); if (length(o)) { out <- c(out, o); h <- TRUE } }   # 하위를 모두 훑는다(단락 없음)
+    if (h) out <- c(out, as.character(unlist(r[["id"]])))
+    out
+  }
+  repeat {
+    S1 <- unique(c(S, unlist(lapply(R, walk, S = S))))
+    if (length(S1) == length(S)) break
+    S <- S1
+  }
+  S[!is.na(S) & nzchar(S)]
+}
+rc_rules_test_ids <- function(rules, rx = "_test$") .rc_rules_test_closure(rules, rx)
 ## 보는 창 판정 표 — 시험 창 이름 열(_test$)과 시험 창 규칙 열(rc_rules_test_ids)을 함께 뺀다(v4 · driver.R rc_evaluate 가 부른다)
 rc_rules_visible_table <- function(T, rules) {
   if (is.null(T) || !is.data.frame(T)) return(T)

@@ -22,6 +22,9 @@
 ##   검증 불가 원천 라운드 = 등록 거부 · 낡은 판(판 표식) 원천 칸 = 같은 엔진 · 같은 구성의 현재 판 산출로 갈음(없으면 거부) · 갈래 ① 보류 요청 = withdrawn 아니면 보류 ·
 ##   해제 = 상설 판 자기 영수증 · 저위험 = 방어 · 위험 · 국면 · 유동성 · 쏠림 + 영수증 lowrisk_tag · 풀 열 label_class · family_root · 같은 계보 블렌드 꼬리표 ·
 ##   채택 규칙 판 p4_rules_v3(N5 β 비대칭 필수) · 닫기 원천 시행 셈 = 정규화 고유 경로 + 손상 기록.
+## v4 변경분 점검 2 수리(11-13 · isolation_review_v4_diff2.md R-A · R-D · S-a · S-b): 상설 판 영수증의 갈래 ① 보류 해제 = 보류 요청 뒤에 쓰고 그 요청을 낸 리뷰를 근거로 적은
+##   영수증만(엔진 항목 basis_review · 아니면 보류 유지) · 원천 라운드 기계 꼬리표(results/lowrisk_tags.json)가 참이면 영수증 없이도 lowrisk_confirm_pending ·
+##   사슬 등록 = 판 표식 판정 불가 원천 칸 거부 · 지금 검증된 등록 P1 라운드가 아닌 원천 라운드 거부.
 ## 경계: 루프가 고쳐 쓰는 것은 생성기(프롬프트 파일)뿐이다 — 판정 규칙(채택 규칙 · 예산)은 사슬 판에 고정되고, 바꾸려면 새 사슬 판을 등록한다.
 ##   수치는 R 계약 산출만(AX-008). 칸 측정은 정본 셀 워커(rf_cell_worker.R)에 맡기고 결과 경로만 원장에 남긴다. 시험 창 값은 계산도 반환도 하지 않는다.
 
@@ -81,8 +84,8 @@ RC_P4_REASONS <- c(
   factor_db_stale = "팩터 DB 판 낡음(contracts/factor_db_vintage.R::fdv_stale = TRUE) — 재측정 전 기저로 쓰지 않는다",
   cash_machine = "현금 기계(헌장 §5 빈칸 24) — 기저 측정 기록의 보는 창 강세 상승 포착 중앙값 < uc_floor(behavior_card.json) · 기록에 값이 없으면 unknown(제외 안 함 · 열 cash_machine)",
   philosophy_unread = "철학 P2 판독 영수증 없음(v4 · 자체 사양 입구 통과 칸) — 두 갈래 모두 미해소: ① 상설 원장 superfan 기록(kind = pass · 그 code)의 p2 id 가 판단 원장 reviews 에 역할 philosophy · 트리거 P2 · 대상(round) = 그 상설 판으로 있음 ② 원천 라운드 영수증 <원천 라운드>/results/philosophy_receipt.json(rc_philosophy_receipt_v1 · p2_review_id = 판단 원장의 philosophy P2 · round = 그 원천 라운드 · 그 엔진 hold = false ∧ stop = false). 파일 없음 · 판독 불가 · 엔진 항목 없음 = 미해소(P1R03 결론 범위 '통과 엔진마다 철학 P2 판독' · 철학 P1 C-20261112-023 · 규약 §11-1 기록 형식)",
-  philosophy_hold = "철학 P2 판독이 그 엔진을 보류했다 — 도훈 확인 대기(v4 · 자체 사양 통과 칸 · 확인된 영수증의 엔진 hold = true 또는 stop = true · 또는 갈래 ① superfan 기록 P2 리뷰의 보류 요청(상태 withdrawn 이 아니면 보류 — accepted = Q 가 보류에 동의하고 도훈 결정을 기다리는 상태 · 격리 점검 M2)). 갈래 ① 보류의 해제 = 상설 판 자기 영수증(<상설 판>/results/philosophy_receipt.json)의 그 엔진 hold = false ∧ stop = false. 보류는 다른 갈래의 해소보다 앞선다(fail-closed)",
-  lowrisk_confirm_pending = "저위험 계열 도훈 확인 대기(v4 · 자체 사양 통과 칸 · 엔진 단위) — 가족(core.families)이 RC_P4_LOWRISK_HOLD(defense · risk · regime · liquidity · crowding)와 겹치거나 확인된 영수증의 그 엔진 항목 lowrisk_tag = true(사이드카 저위험 꼬리표 카테고리)인데, 확인된 영수증(원천 라운드 · 상설 판)의 그 엔진 항목에 release_decision 이 없거나 그 id 가 결정 기록부(06_Registry/decision_register.json)에 status = resolved 로 없다(P1R03 결론 범위 '저위험 계열' · 철학 보류 C-20261112-021 · P1R04 결론 범위 [29] · 판단 T4 C-20261113-037 · 도훈 결정은 엔진마다 — 카테고리 일괄 해제 없음)",
+  philosophy_hold = "철학 P2 판독이 그 엔진을 보류했다 — 도훈 확인 대기(v4 · 자체 사양 통과 칸 · 확인된 영수증의 엔진 hold = true 또는 stop = true · 또는 갈래 ① superfan 기록 P2 리뷰의 보류 요청(상태 withdrawn 이 아니면 보류 — accepted = Q 가 보류에 동의하고 도훈 결정을 기다리는 상태 · 격리 점검 M2)). 갈래 ① 보류의 해제 = 상설 판 자기 영수증(<상설 판>/results/philosophy_receipt.json)의 그 엔진 hold = false ∧ stop = false 이고, 그 영수증이 보류 요청보다 뒤에 쓰였고(written_at > 보류 요청 at — 시각 판독 불가 = 해제 없음) 그 보류 요청을 낸 리뷰를 근거로 적었을 때만(엔진 항목 basis_review · 없으면 영수증 p2_review_id ⊇ 보류 리뷰 — 변경분 점검 2 R-A). 보류는 다른 갈래의 해소보다 앞선다(fail-closed)",
+  lowrisk_confirm_pending = "저위험 계열 도훈 확인 대기(v4 · 자체 사양 통과 칸 · 엔진 단위) — 가족(core.families)이 RC_P4_LOWRISK_HOLD(defense · risk · regime · liquidity · crowding)와 겹치거나 확인된 영수증의 그 엔진 항목 lowrisk_tag = true(사이드카 저위험 꼬리표 카테고리)이거나 원천 라운드 기계 꼬리표(<원천 라운드>/results/lowrisk_tags.json 의 그 엔진 = true · 파일 판독 불가 = 꼬리표 — 변경분 점검 2 R-D · 영수증이 없어도 건다)인데, 확인된 영수증(원천 라운드 · 상설 판)의 그 엔진 항목에 release_decision 이 없거나 그 id 가 결정 기록부(06_Registry/decision_register.json)에 status = resolved 로 없다(P1R03 결론 범위 '저위험 계열' · 철학 보류 C-20261112-021 · P1R04 결론 범위 [29] · 판단 T4 C-20261113-037 · 도훈 결정은 엔진마다 — 카테고리 일괄 해제 없음)",
   own_spec_unresolved = "자체 사양 엔진(원장 갈래 own_spec ∨ 엔진 폴더 own_spec.json)인데 가족(families) · 원천 라운드를 채우지 못했다(인계 기록 없음 + own_spec.json 없음 · 판독 불가 · core md5 불일치 · 원천 라운드 판독 실패) — 철학 P2 · 저위험 · 원천 시행 관문을 걸 수 없어 기저로 쓰지 않는다(v4 · 격리 점검 M1 · fail-closed)")
 ## v4 저위험 계열 보류(P1R03 결론 범위 · 철학 보류 C-20261112-021 수용 — FDEFE · FRISK · FREGI 는 자격이 나와도 P4 기저 · 블렌딩 부품 전 도훈 확인).
 ##   걸리는 엔진 = 가족 집합이 RC_P4_LOWRISK_HOLD 와 겹치는 자체 사양 엔진(토탈처럼 14 가족을 다 품은 엔진도 겹친다 — 그 가족 점수가 토탈 안에 있다).
@@ -95,6 +98,9 @@ RC_P4_LOWRISK_SOURCE <- paste0("도훈 결정 LOWBETA-ENGINES-BASE-USE-20261113(
                                "04_Research/programs/P1_RETURN/P1R03_factor_family_composites/round_spec.json conclusion_scope(저위험 계열)")
 ## 기저 풀 표기(도훈 결정 CHARTER-GAP-LOWBETA-DEFENSE-LABEL-20261113 (가) '그 밖은 저β 수익 엔진' · LOWBETA (나) '방어 주장은 하지 않는다') — 저위험 계열(위 집합 ∨ lowrisk_tag)이면 저β 수익 엔진
 RC_P4_LABEL_LOWBETA <- "저β 수익 엔진"; RC_P4_LABEL_RETURN <- "수익 엔진"
+## 원천 라운드 기계 꼬리표 파일(변경분 점검 2 R-D) — <원천 라운드>/results/lowrisk_tags.json = {"engines": {"<엔진 경로>": true}}(엔진 경로 = 저장소 상대 엔진 파일 또는 폴더 ·
+##   성과 무참조 · 사이드카 결과를 원천 라운드 세션이 이 형식으로 옮긴다). 참 = 저위험 꼬리표(영수증 없이도 lowrisk_confirm_pending · fail-closed)
+RC_P4_LOWRISK_TAGS_FILE <- "lowrisk_tags.json"
 
 .rcp4_err <- function(...) stop(paste0("[round_core p4] ", ...), call. = FALSE)
 .rcp4_num <- function(x) { v <- suppressWarnings(as.numeric(unlist(x))); if (length(v) == 1L) v else NA_real_ }
@@ -256,12 +262,14 @@ rc_p4_base_pool <- function(root = rc_root(), registry_path = NULL, standing = N
       if (identical(ph$state, "hold")) { rs <- c(rs, "philosophy_hold"); det <- c(det, paste0("philosophy_hold: ", ph$why)) }
       else if (!identical(ph$state, "ok")) { rs <- c(rs, "philosophy_unread"); det <- c(det, paste0("philosophy_unread: ", ph$why)) }
       fams <- strsplit(.rcs_or(qs("families"), ""), ",", fixed = TRUE)[[1]]; hold <- intersect(fams, RC_P4_LOWRISK_HOLD)
-      if (length(hold) || isTRUE(ph$lowrisk_tag)) {
+      tf <- .rcp4_lowrisk_tagfile(fr, x$engine_path, RRd, root)                   # 변경분 점검 2 R-D — 원천 라운드 기계 꼬리표(영수증 없이도)
+      if (length(hold) || isTRUE(ph$lowrisk_tag) || isTRUE(tf$tag)) {
         label <- RC_P4_LABEL_LOWBETA
         rl <- .rcp4_release_state(ph$releases, DR)
         if (!isTRUE(rl$ok)) { rs <- c(rs, "lowrisk_confirm_pending")
           det <- c(det, sprintf("lowrisk_confirm_pending: %s(저위험 · %s) — %s", paste(c(if (length(hold)) paste0("가족 ", paste(hold, collapse = ",")),
-                                                                                        if (isTRUE(ph$lowrisk_tag)) "영수증 lowrisk_tag"), collapse = " · "),
+                                                                                        if (isTRUE(ph$lowrisk_tag)) "영수증 lowrisk_tag",
+                                                                                        if (isTRUE(tf$tag)) paste0("원천 꼬리표 ", tf$why)), collapse = " · "),
                                 RC_P4_LOWRISK_SOURCE, rl$why)) }
       }
     }
@@ -290,8 +298,11 @@ rc_p4_base_pool <- function(root = rc_root(), registry_path = NULL, standing = N
   if (!identical(.rcs_str(r$round), .rcs_str(round_id))) return(list(ok = FALSE, hold = FALSE, why = sprintf("%s: 대상 %s ≠ %s", id, .rcs_or(.rcs_str(r$round), "없음"), round_id)))
   cid <- unique(as.character(unlist(r$challenges)))
   hold <- Filter(function(c) c$id %in% cid && isTRUE(c$hold_request) && !(.rcs_or(.rcs_str(c$status), "") %in% closed), L$challenges %||% list())
-  list(ok = TRUE, hold = length(hold) > 0L, why = if (length(hold)) sprintf("%s: 보류 요청 %s(상태 %s)", id, paste(vapply(hold, function(c) .rcs_or(.rcs_str(c$id), "?"), ""), collapse = ","),
-                                                                              paste(vapply(hold, function(c) .rcs_or(.rcs_str(c$status), "?"), ""), collapse = ",")) else "")
+  ## 변경분 점검 2 R-A: 보류 요청 시각(at) 최댓값 — 해제 영수증이 그보다 뒤에 쓰였는지 본다(하나라도 판독 불가면 NA = 해제 없음)
+  hat <- if (length(hold)) { tt <- vapply(hold, function(c) as.numeric(.rcs_time(c$at)), 0); if (anyNA(tt)) NA_real_ else max(tt) } else NA_real_
+  list(ok = TRUE, hold = length(hold) > 0L, hold_ids = vapply(hold, function(c) .rcs_or(.rcs_str(c$id), "?"), ""), hold_at = hat,
+       why = if (length(hold)) sprintf("%s: 보류 요청 %s(상태 %s)", id, paste(vapply(hold, function(c) .rcs_or(.rcs_str(c$id), "?"), ""), collapse = ","),
+                                       paste(vapply(hold, function(c) .rcs_or(.rcs_str(c$status), "?"), ""), collapse = ",")) else "")
 }
 ## 갈래 ① 상설 원장 superfan pass 기록의 p2 id(',') — 확인된 리뷰 하나라도 있으면 ok · 확인된 리뷰에 보류 요청이 있으면 hold
 ##   출시 전 수리(격리 점검 M2): 갈래 ① 의 보류 요청은 withdrawn 이 아니면 보류다(accepted = Q 가 보류에 동의하고 도훈 결정을 기다리는 상태 — 규약 §5 · §11
@@ -301,7 +312,9 @@ rc_p4_base_pool <- function(root = rc_root(), registry_path = NULL, standing = N
   if (!length(v)) return(list(ok = FALSE, hold = FALSE, why = "상설 원장에 철학 P2 표식(superfan-mark --kind pass --p2)이 없다"))
   rs <- lapply(v, .rcp4_p2_review, round_id = round_id, L = L, closed = "withdrawn")
   okv <- vapply(rs, function(r) isTRUE(r$ok), TRUE); hv <- vapply(rs, function(r) isTRUE(r$ok) && isTRUE(r$hold), TRUE)
-  list(ok = any(okv & !hv), hold = any(hv), why = paste(vapply(rs, function(r) r$why, ""), collapse = " · "))
+  ## 변경분 점검 2 R-A: 보류를 낸 리뷰 id · 그 보류 요청 시각 최댓값(해제 영수증 대조용 — 판독 불가 = NA)
+  hat <- if (any(hv)) { tt <- vapply(rs[hv], function(r) as.numeric(r$hold_at %||% NA_real_), 0); if (anyNA(tt)) NA_real_ else max(tt) } else NA_real_
+  list(ok = any(okv & !hv), hold = any(hv), hold_reviews = v[hv], hold_at = hat, why = paste(vapply(rs, function(r) r$why, ""), collapse = " · "))
 }
 ## 원천 라운드 디렉터리 — 등록부 라운드의 사전등록 칸 사양 경로(<라운드>/specs/<code>.json)의 위 · 없으면 04_Research/programs/<프로그램>/<round_id>
 ##   반환 list(dir, prereg(목록 | NULL), prereg_path) · RR = 등록부 프로그램 라운드 목록(이미 읽었으면 넘긴다)
@@ -315,6 +328,26 @@ rc_p4_base_pool <- function(root = rc_root(), registry_path = NULL, standing = N
   cand <- c(if (!is.na(sp1) && identical(basename(dirname(.rcp4_rel(sp1, root))), "specs")) dirname(dirname(.rcp4_abs(.rcp4_rel(sp1, root), root))),
             file.path(root, "04_Research/programs", program, rid))
   list(dir = cand[dir.exists(cand)][1], prereg = p, prereg_path = f, registered = length(rr) > 0L)
+}
+## 원천 라운드 기계 꼬리표 판독(변경분 점검 2 R-D · RC_P4_LOWRISK_TAGS_FILE) — rounds = 그 엔진의 원천 라운드 · 키 = 엔진 파일 또는 폴더(저장소 상대).
+##   그 엔진 = true → 꼬리표 · 파일이 있는데 판독 불가 · engines 가 이름 있는 목록이 아님 · 그 엔진 값이 논리값 1개가 아님 → 꼬리표(fail-closed) · 없음 · false → 꼬리표 아님
+.rcp4_lowrisk_tagfile <- function(rounds, engine_path, RR, root) {
+  er <- .rcp4_rel(engine_path, root); ed <- if (is.na(er)) NA_character_ else dirname(er)
+  rr <- unique(unlist(strsplit(as.character(unlist(rounds)), ",", fixed = TRUE))); rr <- rr[!is.na(rr) & nzchar(rr)]
+  hits <- character(0)
+  for (rid in rr) {
+    loc <- .rcp4_round_locate(rid, RR, root); if (is.na(loc$dir)) next
+    f <- file.path(loc$dir, "results", RC_P4_LOWRISK_TAGS_FILE); if (!file.exists(f)) next
+    TG <- tryCatch(rc_json_read(f), error = function(e) NULL); E <- if (is.list(TG)) TG$engines else NULL
+    if (!is.list(E) || (length(E) && (is.null(names(E)) || any(!nzchar(names(E)))))) { hits <- c(hits, sprintf("%s: %s 판독 불가(fail-closed)", rid, RC_P4_LOWRISK_TAGS_FILE)); next }
+    if (!length(E)) next
+    ke <- sub("/+$", "", vapply(names(E), function(k) .rcs_or(.rcp4_rel(k, root), ""), "", USE.NAMES = FALSE))
+    j <- which(ke %in% stats::na.omit(c(er, ed))); if (!length(j)) next
+    bad <- vapply(E[j], function(v) !(is.logical(v) && length(v) == 1L && !is.na(v)), TRUE)
+    if (any(bad)) hits <- c(hits, sprintf("%s: 그 엔진 꼬리표 값이 논리값 1개가 아니다(fail-closed)", rid))
+    else if (any(vapply(E[j], isTRUE, TRUE))) hits <- c(hits, sprintf("%s: %s", rid, RC_P4_LOWRISK_TAGS_FILE))
+  }
+  list(tag = length(hits) > 0L, why = paste(hits, collapse = " · "))
 }
 RC_P4_PHIL_RECEIPT_SCHEMA <- "rc_philosophy_receipt_v1"
 ## 갈래 ② 원천 라운드 영수증(<원천 라운드>/results/philosophy_receipt.json) — 확인 = schema · round_id = 그 라운드 · p2_review_id 가 판단 원장의
@@ -338,23 +371,36 @@ RC_P4_PHIL_RECEIPT_SCHEMA <- "rc_philosophy_receipt_v1"
   if (!is.list(e)) return(list(ok = FALSE, hold = FALSE, why = sprintf("%s 영수증: 엔진 항목이 목록이 아니다(%s)", rid, engine_path)))
   h <- isTRUE(e$hold); s <- isTRUE(e$stop); rel <- .rcs_str(e$release_decision); tg <- isTRUE(e$lowrisk_tag)
   if (!is.logical(e$hold) || !is.logical(e$stop)) return(list(ok = FALSE, hold = FALSE, why = sprintf("%s 영수증: 엔진 hold · stop 이 논리값이 아니다", rid)))
-  if (h || s) return(list(ok = FALSE, hold = TRUE, release = rel, tag = tg, why = sprintf("%s 영수증(%s): %s", rid, .rcs_str(R$p2_review_id), paste(c(if (h) "hold", if (s) "stop"), collapse = " · "))))
-  list(ok = TRUE, hold = isTRUE(rv$hold), release = rel, tag = tg, why = if (isTRUE(rv$hold)) sprintf("%s 영수증 리뷰: %s", rid, rv$why) else "")
+  ## 변경분 점검 2 R-A: 해제 근거 리뷰(엔진 항목 basis_review · 없으면 영수증 p2_review_id) · 쓴 시각 — 갈래 ① 보류 해제 대조(.rcp4_philosophy_state)
+  bas <- as.character(unlist(e$basis_review)); bas <- bas[!is.na(bas) & nzchar(bas)]; if (!length(bas)) bas <- .rcs_str(R$p2_review_id)
+  wat <- as.numeric(.rcs_time(R$written_at))
+  if (h || s) return(list(ok = FALSE, hold = TRUE, release = rel, tag = tg, basis = bas, written_at = wat,
+                          why = sprintf("%s 영수증(%s): %s", rid, .rcs_str(R$p2_review_id), paste(c(if (h) "hold", if (s) "stop"), collapse = " · "))))
+  list(ok = TRUE, hold = isTRUE(rv$hold), release = rel, tag = tg, basis = bas, written_at = wat, why = if (isTRUE(rv$hold)) sprintf("%s 영수증 리뷰: %s", rid, rv$why) else "")
 }
 ## 갈래 종합 — 보류(확인된 판독의 hold · stop · 보류 요청)가 해소보다 앞선다 → hold · 그다음 어느 갈래든 해소 → ok · 아니면 unread
 ##   releases = 확인된 영수증의 그 엔진 항목 release_decision(저위험 엔진 풀림 판독 — .rcp4_release_state) · lowrisk_tag = 확인된 영수증의 그 엔진 꼬리표
 ##   출시 전 수리(격리 점검 M2): 상설 판 자기 영수증(<상설 판>/results/philosophy_receipt.json — 같은 형식 · 엔진 = 그 판 원장 항목)을 갈래 ① 의 해제 경로로 읽는다 —
 ##   그 엔진 hold = false ∧ stop = false 면 갈래 ① 보류 요청을 그 엔진에 대해 푼다(보류의 결정은 도훈 — Q 가 그 결정을 엔진 단위로 옮겨 적는다) · hold · stop = true 면 보류.
 ##   source_rounds = 원천 라운드 id(문자 벡터 또는 ',' 로 이은 문자열).
+##   변경분 점검 2 R-A: 상설 판 영수증이 갈래 ① 보류를 푸는 것은 그 영수증이 보류 요청 뒤에 쓰였고(written_at > 그 엔진 보류 요청 at 최댓값 · 둘 중 하나라도 판독 불가 =
+##   해제 없음) 해제 근거 리뷰(엔진 항목 basis_review · 없으면 영수증 p2_review_id)가 보류를 낸 리뷰를 모두 품을 때만이다 — 앞서 쓴 영수증 · 다른 리뷰를 근거로 한 영수증은
+##   뒤의 보류 요청을 풀지 않는다(보류 유지 · fail-closed). 영수증 자체의 해소(보류 없는 엔진의 판독 확인)는 종전대로.
 .rcp4_philosophy_state <- function(p2_ids, standing_round, source_rounds, engine_path, L, RR, root) {
   a <- .rcp4_p2_read(p2_ids, standing_round, L)
   s <- if (is.na(.rcs_str(standing_round))) NULL else .rcp4_receipt_state(.rcs_str(standing_round), engine_path, L, RR, root)
   sr <- unique(unlist(strsplit(as.character(unlist(source_rounds)), ",", fixed = TRUE))); sr <- sr[!is.na(sr) & nzchar(sr)]
   b <- lapply(sr, .rcp4_receipt_state, engine_path = engine_path, L = L, RR = RR, root = root)
   s_ok <- isTRUE(s$ok) && !isTRUE(s$hold)
-  hold <- (isTRUE(a$hold) && !s_ok) || isTRUE(s$hold) || any(vapply(b, function(x) isTRUE(x$hold), TRUE))
+  a_rel <- isTRUE(a$hold) && s_ok && length(a$hold_reviews) > 0L && all(a$hold_reviews %in% (s$basis %||% character(0))) &&
+    is.finite(a$hold_at %||% NA_real_) && is.finite(s$written_at %||% NA_real_) && s$written_at > a$hold_at
+  rel_why <- if (isTRUE(a$hold) && s_ok && !a_rel) sprintf("상설 판 영수증이 갈래 ① 보류를 풀지 못한다(보류 리뷰 %s · 영수증 근거 %s · %s)",
+                                                       paste(a$hold_reviews, collapse = ","), paste(s$basis %||% "없음", collapse = ","),
+                                                       if (!is.finite(a$hold_at %||% NA_real_) || !is.finite(s$written_at %||% NA_real_)) "시각 판독 불가" else
+                                                         if (!(s$written_at > a$hold_at)) "보류 요청보다 앞서 썼다" else "근거 리뷰가 보류 리뷰를 품지 않는다") else ""
+  hold <- (isTRUE(a$hold) && !a_rel) || isTRUE(s$hold) || any(vapply(b, function(x) isTRUE(x$hold), TRUE))
   ok <- isTRUE(a$ok) || s_ok || any(vapply(b, function(x) isTRUE(x$ok), TRUE))
-  why <- paste(c(paste0("갈래 ①: ", a$why), if (!is.null(s)) paste0("상설 판 영수증: ", if (s_ok) "해소" else s$why),
+  why <- paste(c(paste0("갈래 ①: ", a$why), if (!is.null(s)) paste0("상설 판 영수증: ", if (s_ok && !nzchar(rel_why)) "해소" else if (s_ok) rel_why else s$why),
                  if (length(b)) paste0("갈래 ②: ", vapply(b, function(x) x$why, "")) else "갈래 ②: 원천 라운드 없음"), collapse = " · ")
   cf <- c(if (!is.null(s)) list(s), b)
   rel <- unlist(lapply(cf, function(x) if (isTRUE(x$ok) || isTRUE(x$hold)) x$release else NULL))
@@ -369,6 +415,8 @@ RC_P4_PHIL_RECEIPT_SCHEMA <- "rc_philosophy_receipt_v1"
 #'   쓰기 = <round_dir>/results/philosophy_receipt.json 원자적 교체(앞 영수증이 있으면 supersedes_md5). 반환 = 파일 경로(보이지 않게).
 #'   출시 전 수리: ① 상설 판에도 쓴다(격리 점검 M2 — 사전등록 spec.standing = TRUE 면 엔진 = 그 판 원장 enqueue 항목의 엔진 · 갈래 ① 보류의 엔진 단위 해제 경로) ·
 #'   ② 엔진 항목 lowrisk_tag(선택 · 논리값 1개 — 사이드카 저위험 꼬리표 카테고리를 세션이 기계 파일에서 옮겨 적는다 · 참이면 기저 풀이 release_decision 을 요구한다 · C-037).
+#'   변경분 점검 2(R-A): ③ 엔진 항목 basis_review(선택 · 리뷰 id 1개 이상 — 그 엔진 해제의 근거 리뷰 · 없으면 p2_review_id). 상설 판 영수증이 갈래 ① 보류를 풀려면
+#'   보류 요청 뒤에 쓰고 근거 리뷰가 보류를 낸 리뷰를 품어야 한다(한 판 영수증 파일 하나에 엔진마다 다른 보류 리뷰를 함께 적을 수 있게).
 rc_philosophy_receipt_write <- function(round_dir, p2_review_id, engines, ledger = file.path(rc_root(), RC_LEDGER_DEFAULT),
                                         decision_register = file.path(rc_root(), "06_Registry/decision_register.json"), root = rc_root()) {
   sp <- tryCatch(rc_json_read(file.path(round_dir, "round_spec.json")), error = function(e) NULL)
@@ -404,7 +452,15 @@ rc_philosophy_receipt_write <- function(round_dir, p2_review_id, engines, ledger
       if (is.null(D)) D <- tryCatch(rc_json_read(decision_register), error = function(z) .rcp4_err("영수증 쓰기 거부 — 결정 기록부 판독 불가: ", decision_register))
       if (!.rcp4_decision_resolved(rel, D)) .rcp4_err("영수증 쓰기 거부 — release_decision ", rel, " 이 결정 기록부에 status = resolved 로 없다(", kr, ")")
     }
-    out[[kr]] <- c(list(hold = e$hold, stop = e$stop, note = nt), if (!is.null(rel)) list(release_decision = rel), if (!is.null(lt)) list(lowrisk_tag = lt))
+    ## 변경분 점검 2 R-A: basis_review(선택 · 리뷰 id 1개 이상) = 그 엔진 해제의 근거 리뷰(갈래 ① 보류를 낸 리뷰) — 판단 원장의 philosophy P2 · 대상 = 이 라운드여야 한다
+    br <- e$basis_review; bv <- character(0)
+    if (!is.null(br)) {
+      bv <- as.character(unlist(br))
+      if (!length(bv) || any(is.na(bv) | !nzchar(bv))) .rcp4_err("영수증 쓰기 거부 — basis_review 는 리뷰 id 문자열 1개 이상(", kr, ")")
+      for (b in bv) { rb <- .rcp4_p2_review(b, rid, L); if (!isTRUE(rb$ok)) .rcp4_err("영수증 쓰기 거부 — basis_review 확인 실패(", kr, "): ", rb$why) }
+    }
+    out[[kr]] <- c(list(hold = e$hold, stop = e$stop, note = nt), if (!is.null(rel)) list(release_decision = rel), if (!is.null(lt)) list(lowrisk_tag = lt),
+                   if (length(bv)) list(basis_review = as.list(bv)))
   }
   f <- file.path(round_dir, "results", "philosophy_receipt.json")
   prev <- if (file.exists(f)) rc_md5(f) else NA_character_
@@ -926,6 +982,7 @@ rc_p4_steps_read <- function(chain_dir) {
 #'   (.rcs_own_source · 판단 T4 C-20261113-035 ②) · 사전등록 핀에 이 엔진 md5 가 있는데 검증이 안 되는 라운드 = '<라운드>:<검증 불가 — 사유>'로 거부(격리 점검 R4 (ii)) ·
 #'   원천 칸 산출의 판 표식(contracts/factor_db_vintage.R)이 낡았으면 같은 엔진 md5 · 같은 구성의 현재 판 산출로 갈음 · 없으면 거부(판단 T1 C-20261113-054 ·
 #'   rc_p4_source_trials) · 기록에 base_label_class(풀 label_class). fdv_ledger_path = 판 표식 원장(시험만 바꾼다).
+#'   변경분 점검 2: 원천 라운드가 지금 검증된 등록 P1 라운드가 아니면(원장에만 남음 · 사전등록 md5 ≠ 등록부 · 경로 없음) 거부(S-b) · 판 표식 판정 불가 원천 칸 = 거부(S-a).
 rc_p4_chain_register <- function(chain_dir, pool, root = rc_root(), gen_path = NULL, metrics_fun = rc_p4_visible_metrics, p1 = NULL, t1 = NULL,
                                  ledger = file.path(root, RC_LEDGER_DEFAULT), review_root = root, registry_path = NULL, fdv_ledger_path = NULL, ...) {
   spec <- rc_json_read(rc_p4_spec_path(chain_dir))
@@ -948,6 +1005,10 @@ rc_p4_chain_register <- function(chain_dir, pool, root = rc_root(), gen_path = N
     o <- .rcs_own_source(now, em, fam)
     rids <- sort(unique(c(fr[nzchar(fr)], o$rounds)))
     uvm <- if (is.null(o$unverified)) character(0) else sprintf("%s:<검증 불가 — %s>", o$unverified$round_id, o$unverified$why)
+    ## 변경분 점검 2 S-b: 원천 라운드(풀 source_rounds · 계보로 든 라운드 포함)는 모두 지금 검증된 등록 P1 라운드여야 한다(사전등록 md5 = 등록부 · 상설 판 아님) —
+    ##   엔진 md5 핀으로만 걸던 검증 불가 판독을 라운드 단위로 넓힌다(원장에만 남은 라운드 · 사전등록이 바뀐 라운드 = 거부)
+    RNw <- attr(now, "rounds"); nvr <- setdiff(rids, if (is.data.frame(RNw)) RNw$round_id else character(0))
+    if (length(nvr)) uvm <- c(uvm, sprintf("%s:<검증 불가 — 지금 검증된 등록 P1 라운드가 아니다(사전등록 md5 ≠ 등록부 · 판독 불가 · 상설 판 · 미등록)>", nvr))
     srt <- rc_p4_source_trials(rids, "P1_RETURN", root, registry_path, fdv_ledger_path = fdv_ledger_path, src = now)
     miss <- c(uvm, srt$missing)
     if (length(miss)) .rcp4_err("사슬 판 등록 거부 — 원천 라운드 시행의 측정 산출이 없거나 검증 · 판 표식을 통과하지 못했다(원천 라운드의 모든 칸이 사슬 시행 집합에 들어가야 한다 · 빠진 칸 ",
@@ -970,7 +1031,8 @@ rc_p4_chain_register <- function(chain_dir, pool, root = rc_root(), gen_path = N
 #'   출시 전 수리(판단 T1 C-20261113-054): 산출마다 판 표식(contracts/factor_db_vintage.R::fdv_stale — 이음매 수리 RAWDATA-SEAM-0330-REPAIR-20261113 같은 원장 줄)을 본다.
 #'   낡았으면(stale) 같은 엔진 md5 · 같은 구성(칸 사양 의미 서명 .rcp4_spec_key — 메타 키 제외)의 현재 판 산출(stale = FALSE 로 확인 · 등록부 P1 라운드 칸)로 갈음하고
 #'   기록에 replaced{artifacts · stale_by(수리 id) · by(<라운드>:<칸>)}를 남긴다. 갈음할 것이 없으면 missing '<라운드>:<칸>:stale'(등록 거부 · fail-closed).
-#'   판정 불가(NA — 측정 시각 모름 · 계약 · 원장 없음)는 기저 풀과 같이 그대로 둔다(fdv = na). src = 원천 칸 표(rc_standing_source_cells — 넘기면 다시 읽지 않는다).
+#'   판정 불가(NA — 측정 시각 모름 · 계약 · 원장 없음)는 missing '<라운드>:<칸>:fdv_na(사유)'(변경분 점검 2 S-a — 닫기 재채점 입력이라 거부 · 기저 풀은 진단 열 그대로).
+#'   src = 원천 칸 표(rc_standing_source_cells — 넘기면 다시 읽지 않는다).
 #'   반환에 substituted(갈음 수). 기록에는 수리 사유 문장(날짜)을 싣지 않는다(설계 입력 · 결과 원장이 사슬 원장을 읽는다 — τ_D 뒤 날짜 금지).
 rc_p4_source_trials <- function(round_ids, program = "P1_RETURN", root = rc_root(), registry_path = NULL, fdv_ledger_path = NULL, src = NULL) {
   R <- pr_get(pr_load(root, registry_path), program)[["rounds"]] %||% list()
@@ -988,7 +1050,9 @@ rc_p4_source_trials <- function(round_ids, program = "P1_RETURN", root = rc_root
       a <- if (is.na(res)) NA_character_ else .rcp4_cell_artifacts(res, code, root)
       if (is.na(a)) { miss <- c(miss, paste0(rid, ":", code)); next }
       fv <- .rcp4_fdv(a, root, fdv_ledger_path)
-      rec <- list(round_id = rid, code = code, artifacts = .rcp4_rel(a, root), fdv = if (isTRUE(fv$stale)) "stale" else if (isFALSE(fv$stale)) "current" else "na")
+      ## 변경분 점검 2 S-a: 판 표식 판정 불가(측정 시각 모름 · 계약 · 원장 없음)는 사슬 시행 집합에 넣지 않는다 — 닫기 재채점(A 관문) 입력이라 기저 풀 진단 열과 달리 거부
+      if (is.na(fv$stale)) { miss <- c(miss, paste0(rid, ":", code, ":fdv_na(", .rcs_or(.rcs_str(fv$reason), "?"), ")")); next }
+      rec <- list(round_id = rid, code = code, artifacts = .rcp4_rel(a, root), fdv = if (isTRUE(fv$stale)) "stale" else "current")
       if (isTRUE(fv$stale)) {
         if (is.null(SC)) SC <- tryCatch(rc_standing_source_cells(program, root, registry_path), error = function(e) NULL)
         sb <- .rcp4_trial_substitute(rid, code, SC, R, root, fdv_ledger_path, program)
