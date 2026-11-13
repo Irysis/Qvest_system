@@ -261,6 +261,71 @@
       ],
       "first_consumers": "P1S02_standing_qualification(P1 상설 자격 판 2) — 등록 때 이 판과 매니페스트를 핀한다",
       "manifest_check": "R 의 rc_core_manifest(v3) 로 다시 계산한 값과 같은지 출시 직전에 확인(release 기록 커밋 메시지에 값)"
+    },
+    {
+      "version": "v4",
+      "status": "released",
+      "released_at": "2026-11-13T20:07:03+0900",
+      "manifest_md5": "95d4a286deebddcc1c621796208d734d",
+      "n_files": 20,
+      "files": {
+        "cell_eval.R": "ae8ad253f11908807c968ba3b526b045",
+        "driver.R": "0d9b5d847ea72b8885e311ca1f49637f",
+        "fingerprint.sh": "10b55bd509f587b6b0b5cfdce3d91b4e",
+        "freshness.R": "ece0989ff76a95ceb454e003d9c63b80",
+        "load.R": "7189776c99f13cd57bac30165d051f96",
+        "measure_cell.R": "1390b6015ae58123d6831489df3a9989",
+        "metrics.R": "8adb024271f00dedc7c9464dcb7f6b7e",
+        "outcomes.R": "71df00a7867f943cd51d166a28911353",
+        "p1.R": "ff68e659b2463ef86d4990f0165f4eab",
+        "p2.R": "d9680326f6d0e80d9649aecb3508693d",
+        "p3.R": "0d8ae1e527271cd02c63c030593c14f1",
+        "p4.R": "3a281781747a61f6d6c38739ed53226f",
+        "pair.R": "d91be83f2ed42ffc56f8d105119787c6",
+        "pins.R": "dd7269af2e89313c3a957fe18b4eeb55",
+        "register.R": "e29e6be851f0228f4b9db2955e66818f",
+        "rules.R": "8bcb8b4b76cef999024eb01ed642b18b",
+        "rules_p2.R": "3cfea8f932a3ea76e86daa31e152bd1b",
+        "spec.R": "3de905adeac4530b39aff35c2688ab17",
+        "standing.R": "28ed43a40edf8c7df8d066c68056a679",
+        "util.R": "1dcd37534bb07db45658afcefbf6ca87"
+      },
+      "source_commit": "028078396e843423a19ac69353b9d2be421290cd",
+      "released_by": "Q — P1R03 다음 라운드(자체 사양 입구 · 판 3 준비 — 도훈 결정 FACTOR-SPINE-STAGE1-20261112 D4 (a) · 설계 04_Research/01_reports/factor_spine_design_20261111/README.md §3-6 · 재개 저널 OP-20261113-P1R04 S3)",
+      "immutability": "출시된 판의 파일은 고치지 않는다(v1 · v2 · v3 · v4) — 바꿀 일이 생기면 새 판(v5)",
+      "routing": "사양 core_version → round.sh rc_core_of · 02_Infrastructure/programs/chain_tick.R .ct_core_version(v[0-9]+ 일반 판독) · 사양 없는 호출(round.sh - … · p4-pool 기본 판) = 이 항목이 들어간 뒤 v4 — 자체 사양 원장의 v4 관문이 기본",
+      "reviews": [
+        "04_Research/01_reports/round_core_v4_review_20261113/isolation_review_v4.md(격리 점검 전체 · revise · 필수 M1 · M2) → 수리 7037cd6cc",
+        "04_Research/01_reports/round_core_v4_review_20261113/isolation_review_v4_diff2.md(변경분 점검 · revise · 필수 M3) → 수리 028078396 · M3 해소는 Q 확인(자체 사양 시드 FVALU n_family = 45 = 같은 엔진 스캔 행과 같은 규칙 rc_standing_own_nf)",
+        "판단 T4 R-20261113-005(C-035~038 수용) · P1S03 감독 철학 P1 R-20261113-006(C-046~050) · 판단 T1 R-20261113-007(C-054 · 058) — 응답 = 06_Registry/q_judgment_ledger.json"
+      ],
+      "changes_from_v3": [
+        "자체 사양 입구(scan.source own_spec · RC_STANDING_SCAN_OWN_DEFAULT · 생성기 재생성 md5 대조 · orientation_layer 는 이 갈래만) · 입구 갈래 track(판 번호는 갈래마다 1 부터 · 갈래 사이 fail-closed)",
+        "입구 사유 own_spec_missing · own_generator_unknown · own_generator_mismatch · own_spec_undeclared(엔진 단위 선언 — 등록부 선언 줄 · 결정 engine_scope · 원천 라운드) · own_spec_family_mismatch(원천 등록 칸 family_root 대조)",
+        "자체 사양 = 엔진 속성(원장 갈래 own_spec ∨ 엔진 폴더 own_spec.json — 시드 · 손 항목도) · 원천 라운드 = 엔진 md5 칸 ∪ 같은 계보 칸의 P1 라운드 · 시행 수 n_family = max(계보 최댓값, 원천 라운드 칸 수)(시드 포함 · rc_standing_own_nf · rc_standing_own_seed_spec)",
+        "기저 풀 관문: philosophy_unread · philosophy_hold(보류 요청 = withdrawn 아니면 보류 · 해제 = 그 요청보다 뒤에 쓴 · 그 리뷰를 근거로 적은 엔진 영수증) · lowrisk_confirm_pending(방어 · 위험 · 국면 · 유동성 · 쏠림 · 토탈 겹침 · 영수증 lowrisk_tag · 원천 라운드 results/lowrisk_tags.json — 판독 불가 = 꼬리표) · own_spec_unresolved · 풀 열 family_root · label_class('저β 수익 엔진' | '수익 엔진')",
+        "사슬 원천 시행: 원천 라운드 전 칸(계보 합집합) · 판 표식(factor_db_vintage) 낡음 = 같은 엔진 · 같은 구성의 현재 판 산출로 갈음(기록) · 갈음 없음 · 판 표식 판정 불가 · 검증 불가 라운드 = 사슬 등록 거부 · 닫기 재채점 시행 집합에 포함",
+        "채택 규칙 판 p4_rules_v3 — N5 beta_asym_ok_vis 필수(blend · 노출 층 걸음) · 블렌드 걸음 same_lineage_blend 꼬리표(거부 아님)",
+        "보는 창 파일 누출 수리 — _test 열 + 시험 창 지표 규칙 열(보고 when 의존 · 확장 규칙 종류 · metric 으로 읽는 열까지 고정점)",
+        "데이터 지문 equality 에 결합용 뷰 .cache/factor_combinable 줄 · 통과 보고 판정 줄(판정 두 조건) / 보고 열(판정 아님 · 귀속 전 원값 · 방어 주장 없음) / OOS 줄 · report.pass = daily_summary 허용",
+        "P1 표준 철학 줄(일반 줄 + 자체 사양 판에만 FC 엔진 줄) 기본 결론 범위 · 자체 사양 판 생성기 자동 핀 · 자체 사양 갈래 판정은 RELEASES 출시 판 ≥ v4 뒤에만(R5)"
+      ],
+      "tests_at_release": [
+        {
+          "path": "08_Tests/programs/test_round_core_v4.R",
+          "pass": 71,
+          "fail": 0,
+          "note": "028078396 · 161초 · 고친 관문마다 양방향 1건 · 실제 FC_* 30 입구 통과(선언 = 원천 라운드 · n_family 45) · v1 ~ v3 매니페스트 = RELEASES(실제 파일 md5 불변) · C15 스캐너 PASS"
+        }
+      ],
+      "known_limits": [
+        "README v4 절 '알려진 한계' 전문(v3 남은 길 · release_decision 결정 내용 미판독(R2) · 결정 기록부 writer 에 engine_scope 칸 없음 · 계보 대조의 묶을 등록 칸 · 사전등록 경로 없는 P1 라운드 = 자체 사양 사슬 등록 정지 · 블렌드 부품 원천 시행 미포함(S-c) · 레인 판 자체 사양 시드(S-d) · 일부만 실린 수리(S-f) · S4 · S5 · 상설 형제 칸 · scan_stale 갈래 모름 · 생성기 자동 핀 범위 · 영수증 엔진 키 = 경로)",
+        "기저 신호 캐시 키(02_Infrastructure/reinforcement/rf_base_cache.R)에 결합용 뷰 · IC 원장이 없다 — 자체 사양 엔진은 그 둘이 입력이라, 뷰 · IC 만 다시 지어지면 옛 캐시가 적중할 수 있다(P1S03 격리 점검 F-5 · 운영 = 첫 측정 전 캐시 시각 확인 · 수리 = 인프라 과제 · 그 파일은 등록 판들이 핀으로 건다)"
+      ],
+      "first_consumers": [
+        "P1S03_own_spec_qualification(자체 사양 갈래 판 1 — 등급 v3.5 핀 교체 뒤 사양 v2 · 등록)",
+        "P4C01_fc_blend(블렌딩 사슬 1호 — 설계 초안 04_Research/programs/P4_ASSEMBLY/P4C01_fc_blend/DESIGN_draft.md)"
+      ]
     }
   ]
 }
