@@ -14,6 +14,8 @@
 #   환경 조정(11-14 · 원 세션 조율 — D1 뒤 같은 밤 재측정 · E2 는 캐시 채우기만 하고 판정은 내일 재측정분이라 함께 돌려도 된다):
 #     P1R04_MIN_FREE_GB(기본 10) · P1R04_IGNORE_SEED=1(판 2 시드 측정 중 · 시드 낮 창 조건을 건너뜀) · P1R04_PAR(기본 2 → round.sh --p · 엔진 묶음마다 칸 1개라 사실상 순차)
 #     P1R04_LATEST_START=HH:MM(그 시각이 지나도 조건이 안 서면 시작하지 않고 끝낸다 — 23:30 전 끝 · 칸 30 × 2.2~3.0분(11-13 실측) + 평가 · 사이드카 ≈ 100분).
+#     P1R04_EARLIEST_START='YYYY-MM-DD HH:MM'(그 전에는 시작하지 않는다) · P1R04_MORNING_END=HH:MM(아침 체인 앞뒤 창의 끝 · 기본 08:00 — 원 세션 권고 '아침 체인 뒤 07:30' ·
+#       아침 체인 실행 중 판독(Qvest_MorningBrief Running)은 그대로 막는다). 두 시각 모두 date -d 판독 · 둘 다 띄운 시점 기준 절대 시각.
 main() {
   set -u
   local ROOTP=/c/Users/99922/OneDrive/Quant_Module_Moltbot; cd "$ROOTP" || exit 2
@@ -25,6 +27,9 @@ main() {
   local SEED_ST=.cache/scheduler_logs/p1s02_seed_watch_state.txt MAXW=${P1R04_MAX_WAIT_S:-144000} T0=$(date +%s) last=0
   local MINFREE=${P1R04_MIN_FREE_GB:-10} IGSEED=${P1R04_IGNORE_SEED:-0} PAR=${P1R04_PAR:-2} LATEST=${P1R04_LATEST_START:-} late=""
   if [ -n "$LATEST" ]; then late=$(date -d "$LATEST" +%s 2>/dev/null) || { echo "P1R04_LATEST_START 판독 불가: $LATEST" >&2; exit 2; }; fi   # 오늘 그 시각(띄운 날 기준 · 자정을 넘겨 다시 열리지 않게 절대 시각)
+  local EARLY=${P1R04_EARLIEST_START:-} early="" MEND=${P1R04_MORNING_END:-08:00} mendm
+  if [ -n "$EARLY" ]; then early=$(date -d "$EARLY" +%s 2>/dev/null) || { echo "P1R04_EARLIEST_START 판독 불가: $EARLY" >&2; exit 2; }; fi
+  mendm=$((10#${MEND%%:*} * 60 + 10#${MEND##*:})) || exit 2
   local why nowm mg rc fp fp_prev="" fp_t=0 vl dl v0 v1 prl
   log() { printf '%s %s\n' "$(date '+%F %T')" "$*" >> "$LOG"; }
   st() { printf '%s\t%s\tlog=%s\n' "$(date '+%F %T')" "$*" "$LOG" > "$ST"; }
@@ -33,12 +38,13 @@ main() {
   inpfp() { { bash "$FPS" record .cache/factor_combinable; md5sum "$ICL" | cut -c1-32; } 2>/dev/null | md5sum | cut -c1-32; }
   fpnow() { { bash "$FPS" equality; inpfp; } 2>/dev/null | md5sum | cut -c1-32; }
   ms() { timeout 300 Rscript "$MS" "$@" >> "$LOG" 2>&1 || log "이정표 발송 rc=$?"; }
-  log "시작 · pid $$ · 체인 앞뒤 · 시드 창(시드 일 남았을 때 · 건너뜀=${IGSEED}) 제외 · 메모리 ≥ ${MINFREE} GB · 병렬 ${PAR} · 시작 시한 ${LATEST:-없음} · 지문(뷰 + IC 원장 포함) 10분 안정 · 뷰 마지막 달 ≥ 팩터 DB"; st "대기 — 시작"
+  log "시작 · pid $$ · 체인 앞뒤 · 시드 창(시드 일 남았을 때 · 건너뜀=${IGSEED}) 제외 · 메모리 ≥ ${MINFREE} GB · 병렬 ${PAR} · 시작 시한 ${LATEST:-없음} · 이른 시작 ${EARLY:-없음} · 아침 창 끝 ${MEND} · 지문(뷰 + IC 원장 포함) 10분 안정 · 뷰 마지막 달 ≥ 팩터 DB"; st "대기 — 시작"
   while :; do
     [ $(( $(date +%s) - T0 )) -gt "$MAXW" ] && { log "대기 상한"; st "대기 상한 — 끝"; exit 6; }
     why=""; nowm=$((10#$(date +%H) * 60 + 10#$(date +%M)))
     [ -n "$late" ] && [ "$(date +%s)" -gt "$late" ] && { log "시작 시한 ${LATEST} 지남 — 측정하지 않고 끝"; st "시작 시한 ${LATEST} 지남 — 끝(세션이 다음 창을 잡는다)"; exit 8; }
-    { [ "$nowm" -ge 355 ] && [ "$nowm" -lt 480 ]; } && why="아침 체인 앞뒤(${nowm}분)"
+    [ -n "$early" ] && [ "$(date +%s)" -lt "$early" ] && why="시작 전 시각(${EARLY})"
+    [ -z "$why" ] && [ "$nowm" -ge 355 ] && [ "$nowm" -lt "$mendm" ] && why="아침 체인 앞뒤(${nowm}분)"
     { [ "$nowm" -ge 1368 ] || [ "$nowm" -lt 90 ]; } && why="밤 체인 앞뒤(${nowm}분)"
     [ -z "$why" ] && [ "$IGSEED" != "1" ] && [ "$nowm" -ge 500 ] && [ "$nowm" -le 705 ] && grep -qE $'\t''(W|M)[ :(]' "$SEED_ST" 2>/dev/null && why="판 2 시드 낮 창(시드 일 남음 · ${nowm}분)"
     [ -z "$why" ] && running Qvest_DailyRefresh && why="밤 체인 실행 중"
