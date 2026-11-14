@@ -8,7 +8,7 @@
 # 사용: bash tools/regrade_pipeline.sh <tag> [write]
 #   실행 위치 무관 · 결과 = 보고서 폴더 data/ · 로그 = 스크래치 · 끝나면 build_report.R 로 표 · 그림
 set -euo pipefail
-TAG=${1:?tag}; MODE=${2:-dry}
+TAG=${1:?tag}; MODE=${2:-dry}   # V35_WORKERS = 재채점 도구 병렬 수(기본 6 · 측정 창과 겹치면 낮춘다)
 RW="G:/OneDrive/Quant_Module_Moltbot"; R=/g/OneDrive/Quant_Module_Moltbot
 D="$R/04_Research/01_reports/grade_v35_cr_beta_selection_20261113"; DW="$RW/04_Research/01_reports/grade_v35_cr_beta_selection_20261113"
 SPW="${V35_SCRATCH:?스크래치 폴더(V35_SCRATCH · 윈도 경로)}"; SP=$(cygpath -u "$SPW")
@@ -59,7 +59,7 @@ if [ "$MODE" != "writeonly" ]; then
   echo "$V1" > "$D/data/vintage_$TAG.txt"
   ## 5) 재채점 도구 드라이런(--dirs · 자료 계기 켬)
   ( cd "$R" && R_ENVIRON_USER="$SPW/empty.Renviron" QM_ROOT="$RW" CLAUDE_PROJECT_DIR="$RW" \
-      Rscript 02_Infrastructure/programs/grade_v3_backfill.R --workers 6 --dirs "$DW/data/dirs_regrade_$TAG.txt" --out "$DW/data/backfill_$TAG" > "$SP/backfill_dry_$TAG.log" 2>&1 ) || { say "ABORT 재채점 드라이런 실패"; tail -5 "$SP/backfill_dry_$TAG.log" | tee -a "$LOG"; exit 5; }
+      Rscript 02_Infrastructure/programs/grade_v3_backfill.R --workers "${V35_WORKERS:-6}" --dirs "$DW/data/dirs_regrade_$TAG.txt" --out "$DW/data/backfill_$TAG" > "$SP/backfill_dry_$TAG.log" 2>&1 ) || { say "ABORT 재채점 드라이런 실패"; tail -5 "$SP/backfill_dry_$TAG.log" | tee -a "$LOG"; exit 5; }
   grep -E "^\[backfill\]" "$SP/backfill_dry_$TAG.log" | tail -8 | tee -a "$LOG"
 fi
 if [ "$MODE" = "write" ] || [ "$MODE" = "writeonly" ]; then
@@ -67,7 +67,7 @@ if [ "$MODE" = "write" ] || [ "$MODE" = "writeonly" ]; then
   [ "$V1" = "$V2" ] || { say "ABORT 쓰기 직전 데이터 시점이 드라이런 때와 다르다($V1 → $V2) — 드라이런부터 다시"; exit 6; }
   say "쓰기 — 데이터 시점 같음($V2)"
   ( cd "$R" && R_ENVIRON_USER="$SPW/empty.Renviron" QM_ROOT="$RW" CLAUDE_PROJECT_DIR="$RW" \
-      Rscript 02_Infrastructure/programs/grade_v3_backfill.R --workers 6 --dirs "$DW/data/dirs_regrade_$TAG.txt" --out "$DW/data/backfill_$TAG" --write > "$SP/backfill_write_$TAG.log" 2>&1 ) || { say "ABORT 재채점 쓰기 실패"; tail -8 "$SP/backfill_write_$TAG.log" | tee -a "$LOG"; exit 7; }
+      Rscript 02_Infrastructure/programs/grade_v3_backfill.R --workers "${V35_WORKERS:-6}" --dirs "$DW/data/dirs_regrade_$TAG.txt" --out "$DW/data/backfill_$TAG" --write > "$SP/backfill_write_$TAG.log" 2>&1 ) || { say "ABORT 재채점 쓰기 실패"; tail -8 "$SP/backfill_write_$TAG.log" | tee -a "$LOG"; exit 7; }
   grep -E "^\[backfill\]" "$SP/backfill_write_$TAG.log" | tail -10 | tee -a "$LOG"
   python -I "$D/tools/census_regrade_set.py" "$R" post | tee -a "$LOG"
 fi
