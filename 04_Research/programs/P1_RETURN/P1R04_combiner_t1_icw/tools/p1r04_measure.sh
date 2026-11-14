@@ -17,6 +17,7 @@
 #     P1R04_EARLIEST_START='YYYY-MM-DD HH:MM'(그 전에는 시작하지 않는다) · P1R04_MORNING_END=HH:MM(아침 체인 앞뒤 창의 끝 · 기본 08:00 — 원 세션 권고 '아침 체인 뒤 07:30' ·
 #       아침 체인 실행 중 판독(Qvest_MorningBrief Running)은 그대로 막는다). 두 시각 모두 date -d 판독 · 둘 다 띄운 시점 기준 절대 시각.
 #     P1R04_WAIT_VINTAGE_NOT=<판 표식 id>(06_Registry/factor_db_vintage.json 마지막 항목 id 가 이 값인 동안 시작하지 않는다 — D1 줄을 기다릴 때 · 판독 불가 = 대기).
+#   측정 직전: tools/fc_cache_check.sh --apply — FC_* 엔진 기저 캐시 중 max(결합용 뷰 built_at · IC 원장 · 팩터 DB build_hash) 보다 앞선 것을 99_Archive 로 옮긴다(F-5).
 main() {
   set -u
   local ROOTP=/c/Users/99922/OneDrive/Quant_Module_Moltbot; cd "$ROOTP" || exit 2
@@ -69,6 +70,7 @@ main() {
       elif [ $(( $(date +%s) - fp_t )) -lt 600 ]; then why="데이터 지문 안정 대기($(( $(date +%s) - fp_t ))초)"; fi
     else fp_prev=""; fi
     if [ -z "$why" ]; then
+      bash 04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/tools/fc_cache_check.sh --apply >> "$LOG" 2>&1 || { log "FC 기저 캐시 시각 점검 실패 rc=$?"; st "캐시 점검 실패 — 세션 확인"; exit 1; }   # F-5(캐시 키에 뷰 · IC 원장 없음) · DESIGN §8
       v0=$(inpfp); log "조건 서면 — measure(--now) 시작 · 입력(뷰 + IC 원장) ${v0} · 가용 메모리 ${mg}GB"; st "측정 중 — 30칸"
       bash "$RS" "$RD" measure --now --p="$PAR" >> "$LOG" 2>&1; rc=$?
       v1=$(inpfp); log "measure rc=$rc · 입력 끝 ${v1}"
