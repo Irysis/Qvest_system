@@ -26,7 +26,7 @@ if (VLAST %in% c(VINT, VD1) || !grepl(D2DEC, paste(unlist(VL[c("decision", "note
 if (file.exists(file.path(root, "04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/results/evaluation_visible.json")))
   stop("[init_p1s03_v3] P1R04 평가 산출이 있다 — 노출 줄을 고친 뒤(판정을 본 상태) 다시")
 VTXT <- paste0("판 표식 ", VINT, " · ", VD1, "(D1)")   # IS 무영향으로 설계된 두 수리(D2 는 아래에 따로 — IS 값이 바뀐다)
-VMEAS <- paste0("판 표식 ", VLAST, "(D2 — RAWDATA 원천 단절 행 Ret 정정 · 도훈 ", D2DEC, ") 뒤 측정분만")
+VMEAS <- paste0("판 표식 ", VLAST, "(D2 — RAWDATA 원천 단절 행 Ret 정정 · 도훈 ", if (identical(VLAST, D2DEC)) "결정과 같은 id" else D2DEC, ") 뒤 측정분만")
 ## 시드 칸 사양 다시 만들기(코어 v4 출시판 rc_standing_own_seed_spec — 변경분 점검 2 M3 · 판단 T4 C-036: 자체 사양 시드도 같은 엔진 스캔 행과 같은 시행 수 규칙)
 ##   바뀌는 잎은 selection_accounting 의 n_family_at_registration · n_trials_basis 두 칸뿐이어야 한다(엔진 · 구성 · 축 · 라벨 불변 — 아니면 중단)
 old_seed <- rc_json_read(f1)
