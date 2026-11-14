@@ -575,8 +575,19 @@ essence_diagnostics <- function(bt_result, oos_stat_version = "v2", root = NULL)
        rules_version = if (is.null(v3$rules_version)) "v3.0" else v3$rules_version,
        crisis_def = if (is.null(v3$crisis_def)) NA_character_ else v3$crisis_def,
        cr_notch_basis = if (is.null(v3$cr_notch)) NA_character_ else v3$cr_notch,
+       ## v3.5(11-13 · GRADE-CR-NOTCH-BETA-SELECTION-20261113) — 노치 근거 · 선택 방어 짝 · 크기 × β 짝 기록(CR 강함일 때만 값이 있다)
+       ##   이름 대응(판단 T4 C-20261113-079): 기록 cr_notch_basis = 채점 출력 v3$cr_notch(노치에 쓴 CR — strong/normal/…) ·
+       ##   기록 notch_basis = 채점 출력 v3$cr_notch_basis(그 근거 — selection/beta_not_separated/timing_*/not_selection). 옛 필드 이름은 소비자 때문에 그대로 둔다.
+       notch_basis = if (is.null(v3$cr_notch_basis)) NA_character_ else v3$cr_notch_basis,
+       selection_control = if (is.null(v3$selection_control)) NA_character_ else v3$selection_control,
        mc8 = list(status = if (is.null(mc$status)) NA_character_ else mc$status, label = if (is.null(mc$label)) NA_character_ else mc$label,
-                  share_beats_size_exposure = r4(mc$share_beats_size_exposure), median_placebo_p = r4(mc$median_placebo_p)),
+                  share_beats_size_exposure = r4(mc$share_beats_size_exposure), median_placebo_p = r4(mc$median_placebo_p),
+                  exposure_varies = if (is.null(mc$exposure_varies)) NA else mc$exposure_varies,
+                  share_beats_size_exposure_path = r4(mc$share_beats_size_exposure_path),
+                  size_beta_status = if (is.null(mc$size_beta_status)) NA_character_ else mc$size_beta_status,
+                  label_size_beta = if (is.null(mc$label_size_beta)) NA_character_ else mc$label_size_beta,
+                  share_beats_size_beta = r4(mc$share_beats_size_beta), share_beats_size_beta_path = r4(mc$share_beats_size_beta_path),
+                  median_placebo_p_size_beta = r4(mc$median_placebo_p_size_beta), beta_leg = r4(mc$beta_leg), rho_median = r4(mc$rho_median)),
        band = v3$band, notch = v3$notch, notch_a = isTRUE(v3$notch_a), blocked_by = as.list(v3$blocked_by),
        floors = v3$floors, bench = lapply(v3$bench, r4),
        cr = list(overall = v3$card$cr, test = v3$card$cr_test, visible = v3$card$cr_visible,

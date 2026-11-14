@@ -290,6 +290,7 @@ dp_build <- function(dir, root = NULL, tau_d = NULL, cell_spec = NULL, raw = NUL
                     dc_strong_max = card$dc_strong_max),
     controls = list(status = ctrl$status, attribution = ctrl$attribution$overall,
                     placebo_alpha = ctrl$attribution$placebo_alpha, exposure_profile = ctrl$exposure_profile[c("mean", "varies", "min", "max")],
+                    beta_match = ctrl$beta_match,              # v3.5 시가총액 · β 일치 대조 요약(보는 창 입력으로 잰 β · matched_controls.R ⑥)
                     per_crisis = ctrl$placebo$per_crisis, basket_capture = ctrl$size_exposure_matched$per_crisis,
                     exposure_capture = ctrl$exposure_matched$per_crisis),
     exposure = expo,
@@ -356,6 +357,11 @@ dp_markdown <- function(pk) {
   at <- C$attribution
   a(""); a("- 크기·노출 짝 귀속(MC8): **", .dp_or(at$label, "—"), "** — 무작위 크기 짝을 넘은 위기 비율 ", .dp_pct(at$share_beats_size_exposure, 0L),
     " · 노출 짝(벤치 × 평균 노출)을 넘은 위기 비율 ", .dp_pct(at$share_beats_exposure, 0L), " · 평균 노출 ", .dp_num(C$exposure_profile$mean))
+  ## v3.5(GRADE-CR-NOTCH-BETA-SELECTION-20261113 · 헌장 빈칸 14) — 등급의 선택 방어는 이 줄의 라벨이 selection_defense 일 때만이다(위 MC8 라벨만으로는 '선택'이 아니다)
+  if (!is.null(at$label_size_beta))
+    a("- 시가총액·β 일치 무작위 대조 귀속(등급 v3.5 선택 방어 기준): **", .dp_or(at$label_size_beta, "—"), "** — 동일 β 대조(각 무작위 대조를 현금 혼합으로 전략 β 까지 낮춤 · 차입 없음)를 넘은 위기 비율 ",
+      .dp_pct(at$share_beats_size_beta, 0L), if (isTRUE(C$exposure_profile$varies)) paste0(" · 노출 경로까지 맞춘 판 ", .dp_pct(at$share_beats_size_beta_path, 0L)) else "",
+      " · 보유 β ", .dp_num(C$beta_match$beta_leg), " · 무작위 대조 β 중앙 ", .dp_num(C$beta_match$placebo_beta$median), " · 배율 ρ 중앙 ", .dp_num(C$beta_match$rho_median))
   if (!is.null(X)) {
     a(""); a("## 4. 노출 분해 (보는 창 · 연율 평균 · 노출은 t-1 까지)")
     sx <- as.data.table(X$summary)

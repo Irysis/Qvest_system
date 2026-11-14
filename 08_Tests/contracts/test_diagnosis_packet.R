@@ -163,6 +163,10 @@ chk("C5 MC8 귀속 · 행동 카드 판정이 실린다", !is.null(KA$controls$a
 chk("C6 종목명은 싣지 않는다(사전학습 서사 통로)", !("Name" %in% names(as.data.table(KA$exposure$top_losers))))
 md <- dp_markdown(KA)
 chk("C7 요약 문서 — 5절 · τ_D 표기", grepl("## 5. 구성 프로필", md, fixed = TRUE) && grepl(format(TAU), md, fixed = TRUE))
+chk("C8 v3.5 시가총액·β 일치 대조 — 귀속 필드 · β 요약 · 요약 문서 줄이 실린다(β 는 보는 창 입력으로 잰다 · τ_D 불변성은 B 절이 같이 본다)",
+    !is.null(KA$controls$attribution$label_size_beta) && is.list(KA$controls$beta_match) &&
+      grepl("시가총액·β 일치 무작위 대조 귀속", md, fixed = TRUE), sprintf("(label_size_beta=%s · beta_match=%s)",
+      KA$controls$attribution$label_size_beta %||% "NULL", KA$controls$beta_match$status %||% "NULL"))
 
 cat("\n=== D. 닫힘 ===\n")
 HS <- copy(HA); HS[1, target_weight := -0.1]

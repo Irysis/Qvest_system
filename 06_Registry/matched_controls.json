@@ -30,6 +30,15 @@
   "placebo_seed": 20261013,
   "placebo_seed_source": "재현성 — 결정 수치 아님(같은 입력이면 같은 플라시보 · 같은 판정)",
 
+  "size_beta": {
+    "rule": "size_beta_placebo_v1",
+    "beta_estimator": "behavior_card_bc_beta_monthly",
+    "beta_basis": "strategy_leg_vs_placebo_leg",
+    "scale": "exposure_times_capped_beta_ratio",
+    "cap": 1
+  },
+  "size_beta_source": "2026-11-13 도훈 결정 GRADE-CR-NOTCH-BETA-SELECTION-20261113 (가) 'β까지 맞춰 수정' · 근거 철학 Superfan P2 C-20261113-012 · 헌장 §5 빈칸 14(CHARTER-GAPS-4 · 도훈 11-10: 선택(특성) 방어 = 크기 × β 동시 짝 — 크기 바스켓을 변형 β 로 낮춘 현금 사본 — 까지 넘을 때). 아래 label_rule 의 크기+노출 플라시보는 β 를 맞추지 않는다 — 분위 안 저β 종목만 들면 위기에서 β 만큼 덜 빠져 선택 방어가 된다. 그래서 같은 플라시보 경로(레그 Σw = 1)마다 현금으로 전략 β 까지 낮춘 사본을 하나 더 잰다(사전등록 04_Research/01_reports/grade_v35_cr_beta_selection_20261113/PREREG.md §2.1). 배율 = 평균 노출 Ē × ρ_j(판정 · 정적) · 노출 경로 E_k × ρ_j(노출이 변할 때만) · ρ_j = min(β_leg / β_j, cap). β_leg = 전략 레그(분위에 놓인 보유 · 리밸마다 합 1 · 바스켓과 같은 매수후보유 엔진) · β_j = 플라시보 레그 j · 추정기 = behavior_card.R .bc_beta(월간 수익 · 절편 있는 OLS 기울기 · 최소 6개월 — 행동 카드 stats.beta 와 같은 함수 · '최소 6개월'은 그 함수의 기존 하한으로 출처 문구가 없지만 실효 비구속이다: 행동 카드는 겹치는 달이 24개월 미만이면 카드 자체를 내지 않으므로(bc_card) 대조가 열리는 기록은 늘 24개월 이상이다 — 판단 T4 C-20261113-079 ·월간 = 일간 β 의 비동시 거래 편의를 피하는 관례: Scholes & Williams 1977 JFE 5(3):309-327 doi:10.1016/0304-405X(77)90041-1 · Dimson 1979 JFE 7(2):197-226 doi:10.1016/0304-405X(79)90013-8 · 월간 β 추정 = Fama & French 1992 JF 47(2):427-465). cap = 1 은 정의다 — 현금 사본은 낮추기만 하고 차입하지 않는다(헌장 빈칸 14 · round_core P2 C-017 rc_p2_size_beta_plan 의 '차입 없음'과 같다). 판정 = label_rule 과 같은 위기 과반 · placebo_alpha 분위(새 숫자 없음). β 비유한 · 0 이하 경로는 빼고, β_leg 비유한 · 0 이하이거나 남은 경로 × alpha < 1 이면 unmeasured(fail-closed). 이 블록이 없으면(구 설정 사본) β 짝을 재지 않는다.",
+
   "label_rule": "nested_majority_placebo_v2",
   "label_rule_source": "과반 = behavior_card.json::majority_share(D3). 위기마다 (1) 크기+노출 짝: 전략 낙폭 포착률 < 플라시보 포착률의 alpha 분위 → 넘음 (2) 노출 짝: 전략 낙폭 포착률 < 벤치 × 평균 노출의 포착률 → 넘음 (3) 시장: 전략 낙폭 포착률 < 1(벤치 자체) → 넘음. (1)을 과반 위기에서 넘으면 선택 방어 · 아니고 (2)를 과반에서 넘으면 크기 방어 · 아니고 (3)을 과반에서 넘으면 노출 방어 · 셋 다 아니면 방어 없음 · 위기 2번 미만 = 판정 불가. v2 = 2026-10-13 도훈 '2번 반영'(decision_register MC8-LABEL-NO-DEFENSE) — v1 은 (3) 없이 노출 방어와 방어 없음을 한 라벨로 묶었다(평균 노출 1.0 전략이 '노출 방어'로 찍힘)"
 }

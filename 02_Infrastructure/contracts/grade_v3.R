@@ -23,6 +23,12 @@
 #   FF3 · Carhart4 · FF5 · FF6 알파 NW t 최솟값 — C→B = B 문턱 · B→A = A 문턱 + 기존 A 하한 · 시험 창 알파 모두 양수 ·
 #   관문(스윕 DSR) · CR 약함 · F 제외 · 요인 = 정본 빌더 산출(내용 해시 검증) · 설정 fa_notch.enabled 로 켠다.
 #
+# v3.5(2026-11-13 도훈 'β까지 맞춰 수정' · decision_register GRADE-CR-NOTCH-BETA-SELECTION-20261113 · 헌장 빈칸 14):
+#   CR '강함' 상향 노치의 선택 방어는 크기 × 노출 짝(MC8 label)에 더해 크기 × β 짝(matched_controls.R ⑥ · 플라시보 경로를
+#   현금으로 전략 β 까지 낮춘 사본)의 위기 과반 승을 요구한다 — 설정 cr_notch.selection_control = size_beta.
+#   노출이 변하면 경로판(× E_k × ρ)도 이겨야 선택이다. 조건만 더한다(강화만 · '강함'으로 가는 새 길 없음 · 같은 입력이면 등급 ≤ v3.4).
+#   설정에 selection_control 이 없으면 size_exposure(v3.2~v3.4 의미 그대로 — 구 설정 사본 재현용).
+#
 # 공개: gv3_cfg · gv3_thresholds · gv3_ctx · gv3_S · gv3_window · gv3_decide · gv3_score_dir · gv3_score_bt · gv3_row · gv3_bench_history
 #       gv3_fa_ctx · gv3_fa_stats(팩터 조정 알파)
 # 검사: 08_Tests/contracts/test_grade_v3.R · 08_Tests/contracts/test_grade_v3_fa_notch.R
@@ -82,6 +88,14 @@ gv3_cfg <- function(root = NULL, path = NULL) {
   tu <- cfg$cr_notch[["timing_unit"]]
   if (identical(sr, "mc8_selection_or_timing_evidence") && !(is.character(tu) && length(tu) == 1L && tu %in% GV3_TIMING_UNITS))
     stop("[grade_v3] cr_notch.timing_unit 어휘 밖(", paste(GV3_TIMING_UNITS, collapse = " | "), ") — 증거 셈 단위(GRADE-V32-TIMING-EVENT-UNIT)")
+  sc <- cfg$cr_notch[["selection_control"]]                                  # v3.5 — 없으면 size_exposure(구 의미 · 구 판 설정 사본 재현용)
+  if (!is.null(sc) && !(is.character(sc) && length(sc) == 1L && sc %in% GV3_SELECTION_CONTROLS))
+    stop("[grade_v3] cr_notch.selection_control 어휘 밖(", paste(GV3_SELECTION_CONTROLS, collapse = " | "), ") — GRADE-CR-NOTCH-BETA-SELECTION-20261113")
+  ## (판단 T4 C-20261113-077) 판 v3.5 이상인데 짝 지정이 빠지면 구 의미로 조용히 돌아간다(fail-open) — 판 표식과 의미가 갈리지 않게 멈춘다
+  rv <- suppressWarnings(tryCatch(numeric_version(sub("^v", "", as.character(.gv3_or(cfg$rules_version, "v3.0"))[1])), error = function(e) NULL))
+  if (is.null(rv)) stop("[grade_v3] rules_version 판독 불가: ", as.character(.gv3_or(cfg$rules_version, NA))[1])
+  if (rv >= numeric_version("3.5") && !identical(sc, "size_beta"))
+    stop("[grade_v3] rules_version ", cfg$rules_version, " 은 cr_notch.selection_control = size_beta 를 요구한다(GRADE-CR-NOTCH-BETA-SELECTION-20261113)")
   .gv3_fa_cfg_check(cfg[["fa_notch"]])
   gc_ <- as.character(unlist(cfg$oos$gate_components))
   if (!length(gc_) || length(setdiff(gc_, GV3_OOS_COMPONENTS)))
@@ -128,27 +142,50 @@ gv3_cfg <- function(root = NULL, path = NULL) {
 #'   (c) 느린 약세 개선이 한 달 지연에서도 유지 — 라운드 평가가 남긴다)이 있을 때만 강함. 경로 짝을 못 쟀으면 보통(fail-closed).
 #' @param mc8 MC8 결과 list(label · exposure_varies · share_beats_size_exposure_path · majority_share) 또는 라벨 문자열(구 호출 — v3.2 에서는 타이밍 미해소)
 #' @param evidence 타이밍 방어 증거 기록 1건(gv3_timing_evidence 의 entry) 또는 NULL
+#' ★v3.5(11-13 · GRADE-CR-NOTCH-BETA-SELECTION-20261113 · 헌장 빈칸 14): cr_notch.selection_control = "size_beta" 면 두 형식 모두
+#'   선택 방어에 크기 × β 짝(matched_controls.R ⑥ · 플라시보를 현금으로 전략 β 까지 낮춘 사본)의 위기 과반 승을 더 요구한다.
 gv3_cr_for_notch <- function(cr, mc8, cfg, evidence = NULL) {
   req <- .gv3_or(cfg$cr_notch$strong_requires, "none")
   if (!identical(cr, "strong") || identical(req, "none")) return(cr)
   lab <- if (is.list(mc8)) .gv3_or(mc8$label, NA_character_) else as.character(.gv3_or(mc8, NA_character_))[1]
-  if (identical(req, "mc8_selection_defense")) return(if (identical(lab, "selection_defense")) "strong" else "normal")
+  ctl <- gv3_selection_control(cfg)
+  if (identical(req, "mc8_selection_defense")) {
+    if (!identical(lab, "selection_defense")) return("normal")
+    if (!identical(ctl, "size_beta")) return("strong")
+    return(if (gv3_notch_basis(mc8, NULL, NULL, ctl) %in% c("beta_unresolved", "beta_not_separated")) "normal" else "strong")
+  }
   if (identical(req, "mc8_selection_or_timing_evidence"))
-    return(if (gv3_notch_basis(mc8, evidence, cfg$cr_notch[["timing_unit"]]) %in% c("selection", "timing_evidence")) "strong" else "normal")
+    return(if (gv3_notch_basis(mc8, evidence, cfg$cr_notch[["timing_unit"]], ctl) %in% c("selection", "timing_evidence")) "strong" else "normal")
   stop("[grade_v3] cr_notch.strong_requires 어휘 밖: ", req)
 }
 
-#' v3.2 노치 근거 — not_selection | selection | timing_evidence | timing_no_evidence | timing_unresolved
-gv3_notch_basis <- function(mc8, evidence = NULL, unit = NULL) {
+#' 선택 방어 짝 — size_exposure(v3.2~v3.4 · MC8 크기 × 노출) | size_beta(v3.5 · 크기 × β 를 더 요구) · 설정에 없으면 size_exposure
+GV3_SELECTION_CONTROLS <- c("size_exposure", "size_beta")
+gv3_selection_control <- function(cfg) as.character(.gv3_or(cfg$cr_notch[["selection_control"]], "size_exposure"))[1]
+
+#' 노치 근거 — not_selection | beta_unresolved | beta_not_separated | selection | timing_evidence | timing_no_evidence | timing_unresolved
+#'   v3.2: MC8 selection_defense 를 선택(노출 경로 고정 · 크기 × 노출 경로 짝 과반 승) / 타이밍(증거가 있어야 가점)으로 가른다.
+#'   v3.5(control = size_beta): 그 앞에 크기 × β 짝(정적 · 판정) 과반 승을 요구한다 — 못 이기면 beta_not_separated(헌장의
+#'   '크기 × β 미분리' = β 로 산 방어) · 못 쟀으면 beta_unresolved(fail-closed). 노출이 변하면 경로판 크기 × β 짝(× E_k × ρ)도
+#'   이겨야 선택이다(못 쟀으면 timing_unresolved). 크기 × 노출 쪽 조건은 그대로 남는다(조건을 더할 뿐 · 강화만).
+gv3_notch_basis <- function(mc8, evidence = NULL, unit = NULL, control = "size_exposure") {
   lab <- if (is.list(mc8)) .gv3_or(mc8$label, NA_character_) else as.character(.gv3_or(mc8, NA_character_))[1]
+  beta <- identical(control, "size_beta")
   if (!identical(lab, "selection_defense")) return("not_selection")
-  if (!is.list(mc8)) return("timing_unresolved")                     # 라벨만으로는 경로 짝을 모른다
+  if (!is.list(mc8)) return(if (beta) "beta_unresolved" else "timing_unresolved")   # 라벨만으로는 β 짝 · 경로 짝을 모른다
+  num <- function(x) suppressWarnings(as.numeric(.gv3_or(x, NA_real_))[1])
+  maj <- num(mc8$majority_share)
+  if (beta) {
+    sb <- num(mc8$share_beats_size_beta)
+    if (!is.finite(sb) || !is.finite(maj)) return("beta_unresolved")
+    if (!(sb > maj)) return("beta_not_separated")                   # 같은 β 의 크기 짝을 과반에서 못 이김 = β 로 산 방어
+  }
   varies <- mc8$exposure_varies
   if (identical(varies, FALSE)) return("selection")                  # 노출 경로 고정 — 타이밍 성분이 없다
-  sp  <- suppressWarnings(as.numeric(.gv3_or(mc8$share_beats_size_exposure_path, NA_real_))[1])
-  maj <- suppressWarnings(as.numeric(.gv3_or(mc8$majority_share, NA_real_))[1])
-  if (!isTRUE(varies) || !is.finite(sp) || !is.finite(maj)) return("timing_unresolved")
-  if (sp > maj) return("selection")                                  # 노출 경로까지 맞춘 짝을 과반에서 이김
+  sp  <- num(mc8$share_beats_size_exposure_path)
+  spb <- if (beta) num(mc8$share_beats_size_beta_path) else Inf      # v3.5 — 경로판 크기 × β 짝(구 의미면 조건 없음)
+  if (!isTRUE(varies) || !is.finite(sp) || !is.finite(maj) || (beta && !is.finite(spb))) return("timing_unresolved")
+  if (sp > maj && spb > maj) return("selection")                     # 노출 경로까지(v3.5 는 β 까지) 맞춘 짝을 과반에서 이김
   if (isTRUE(gv3_timing_evidence_ok(evidence, unit))) "timing_evidence" else "timing_no_evidence"
 }
 
@@ -281,6 +318,14 @@ gv3_timing_evidence_add <- function(entry, cfg, root = NULL) {
        exposure_varies = .gv3_or(k$controls$exposure_profile$varies, NA),
        share_beats_size_exposure_path = .gv3_or(a$share_beats_size_exposure_path, NA_real_),
        majority_share = .gv3_or(k$controls$attribution$majority_share, NA_real_),
+       # v3.5 크기 × β 짝 입력(헌장 빈칸 14 · matched_controls.R ⑥) — 못 쟀으면 NA(노치 근거 beta_unresolved · fail-closed)
+       label_size_beta = .gv3_or(a$label_size_beta, NA_character_),
+       share_beats_size_beta = .gv3_or(a$share_beats_size_beta, NA_real_),
+       share_beats_size_beta_path = .gv3_or(a$share_beats_size_beta_path, NA_real_),
+       median_placebo_p_size_beta = .gv3_or(a$median_placebo_p_size_beta, NA_real_),
+       size_beta_status = .gv3_or(k$controls$beta_match$status, NA_character_),
+       beta_leg = .gv3_or(k$controls$beta_match$beta_leg, NA_real_),
+       rho_median = .gv3_or(k$controls$beta_match$rho_median, NA_real_),
        exec_price = ep$value, universe = uni, raw_source = rw$source)
 }
 
@@ -676,12 +721,13 @@ gv3_score_bt <- function(bt, root = NULL, ctx = NULL, gates = NULL) {
                     error = function(err) list(status = "error", label = NA_character_, err = conditionMessage(err)))
   # v3.2 — 타이밍 방어(경로 짝 미통과)면 증거 등록부를 본다(없으면 보통 · fail-closed)
   basis <- NA_character_; tev <- NULL
+  sc <- gv3_selection_control(cfg)                                         # v3.5 — 선택 방어 짝(size_beta = 크기 × β 를 더 요구)
   if (identical(cs$cr, "strong") && identical(.gv3_or(cfg$cr_notch$strong_requires, "none"), "mc8_selection_or_timing_evidence")) {
     tu <- cfg$cr_notch[["timing_unit"]]
-    basis <- gv3_notch_basis(mc8, NULL, tu)
+    basis <- gv3_notch_basis(mc8, NULL, tu, sc)
     if (identical(basis, "timing_no_evidence")) {
       tev <- tryCatch(gv3_timing_evidence(cfg, as.character(.gv3_or(X$ar$strategy_id, NA_character_))[1], dir, root), error = function(err) NULL)
-      basis <- gv3_notch_basis(mc8, tev, tu)
+      basis <- gv3_notch_basis(mc8, tev, tu, sc)
     }
   }
   cr_notch <- gv3_cr_for_notch(cs$cr, mc8, cfg, tev)
@@ -716,6 +762,7 @@ gv3_score_bt <- function(bt, root = NULL, ctx = NULL, gates = NULL) {
        S_B = S_B, band = dec$band, notch = dec$notch, notch_a = dec$notch_a, cr_notch = cr_notch, mc8 = mc8,
        fa = fae$record, fa_notch = dec$fa_notch,
        cr_notch_basis = basis, timing_evidence = if (is.null(tev)) NULL else tev[c("round_id", "unit", GV3_TIMING_FLAGS)],
+       selection_control = sc,
        rules_version = as.character(.gv3_or(cfg$rules_version, "v3.0")),
        crisis_def = as.character(.gv3_or(ctx$bc_cfg$crisis_episode_def, "running_peak_drawdown")),
        grade_v3 = grade, blocked_by = why)
@@ -730,7 +777,9 @@ gv3_score_bt <- function(bt, root = NULL, ctx = NULL, gates = NULL) {
                       "v3.3" = "GRADE-V33-FACTOR-ALPHA-NOTCH-20261109 · GRADE-V33-OOS-TEST-WINDOW-CALMAR-20261109",
                       ## v3.4(11-10): 스윕형 선정의 A 관문 = 선택 현실 점검(gates$selection_rc · contracts/selection_reality_check.R) ·
                       ##   DSR 은 진단. 이 파일의 채점식(S · 하한 · 노치 · OOS)은 v3.3 그대로다 — 관문은 호출자(essence_score)가 gates 로 넘긴다.
-                      "v3.4" = "DSR-GATE-FORM-20261110")
+                      "v3.4" = "DSR-GATE-FORM-20261110",
+                      ## v3.5(11-13): CR '강함' 노치의 선택 방어 = 크기 × 노출 짝 + 크기 × β 짝(cr_notch.selection_control = size_beta)
+                      "v3.5" = "GRADE-CR-NOTCH-BETA-SELECTION-20261113")
 .gv3_rv_decision <- function(rv) {
   d <- unname(.GV3_RV_DECISION[as.character(rv)[1]])
   if (length(d) != 1L || is.na(d)) paste0("(판 ", as.character(rv)[1], " 결정 미등록 — grade_v3.R .GV3_RV_DECISION)") else d

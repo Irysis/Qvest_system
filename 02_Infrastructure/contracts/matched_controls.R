@@ -32,6 +32,18 @@
 #        '노출 방어'로 찍히던 혼동을 가른다. 평균 노출 1 이면 노출 짝 = 시장이라 노출 방어는 정의상 나올 수 없다)
 #      위기 2번 미만 → insufficient('매번'은 둘 이상 — behavior_card.R .bc_verdict 와 같은 관례)
 #      전체 · 보는 창(τ_D 이전) · 시험 창(τ_D 이후) 따로 낸다.
+#   ⑥ 크기 × β 짝(v3.5 · 2026-11-13 도훈 결정 GRADE-CR-NOTCH-BETA-SELECTION-20261113 · 헌장 빈칸 14 · 설정 size_beta):
+#      ⑤ 의 플라시보는 β 를 맞추지 않는다 — 분위 안에서 β 가 낮은 종목만 들면 위기에서 β 만큼 덜 빠져 selection_defense 가 된다
+#      (정적 β 축소가 '선택'으로 셈해진다 · 철학 P2 C-20261113-012). 그래서 플라시보 경로 P_j(레그 Σw = 1)마다
+#      현금으로 전략 β 까지 낮춘 사본을 하나 더 잰다(헌장 빈칸 14 '크기 바스켓을 변형 β 로 낮춘 현금 사본'의 분포판):
+#        배율 = Ē × ρ_j (정적 · 판정) · E_k × ρ_j (경로 · 노출이 변할 때만) · ρ_j = min(β_leg / β_j, 1)
+#        β_leg = 전략 레그(보유를 바스켓과 같은 엔진으로 재현 · 리밸마다 합 1) · β_j = 플라시보 레그 j ·
+#        둘 다 월간 절편 있는 OLS 기울기(behavior_card.R .bc_beta = 행동 카드 β 와 같은 추정기) · 같은 날 · 같은 달 · 상한 1 = 차입 없음.
+#      라벨 label(⑤ · nested_majority_placebo_v2)은 그대로 두고 새 필드만 더한다 — share_beats_size_beta · share_beats_size_beta_path ·
+#      median_placebo_p_size_beta · median_gap_size_beta · label_size_beta(selection_defense | size_beta_unseparated |
+#      size_beta_unmeasured | ⑤ 라벨이 선택 방어가 아니면 그 라벨). 보고용 결정론 계열 size_beta_matched(바스켓 × Ē × ρ_b) · size_beta_path.
+#      β 는 평가 창 통계다(Ē 와 같은 자리 · 전략 결정에 쓰이지 않는다) — 보는 창 판(diagnosis_packet)은 입력을 τ_D 로 잘라 부르므로
+#      τ_D 이전 달만 쓴다. β_leg 비유한 · 0 이하 · 남은 경로 × alpha < 1 이면 unmeasured(비율 NA · fail-closed).
 #
 # PIT: 크기 · 멤버십 · 거래정지 = 집행일 전 거래일 값만(보유 시작 전에 알려진 값 · 분위 경계도 그날 유니버스로만).
 #   W_b 는 전략 목표 비중(시그널일에 정해진 값). 수익은 보유창 안에서만 쓴다. as-of ≥ 집행일이면 멈춘다.
@@ -42,7 +54,7 @@
 #   롱숏(음수 비중) 전략은 정의 밖 — status = not_applicable_long_short(침묵 통과 아님).
 #
 # 공개: mc_cfg · mc_load_raw · mc_exposure · mc_size_basket · mc_controls · mc_attribution · mc_card · mc_write
-# 검사: 08_Tests/contracts/test_matched_controls.R
+# 검사: 08_Tests/contracts/test_matched_controls.R · test_cr_notch_size_beta.R(⑥ 크기 × β 짝 · 등급 노치 · 돌연변이)
 #==============================================================================
 suppressPackageStartupMessages({ library(data.table); library(jsonlite) })
 
@@ -108,8 +120,22 @@ mc_cfg <- function(root = NULL, path = NULL) {
   if (!int1(cfg$placebo_n) || cfg$placebo_n * a < 1)
     stop("[matched_controls] placebo_n 은 정수이고 placebo_n × placebo_alpha ≥ 1 이어야 한다: ", paste(cfg$placebo_n, collapse = ","))
   if (!int1(cfg$placebo_seed)) stop("[matched_controls] placebo_seed 는 정수여야 한다")
+  if (!is.null(cfg[["size_beta"]])) .mc_size_beta_cfg_check(cfg[["size_beta"]])   # v3.5 · 없으면(구 설정 사본) β 블록을 재지 않는다
   cfg$size_buckets <- as.integer(cfg$size_buckets); cfg$placebo_n <- as.integer(cfg$placebo_n)
   cfg
+}
+
+## 크기 × β 짝 설정 어휘(v3.5 · GRADE-CR-NOTCH-BETA-SELECTION-20261113) — 모르는 값이면 멈춘다(기본값을 지어내지 않는다)
+.MC_SB_VOCAB <- list(rule = "size_beta_placebo_v1", beta_estimator = "behavior_card_bc_beta_monthly",
+                     beta_basis = "strategy_leg_vs_placebo_leg", scale = "exposure_times_capped_beta_ratio")
+.mc_size_beta_cfg_check <- function(sb) {
+  if (!is.list(sb)) stop("[matched_controls] size_beta 는 객체여야 한다")
+  for (k in names(.MC_SB_VOCAB)) if (!identical(sb[[k]], .MC_SB_VOCAB[[k]]))
+    stop("[matched_controls] size_beta.", k, " 어휘 밖: ", paste(sb[[k]], collapse = ","), " (기대 ", .MC_SB_VOCAB[[k]], ")")
+  cp <- suppressWarnings(as.numeric(sb[["cap"]]))
+  if (length(cp) != 1L || !isTRUE(cp == 1))
+    stop("[matched_controls] size_beta.cap 은 1 이어야 한다(현금 사본 — 차입 없음 · 헌장 빈칸 14): ", paste(sb[["cap"]], collapse = ","))
+  invisible(TRUE)
 }
 
 #' RAWDATA 좁은 판 — 대조에 필요한 열만(날짜 · 종목 · 멤버십 · 시가총액 · 수익 · 거래정지). 여러 디렉터리에 재사용한다.
@@ -339,6 +365,9 @@ mc_controls <- function(H, pr, br, R, cfg, exec_price, universe) {
                                      basket_diag = sb$diag))
   bk <- .mc_basket_returns(sb$members, win, R)
   pl <- .mc_placebo_paths(sb, win, R, cfg$placebo_n, cfg$placebo_seed)
+  ## 전략 레그 — 분위에 놓인 전략 보유(리밸마다 합 1)를 바스켓과 같은 엔진으로 재현한다(크기 × β 짝의 β 분자 · v3.5 ⑥).
+  ##   플라시보 레그와 같은 규약(매수후보유 · 결측 0 · 비용 없음)이라 β 비가 같은 것끼리의 비가 된다.
+  lg <- .mc_basket_returns(sb$hold, win, R)
   bm <- merge(win, br[, .(date = as.Date(date), benchmark_ret)], by = "date")[is.finite(benchmark_ret)]
   E <- ex$mean
   series <- list(exposure_matched = bm[, .(date, ret = E * benchmark_ret)][order(date)],
@@ -358,7 +387,8 @@ mc_controls <- function(H, pr, br, R, cfg, exec_price, universe) {
                n_dates_placebo = if (is.null(pl)) 0L else length(pl$date))
   list(status = "ok", series = series,
        placebo = if (is.null(pl)) NULL else c(pl, list(n = cfg$placebo_n, alpha = cfg$placebo_alpha, seed = cfg$placebo_seed)),
-       exposure = ex, diag = diag, basket_diag = sb$diag)
+       exposure = ex, diag = diag, basket_diag = sb$diag,
+       leg = lg[, .(date, exec_date, ret)], size_beta_cfg = cfg[["size_beta"]])
 }
 
 # 열마다 최대낙폭(시작 수준 1 포함) — 행 = 일, 열 = 경로
@@ -371,14 +401,18 @@ mc_controls <- function(H, pr, br, R, cfg, exec_price, universe) {
 }
 
 # 위기마다 플라시보 낙폭 포착률 분포 → alpha 분위 · p · 넘음(전략 포착률 < 분위 − tol)
-.mc_placebo_crises <- function(CR, pl, scale, bm, alpha, tol) {
+#   col_scale(v3.5 ⑥) = 경로마다 곱할 배율(크기 × β 짝의 ρ_j) — 비유한 경로는 분포에서 뺀다 · NULL 이면 구판과 같은 계산
+.mc_placebo_crises <- function(CR, pl, scale, bm, alpha, tol, col_scale = NULL) {
   K <- bm$benchmark_ret[match(pl$date, as.Date(bm$date))]
+  cols <- if (is.null(col_scale)) seq_len(NCOL(pl$P)) else which(is.finite(col_scale))
   rows <- lapply(seq_len(nrow(CR)), function(i) {
     ix <- which(pl$date > CR$peak_date[i] & pl$date <= CR$trough_date[i] & is.finite(K))
-    if (!length(ix)) return(NULL)
+    if (!length(ix) || !length(cols)) return(NULL)
     nav <- c(1, cumprod(1 + K[ix])); bdd <- max(1 - nav / cummax(nav))
     if (!(bdd > 0)) return(NULL)
-    cap <- .mc_dd_cols(pl$P[ix, , drop = FALSE] * scale[ix]) / bdd
+    Mx <- pl$P[ix, cols, drop = FALSE] * scale[ix]
+    if (!is.null(col_scale)) Mx <- sweep(Mx, 2L, col_scale[cols], `*`)
+    cap <- .mc_dd_cols(Mx) / bdd
     cap <- cap[is.finite(cap)]
     if (!length(cap)) return(NULL)
     s <- CR$dd_capture[i]
@@ -390,6 +424,54 @@ mc_controls <- function(H, pr, br, R, cfg, exec_price, universe) {
   rbindlist(rows)
 }
 
+# 일간 수익(행 = 일) → 월간 복리 수익(행 = 달 · 정렬) — 열마다 prod(1 + r) − 1(behavior_card.R bc_monthly 와 같은 식) · 결측 없는 입력만 받는다
+#   (data.table set() 으로 과할당 없는 표에 열을 더하면 메모리가 깨진다 — 11-13 실측 segfault · 행렬과 split 만 쓴다)
+.mc_monthly_cols <- function(dates, M) {
+  M <- as.matrix(M); g <- factor(format(as.Date(dates), "%Y-%m"))
+  ix <- split(seq_len(nrow(M)), g)                                 # 수준 = 달 정렬
+  out <- vapply(seq_len(ncol(M)), function(j) vapply(ix, function(ii) prod(1 + M[ii, j]) - 1, numeric(1)), numeric(length(ix)))
+  if (!is.matrix(out)) out <- matrix(out, nrow = length(ix))
+  colnames(out) <- colnames(M)
+  list(ym = names(ix), M = out)
+}
+
+#' 크기 × β 짝의 β 맞춤(v3.5 ⑥) — 같은 날 · 같은 달에서 전략 레그 β 와 플라시보 경로마다 β 를 잰다
+#'   ρ_j = min(β_leg / β_j, cap) — 경로를 현금으로 전략 β 까지 낮춘다(cap = 1 · 차입 없음). β_j 비유한 · 0 이하 경로는 뺀다.
+#'   β_leg 비유한 · 0 이하이거나 남은 경로 × alpha < 1 이면 unmeasured — 그 블록의 비율은 NA 가 된다(fail-closed).
+#' @param ctl mc_controls 산출(placebo · leg · series$size_matched · size_beta_cfg) · @param bmd data.table(date, benchmark_ret)
+#' @param e behavior_card.R 환경(.bc_beta = 행동 카드 β 와 같은 추정기)
+.mc_beta_match <- function(ctl, bmd, e) {
+  sbc <- ctl$size_beta_cfg
+  if (is.null(sbc)) return(list(status = "not_configured"))
+  out <- list(status = "unmeasured", rule = sbc$rule, cap = as.numeric(sbc$cap))
+  pl <- ctl$placebo; lg <- ctl$leg; bk <- ctl$series$size_matched
+  if (is.null(pl) || !NROW(pl$P)) return(c(out, why = "플라시보 경로 없음"))
+  if (is.null(lg) || !NROW(lg)) return(c(out, why = "전략 레그 없음"))
+  K <- bmd$benchmark_ret[match(pl$date, bmd$date)]
+  L <- lg$ret[match(pl$date, as.Date(lg$date))]
+  B <- if (is.null(bk)) rep(NA_real_, length(pl$date)) else bk$ret[match(pl$date, as.Date(bk$date))]
+  keep <- is.finite(K) & is.finite(L) & rowSums(!is.finite(pl$P)) == 0
+  if (sum(keep) < 2L) return(c(out, why = "겹치는 수익일 부족"))
+  d <- pl$date[keep]
+  Pm <- .mc_monthly_cols(d, pl$P[keep, , drop = FALSE])$M
+  KL <- .mc_monthly_cols(d, cbind(k = K[keep], l = L[keep]))$M
+  b_leg <- e$.bc_beta(KL[, "l"], KL[, "k"])
+  b_j <- vapply(seq_len(ncol(Pm)), function(j) e$.bc_beta(Pm[, j], KL[, "k"]), numeric(1))
+  b_bk <- if (all(is.finite(B[keep]))) e$.bc_beta(.mc_monthly_cols(d, cbind(b = B[keep]))$M[, "b"], KL[, "k"]) else NA_real_
+  rho <- ifelse(is.finite(b_j) & b_j > 0 & is.finite(b_leg), pmin(b_leg / b_j, out$cap), NA_real_)
+  n_ok <- sum(is.finite(rho))
+  out <- c(out, list(beta_leg = b_leg, beta_basket = b_bk, n_months = nrow(KL), n_paths = length(rho), n_paths_valid = n_ok,
+                     placebo_beta = list(min = suppressWarnings(min(b_j, na.rm = TRUE)), median = stats::median(b_j, na.rm = TRUE),
+                                         max = suppressWarnings(max(b_j, na.rm = TRUE))),
+                     rho_median = if (n_ok) stats::median(rho, na.rm = TRUE) else NA_real_,
+                     rho_basket = if (is.finite(b_leg) && is.finite(b_bk) && b_bk > 0) min(b_leg / b_bk, out$cap) else NA_real_))
+  if (!is.finite(b_leg) || b_leg <= 0) return(c(out, why = "전략 레그 β 비유한 또는 0 이하"))
+  if (n_ok * pl$alpha < 1) return(c(out, why = "β 가 유효한 플라시보 경로 × alpha < 1"))
+  out$status <- "ok"
+  out$rho <- rho
+  out
+}
+
 #' 대조를 카드에 붙이고 귀속 라벨을 낸다(전체 · 보는 창 · 시험 창)
 #' @param card behavior_card.R::bc_card 산출 · @param ctl mc_controls 산출 · @param bm data.table(date, benchmark_ret)
 #' @param bcfg behavior_card.json 설정(majority_share) · @param e behavior_card.R 이 실린 환경(없으면 사적 환경)
@@ -399,7 +481,21 @@ mc_attribution <- function(card, ctl, bm, bcfg, e = NULL, tol = .MC_TOL) {
     card$controls <- list(status = ctl$status, reason = .mc_or(ctl$reason, NA_character_))
     return(card)
   }
-  card <- e$bc_attach_controls(card, ctl$series, bm, tol = tol)
+  bmd <- as.data.table(bm)[, .(date = as.Date(date), benchmark_ret)]
+  ## v3.5 ⑥ — β 맞춤을 먼저 잰다(보고용 결정론 계열을 다른 대조와 함께 붙이려고) · 실패 = 그 블록만 unmeasured(fail-closed)
+  bt <- tryCatch(.mc_beta_match(ctl, bmd, e), error = function(err) list(status = "error", why = conditionMessage(err)))
+  ser <- ctl$series
+  if (identical(bt$status, "ok") && is.finite(.mc_or(bt$rho_basket, NA_real_)) && !is.null(ser$size_matched)) {
+    E0 <- ctl$exposure$mean; rb <- bt$rho_basket
+    ser$size_beta_matched <- ser$size_matched[, .(date, ret = E0 * rb * ret)]
+    if (isTRUE(ctl$exposure$varies) && !is.null(ser$size_exposure_path))
+      ser$size_beta_path <- ser$size_exposure_path[, .(date, ret = rb * ret)]
+  }
+  card <- e$bc_attach_controls(card, ser, bm, tol = tol)
+  ## 보고용 기댓값 계열(크기 × β 결정론 사본)의 대조별 라벨은 판정이 아니다 — 평균 비교는 분위 안 행운을 선택으로 센다(검사 P절).
+  ##   판정 = attribution$<창>$label_size_beta(분포 분위) 하나 — 카드 안에 서로 다른 β 라벨이 둘 실리지 않게(철학 C-20261113-064)
+  for (nm in intersect(c("size_beta_matched", "size_beta_path"), names(card$controls)))
+    if (is.list(card$controls[[nm]])) card$controls[[nm]]$label <- "report_only_expected_value"
   ctrl <- card$controls
   P <- ctl$exposure$path
   ctrl$exposure_profile <- list(mean = ctl$exposure$mean, varies = ctl$exposure$varies,
@@ -412,11 +508,17 @@ mc_attribution <- function(card, ctl, bm, bcfg, e = NULL, tol = .MC_TOL) {
   pl <- ctl$placebo
   if (is.null(pl) || !NROW(pl$P)) stop("[matched_controls] 플라시보 경로 없음 — 크기+노출 짝 판정 불가")
   CR <- as.data.table(card$crises)
-  bmd <- as.data.table(bm)[, .(date = as.Date(date), benchmark_ret)]
+  GLt <- P$GL[match(pl$exec_date, P$exec_date)]
   pst <- .mc_placebo_crises(CR, pl, rep(ctl$exposure$mean, length(pl$date)), bmd, pl$alpha, tol)
   ppa <- if (isTRUE(ctl$exposure$varies))
-    .mc_placebo_crises(CR, pl, P$GL[match(pl$exec_date, P$exec_date)], bmd, pl$alpha, tol) else NULL
-  ctrl$placebo <- list(n = pl$n, alpha = pl$alpha, seed = pl$seed, per_crisis = pst, per_crisis_path = ppa)
+    .mc_placebo_crises(CR, pl, GLt, bmd, pl$alpha, tol) else NULL
+  ## v3.5 ⑥ 크기 × β 플라시보 — 같은 경로 · 같은 노출 배율에 경로마다 ρ_j 를 곱한다(정적 = 판정 · 경로 = 노출이 변할 때만)
+  sbok <- identical(bt$status, "ok")
+  pstb <- if (sbok) .mc_placebo_crises(CR, pl, rep(ctl$exposure$mean, length(pl$date)), bmd, pl$alpha, tol, col_scale = bt$rho) else NULL
+  ppab <- if (sbok && isTRUE(ctl$exposure$varies)) .mc_placebo_crises(CR, pl, GLt, bmd, pl$alpha, tol, col_scale = bt$rho) else NULL
+  ctrl$placebo <- list(n = pl$n, alpha = pl$alpha, seed = pl$seed, per_crisis = pst, per_crisis_path = ppa,
+                       per_crisis_size_beta = pstb, per_crisis_size_beta_path = ppab)
+  ctrl$beta_match <- bt[setdiff(names(bt), "rho")]                 # 경로별 ρ 벡터는 싣지 않는다(요약 · 중앙만)
   per <- function(p, w) {
     if (is.null(p) || !NROW(p)) return(NULL)
     p <- as.data.table(p)
@@ -438,13 +540,23 @@ mc_attribution <- function(card, ctl, bm, bcfg, e = NULL, tol = .MC_TOL) {
            else if (s_se > maj) "selection_defense" else if (s_ex > maj) "size_defense"
            else if (s_bm > maj) "exposure_defense" else "no_defense"
     md <- function(x) if (length(x)) stats::median(x) else NA_real_
+    # v3.5 ⑥ 크기 × β — 라벨(lab)이 선택 방어일 때만 β 짝으로 한 번 더 가른다(헌장 빈칸 14 '크기 × β 미분리')
+    sb_ <- per(pstb, w); spb <- per(ppab, w); evb <- per(ctrl[["size_beta_matched"]][["per_crisis"]], w)
+    s_sb <- if (is.null(sb_) || !nrow(sb_)) NA_real_ else mean(sb_$beats)
+    lab_sb <- if (!identical(lab, "selection_defense")) lab else if (!sbok || !is.finite(s_sb)) "size_beta_unmeasured"
+              else if (s_sb > maj) "selection_defense" else "size_beta_unseparated"
     list(label = lab, n_crisis = n, share_beats_size_exposure = s_se, share_beats_exposure = s_ex, share_beats_bench = s_bm,
          median_placebo_p = if (is.null(se)) NA_real_ else md(se$placebo_p),
          median_gap_size_exposure = if (is.null(ev)) NA_real_ else md(ev$control_dd_capture - ev$strategy_dd_capture),
          median_gap_exposure = if (is.null(ex)) NA_real_ else md(ex$control_dd_capture - ex$strategy_dd_capture),
-         share_beats_size_exposure_path = if (is.null(sp) || !nrow(sp)) NA_real_ else mean(sp$beats))
+         share_beats_size_exposure_path = if (is.null(sp) || !nrow(sp)) NA_real_ else mean(sp$beats),
+         label_size_beta = lab_sb, share_beats_size_beta = s_sb,
+         share_beats_size_beta_path = if (is.null(spb) || !nrow(spb)) NA_real_ else mean(spb$beats),
+         median_placebo_p_size_beta = if (is.null(sb_) || !nrow(sb_)) NA_real_ else md(sb_$placebo_p),
+         median_gap_size_beta = if (is.null(evb) || !nrow(evb)) NA_real_ else md(evb$control_dd_capture - evb$strategy_dd_capture))
   }
   ctrl$attribution <- list(rule = "nested_majority_placebo_v2", majority_share = maj, placebo_alpha = pl$alpha, tol = tol,
+                           size_beta_rule = .mc_or(bt$rule, NA_character_), size_beta_status = bt$status,
                            overall = one("overall"), visible = one("visible"), test = one("test"))
   card$controls <- ctrl
   card
@@ -485,6 +597,7 @@ mc_card <- function(dir, root = NULL, raw = NULL, bm_hist = NULL, cfg = NULL, bc
   ctl <- mc_controls(H, pr, br, raw, cfg, ep$value, uni)
   card <- mc_attribution(card, ctl, br[, .(date, benchmark_ret)], bcfg, e)
   card$controls$spec <- list(contract = "matched_controls_v1", cfg_schema = .mc_or(cfg$schema, NA_character_),
+                             size_beta_rule = .mc_or(cfg[["size_beta"]][["rule"]], NA_character_),
                              size_buckets = cfg$size_buckets, universe = uni, exec_price = ep$value,
                              exec_price_source = ep$source, window_approx = identical(ep$value, "open_t1"),
                              source_dir = dir)

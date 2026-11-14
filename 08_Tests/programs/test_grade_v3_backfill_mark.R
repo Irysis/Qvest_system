@@ -44,7 +44,7 @@ load_mark <- function(lines) {
   for (x in ex) if (is.call(x) && identical(as.character(x[[1]]), "<-") && identical(as.character(x[[2]]), "gv3b_benefit_mark")) { eval(x, e); hit <- hit + 1L }
   # 요인 표 변경 판정(gv3b_fa_stale) · 선택 관문 재판정(gv3b_selection_gate · G1 11-10)도 같은 방식으로 꺼낸다(있으면)
   for (x in ex) if (is.call(x) && identical(as.character(x[[1]]), "<-") &&
-                    as.character(x[[2]]) %in% c("gv3b_fa_stale", "gv3b_selection_gate")) eval(x, e)
+                    as.character(x[[2]]) %in% c("gv3b_fa_stale", "gv3b_selection_gate", "GV3B_UNLESS_VOCAB", "gv3b_compat_unless", "gv3b_record_incomplete")) eval(x, e)
   list(env = e, n = hit)
 }
 L <- load_mark(txt)
@@ -135,11 +135,66 @@ LS <- load_mark(sub(sb, "if (FALSE) return(no(", txt, fixed = TRUE))
 chk(n_sb == 1L && isTRUE(okof(safe(LS$env$gv3b_selection_gate(srec(), modifyList(scfg, list(alpha = 0.01)))))),
     "S7 [돌연변이] 현행 alpha 재판정을 뺀 사본 → S2 의 기록이 통과로 남는다(치환 1곳 성사)", sprintf("치환 %d", n_sb))
 
+cat("=== V. 조건부 호환 판(v3.5 · 11-13 · rules_version_compatible_unless) — cr_notch strong 저장분만 다시 채점 ===\n")
+cu <- L$env$gv3b_compat_unless
+UNL <- list(v3.4 = "cr_notch_strong", v3.3 = "cr_notch_strong")
+vrec <- function(cn, rv = "v3.4") list(grade_v3 = list(rules_version = rv, cr_notch_basis = cn))
+chk(is.function(cu) && identical(safe(cu(vrec("strong"), "v3.4", UNL)), FALSE) && identical(safe(cu(vrec("strong", "v3.3"), "v3.3", UNL)), FALSE),
+    "V1 CR '강함' 가점이 유지된 v3.4 · v3.3 기록(cr_notch_basis = strong) → 다시 채점(건너뛰지 않는다)")
+chk(is.function(cu) && all(vapply(list("normal", "weak", "insufficient", NA_character_, NULL), function(cn) isTRUE(safe(cu(vrec(cn), "v3.4", UNL))), logical(1))),
+    "V2 가점이 없던 기록(보통 · 약함 · 판정 불가 · 기록 없음) → 채점이 같으므로 건너뛴다(판 표식 유지)")
+chk(is.function(cu) && identical(safe(cu(vrec("normal", "v3.2"), "v3.2", UNL)), FALSE) && identical(safe(cu(vrec("normal"), "v3.4", list())), FALSE) &&
+      identical(safe(cu(vrec("normal"), NA_character_, UNL)), FALSE),
+    "V3 목록 밖 판(v3.2) · 빈 목록 · 판 모름 → 건너뛰지 않는다(종전 재채점 규칙 그대로)")
+chk(is.function(cu) && inherits(tryCatch(cu(vrec("strong"), "v3.4", list(v3.4 = "cr_strong_any")), error = function(e) e), "error"),
+    "V4 [위반 주입] 모르는 조건 어휘 → 멈춘다(조용히 건너뛰지 않는다)")
+ut <- "  !isTRUE(hit)"
+n_ut <- sum(grepl(ut, txt, fixed = TRUE))
+LV <- load_mark(sub(ut, "  TRUE", txt, fixed = TRUE))
+chk(n_ut == 1L && isTRUE(safe(LV$env$gv3b_compat_unless(vrec("strong"), "v3.4", UNL))),
+    "V5 [돌연변이] 조건 판정을 지운 사본 → V1 의 가점 유지 기록을 건너뛴다(재채점 누락) — V1 이 잡는다(치환 1곳 성사)", sprintf("치환 %d", n_ut))
+
+cat("=== R. 교체를 걸친 측정의 불완전 기록(v3.5 · 11-13) — 판 표식은 현행인데 v3.5 필드가 없으면 다시 채점 ===\n")
+ri <- L$env$gv3b_record_incomplete
+rrec <- function(sc = NULL, status = "ok", rv = "v3.5") { g <- list(status = status, rules_version = rv); if (!is.null(sc)) g$selection_control <- sc; list(grade_v3 = g) }
+chk(is.function(ri) && isTRUE(safe(ri(rrec(), "v3.5", "v3.5", TRUE))),
+    "R1 v3.5 판 표식 · 상태 ok · selection_control 없음(옛 .essence_v3_record 로 적힌 교체 걸친 측정) → 다시 채점")
+chk(is.function(ri) && identical(safe(ri(rrec("size_beta"), "v3.5", "v3.5", TRUE)), FALSE),
+    "R2 v3.5 필드가 있는 기록 → 건너뛴다(멱등)")
+chk(is.function(ri) && identical(safe(ri(rrec(rv = "v3.4"), "v3.4", "v3.5", TRUE)), FALSE) &&
+      identical(safe(ri(rrec(status = "not_applicable"), "v3.5", "v3.5", TRUE)), FALSE) &&
+      identical(safe(ri(rrec(), "v3.5", "v3.5", FALSE)), FALSE),
+    "R3 다른 판(종전 규칙이 맡음) · 상태 ok 아님(hard_fail 등) · 필드를 요구하지 않는 설정 → 이 가지로는 다시 채점하지 않는다")
+ui <- "is.null(A$grade_v3$selection_control)"
+n_ui <- sum(grepl(ui, txt, fixed = TRUE))
+LR <- load_mark(sub(ui, "FALSE", txt, fixed = TRUE))
+chk(n_ui == 1L && identical(safe(LR$env$gv3b_record_incomplete(rrec(), "v3.5", "v3.5", TRUE)), FALSE),
+    "R4 [돌연변이] 필드 없음 판정을 지운 사본 → R1 의 불완전 기록을 건너뛴다 — R1 이 잡는다(치환 1곳 성사)", sprintf("치환 %d", n_ui))
+
 cat("=== W. 배선(정적 · 주석 제외) ===\n")
 code <- sub("#.*$", "", txt)
 chk(sum(grepl("fa_stale <- rescore && gv3b_fa_stale(A, FA_MD5, FA_EPOCH)", code, fixed = TRUE)) == 1L &&
-      sum(grepl("if (rescore && !fa_stale && !sel_stale && (identical(old_rv, RULES_VER) || old_rv %in% RULES_COMPAT))", code, fixed = TRUE)) == 1L,
-    "W0 건너뜀 규칙이 요인 표 변경 · 요인 문맥 복구 · 선택 관문 재판정 변화를 먼저 본다(같은 규칙 판이어도 통과시키지 않는다)")
+      sum(grepl("if (rescore && !fa_stale && !sel_stale && !rec_inc && (identical(old_rv, RULES_VER) || old_rv %in% RULES_COMPAT || gv3b_compat_unless(A, old_rv, RULES_UNLESS)))", code, fixed = TRUE)) == 1L,
+    "W0 건너뜀 규칙이 요인 표 변경 · 요인 문맥 복구 · 선택 관문 재판정 변화를 먼저 본다(같은 규칙 판이어도 통과시키지 않는다) · 조건부 호환(v3.5)은 그 뒤")
+chk(any(grepl("RULES_UNLESS <- CTX$cfg$rules_version_compatible_unless", code, fixed = TRUE)) &&
+      any(grepl("clusterExport", code, fixed = TRUE) & grepl("\"gv3b_compat_unless\"", code, fixed = TRUE)),
+    "W0d 조건부 호환 목록을 워커가 설정에서 읽고, 판정 함수를 워커로 내보낸다")
+chk(sum(grepl("rec_inc <- rescore && gv3b_record_incomplete(A, old_rv, RULES_VER, NEED_SC)", code, fixed = TRUE)) == 1L &&
+      any(grepl("NEED_SC <- identical(gv3_selection_control(CTX$cfg), \"size_beta\")", code, fixed = TRUE)) &&
+      any(grepl("if (rec_inc) \"record_fields_incomplete\"", code, fixed = TRUE)) &&
+      any(grepl("clusterExport", code, fixed = TRUE) & grepl("\"gv3b_record_incomplete\"", code, fixed = TRUE)),
+    "W0h 교체를 걸친 불완전 기록 — 채점 함수가 판정해 건너뜀을 막고 · 원인 record_fields_incomplete 를 남기고 · 설정에서 요구 여부를 읽고 · 워커로 내보낸다")
+## (v3.5 · 판단 T4 C-20261113-071 · 072) 규칙 판 재채점과 자료 판 재채점을 가르는 선택 · 원인 기록 · 강등 뒤 Judge 트리거 거두기
+chk(sum(grepl("if (NO_DATA_TRIG) fa_stale <- FALSE", code, fixed = TRUE)) == 1L && sum(grepl("if (NO_DATA_TRIG) sel_stale <- FALSE", code, fixed = TRUE)) == 1L &&
+      any(grepl("clusterExport", code, fixed = TRUE) & grepl("\"NO_DATA_TRIG\"", code, fixed = TRUE)) &&
+      any(grepl("DIRS_FILE <- argv(\"--dirs\", NULL)", code, fixed = TRUE)) && any(grepl("--dirs 목록 중 대상에 없는 폴더", code, fixed = TRUE)),
+    "W0e --no-data-triggers 가 요인 · 선택 설정 계기를 끄고(워커에도 전달) · --dirs 목록 밖 폴더는 멈춘다(조용히 줄지 않는다)")
+chk(sum(grepl("causes = as.list(causes),", code, fixed = TRUE)) == 1L && any(grepl("A$rule_change_benefit$causes <- as.list(causes)", code, fixed = TRUE)),
+    "W0f 재채점 원인을 모두 남긴다(요인 판 · 선택 설정 · 규칙 판 — 백필 블록 · 수혜 표식 둘 다)")
+chk(sum(grepl("if (!identical(as.character(z$new_grade), \"A\")) {", code, fixed = TRUE)) == 1L &&
+      sum(grepl("RCG$rcg_withdraw(dirname(z$path), z$new_grade, write = TRUE)", code, fixed = TRUE)) == 1L &&
+      any(grepl("round_candidate_gate.R", code, fixed = TRUE) & grepl("sys.source", code, fixed = TRUE)),
+    "W0g 쓰기 뒤 새 등급이 A 가 아니면 Judge 트리거를 정본(rcg_withdraw)으로 거둔다 · 그 함수를 쓰기 전에 싣는다")
 chk(any(grepl("FA_MD5 <- as.character(CTX$fa$md5", code, fixed = TRUE)) && any(grepl("FA_EPOCH <- as.character(CTX$fa$epoch", code, fixed = TRUE)) &&
       any(grepl("clusterExport", code, fixed = TRUE) & grepl("\"gv3b_fa_stale\"", code, fixed = TRUE)),
     "W0b 현행 요인 md5 · epoch 를 워커가 문맥에서 읽고, 판정 함수를 워커로 내보낸다")

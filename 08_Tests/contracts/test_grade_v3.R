@@ -107,6 +107,7 @@ chk("C13 [돌연변이] A 띠 차단 행선을 C 로 바꾸면 C2 가 C — 차�
 chk("C14 산출 어휘 ⊂ {A, B, C, F}", all(vapply(list(d1, d2, d3, d4, d5, d6, d7, d8, d9), function(d) d$grade, "") %in% c("A", "B", "C", "F")))
 ## '강함' 상향 노치 = MC8 선택(기전) 방어 동반 시만(GRADE-V3-CR-STRONG-SELECTION · 도훈 10-13 · MC8 보고서 §7)
 cfg_s <- cfg; cfg_s$cr_notch$strong_requires <- "mc8_selection_defense"
+cfg_s$cr_notch$selection_control <- "size_exposure"     # v3.1 의미 검사(v3.5 의 크기 × β 짝은 test_cr_notch_size_beta.R 이 본다)
 crn <- function(cr, lab, cf = cfg_s) gv3_cr_for_notch(cr, lab, cf)
 chk("C15 강함 + 선택 방어 → 강함 유지 · 크기 방어 · 노출 방어 · 방어 없음 · 판정 불가 · 대조 불가(NA) → 보통",
     identical(crn("strong", "selection_defense"), "strong") &&
@@ -129,15 +130,18 @@ chk("C20 [위반 주입] strong_requires 어휘 밖 → 멈춘다", throws(gv3_c
 ## ★v3.2(10-18 · 헌장 빈칸 9 A′) — MC8 selection_defense 를 선택 / 타이밍으로 가른다 · 타이밍은 증거 (a)(b)(c) 가 있을 때만 강함
 cfg_t <- cfg; cfg_t$cr_notch$strong_requires <- "mc8_selection_or_timing_evidence"
 cfg_t$cr_notch$timing_evidence <- file.path(TD, "tev.json")
+cfg_t$cr_notch$selection_control <- "size_exposure"     # v3.2 의미 검사 — 크기 × β 짝(v3.5)은 test_cr_notch_size_beta.R
 M <- function(lab = "selection_defense", varies = TRUE, sp = 0.2, maj = 0.5)
   list(label = lab, exposure_varies = varies, share_beats_size_exposure_path = sp, majority_share = maj)
 EVD <- function(a1 = TRUE, a2 = TRUE, b = TRUE, c = TRUE, unit = "lt")
   list(strategy_id = "S_X", dir = "stage_artifacts/x", round_id = "RT", prereg_md5 = "m", unit = unit,
        a_deep_beta_majority = a1, a_fast_beta_majority = a2, b_both_engines = b, c_slow_lag1_retained = c)
 crt <- function(m, ev = NULL, cr = "strong") gv3_cr_for_notch(cr, m, cfg_t, ev)
-chk("C21 현행 설정 = v3.4(v3.3 의 채점 그대로 — CR 규칙 · 셈 단위 lt · 팩터 알파 노치 · OOS 관문 = 시험 창 CR · 시험 창 Calmar vs 벤치 + 11-10 선택 편향 절 · v3.3 저장분은 채점 동일)",
-    identical(cfg$cr_notch$strong_requires, "mc8_selection_or_timing_evidence") && identical(cfg$rules_version, "v3.4") &&
-      identical(unlist(cfg$rules_version_compatible), "v3.3") && is.list(cfg$selection_bias) &&
+chk("C21 현행 설정 = v3.5(v3.4 + CR '강함' 선택 방어에 크기 × β 짝 · 셈 단위 lt · 팩터 알파 노치 · OOS 관문 = 시험 창 CR · 시험 창 Calmar vs 벤치 · 선택 편향 절 · v3.3 · v3.4 저장분은 cr_notch strong 일 때만 재채점)",
+    identical(cfg$cr_notch$strong_requires, "mc8_selection_or_timing_evidence") && identical(cfg$rules_version, "v3.5") &&
+      identical(cfg$cr_notch$selection_control, "size_beta") && !length(unlist(cfg$rules_version_compatible)) &&
+      identical(cfg$rules_version_compatible_unless[["v3.4"]], "cr_notch_strong") &&
+      identical(cfg$rules_version_compatible_unless[["v3.3"]], "cr_notch_strong") && is.list(cfg$selection_bias) &&
       identical(cfg$selection_bias$without_check, "dsr_legacy") &&
       identical(cfg$cr_notch[["timing_unit"]], "lt") &&
       file.exists(file.path(ROOT, cfg$cr_notch$timing_evidence)) &&
@@ -199,7 +203,7 @@ mut <- function(from, to) {
   en <- new.env(); sys.source(f, envir = en, keep.source = FALSE)
   list(applied = TRUE, env = en)
 }
-m1 <- mut("if (sp > maj) return(\"selection\")", "if (sp >= maj) return(\"selection\")")
+m1 <- mut("if (sp > maj && spb > maj) return(\"selection\")", "if (sp >= maj && spb > maj) return(\"selection\")")   # v3.5 줄(경로판 β 조건 포함)로 재조준
 chk("C32 [뮤테이션] 경로 짝 과반을 '≥'로 느슨하게 하면 경계(0.5)의 타이밍이 선택으로 새어 강함이 된다 — C24 가 잡는다",
     isTRUE(m1$applied) && identical(m1$env$gv3_cr_for_notch("strong", M(sp = 0.5), cfg_t), "strong") &&
       identical(crt(M(sp = 0.5)), "normal"), sprintf("(치환 %s)", isTRUE(m1$applied)))
