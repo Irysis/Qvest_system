@@ -11,7 +11,9 @@ stopifnot(identical(RC_VERSION, "v4"))
 root <- rc_root()
 rd <- "04_Research/programs/P1_RETURN/P1S03_own_spec_qualification"
 f1 <- file.path(rd, "specs/P1S03_FVALU_RX0.json")
-## 실행 조건 먼저(어느 파일도 쓰기 전) — D1 · D2 판 표식 · P1R04 평가 산출 없음
+## 실행 조건 먼저(어느 파일도 쓰기 전) — 등록본 없음(변경분 점검 v2 S-4) · D1 · D2 판 표식 · P1R04 평가 산출 없음
+for (pf0 in c(file.path(root, "stage_artifacts/programs/P1_RETURN/P1S03_own_spec_qualification/prereg.json"), file.path(root, rd, "prereg.json")))
+  if (file.exists(pf0)) stop("[init_p1s03_v3] 이미 등록됐다(", pf0, ") — 생성기를 다시 돌리면 R2(사양 md5 · seed_md5_not_prereg)로 판이 멈춘다 · 고칠 일은 새 판")
 VINT <- "RAWDATA-SEAM-0330-REPAIR-20261113"                 # 판 표식 id(06_Registry/factor_db_vintage.json) — 사양 글에 τ_D 뒤 날짜를 쓰지 않는다(F-4)
 VD1 <- "PRICE-CONTINUITY-FACTORS-20261113"                  # D1(가격 수준 팩터 연속 가격 · 202603 뒤 달만 · IS 무영향 설계 — 이음매 세션 11-14 16:23)
 D2DEC <- "RAWDATA-INTERNAL-BREAK-FILL-D2D3-20261114"        # 도훈 D2 결정 id(판 표식 줄의 decision 에 있어야 한다)
@@ -60,9 +62,11 @@ hypothesis <- paste0(
 exposures <- list(
   "Q 는 P1R03 의 IS 판정 파일(evaluation_visible.json — 자격 8/15)과 그 파일에 코어 v3 결함으로 남은 보고 규칙 열(test_hold — 자격 칸의 OOS 연 알파 > 0 여부)을 본 상태다(P1R04 노출 고지와 같다). 규칙 · 문턱은 P1 템플릿 승계로 고정(재량 없음) · 코어 v4 는 그 열을 IS 파일에서 뺀다.",
   "P1R03 의 철학 P2(R-20261113-002)도 test_hold 열이 남은 그 IS 판정 파일을 읽었다(코어 v3 결함 · 판단 T1 C-20261113-057). 이 판의 규칙 · 입구에는 그 열이 없다.",
-  "Q 는 앞선 라운드 보고(사람 쪽)로 OOS(2023~) 성과를 본 상태다 — 판정 규칙은 IS 열만 쓴다(코어 검사 rc_rules_test_window_use · OOS α 는 보고 전용).",
+  "Q 는 앞선 라운드 보고(사람 쪽)로 OOS(τ_D 뒤) 성과를 본 상태다 — 판정 규칙은 IS 열만 쓴다(코어 검사 rc_rules_test_window_use · OOS α 는 보고 전용).",
   "Q 는 P1R03 산출물(T0 15 엔진)의 IS 구간 NAV · 위기 하락노출 · 보유를 P1R04 차트 배치 시험(가짜 짝 · IS 전용 · 판정 무관)에서 본 상태다 — OOS 구간은 그리지 않았다.",
-  "초안 v3 는 등급 v3.5 핀 교체 · D1 · D2 판 표식 뒤 · P1R04 재측정 결과 전에 만들었다(원 세션 11-14 결정 — lean-loop 5 '막지 않는다'로 교체를 P1S02 · P1R04 측정 앞에 뒀고, D2 채택으로 측정을 D2 뒤로 미뤘다). Q 는 P1R04 의 판정을 보지 않았다 — 11-13 측정은 D1 예고로 결과 전(T1 11칸 뒤) 중단했고 부분 산출은 평가 없이 보관했다(P1R04 DESIGN §10). v2 · v3 에서 바꾼 것은 감독 · 점검 지적(문장 · 회계 문구 · 코어 판)과 자료 판 글(D1 · D2 판 표식 · T0 기대의 비교 상대 = 같은 자료 판 P1R04 기준 칸)뿐이고, 자격 규칙 · 문턱 · 입구 · 시드는 초안 v1 과 같다.",
+  paste0("초안 v3 는 등급 v3.5 핀 교체 · D1 · D2 판 표식 뒤 · P1R04 재측정 결과 전에 만들었다(원 세션 11-14 결정 — lean-loop 5 '막지 않는다'로 교체를 P1S02 · P1R04 측정 앞에 뒀고, D2 채택으로 측정을 D2 뒤로 미뤘다). Q 는 P1R04 의 판정을 보지 않았다 — 11-13 측정은 D1 예고로 결과 전(T1 11칸 뒤) 중단했고 부분 산출은 평가 없이 보관했다(P1R04 DESIGN §10 · 등록 직전 P1R04 평가 산출 없음을 다시 확인한다). 초안 v1 → v3 에서 바뀐 것(변경분 점검 v2 R-1): 시드 칸 시행 수 2 → 45(같은 엔진 스캔 행과 같은 규칙 rc_standing_own_nf · 판단 T4 C-036) · ",
+  "기대 구체화(시드 아는 답 = 같은 자료 판 P1R04_FVALU_R0 IS 값 · T0 15 비교 상대와 '원천 판정과 다름' 표식 — 판단 T1 C-055 · C-056) · 통과 보고 단위 push_each → daily_summary(C-058) · 감독 · 점검 지적 문장 · 회계 문구 · 코어 판(v4) · 자료 판 글(D1 · D2 판 표식). ",
+         "자격 규칙 · 문턱 · 입구 · 갈래 · 판 번호 · 시드 엔진 · 구성 · 축은 초안 v1 과 같다."),
   "팩터 방향 격리 재판정(밸류 · 성장 · 컨센서스 · 쏠림 73 · 성과 무참조 · 11-13)의 결과(불일치 3 · 불명 9)를 본 상태다 — 입구 · 판정 규칙에 쓰지 않는다(결론 범위 방향 줄).",
   "입구 규칙(자체 사양 입구 기본값 RC_STANDING_SCAN_OWN_DEFAULT · 방향 층 engine_native + orientation_layer)은 코어 v4 의 정적 검사(생성기 재생성 md5 · 본문 실행 단정)로만 정했다 — 성과와 무관.",
   "Q 는 등록 전 입구 미리보기(scan --dry-run · 사유 코드별 디렉터리 수 · 성과 수치 없음)를 본 상태이며, 미리보기 뒤 입구 규칙을 바꾸지 않았다.")
@@ -84,7 +88,7 @@ conclusion_scope <- list(
   paste0("원천 셈 두 판(T0 · T1 같은 셈법 · 철학 C-20261113-011 · 034 (3)): 이름 셈 = 토탈 ≠ 원천 · 저위험 4 카테고리(방어 · 위험 · 유동성 · 국면) = 한 원천(P1R03 결론 범위) · ",
          "측정 셈 = 쏠림 · 토탈도 저β 원천으로 넣은 셈 — 보고에 둘 다 싣는다."),
   paste0("기저 풀(코어 v4)은 통과 칸에 철학 P2 판독(상설 pass 기록의 P2 또는 원천 라운드 · 이 판 영수증 — 수용된 보류 요청도 영수증으로 풀기 전까지 보류)과 저위험 확인을 요구한다. ",
-         "저위험 확인 집합 = 방어 · 위험 · 국면 · 유동성 · 쏠림(토탈은 겹침) + 영수증 lowrisk_tag 엔진 — 엔진 단위 release_decision 이 있어야 풀린다. ",
+         "저위험 확인 집합 = 방어 · 위험 · 국면 · 유동성 · 쏠림(토탈은 겹침) + 영수증 lowrisk_tag 엔진 + 원천 라운드 기계 꼬리표(results/lowrisk_tags.json 의 참 · 판독 불가 = 꼬리표 — P1R04 변환기 tools/p1r04_lowrisk_tags.R) — 엔진 단위 release_decision 이 있어야 풀린다. ",
          "P1R03 저β 5(방어 · 위험 · 유동성 · 쏠림 · 토탈)는 도훈 결정 LOWBETA-ENGINES-BASE-USE-20261113 으로 기저 사용 허용 · 표기 '저β 수익 엔진'(풀 label_class 열) · 방어 주장 없음. ",
          "T1 의 같은 카테고리 엔진(IDEFE · IRISK · IREGI · ILIQU · ICROW · ITOTAL)과 P1R04 사이드카 저위험 쏠림 꼬리표 카테고리는 그 결정을 승계하지 않는다(P1R04 결론 범위 · 철학 C-20261113-027) — 도훈 확인 전 lowrisk_confirm_pending."),
   "'방어' 표기는 시가총액 × β 무작위 대조 포트폴리오 통과 ∧ 최대낙폭이 시장보다 뚜렷이 작을 때만이다(도훈 결정 CHARTER-GAP-LOWBETA-DEFENSE-LABEL-20261113) — 이 판의 위기 하락노출 열(원장 · 통과 보고)은 시장 대비 귀속 전 원값이라 방어 근거로 쓰지 않는다(통과 push 는 판정 줄과 보고 열을 나눈다 — 코어 v4).",
@@ -103,7 +107,7 @@ conclusion_scope <- list(
   paste0("알려진 한계: superfan_watch.py scan_stale 은 갈래를 모른다(레인 판 2 가 있는 동안 이 판 스캔 정체가 그 규칙에 안 보인다) · ",
          "원천 라운드 칸이 영구 실패하면 그 칸을 원천으로 가진 사슬 등록이 막힌다(빠지면 거부 — 의도) · 기저 신호 캐시 키에 결합용 뷰 · IC 원장이 없다(첫 측정 전 캐시 시각 확인 · 인프라 과제)."))
 
-td <- tempfile("p1s03_v2_"); dir.create(td, recursive = TRUE)
+td <- tempfile("p1s03_v3_"); dir.create(td, recursive = TRUE)
 tsp <- rc_init_standing_p1(td, "P1S03_own_spec_qualification", seeds, purpose, hypothesis, edition = 1L,
                            scan = list(source = "own_spec"), exposures = exposures, conclusion_scope = conclusion_scope, tests = list(), root = root)
 sp <- rc_json_read(tsp)
@@ -125,10 +129,16 @@ sp[["pins"]] <- list(files = as.list(pf),
                  "제외 = factor_registry.json(공유 등록부 — 다른 세션이 맞춤 팩터를 수시로 더한다 · 엔진은 own_spec 의 부호 s_reg 를 고정하고 본문 실행 단정이 결합용 뷰 부호표(뷰 빌드 때 등록부)와 대조한다 — ",
                  "방향 변경은 다음 뷰 빌드에서 엔진을 멈춘다 · 그 전에는 선언 부호 그대로) · own_spec.json(엔진이 실행 때 읽지 않는다 — 시드는 칸 사양으로 넣고 스캔 항목은 넣을 때 own_spec_md5 를 원장에 남긴다) · ",
                  "factor_dup_scan.R(dedup FALSE 라 값에 닿지 않음 · 판 2 제외 사유 승계) · 결합용 뷰 저장본 · IC 원장(자료면 — 한 측정 안의 변화는 측정 지문 · 자료 판은 판 표식이 다룬다 · ",
-                 "기저 신호 캐시 키에는 둘 다 없다 — 첫 측정 전 캐시 시각 확인 · DESIGN §8)."))
+                 "기저 신호 캐시 키에는 둘 다 없다 — 첫 측정 전 캐시 시각 확인 · DESIGN §8) · ",
+                 "06_Registry/research_programs.json · 06_Registry/decision_register.json(판정 규칙 입력이 아니라 입구 · 회계 · 기저 풀 관문 입력 — 원천 라운드 · 선언 · 시행 수 · 저위험 해제를 정하고, ",
+                 "넣을 때 원장에 원천 라운드 · 가족이 남는다 · 핀하면 등록부 쓰기마다 판이 멈춘다 — 변경분 점검 v2 S-3 · 원천 라운드 재핀은 등록부 prereg_md5 도 함께 고쳐야 선언 검증이 산다(9662d7983 처럼))."))
 sp[["changes_after_review"]] <- list(
   "격리 점검 v1(prereg_draft_review_v1.md · revise) → 초안 v2: F-1 = 코어 v4 출시 전 수리(시드도 자체 사양 판정 · 관문 · 원천 시행 — 격리 M1 · 판단 T4 C-035) · F-4 사양 글의 τ_D 뒤 날짜 → 판 표식 id · IS 무영향 = '예상' · F-5(1) 캐시 키 문장 정정 · S-1 문장 정밀도 · S-2 핀 제외 목록 · S-4 시험 갈음 포인터.",
-  "판 폴더 정정(사양 밖 · 등록 커밋 포함): F-2 시드 먼저 판정 뒤 tick_hold 해제 절차 · F-3 해제 조건에 RELEASES v4 · F-5(2) 첫 측정 전 캐시 시각 확인 · S-3 standing-check(standing_rules.md) · S-6 방향 수정은 시드 판정 뒤.")
+  "판 폴더 정정(사양 밖 · 등록 커밋 포함): F-2 시드 먼저 판정 뒤 tick_hold 해제 절차 · F-3 해제 조건에 RELEASES v4 · F-5(2) 첫 측정 전 캐시 시각 확인 · S-3 standing-check(standing_rules.md) · S-6 방향 수정은 시드 판정 뒤.",
+  paste0("변경분 격리 점검 v2(prereg_draft_review_v2.md · revise · 필수 M-1 · 권고 R-1 · 선택 S-1~S-7) → 초안 v3: M-1 자료 판 글(D1 줄 ", VD1, " · D2 채택 ", D2DEC,
+         " — IS 값이 바뀌어 T0 기대의 비교 상대 = 같은 자료 판 P1R04 기준 칸 · 판 표식 = ", VLAST, ") · R-1 노출 줄 '바뀐 것' 목록(시드 시행 수 · 기대 구체화 · 통과 보고 단위) · ",
+         "S-2 노출 OOS 연도 표기 → τ_D 뒤 · S-3 핀 근거에 등록부 · 결정 기록부 제외 사유 · S-6 저위험 확인 셋째 길(원천 라운드 기계 꼬리표). ",
+         "판 폴더: DESIGN §8 ① D2 줄 · ③ P1R04 의 D2 뒤 재측정 · 평가 끝 · tick_hold · S-1 낡은 줄 · S-4 생성기 재실행 가드(v2 생성기 중단 · v3 등록본 있으면 중단) · S-5 등록 직전 standing-check · P1R04 평가 산출 없음 · S-7 시드 대조 지문 줄."))
 sp[["changes_after_superfan"]] <- list(
   "철학 P1 R-20261113-006: C-046 통과 push 판정 줄 / 보고 열 분리(코어 v4) + P2 한 줄 약속 · C-047 저위험 집합 + 유동성 · 쏠림(코어 v4) · C-048 family_root 열 · same_lineage_blend(코어 v4) + 원천 셈 두 판 · 같은 계보 블렌드 줄 · C-049 원천 라운드 철학 줄 + 코어 기본 결론 범위 · C-050 순서 줄 · N1 RELEASES v4 · N2 T0 15 판정 일치.",
   "판단 T1 R-20261113-007: C-054 원천 시행 판 검사 · 갈음(코어 v4) · C-055 아는 답 = P1R04_FVALU_R0 IS 값 일치 · 시드 먼저 · C-056 '원천 판정과 다름' 표식 · 15/15 기대 · C-057 노출 2줄 · C-058 통과 보고 = 일 요약 · C-060 알려진 한계 줄.")

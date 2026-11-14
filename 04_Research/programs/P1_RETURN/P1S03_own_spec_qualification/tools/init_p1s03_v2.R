@@ -4,6 +4,8 @@
 ##         철학 P1 R-20261113-006(C-046~050 수용) · 판단 T1 R-20261113-007(C-054~056 수용 · 노트 057~060) · 코어 v4 출시 전 수리(M1 · M2 · T4 C-035~038).
 ##   실행 조건: 코어 v4 수리 커밋 뒤 · 등급 v3.5 핀 교체 뒤(그 전에 만들면 등록 때 핀 불일치) — 그다음 round.sh draft(v2) → 변경분 점검.
 ##   실행: Rscript 04_Research/programs/P1_RETURN/P1S03_own_spec_qualification/tools/init_p1s03_v2.R   (작업 디렉터리 = 저장소 루트)
+## ★11-14 v3 로 대체됨(tools/init_p1s03_v3.R — 변경분 점검 v2 M-1 · S-4): 이 생성기를 지금 돌리면 D2 없는 글의 사양이 나온다 — 실행하지 않는다(초안 v2 의 기록으로만 남긴다).
+stop("[init_p1s03_v2] v3(tools/init_p1s03_v3.R)로 대체됐다 — 실행하지 않는다")
 suppressMessages(source("04_Research/programs/_lib/round_core/v4/load.R"))
 stopifnot(identical(RC_VERSION, "v4"))
 root <- rc_root()
