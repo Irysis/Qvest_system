@@ -15,7 +15,7 @@
 - 기록: `authoritative_remeasure.json::grade_v3` 에 노치 근거 · 선택 방어 짝 · 시가총액 × β 비율 · 레그 β(`essence_score.R::.essence_v3_record`) · 진단 패킷 IS 요약에 귀속 한 줄(`diagnosis_packet.R` · 새 필드만).
 - 재채점: `grade_v3.json::rules_version_compatible_unless` — v3.3 · v3.4 저장분은 CR 가점이 유지된 기록(`cr_notch_basis = strong`)만 다시 채점(`programs/grade_v3_backfill.R::gv3b_compat_unless`) · 원인 기록(`grade_v3_backfill.causes`) · `--dirs` · `--no-data-triggers` · 교체를 걸쳐 v3.5 필드 없이 적힌 기록(교체 전 essence_score.R + 교체 뒤 grade_v3.R)은 `record_fields_incomplete` 로 다시 채점 · 강등 뒤 Judge 트리거는 `rcg_withdraw`.
 - 검사: `08_Tests/contracts/test_cr_notch_size_beta.R`(합성 세계 — 음성 · 양성 2 · 현금 혼합 · 타이밍 · 상한 · 과반 경계 · 통합 경로 · fail-closed · 설정 위반 주입 · 돌연변이 6 · 단조성) + 기존 회귀(grade_v3 · fa_notch · behavior_card · matched_controls · diagnosis_packet · backfill_mark).
-- 교체: 미러 루트에서 시험 → 기준 md5 사전 점검 → 원자 교체(코드 먼저 · 설정 나중 · 11 파일) 11-14 16:03:33. 등록 라운드 · 상설 판 핀(RC_PIN_FILES_DEFAULT 6파일)이 바뀌므로 P1S02 · P1R04 는 측정 직전 재핀(결과 전 · lean-loop 5) · P1S03 · P4C01 은 새 핀으로 등록(오케스트레이터 조율 — P1S02 E2 측정 · 판정을 기다려 하루 늦춤).
+- 교체: 미러 루트에서 시험 → 기준 md5 사전 점검 → 원자 교체(코드 먼저 · 설정 나중 · 11 파일) 11-14 16:03:33. 등록 라운드 · 상설 판 핀(RC_PIN_FILES_DEFAULT 6파일)이 바뀌므로 P1R04 는 측정 직전 재핀(결과 전 · lean-loop 5) · P1S02 는 판 3 새 등록(상설 판은 핀 불일치 = 새 판 · 같은 시드 · 코어 v4 · v3.5 핀 — 도훈 P1S02-EDITION3-REGISTER-LATER-20261114) · P1S03 · P4C01 은 새 핀으로 등록(오케스트레이터 조율 — P1S02 E2 측정 · 판정을 기다려 하루 늦춤).
 
 ## v10.2 전수 감사 · 정리 — 아키텍처 13영역 감사 · 적대적 검토 2회 · 안 쓰는 것 삭제 (2026-11-10 저녁 · 버전 미변경)
 
