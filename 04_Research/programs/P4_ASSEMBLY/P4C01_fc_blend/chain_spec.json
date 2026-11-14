@@ -1,0 +1,92 @@
+{
+  "schema": "rc_p4_chain_v1",
+  "program": "P4_ASSEMBLY",
+  "chain_id": "P4C01_fc_blend",
+  "core_version": "v4",
+  "rules_version": "p4_rules_v3",
+  "purpose": "블렌딩 사슬 1호: 서로 다른 수익 원천의 P1 자격 엔진(자체 사양 동일가중 카테고리 엔진 — 밸류 · 성장 · 컨센서스 · 저β 묶음)을 한 포트폴리오로 섞으면 보는 창 종합점수 S(Calmar 6 : PORT_t 4)와 강세 참여 · 위기 하락노출이 단일 기저보다 나아지는가. 가설: 원천이 다른 엔진의 초과수익은 상관이 낮아, 결합하면 같은 β 에서 선택 알파의 t 가 오르고 원천별 낙폭 시점이 어긋나 낙폭이 얕아진다. 반증: 채택 걸음 0(모든 blend 가 채택 규칙 미달) · 또는 채택 걸음이 저β 상대를 섞어 β 만 낮춘 경우(N5 β 비대칭 · same_lineage_blend 표식)뿐. 걸음 = 가설 하나 · 블록 하나 · 칸 하나 — blend 블록(기저 + 부품 1개 추가)부터 설계한다. 부품 = 같은 기저 풀의 P1R03 동일가중(T0) 자격 엔진(P1S03 통과 · v4 관문 통과분). T1(정보계수 가중) 엔진은 부품이 아니다(사슬 2호부터 — P1R04 결론 범위 · 판단 C-20261113-004). 저β 엔진(방어 · 위험 · 유동성 · 쏠림 · 토탈)은 '저β 수익 엔진' 표기 · 방어 주장 없음(도훈 LOWBETA-ENGINES-BASE-USE-20261113 · CHARTER-GAP-LOWBETA-DEFENSE-LABEL-20261113). 같은 계보(토탈 ⊃ 카테고리 · 같은 카테고리) 블렌드 = 꼬리표 same_lineage_blend(거부 아님 · 닫기 결론에 '한 원천의 결합 가중'). 기저 = 기저 풀 T0 후보 가운데 보는 창 S 최대(기계 규칙 · base_selection.json). 닫기 = 마지막 채택 걸음 · 원천 시행 포함 선택 현실 점검 재채점(등급 v3.5).",
+  "tau_d": "2022-12-31",
+  "tau_d_source": "06_Registry/behavior_card.json::tau_d(정보 경계 τ_D · 채택 규칙 · 설계 입력은 그 이전만)",
+  "base": {
+    "key": "standing:P1S03_own_spec_qualification:P1S03_FVALU_RX0",
+    "pool_md5": "4e409504d3af7d39d34c080518341362",
+    "engine_path": "04_Research/strategies/FC_FAM_value/engine.R",
+    "cell_spec": "04_Research/programs/P4_ASSEMBLY/P4C01_fc_blend/base_cell_spec.json",
+    "cell_spec_md5": "fc3081a03dcd29fa4fd3c23c578181aa",
+    "artifacts": "stage_artifacts/replication/20261115_034956_22272"
+  },
+  "adoption": {
+    "rules": [
+      {
+        "id": "improve",
+        "type": "threshold",
+        "label": "보는 창 S 개선",
+        "metric": "dS_vis",
+        "op": ">=",
+        "value_ref": "04_Research/programs/P3_CONSTRUCTION/P3R03_advanced_construction/prereg.json::final_selection_rule.tie_eps",
+        "source": "P3R03 최종 선택 규칙 tie_eps 승계(파일럿 P4C90 와 같은 규칙 — 잡음 수준 개선은 채택하지 않는다)"
+      },
+      {
+        "id": "uc_floor",
+        "type": "threshold",
+        "label": "상승 포착 하한",
+        "metric": "uc_vis",
+        "op": ">=",
+        "value_ref": "06_Registry/behavior_card.json::uc_floor",
+        "source": "헌장 §2 강세 참여 ≥ 55%"
+      },
+      {
+        "id": "crisis_no_worse",
+        "type": "threshold",
+        "label": "위기 하락 포착 비악화",
+        "metric": "d_dd_capture_median_vis",
+        "op": "<=",
+        "value": 0,
+        "basis": "정의 — 비악화 = 부모 이하",
+        "source": "정의"
+      },
+      {
+        "id": "bull_segments",
+        "type": "threshold",
+        "label": "강세 구간별 참여(N1)",
+        "metric": "uc_seg_ok_share_vis",
+        "op": ">",
+        "value_ref": "06_Registry/behavior_card.json::majority_share",
+        "source": "헌장 §5 빈칸 4 · 7 · 24 · 도훈 CHARTER-GAP-BULL-PARTICIPATION-UNIT(현행 유지)"
+      },
+      {
+        "id": "deep_crisis",
+        "type": "threshold",
+        "label": "깊은 위기 과반 비악화(N2)",
+        "metric": "deep_crisis_nonworse_share_vis",
+        "op": ">",
+        "value_ref": "06_Registry/behavior_card.json::majority_share",
+        "source": "헌장 §5 빈칸 2 · 23"
+      },
+      {
+        "id": "beta_asym",
+        "type": "threshold",
+        "label": "β 비대칭(N5 — β 로 산 방어 아님)",
+        "metric": "beta_asym_ok_vis",
+        "op": ">=",
+        "value": 1,
+        "basis": "정의 — N5 통과 = 1",
+        "source": "00_Lawbook/specs/investment_philosophy_charter.md §5 빈칸 3 · 8 · 판단 Superfan T2 C-011(P1R03) · p4_rules_v3 필수(blend · 노출 층 걸음)"
+      }
+    ],
+    "decision": "accept = 모든 채택 규칙이 참(미측정 = 기각)"
+  },
+  "budget": {
+    "max_steps": 20,
+    "max_steps_source": "programs/trial_budget.R(rc 0.8 — K 50 → 요구 t 2.52 · K 100 → 2.62) · 시행 집합 = 원천 45(P1R03 15 + P1R04 30 — 코어 v4 원천 시행) + 기저 1 + 걸음 ≤ 20 ≈ 66 → 요구 t ≈ 2.55 · 걸음을 늘려도 요구 t 증가가 완만해 시행이 아니라 생성 비용 · 시간이 상한을 정한다(DESIGN_draft §5)",
+    "noise_k": 2,
+    "noise_k_source": "체계 §4 R7(연속 2 걸음 '잡음 이내'면 닫기) · P2 R7 선례 · 파일럿 P4C90 와 같다"
+  },
+  "generator": {
+    "id": "g1",
+    "files": {
+      "step.md": "300604cce81658742c34cbae7bdbf9b0"
+    }
+  },
+  "final_rule": "last_accepted"
+}

@@ -19,17 +19,19 @@ if (!("v4" %in% vapply(rel$releases, function(r) as.character(r$version), ""))) 
 
 pool <- data.table::as.data.table(rc_p4_base_pool(root))
 t0rx <- "^04_Research/strategies/FC_(FAM_[a-z_]+|TOTAL_EW)/engine\\.R$"
-cand <- pool[eligible %in% TRUE & grepl(t0rx, engine_path) & !grepl("_ICW/", engine_path) & origin %in% "own_spec"]
+## 11-15 수리: P1S03 시드(FC_FAM_value — P1R03 T0 밸류와 같은 엔진)는 기저 풀 행 origin 이 "seed" 다. DESIGN_draft §2 의 "origin own_spec" 은 T0 엔진을 가리키는 말이었고
+##   (§3 부품 목록에 밸류 포함) 시드를 빼려는 뜻이 아니었다 — 경로 규칙(FC T0 엔진) ∧ origin ∈ {own_spec, seed}. 수리 전 dry-run 이 시드를 뺀 후보 7 의 보는 창 S 를 보였다(노출 · DESIGN_draft §2).
+cand <- pool[eligible %in% TRUE & grepl(t0rx, engine_path) & !grepl("_ICW/", engine_path) & origin %in% c("own_spec", "seed")]
 cat(sprintf("[init_p4c01] 기저 풀 %d 행 · eligible %d · T0 후보 %d\n", nrow(pool), sum(pool$eligible %in% TRUE), nrow(cand)))
 if (!nrow(cand)) stop("[init_p4c01] T0 후보 0 — P1S03 통과 · v4 관문(철학 P2 · 저위험 풀림) 뒤에 다시")
 g <- data.table::rbindlist(lapply(seq_len(nrow(cand)), function(i) {
   r <- cand[i]; x <- rc_p4_gap(r$artifacts, root)
-  data.table::data.table(key = r$key, engine_path = r$engine_path, family_root = r$family_root, label_class = r$label_class,
+  data.table::data.table(pool_key = r$key, engine_path = r$engine_path, family_root = r$family_root, label_class = r$label_class,
                          S_vis = x$metrics$S_vis, port_t_vis = x$metrics$port_t_vis, calmar_vis = x$metrics$calmar_vis, window_end = x$window[2])
 }))
-data.table::setorder(g, -S_vis, -port_t_vis, key)
+data.table::setorder(g, -S_vis, -port_t_vis, pool_key)   # 열 이름 key 는 data.table() 의 key 인자와 겹친다(11-15 수리)
 if (nrow(g) > 1L && abs(g$S_vis[1] - g$S_vis[2]) < 1e-12 && abs(g$port_t_vis[1] - g$port_t_vis[2]) < 1e-12) cat("[init_p4c01] S · PORT_t 모두 동률 — key 사전순으로 고른다\n")
-base_key <- g$key[1]
+base_key <- g$pool_key[1]
 cat(sprintf("[init_p4c01] 기저 = %s(%s · %s) — 보는 창 S 최대(후보 %d)\n", base_key, basename(dirname(g$engine_path[1])), g$label_class[1], nrow(g)))
 
 RULES <- list(
@@ -61,11 +63,11 @@ purpose <- paste0(
   "기저 = 기저 풀 T0 후보 가운데 보는 창 S 최대(기계 규칙 · base_selection.json). 닫기 = 마지막 채택 걸음 · 원천 시행 포함 선택 현실 점검 재채점(등급 v3.5).")
 
 sel <- list(schema = "p4c01_base_selection_v1", at = rc_now(), audience = "보는 창(τ_D 이전)만 · 등급 계약 gv3_S(rc_p4_gap) · 시험 창 값 없음",
-            rule = "후보 = 기저 풀 eligible ∧ P1R03 T0 엔진(FC_FAM_<카테고리> · FC_TOTAL_EW · origin own_spec) · 선택 = S_vis 최대 → port_t_vis → key",
+            rule = "후보 = 기저 풀 eligible ∧ P1R03 T0 엔진(FC_FAM_<카테고리> · FC_TOTAL_EW · origin own_spec | seed — P1S03 시드 = T0 밸류) · 선택 = S_vis 최대 → port_t_vis → key",
             pool_md5 = rc_p4_pool_md5(pool), candidates = g, base_key = base_key)
-lk <- rc_after_tau_leaks(sel, as.Date(rc_ref_value("06_Registry/behavior_card.json::tau_d", root)))
+lk <- rc_after_tau_leaks(sel[setdiff(names(sel), "at")], as.Date(rc_ref_value("06_Registry/behavior_card.json::tau_d", root)))
 if (length(lk)) stop("[init_p4c01] 기저 선택 기록에 τ_D 뒤 날짜: ", paste(head(lk, 3), collapse = ","))
-if (dry) { print(g[, .(key, engine = basename(dirname(engine_path)), label_class, S_vis, port_t_vis)]); cat("[init_p4c01] --dry-run — 쓰지 않았다\n"); quit(status = 0) }
+if (dry) { print(g[, .(pool_key, engine = basename(dirname(engine_path)), label_class, S_vis, port_t_vis)]); cat("[init_p4c01] --dry-run — 쓰지 않았다\n"); quit(status = 0) }
 sp <- rc_p4_chain_new(file.path(root, cd), "P4C01_fc_blend", base_key, pool, adoption_rules = RULES, budget = BUD, purpose = purpose, root = root)
 rc_json_write(sel, file.path(root, cd, "base_selection.json"))
 cat(sprintf("[init_p4c01] 사슬 판 %s · md5 %s · 기저 %s · 규칙 %d(%s) · 예산 걸음 %d · 잡음 %d\n", rc_rel(sp, root), rc_md5(sp), base_key, length(RULES),
