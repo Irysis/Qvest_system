@@ -17,6 +17,9 @@
 #      하락 포착 = (고점, 저점] 최대낙폭 ÷ 같은 창 벤치 낙폭(× GL0 · 플라시보는 × ρ_j).
 #   ⑤ 넘음 = 동결 포착 < 플라시보 포착의 alpha 분위 − tol(MC8 과 같은 규칙) · 넘은 위기 비율 > majority_share → frozen_separated.
 #      시가총액만 맞춘 참고 비율(ρ = 1)도 함께 적는다(분위 안 저β 만으로 넘는지 가른다).
+#   ⑥ 기록 판(오케스트레이터 11-14 보완 ①② · 판정 아님 · v3.6 결정 재료): ρ 대상 2 × β 창 2 의 넘음 · 비율 · 라벨을 함께 적는다.
+#      own_prepeak(= 주 판정) · own_prepeak_normal(같은 창의 평상 달만) · leg_full(v3.5 짝처럼 전략 레그 β · 전략 전기간 · PIT 아님)
+#      · leg_normal(전략 레그 β · 평상 달). 평상 달 = 긴 벤치 이력의 LT 위기(고점 달 ~ 저점 달)에 걸리지 않은 달.
 # 가상 판정(등급 아님): v3.5 노치 근거가 selection 인 기록에서
 #   frozen_separated → selection_survives_freeze · frozen_not_separated → rotation_timing(v3.6 를 정하면 A′ 타이밍 증거가 있어야 가점)
 #   · 판정 가능한 위기 2개 미만 → freeze_unresolved · 근거가 selection 이 아니면 not_selection_v35 · 근거를 모르면 v35_basis_unknown.
@@ -117,6 +120,13 @@ fhc_frozen <- function(H, pr, br, R, cfg, exec_price, universe, bcfg, crises, bm
   out0 <- list(schema = .FHC_SCHEMA, majority_share = maj, placebo_n = n, placebo_alpha = alpha, tol = tol,
                beta_window_months = fcfg$beta_window_months, beta_min_months = fcfg$beta_min_months, v35_basis = v35_basis)
   ## 모든 반환을 한 곳에서 마무리한다 — 일찍 끝나도(보유 없음 · 위기 없음 · 창 없음) 같은 모양(상태 · 위기별 표 · 창별 요약 · 라벨 · 가상 판정)
+  ## 판별 비율(기록 판) — 그 판의 넘음이 잴 수 있었던 위기만 센다 · 라벨 규칙은 주 판정과 같다
+  vsum <- function(x, col) {
+    v <- if (nrow(x) && col %in% names(x)) x[[col]] else logical(0)
+    v <- v[!is.na(v)]; k <- length(v); s <- if (k) mean(v) else NA_real_
+    list(n_crisis = k, share = s, label = if (k < 2L || !is.finite(s)) "insufficient" else if (s > maj) "frozen_separated" else "frozen_not_separated")
+  }
+  legb <- list(full = NA_real_, normal = NA_real_, status = "not_run"); crisis_ym <- character(0)
   fin <- function(status, P = data.table(), varies = NA) {
     okP <- if (nrow(P) && "status" %in% names(P)) P[status == "ok"] else data.table()
     summ <- function(w) {
@@ -126,7 +136,9 @@ fhc_frozen <- function(H, pr, br, R, cfg, exec_price, universe, bcfg, crises, bm
       list(n_crisis = nn, share_frozen_beats_size_beta = shr, share_frozen_beats_size = if (nn) mean(x$beats_size) else NA_real_,
            median_rotation_gap = if (nn) stats::median(x$rotation_gap, na.rm = TRUE) else NA_real_,
            median_beta_frozen = if (nn) stats::median(x$beta_frozen) else NA_real_,
-           label = if (nn < 2L || !is.finite(shr)) "insufficient" else if (shr > maj) "frozen_separated" else "frozen_not_separated")
+           label = if (nn < 2L || !is.finite(shr)) "insufficient" else if (shr > maj) "frozen_separated" else "frozen_not_separated",
+           variants = lapply(c(own_prepeak = "beats", own_prepeak_normal = "beats_own_normal", leg_full = "beats_leg_full",
+                               leg_normal = "beats_leg_normal"), function(col) vsum(x, col)))
     }
     S <- list(overall = summ("overall"), visible = summ("visible"), test = summ("test"))
     lab <- S$overall$label
@@ -135,6 +147,7 @@ fhc_frozen <- function(H, pr, br, R, cfg, exec_price, universe, bcfg, crises, bm
            else if (identical(lab, "frozen_separated")) "selection_survives_freeze"
            else if (identical(lab, "frozen_not_separated")) "rotation_timing" else "freeze_unresolved"
     c(out0, list(status = status, per_crisis = P, summary = S, label = lab, hypothetical_v36 = hyp, exposure_varies = varies,
+                 leg_beta = legb[c("full", "normal", "status")], crisis_months_n = length(crisis_ym),
                  status_counts = if (nrow(P) && "status" %in% names(P)) as.list(table(P$status)) else list()))
   }
   H <- as.data.table(H)[, date := as.Date(date)][is.finite(target_weight) & target_weight != 0]
@@ -143,11 +156,26 @@ fhc_frozen <- function(H, pr, br, R, cfg, exec_price, universe, bcfg, crises, bm
   pr <- as.data.table(pr)[, date := as.Date(date)]
   bmd <- as.data.table(br)[, .(date = as.Date(date), benchmark_ret)][is.finite(benchmark_ret)]
   bmh <- as.data.table(bm_hist)[, .(date = as.Date(date), benchmark_ret)][is.finite(benchmark_ret)][order(date)]
+  ## (기록 판 · 오케스트레이터 11-14 보완 ②) 평상 달 = 긴 벤치 이력의 LT 위기(고점 달 ~ 저점 달)에 걸리지 않은 달
+  hcr <- tryCatch(e$.bc_crises_by_cfg(e$.bc_series(bmh, "benchmark_ret"), bcfg), error = function(err) NULL)
+  crisis_ym <- if (is.null(hcr) || !nrow(hcr)) character(0) else unique(unlist(lapply(seq_len(nrow(hcr)), function(k)
+    format(seq(as.Date(format(hcr$peak_date[k], "%Y-%m-01")), as.Date(format(hcr$trough_date[k], "%Y-%m-01")), by = "month"), "%Y-%m"))))
   CR <- as.data.table(crises)
   if (!nrow(CR)) return(fin("no_crises"))
   win <- M$.mc_windows(pr$date, H$date, exec_price)
   if (!nrow(win)) return(fin("no_windows"))
   ex <- M$mc_exposure(H, win)
+  ## (기록 판 · 보완 ①) 전략 레그 β — v3.5 짝의 β 분자와 같은 정의(분위 매핑 보유를 바스켓 엔진으로 재현 · 월간 OLS) · 전기간 · 평상 달
+  legb <- tryCatch({
+    sbA <- M$mc_size_basket(H, R, cfg, universe)
+    lg <- M$.mc_basket_returns(sbA$hold, win, R)
+    Kl <- bmh$benchmark_ret[match(lg$date, bmh$date)]
+    okl <- is.finite(Kl) & is.finite(lg$ret)
+    mol <- M$.mc_monthly_cols(lg$date[okl], cbind(k = Kl[okl], l = lg$ret[okl]))
+    nml <- !(mol$ym %in% crisis_ym)
+    list(full = e$.bc_beta(mol$M[, "l"], mol$M[, "k"]), normal = if (sum(nml) >= 6L) e$.bc_beta(mol$M[nml, "l"], mol$M[nml, "k"]) else NA_real_,
+         status = "ok", dates = sort(unique(lg$date[okl])))
+  }, error = function(err) list(full = NA_real_, normal = NA_real_, status = paste("error:", conditionMessage(err)), dates = as.Date(character(0))))
   rows <- vector("list", nrow(CR))
   for (i in seq_len(nrow(CR))) {
     p0 <- as.Date(CR$peak_date[i]); t0 <- as.Date(CR$trough_date[i])
@@ -178,7 +206,7 @@ fhc_frozen <- function(H, pr, br, R, cfg, exec_price, universe, bcfg, crises, bm
     Xp <- .fhc_ret_matrix(R, tk, dpre)
     rp <- Xp$R %*% WW
     cov_pre <- mean(as.numeric(Xp$F %*% W[, 1]))                             # 동결 보유 가중 수익 적용률(진단)
-    mo <- M$.mc_monthly_cols(dpre, cbind(k = bmh$benchmark_ret[match(dpre, bmh$date)], rp))$M
+    moL <- M$.mc_monthly_cols(dpre, cbind(k = bmh$benchmark_ret[match(dpre, bmh$date)], rp)); mo <- moL$M
     bk <- mo[, 1]
     betas <- vapply(seq_len(ncol(WW)), function(j) e$.bc_beta(mo[, j + 1L], bk), numeric(1))
     bF <- betas[1]; bj <- betas[-1]
@@ -198,17 +226,49 @@ fhc_frozen <- function(H, pr, br, R, cfg, exec_price, universe, bcfg, crises, bm
     nav <- c(1, cumprod(1 + K[ix])); bdd <- max(1 - nav / cummax(nav))
     if (!(bdd > 0)) { rows[[i]] <- st("bench_no_drawdown", exec_frozen = e0); next }
     capF <- M$.mc_dd_cols(gl0 * RB[ix, 1, drop = FALSE]) / bdd
-    vj <- which(is.finite(rho))
-    capB <- M$.mc_dd_cols(sweep(gl0 * RB[ix, 1L + vj, drop = FALSE], 2L, rho[vj], `*`)) / bdd   # 시가총액 · β 일치(위기 전 β)
-    capS <- M$.mc_dd_cols(gl0 * RB[ix, -1L, drop = FALSE]) / bdd                                # 시가총액만(참고)
-    capB <- capB[is.finite(capB)]; capS <- capS[is.finite(capS)]
-    qB <- as.numeric(stats::quantile(capB, alpha, names = FALSE, type = 7))
-    qS <- as.numeric(stats::quantile(capS, alpha, names = FALSE, type = 7))
+    ## 플라시보 포착의 alpha 분위 — ρ 를 곱한 경로만(비유한 ρ 경로는 뺀다 · 남은 경로 × alpha < 1 이면 NA)
+    qv <- function(rh) {
+      vj <- which(is.finite(rh))
+      if (length(vj) * alpha < 1) return(NA_real_)
+      cb <- M$.mc_dd_cols(sweep(gl0 * RB[ix, 1L + vj, drop = FALSE], 2L, rh[vj], `*`)) / bdd
+      cb <- cb[is.finite(cb)]
+      if (!length(cb)) NA_real_ else as.numeric(stats::quantile(cb, alpha, names = FALSE, type = 7))
+    }
+    qB <- qv(rho)                                                            # 주 판정 — 시가총액 · β 일치(동결 보유 자신의 위기 전 β)
+    qS <- qv(rep(1, length(bj)))                                             # 시가총액만(참고)
+    ## 기록 판(보완 ①②) — ρ 대상 2(자기 위기 전 β · 전략 레그 β) × β 창 2(전기간 · 평상 달). 판정은 v3.6 때 정한다.
+    bt <- function(Mm, cols) vapply(cols, function(j) e$.bc_beta(Mm[, j], Mm[, 1]), numeric(1))
+    npre <- !(moL$ym %in% crisis_ym)
+    bFn <- NA_real_; rho_on <- rep(NA_real_, length(bj))
+    if (sum(npre) >= fcfg$beta_min_months) {
+      bn <- bt(mo[npre, , drop = FALSE], 2:ncol(mo)); bFn <- bn[1]
+      if (is.finite(bFn) && bFn > 0) rho_on <- ifelse(is.finite(bn[-1]) & bn[-1] > 0, pmin(bFn / bn[-1], 1), NA_real_)
+    }
+    rho_lf <- rho_ln <- rep(NA_real_, length(bj))
+    if (identical(legb$status, "ok") && length(legb$dates) >= 2L) {
+      Xf <- .fhc_ret_matrix(R, tk, legb$dates)
+      mof <- M$.mc_monthly_cols(legb$dates, cbind(k = bmh$benchmark_ret[match(legb$dates, bmh$date)], Xf$R %*% Wp))
+      okm <- is.finite(mof$M[, 1])
+      Mf <- mof$M[okm, , drop = FALSE]; nmf <- !(mof$ym[okm] %in% crisis_ym)
+      bjf <- bt(Mf, 2:ncol(Mf))
+      if (is.finite(legb$full) && legb$full > 0) rho_lf <- ifelse(is.finite(bjf) & bjf > 0, pmin(legb$full / bjf, 1), NA_real_)
+      if (is.finite(legb$normal) && legb$normal > 0 && sum(nmf) >= 6L) {
+        bjn <- bt(Mf[nmf, , drop = FALSE], 2:ncol(Mf))
+        rho_ln <- ifelse(is.finite(bjn) & bjn > 0, pmin(legb$normal / bjn, 1), NA_real_)
+      }
+    }
+    q_on <- qv(rho_on); q_lf <- qv(rho_lf); q_ln <- qv(rho_ln)
+    bx <- function(q) if (is.finite(q)) as.numeric(capF) < q - tol else NA
     rows[[i]] <- st("ok", exec_frozen = e0, n_hold = nrow(hk), gl0 = gl0, beta_months = nmon, beta_frozen = bF,
                     beta_placebo_median = stats::median(bj, na.rm = TRUE), rho_median = stats::median(rho, na.rm = TRUE),
                     n_placebo_valid = nv, coverage_pre = cov_pre, cap_frozen = as.numeric(capF),
                     q_size_beta = qB, q_size = qS, beats = as.numeric(capF) < qB - tol, beats_size = as.numeric(capF) < qS - tol,
-                    rotation_gap = as.numeric(capF) - as.numeric(CR$dd_capture[i]))
+                    rotation_gap = as.numeric(capF) - as.numeric(CR$dd_capture[i]),
+                    beta_frozen_normal = bFn, beta_months_normal = sum(npre), beta_leg_full = legb$full, beta_leg_normal = legb$normal,
+                    rho_median_own_normal = stats::median(rho_on, na.rm = TRUE), rho_median_leg_full = stats::median(rho_lf, na.rm = TRUE),
+                    rho_median_leg_normal = stats::median(rho_ln, na.rm = TRUE),
+                    q_own_normal = q_on, q_leg_full = q_lf, q_leg_normal = q_ln,
+                    beats_own_normal = bx(q_on), beats_leg_full = bx(q_lf), beats_leg_normal = bx(q_ln))
   }
   fin("ok", rbindlist(rows, fill = TRUE), isTRUE(ex$varies))
 }
@@ -260,6 +320,7 @@ fhc_ledger_line <- function(res, dir, root = NULL, at = Sys.time()) {
   list(key = key, dir = rel, computed_at = format(at, "%Y-%m-%dT%H:%M:%S%z"), contract = .FHC_SCHEMA, status = res$status,
        authoritative_md5 = amd5, data_vintage = vin, source = res$source, v35_basis = res$v35_basis, label = res$label,
        hypothetical_v36 = res$hypothetical_v36, summary = res$summary, exposure_varies = res$exposure_varies,
+       leg_beta = res$leg_beta, crisis_months_n = res$crisis_months_n,
        cfg = list(beta_window_months = res$beta_window_months, beta_min_months = res$beta_min_months, placebo_n = res$placebo_n,
                   placebo_alpha = res$placebo_alpha, majority_share = res$majority_share),
        status_counts = res$status_counts, per_crisis = pc)

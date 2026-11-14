@@ -150,6 +150,29 @@ chk("N4 동결 보유의 위기 전 β — 저β 보유 < 0.6 · 품질 보유�
       isTRUE(rP1$fz$summary$overall$median_beta_frozen > rS$fz$summary$overall$median_beta_frozen + 0.25),
     sprintf("(저β %s · 품질 %s)", sh(rS$fz$summary$overall$median_beta_frozen), sh(rP1$fz$summary$overall$median_beta_frozen)))
 
+cat("\n=== V. 기록 판(오케스트레이터 11-14 보완 ①② — ρ 대상 2 × β 창 2 · 판정 아님) ===\n")
+vv <- function(r, k) r$fz$summary$overall$variants[[k]]$share
+VN <- c("own_prepeak", "own_prepeak_normal", "leg_full", "leg_normal")
+chk("V1 기록 모양 — 창별 요약에 판 4개 · 위기별 표에 판별 넘음 · 전략 레그 β(전기간 · 평상 달) · 위기 달 수",
+    identical(names(rP1$fz$summary$overall$variants), VN) && identical(names(rP1$fz$summary$test$variants), VN) &&
+      all(c("beats_own_normal", "beats_leg_full", "beats_leg_normal", "beta_frozen_normal", "beta_leg_full", "beta_leg_normal") %in% names(rP1$fz$per_crisis)) &&
+      is.finite(rP1$fz$leg_beta$full) && is.finite(rP1$fz$leg_beta$normal) && isTRUE(rP1$fz$crisis_months_n > 0L) &&
+      isTRUE(all.equal(vv(rP1, "own_prepeak"), rP1$fz$summary$overall$share_frozen_beats_size_beta)),
+    sprintf("(레그 β 전기간 %s · 평상 %s · 위기 달 %d)", sh(rP1$fz$leg_beta$full), sh(rP1$fz$leg_beta$normal), rP1$fz$crisis_months_n))
+chk("V2 고점 앞 저β 회전 — 자기 β 판 2개는 못 넘고(0) 전략 레그 β 판 2개는 넘는다 = 주 판정을 자기 β 로 둔 이유가 기록에 남는다",
+    all(vapply(VN[1:2], function(k) isTRUE(vv(rN0, k) <= MAJ), logical(1))) && all(vapply(VN[3:4], function(k) isTRUE(vv(rN0, k) > MAJ), logical(1))),
+    sprintf("(%s)", paste(sprintf("%s %s", VN, vapply(VN, function(k) sh(vv(rN0, k)), "")), collapse = " · ")))
+chk("V3 양성(품질 · 저β 비대칭) — 판 4개 모두 넘는다",
+    all(vapply(VN, function(k) isTRUE(vv(rP1, k) > MAJ) && isTRUE(vv(rP2, k) > MAJ), logical(1))))
+chk("V4 음성(늦은 저β 회전 · 품질 회전 · 정적 저β) — 판 4개 모두 못 넘는다",
+    all(vapply(list(rN1, rQ1, rS), function(r) all(vapply(VN, function(k) isTRUE(vv(r, k) <= MAJ), logical(1))), logical(1))))
+bpre <- stats::median(rP1$fz$per_crisis[status == "ok"]$beta_frozen); bnor <- stats::median(rP1$fz$per_crisis[status == "ok"]$beta_frozen_normal)
+spre <- stats::median(rS$fz$per_crisis[status == "ok"]$beta_frozen); snor <- stats::median(rS$fz$per_crisis[status == "ok"]$beta_frozen_normal)
+chk("V5 평상 달 β — 품질 보유는 위기 달을 빼면 β 가 오른다(평상 β 1.0 쪽) · 대칭 저β 는 그대로(창 판이 비대칭만 가른다)",
+    isTRUE(bnor > bpre + 0.1) && isTRUE(abs(snor - spre) < 0.1) &&
+      all(rP1$fz$per_crisis[status == "ok"]$beta_months_normal < rP1$fz$per_crisis[status == "ok"]$beta_months),
+    sprintf("(품질 고점 전 %s → 평상 %s · 저β %s → %s)", sh(bpre), sh(bnor), sh(spre), sh(snor)))
+
 cat("\n=== U. 판정 불가 · 근거 ===\n")
 rU <- run(mkH(function(d) ew(QUAL), ex = EX[EX >= as.Date("2012-06-01")]), v35 = "selection")
 chk("U1 위기 2번 미만(전략 시작 2012-06) → insufficient · 근거 selection 이면 freeze_unresolved",
@@ -220,6 +243,13 @@ if (isTRUE(M3$applied)) { rM3 <- run(rot(QUAL, 1L), fenv = M3$env)
   chk("M3 [돌연변이] 위기 끝 보유로만 바꾸면 고점 뒤 보유 가드가 모든 위기를 빼 판정 불가가 된다 — N2(rotation_timing)가 잡는다",
       !identical(rM3$fz$hypothetical_v36, "rotation_timing") && all(rM3$fz$per_crisis[status != "beta_window_short"]$status == "held_after_peak"), fsum(rM3))
 } else chk("M3 치환 대상 문장 1개", FALSE, sprintf("(n=%s)", M3$n))
+
+M4 <- mut("npre <- !(moL$ym %in% crisis_ym)", "npre <- rep(TRUE, length(moL$ym))")
+if (isTRUE(M4$applied)) { rM4 <- run(mkH(function(d) ew(QUAL)), fenv = M4$env)
+  b4 <- stats::median(rM4$fz$per_crisis[status == "ok"]$beta_frozen_normal)
+  chk("M4 [돌연변이] 평상 달 판에서 위기 달을 빼지 않으면 품질 보유의 평상 달 β = 고점 전 β — V5 가 잡는다",
+      isTRUE(abs(b4 - bpre) < 1e-9) && isTRUE(bnor > bpre + 0.1), sprintf("(돌연변이 평상 β %s = 고점 전 %s)", sh(b4), sh(bpre)))
+} else chk("M4 치환 대상 문장 1개", FALSE, sprintf("(n=%s)", M4$n))
 
 unlink(TD, recursive = TRUE)
 cat(sprintf("\n== frozen_holdings_control: PASS %d · FAIL %d ==\n", PASS, FAIL))
