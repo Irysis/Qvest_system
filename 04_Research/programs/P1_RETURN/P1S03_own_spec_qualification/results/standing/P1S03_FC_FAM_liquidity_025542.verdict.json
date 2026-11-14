@@ -1,0 +1,78 @@
+{
+  "schema": "rc_standing_verdict_v1",
+  "audience": "사람 쪽(전기간 · 시험 창 열 포함) — 처방 · 리뷰 레인은 원장 · standing_visible.json 만",
+  "round_id": "P1S03_own_spec_qualification",
+  "edition": 1,
+  "code": "P1S03_FC_FAM_liquidity_025542",
+  "prereg_md5": "057f312dade0445bcb9029125d38505d",
+  "judged_at": "2026-11-15T05:17:48+0900",
+  "rules": [
+    {
+      "id": "qualify",
+      "type": "all_of",
+      "label": "수익 엔진 자격",
+      "na": "untested",
+      "of": [
+        {
+          "id": "q_t_alpha",
+          "type": "threshold",
+          "label": "보는 창 β-통제 t(α)",
+          "metric": "t_alpha_vis",
+          "op": ">=",
+          "value_ref": "02_Infrastructure/worktask/constraint_defaults.json::tier_graduation.grade_b_min_portfolio_alpha_t",
+          "na": "untested",
+          "value": 2,
+          "value_source": "02_Infrastructure/worktask/constraint_defaults.json::tier_graduation.grade_b_min_portfolio_alpha_t"
+        },
+        {
+          "id": "q_uc",
+          "type": "threshold",
+          "label": "보는 창 상승 포착",
+          "metric": "uc_vis",
+          "op": ">=",
+          "value": 0.55,
+          "basis": "투자철학 헌장 — 강세 참여 ≥ 55%(P1R01 rules.qualify.uc_floor 승계)",
+          "na": "untested",
+          "value_source": "근거: 투자철학 헌장 — 강세 참여 ≥ 55%(P1R01 rules.qualify.uc_floor 승계)"
+        }
+      ]
+    },
+    {
+      "id": "test_hold",
+      "type": "report",
+      "label": "시험 창 유지(사람 쪽 보고)",
+      "when": "qualify",
+      "metric": "alpha_ann_test",
+      "op": ">",
+      "value": 0,
+      "basis": "P1R01 rules.test_window 승계 — 자격 엔진만 · 판정 아님",
+      "value_source": "근거: P1R01 rules.test_window 승계 — 자격 엔진만 · 판정 아님",
+      "na": "untested"
+    }
+  ],
+  "sentences": {
+    "qualify": "수익 엔진 자격 = [보는 창 β-통제 t(α): t_alpha_vis >= 2 (02_Infrastructure/worktask/constraint_defaults.json::tier_graduation.grade_b_min_portfolio_alpha_t · 미측정 = 미시험) ∧ 보는 창 상승 포착: uc_vis >= 0.55 (근거: 투자철학 헌장 — 강세 참여 ≥ 55%(P1R01 rules.qualify.uc_floor 승계) · 미측정 = 미시험)] 모두 (미측정 = 미시험)",
+    "test_hold": "시험 창 유지(사람 쪽 보고)(보고 전용 — 판정 아님): 'qualify' 참인 칸만 alpha_ann_test > 0 (근거: P1R01 rules.test_window 승계 — 자격 엔진만 · 판정 아님)"
+  },
+  "row": {
+    "code": "P1S03_FC_FAM_liquidity_025542",
+    "engine": "FC_FAM_liquidity_025542",
+    "status": "evaluated",
+    "t_alpha_vis": 2.85271627736217,
+    "alpha_ann_vis": 0.11339962735666,
+    "beta_vis": 0.716569426896994,
+    "port_t_vis": 2.29399258903818,
+    "n_vis": 275,
+    "uc_vis": 1.06924598796164,
+    "cagr_vis": 0.141830254671462,
+    "t_alpha_test": 0.264234576853433,
+    "alpha_ann_test": 0.0168084970726188,
+    "n_test": 47,
+    "uc_test": 0.0607823634067668,
+    "dd_capture_median_vis": 0.924668873769599,
+    "dd_capture_worst_vis": 1.3553545062237,
+    "n_crisis_vis": 13,
+    "qualify": true,
+    "test_hold": true
+  }
+}
