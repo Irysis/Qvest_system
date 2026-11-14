@@ -16,8 +16,8 @@
 | 등급 계약 | v3.4 판(교체 전) | v3.5(CR 가점 = 시가총액 · β 일치 대조) — 코어 기본 핀으로 묶인다 | 도훈 GRADE-CR-NOTCH-BETA-SELECTION-20261113 |
 | 시드 칸 | `P1S02_E2_C0` · `P1S02_E3_RX0` | `P1S04_E2_C0` · `P1S04_E3_RX0` — 같은 생성 함수 · 같은 원본 사양 · 칸 사양 차이 = 코드 · 회계 문구뿐(n_family 264 그대로 · 무가산) | init 출력 · 칸 사양 대조 |
 | 입구 | 레인 · audit_admit {faithful, adapted} · orientation_admit {engine_native, factor_db_static} · 판 2 사유 셋 | 같다 — 코어 v4 레인 기본값에 판 2 의 orientation_admit 만 덮어쓴다 | `RC_STANDING_SCAN_DEFAULT` |
-| 시험 목록 | 코어 v3 시험 7 | 없음(도훈 11-12 '테스트 좀 그만하자' · P1S03 선례 — 코어 v4 출시 시험 46/46 이 판정 경로를 덮는다) | 판단 J-20261113-009 |
-| 등록 전 리허설 | 있음(v3 판정 경로 · 12-1 모멘텀) | 없음 — v4 상설 판정 경로는 P1S03 실측(자체 사양 30 항목 scan → measure → judge · 11-15)이 지났다. 레인 입구(lane_handoff scan)는 v4 실자료로 아직 안 지났으므로 첫 scan 은 손으로(tick_hold 아래) | §5 |
+| 시험 목록 | 코어 v3 시험 7 | 없음(도훈 11-12 '테스트 좀 그만하자' · P1S03 선례 — 코어 v4 출시 시험 `test_round_core_v4.R` 71 통과 · 0 실패(RELEASES v4 tests_at_release · 출시 전 수리 전 46)가 판정 경로를 덮는다 — 격리 점검 v1 S-3) | 판단 J-20261113-009 |
+| 등록 전 리허설 | 있음(v3 판정 경로 · 12-1 모멘텀) | 없음 — v4 상설 판정 경로는 P1S03 실측(자체 사양 30 항목 scan → measure → judge · 11-15)이 지났다. 레인 후보 표(v4 = v3 · 실제 RP_AUTO_* 전부)는 출시 시험 O4 가 확인했다 — 안 지난 것은 레인 원장에 쓰는 scan(시드 enqueue · scan 줄)뿐이라 첫 scan 은 손으로(tick_hold 아래 · §5 순서 · 격리 점검 v1 S-3) | §5 |
 | 옛 판 항목 | 판 1 항목 이어받지 않음 | 판 2 항목 이어받지 않음(`rejudge_prior_editions = false` · 판 2 판정 0건 — 효과 같음). 판 3 등록 뒤 판 2 는 새 항목을 받지 않는다(같은 갈래의 더 높은 판 · v3 코드는 판 번호만 본다) | 코어 README v4 §3 |
 
 ## 3. 시드 · 4. 입구
@@ -25,13 +25,17 @@
 
 ## 5. 첫 판정 절차(판 2 DESIGN §5 승계 · 판 3 차이만)
 1. 등록(철학 P1 + 판단 T1 영수증 · 격리 점검 · `tick_hold` 를 판 폴더 커밋에 넣은 뒤).
-2. `scan`(손으로 · tick_hold 아래) — 시드 2건을 원장에 넣는다. 레인 입구는 v4 로 처음 지나므로 사유 코드별 개수만 보고 이상하면 멈춘다(성과 수치 없음).
-3. 시드 측정 = GPU 창(도훈 결정 — 레인 양보 · 워커 3 · `PYTHON_CPU_COUNT=4`) · 감시 셸 = 판 2 `tools/p1s02_seed_watch.sh` 를 판 3 경로로 옮긴 `tools/p1s04_seed_watch.sh`(등록 뒤 만든다 · 창 · 레인 · 배리어 · 메모리 · 지문 조건 그대로).
-4. 판정 전 점검(판 2 `tools/prejudge_check.R` 판 3 경로) → judge → tick_hold 삭제.
+2. scan 순서(손으로 · tick_hold 아래 · 원장은 추가 전용이라 되돌릴 수 없다 — 격리 점검 v1 S-3): `scan --dry-run`(쓰기 없음 · 사유 코드별 개수만 · 성과 수치 없음 · 등록 뒤 미리보기라 노출 [12] 와 충돌하지 않는다) → `scan --max 0`(시드만 enqueue · standing.R:1243) → 이상 없으면 `scan`.
+3. 시드 측정 = GPU 창(도훈 결정 — 레인 양보 · 워커 3 · `PYTHON_CPU_COUNT=4`). 감시 셸 · 판정 전 점검은 **v4 로 옮겨** 판 3 경로에 둔다(격리 점검 v1 R-3): 지문 = v4 `fingerprint.sh`(결합용 뷰 줄 포함 — 판 2 감시 셸의 v3 지문은 뷰가 없다 · p1s02_seed_watch.sh:24) · 판정 전 점검 = v4 `load.R` 적재(prejudge_check.R:20 은 v3) · 측정 시간 가정(판 2 = 6시간 · 워커 8 시절)을 워커 3 · DNN 캐시(입력 내용 주소)로 다시 잡는다. 등록 뒤 · 측정 전에 만든다(`tools/p1s04_seed_watch.sh` · `tools/prejudge_check.R`).
+4. 판정 전 점검 → judge → tick_hold 삭제. 판정 전 점검에서 측정 로그의 torch 판(engine.R 가 찍는다)을 본다 — torch · venv 판은 핀 밖이다(pins.R 의 패키지 핀은 R 다섯뿐 · DNN 캐시 키에도 torch 판 없음 · 격리 점검 v1 S-6). 등록과 시드 측정 사이에 venv 를 바꾸지 않는다.
+5. 상설 판에서 쓰는 단계는 scan · standing-measure · measure-item · judge · standing-report · standing-status · superfan-mark 뿐이다 — `round.sh <판 3> measure` · `evaluate`(비상설 단계)는 GPU 관문 없이 시드 DNN 을 돌리고 비상설 판정 파일을 쓰므로 쓰지 않는다(격리 점검 v1 S-5).
+6. 핀이 갈리는 창을 짧게 둔다(격리 점검 v1 S-7 — 판 2 는 등록과 측정 사이 등급 계약 교체로 멈췄다): 시드 판정이 끝날 때까지 핀 대상(등급 계약 · 셀 엔진 · 하네스 · 커넥터) 교체는 '측정 · 평가 끝난 뒤 미러 → 원자 교체' 순서로 미룬다(메모리 카드 · 등급 v3.5 교체 선례).
 
 ## 6. 알려진 한계
-- 판 2 DESIGN §6 그대로(결론 범위 18 줄 승계).
+- 판 2 DESIGN §6 그대로(결론 범위 [3]~[20] 18 줄 승계 · 판 3 정정 줄 [24] — '코어 v3' 표기 = v4 와 같은 동작 · [20] 괄호는 v4 에서 갈림 · [13] '입력' = 자료 판에 달림).
+- 레인 갈래 통과 칸 · 시드에는 v4 기저 풀 철학 관문이 없다 — 결론 범위 [23](사슬 판 판단 T1 이 그 칸의 P2 리뷰 id 를 확인 · 절차 · 격리 점검 v1 R-1). 통과 엔진의 철학 P2 한 줄을 일 요약에 싣는 자동 통로도 없다 — 판 2 DESIGN §5 의 절차(세션이 싣는다)를 따른다.
 - 판 3 등록 뒤 판 2 는 새 항목을 받지 않는다 — 판 2 의 v3 무인 틱 경로는 보류(tick_hold) 그대로 둔다.
+- 감시기 `superfan_watch.py` scan_stale 은 갈래를 모른다(프로그램 폴더마다 판 번호가 가장 큰 원장 하나만 본다 · 격리 점검 v1 S-8) — 판 3 첫 scan 뒤 손 단계 사이가 26시간을 넘으면 warn 이 날 수 있다(등록과 무관 · 알고 넘어간다).
 
 ## 7. 감독
 - 등록 = 철학 P1 + 판단 T1 · 통과 = 즉시 T2 · P2 · 미달 = daily batch(코어 v4 기본).
