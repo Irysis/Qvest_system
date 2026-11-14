@@ -26,6 +26,10 @@ cat(sprintf("[init_p1s03_v2] 시드 칸 사양 다시 만듦 — n_family %s →
             new_seed$selection_accounting$n_family_at_registration, rc_md5(f1)))
 seeds <- list(list(code = "P1S03_FVALU_RX0", engine = "FVALU", role = "reference", spec = f1))
 VINT <- "RAWDATA-SEAM-0330-REPAIR-20261113"                 # 판 표식 id(06_Registry/factor_db_vintage.json) — 사양 글에 τ_D 뒤 날짜를 쓰지 않는다(F-4)
+## 11-14: D1(가격 수준 팩터 재계산 · 도훈 승인 · IS 달 값 불변 설계)의 판 표식 줄이 등록 앞뒤 어느 쪽에 생길지 모른다 — 등록 때 마지막 줄을 읽어 글을 맞춘다
+VLAST <- tail(vapply(rc_json_read(file.path(root, "06_Registry/factor_db_vintage.json"))[["entries"]], function(e) as.character(e[["id"]]), ""), 1)
+VTXT <- if (identical(VLAST, VINT)) paste0("판 표식 ", VINT, " · 곧 더해질 D1(가격 수준 팩터 재계산) 줄") else paste0("판 표식 ", VINT, " · ", VLAST, "(D1)")
+VMEAS <- if (identical(VLAST, VINT)) "D1(가격 수준 팩터 재계산) 판 표식 줄 뒤 측정분만(그 줄이 이 판 등록 뒤에 생긴다 — 이 판 측정은 그 뒤)" else paste0("판 표식 ", VLAST, "(D1) 뒤 측정분만")
 
 purpose <- paste0(
   "P1 엔진 자격 규칙(P1R01 승계 — 판 1 · 판 2 · P1R03 · P1R04 와 같은 자격 규칙 · 같은 문턱 · P1R04 는 보고 규칙 test_hold 가 없다)을 자체 사양 입구 갈래(track own_spec)의 판 1 로 등록한다. ",
@@ -37,7 +41,7 @@ purpose <- paste0(
 hypothesis <- paste0(
   "자격 = IS β-통제 t(α) ≥ tier_graduation 하한 ∧ IS 상승 포착 ≥ 0.55(P1R01 승계 · 위기별 하락노출 · OOS α 는 보고 전용). ",
   "기대: 시드 FVALU 의 IS 값(t_alpha_vis · uc_vis · beta_vis) = 같은 사양 · 같은 자료 판에서 잰 P1R04_FVALU_R0 의 값(결정론 엔진 · 같은 표준 구성). ",
-  "T0 15 = P1R03 · P1R04 같은 배치 기준 칸과 같은 판정(15/15 — IS 구간은 판 표식 ", VINT, " 의 수리 범위 밖으로 예상). ",
+  "T0 15 = P1R03 · P1R04 같은 배치 기준 칸과 같은 판정(15/15 — IS 구간은 ", VTXT, " 의 수리 범위 밖으로 예상). ",
   "T1 15 의 판정은 엔진마다 독립 · 선택 없음 — P1R04 의 결합 개선 판정(기준 엔진 대비 증분 알파)과 별개인 엔진 자격만이다. ",
   "같은 카테고리의 T0 · T1 은 같은 계보(family_root FC:<카테고리>)다 — 독립 원천 둘로 세지 않는다.")
 
@@ -46,7 +50,7 @@ exposures <- list(
   "P1R03 의 철학 P2(R-20261113-002)도 test_hold 열이 남은 그 IS 판정 파일을 읽었다(코어 v3 결함 · 판단 T1 C-20261113-057). 이 판의 규칙 · 입구에는 그 열이 없다.",
   "Q 는 앞선 라운드 보고(사람 쪽)로 OOS(2023~) 성과를 본 상태다 — 판정 규칙은 IS 열만 쓴다(코어 검사 rc_rules_test_window_use · OOS α 는 보고 전용).",
   "Q 는 P1R03 산출물(T0 15 엔진)의 IS 구간 NAV · 위기 하락노출 · 보유를 P1R04 차트 배치 시험(가짜 짝 · IS 전용 · 판정 무관)에서 본 상태다 — OOS 구간은 그리지 않았다.",
-  "초안 v2 는 P1R04 측정 · 평가 뒤(등급 v3.5 핀 교체를 그 뒤로 미뤘다)에 만들었다 — Q 는 P1R04 의 IS 판정 · 기준 엔진 대비 증분 알파를 본 상태다. v2 에서 바꾼 것은 감독 · 점검 지적(문장 · 회계 문구 · 코어 판)뿐이고, 자격 규칙 · 문턱 · 입구 · 시드 · 기대는 초안 v1(P1R04 결과 전)과 같다.",
+  "초안 v2 는 등급 v3.5 핀 교체 뒤 · P1R04 재측정 전에 만들었다(원 세션 11-14 결정 — lean-loop 5 '막지 않는다'로 교체를 P1S02 · P1R04 측정 앞에 뒀다). Q 는 P1R04 의 판정을 보지 않았다 — 11-13 측정은 D1 예고로 결과 전(T1 11칸 뒤) 중단했고 부분 산출은 평가 없이 보관했다(P1R04 DESIGN §10). v2 에서 바꾼 것은 감독 · 점검 지적(문장 · 회계 문구 · 코어 판)뿐이고, 자격 규칙 · 문턱 · 입구 · 시드 · 기대는 초안 v1 과 같다.",
   "팩터 방향 격리 재판정(밸류 · 성장 · 컨센서스 · 쏠림 73 · 성과 무참조 · 11-13)의 결과(불일치 3 · 불명 9)를 본 상태다 — 입구 · 판정 규칙에 쓰지 않는다(결론 범위 방향 줄).",
   "입구 규칙(자체 사양 입구 기본값 RC_STANDING_SCAN_OWN_DEFAULT · 방향 층 engine_native + orientation_layer)은 코어 v4 의 정적 검사(생성기 재생성 md5 · 본문 실행 단정)로만 정했다 — 성과와 무관.",
   "Q 는 등록 전 입구 미리보기(scan --dry-run · 사유 코드별 디렉터리 수 · 성과 수치 없음)를 본 상태이며, 미리보기 뒤 입구 규칙을 바꾸지 않았다.")
@@ -60,7 +64,7 @@ conclusion_scope <- list(
          "다르면 자료 판 · 판 경로 원인을 확인하기 전에는 나머지 판정을 읽지 않는다. 통과해도 새 증거가 아니다 — 원장 회계는 무가산(결정론 재측정 · 새 시행 아님)이고, 칸의 시행 수 n_family 는 같은 엔진 스캔 행과 같은 규칙(rc_standing_own_nf · 판단 C-036 · 원천 P1R03 + P1R04)이다."),
   paste0("T0 15 의 기대 = P1R03 · P1R04 같은 배치 기준 칸과 같은 판정. 판정이 다른 칸은 '원천 판정과 다름' 표식을 달고, 자료 판 원인(판 표식 · 팩터 DB 판)을 기록한 뒤에만 기저 풀에서 쓴다. ",
          "T1 15 는 P1R04 변형 칸과 같은 판정이 기대값이다(같은 엔진 · 같은 구성 · 같은 자료 판)."),
-  paste0("측정 자료 판: 판 표식 ", VINT, "(06_Registry/factor_db_vintage.json) 뒤 측정분만 기저 자격을 받는다(contracts/factor_db_vintage.R). 사슬 원천 시행도 낡은 산출은 같은 엔진 · 같은 구성의 현재 판 산출로 갈음한다(코어 v4 · 판단 T1 C-20261113-054)."),
+  paste0("측정 자료 판: ", VMEAS, " 기저 자격을 받는다(06_Registry/factor_db_vintage.json · contracts/factor_db_vintage.R). 사슬 원천 시행도 낡은 산출은 같은 엔진 · 같은 구성의 현재 판 산출로 갈음한다(코어 v4 · 판단 T1 C-20261113-054)."),
   "순서(판단 · 철학 C-20261113-050): 등급 v3.5 핀 교체(도훈 결정 GRADE-CR-NOTCH-BETA-SELECTION-20261113) 뒤 이 판 등록 · 측정 → 블렌딩 사슬 1호 등록 · 닫기. 사슬 1호 닫기 재채점(--regrade-write)은 v3.5 발효 뒤 — 그 전 닫기는 --regrade-dry-run.",
   paste0("같은 카테고리의 T0 · T1 은 같은 계보(family_root FC:<카테고리>)다 — 둘 다 통과해도 독립 원천 둘이 아니다. 같은 카테고리 T0 · T1 블렌드(또는 토탈과 그 카테고리)는 한 원천의 결합 가중 시행이다 — ",
          "기저 풀 family_root 열 · 블렌드 걸음 꼬리표 same_lineage_blend(코어 v4) · 헌장 빈칸 9 A′ (b) '두 엔진'으로 세지 않는다(P1R04 결론 범위 승계)."),
