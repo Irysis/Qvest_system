@@ -145,12 +145,15 @@ seam_repair_run <- function(apply_writes = FALSE, raw_path = SEAM_REPAIR_RAWDATA
 
   # ── 실쓰기 ────────────────────────────────────────────────────────────────
   raw <- rsa_block_new(tgt, aud)
-  cat(sprintf("  [seam_audit] 새 기준 단절 차단 %d행(Ret := NA)\n", attr(raw, "seam_audit_blocked")))
+  cat(sprintf("  [seam_audit] 새 기준 단절 차단 %d행(Ret := NA) · 채움 %d행 · 수동 등록부 강제 %d행\n", attr(raw, "seam_audit_blocked"),
+              attr(raw, "seam_audit_filled"), attr(raw, "seam_audit_registry_fixed") %||% 0L))
   bak <- file.path(CACHE_DIR, sprintf("rawdata_pre_seamguard_%s.parquet", format(Sys.Date(), "%Y%m%d")))
   if (!file.exists(bak)) { stopifnot(file.copy(raw_path, bak)); cat(sprintf("  백업: %s\n", basename(bak))) }
   else cat(sprintf("  백업 존재(재사용): %s\n", basename(bak)))
 
-  vdates <- sort(unique(c(as.Date(unlist(lapply(reports, function(r) r$dates))), aud$hits_new$Date)))
+  # 교체 뒤 재판독 범위 = 이 실행이 Ret 을 바꿀 수 있는 날 전부(이음매 창 · 새 · 알려진 · 비어 있던 단절 · 등록부 강제)
+  vdates <- sort(unique(c(as.Date(unlist(lapply(reports, function(r) r$dates))), aud$hits_new$Date, aud$hits_known$Date,
+                          aud$hits_blocked$Date, aud$registry_fix$Date)))
   expect <- raw[Date %in% vdates, .(Date, Ticker, Ret)]
   setorder(raw, Date, Ticker)
   tmp <- file.path(dirname(raw_path), sprintf(".%s.seamrepair.%d", basename(raw_path), Sys.getpid()))

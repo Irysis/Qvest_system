@@ -194,6 +194,40 @@ if (length(hits) != 1L) bad("a10_mutation_setup", sprintf("치환 대상 %d곳(1
   still_raw <- isTRUE(all.equal(Xm[paste(Ticker, Date) %in% paste("SPLIT5", FX$dS)]$Ret, X[paste(Ticker, Date) %in% paste("SPLIT5", FX$dS)]$Ret))
   chk(still_raw, "a10_mutation_reddens", "채움 적용 줄을 지운 사본 = SPLIT5 가 생비율 그대로(검사가 채움을 재고 있다)")
 }
+
+# ── A11 수동 등록부 강제(2026-11-14) — 단절 지문 밖 행도 등록부 값으로 · 같은 값 = 손대지 않음 · 없는 종목 = 무시 · 멱등 ─────────────
+#   Y2 = A8 처분 뒤 표(OLD15b 는 시총 기준 −10% 로 채워져 단절 지문 밖 — 지난 처분이 이전상장 첫날을 시총 기준으로 채운 자리와 같은 모양).
+Sys.setenv(CLAUDE_PROJECT_DIR = R8, QM_ROOT = R8)
+writeLines(toJSON(list(schema = "ret_fill_registry_v1", entries = list(
+  list(Date = as.character(F8$d2[6]), Ticker = "MANUAL", Ret = -0.123, method = "test", evidence = "test"),
+  list(Date = as.character(F8$d1[6]), Ticker = "OLD15b", Ret = -0.077, method = "test", evidence = "test"),
+  list(Date = as.character(F8$d1[6]), Ticker = "GHOST", Ret = 0.5, method = "test", evidence = "test"))), auto_unbox = TRUE),
+  file.path(R8, "06_Registry/ret_fill_registry.json"))
+a11 <- rsa_audit(Y2, CFG8)
+Y3 <- rsa_block_new(copy(Y2), a11)
+k11 <- Y3$Ticker == "OLD15b" & Y3$Date == F8$d1[6]
+chk(a11$counts$registry_fix == 1L && identical(a11$registry_fix$Ticker, "OLD15b") && isTRUE(all.equal(Y3$Ret[k11], -0.077)) &&
+      identical(attr(Y3, "seam_audit_registry_fixed"), 1L), "a11_registry_enforced_outside_hits",
+    "시총 기준으로 채워진 행(단절 지문 밖)도 등록부 값(−0.077)으로 · 1행")
+chk(isTRUE(all.equal(Y3$Ret[!k11], Y2$Ret[!k11])) && a11$counts$registry_n == 3L && a11$counts$registry_missing == 1L &&
+      identical(a11$registry_missing$Ticker, "GHOST"), "a11_registry_same_and_absent_untouched",
+    "같은 값(MANUAL) · 없는 종목(GHOST) = 손대지 않음 · GHOST 는 '표에 없음' 목록 1행 · 다른 행 불변")
+chk(rsa_audit(Y3, CFG8)$counts$registry_fix == 0L, "a11_registry_idempotent", "강제 뒤 재감사 = 강제 0(멱등)")
+Y4 <- copy(Y2); setorder(Y4, Date, Ticker)
+e11 <- tryCatch({ rsa_block_new(Y4, a11); "no_error" }, error = function(e) "stopped")
+chk(identical(e11, "stopped"), "a11_reordered_table_stops", "감사 뒤 행 순서가 바뀐 표 = 등록부 강제도 쓰지 않고 stop")
+
+# ── A12 돌연변이 — 등록부 강제 줄을 지운 사본은 A11 이 빨개져야 한다 ─────────────
+pat12 <- "    set(dt, i = rf$i, j = \"Ret\", value = rf$Ret_reg); n_reg <- nrow(rf)"
+h12 <- which(SRC == pat12)
+if (length(h12) != 1L) bad("a12_mutation_setup", sprintf("치환 대상 %d곳(1 이어야 함)", length(h12))) else {
+  MUT <- SRC; MUT[h12] <- "    n_reg <- nrow(rf)"
+  mp <- tempfile(fileext = ".R"); writeLines(MUT, mp, useBytes = TRUE)
+  E <- new.env(parent = globalenv()); sys.source(mp, envir = E)
+  am <- E$rsa_audit(Y2, E$rsa_config(R8, reload = TRUE)); Ym <- E$rsa_block_new(copy(Y2), am)
+  chk(isTRUE(all.equal(Ym$Ret[k11], Y2$Ret[k11])) && !isTRUE(all.equal(Ym$Ret[k11], -0.077)), "a12_mutation_reddens",
+      "강제 줄을 지운 사본 = OLD15b 가 시총 기준 값 그대로(검사가 강제를 재고 있다)")
+}
 Sys.setenv(CLAUDE_PROJECT_DIR = R0, QM_ROOT = R0)
 
 # ── A5 설정 경유 ───────────────────────────────────────────────────────────────

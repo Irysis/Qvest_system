@@ -20,6 +20,8 @@
 #
 # 처분 (rsa_block_new · 적재기만 부른다): new hit 의 Ret := NA — 가드 block_ret 와 같은 처분(측정 차단 · Close 는 그대로라
 #   다시 판정할 수 있다). 날짜 지문은 차단하지 않는다(경보만 — 어느 종목인지 모른다). 상태 = ok | alarm.
+#   ★2026-11-14 차단 대신 채움(아래 rsa_block_new) + 수동 등록부 강제: 등록부(06_Registry/ret_fill_registry.json) 행은 확인된 값이라
+#   단절 지문 밖이어도 저장값이 다르면 등록부 값으로 쓴다(사건 종류가 값을 정한다 — 이전상장 · 일반공모 = 생비율 · 장외 → 상장 첫날 = 거래소 첫 종가 / 장외 마지막 종가).
 #
 # 사용:
 #   source(file.path(DATA_DIR, "rawdata_seam_audit.R"))
@@ -118,6 +120,17 @@ rsa_audit <- function(dt, cfg = rsa_config(), known = rsa_known(cfg)) {
                      implied_ret_size = rs - 1)][order(Date, Ticker)]
   B <- NULL
 
+  # ④ 수동 등록부 강제(2026-11-14 · 등록부 = 다른 계기로 확인한 값 — 사건 종류(공시) · 거래소 원주가 · 두 번째 원천).
+  #    단절 지문에 안 잡히는 행(예: 지난 처분이 시총 기준으로 채운 이전상장 첫날)도 저장값이 등록부 값과 다르면 등록부 값으로 바꾼다.
+  #    단절로 잡힌 행은 아래 채움 결정(fill_manual)이 같은 값을 쓰므로 여기서 뺀다.
+  gcfg <- seam_guard_config(cfg$guard_config_path)
+  greg <- seam_fill_registry(gcfg, cfg$root)
+  RG <- merge(X[Ticker %chin% unique(greg$Ticker), .(i, Date, Ticker, Ret)], greg[, .(Date, Ticker, Ret_reg = Ret)], by = c("Date", "Ticker"))
+  # 등록부에 있는데 표에 없는 행(키 오타 · 날짜 어긋남) — 조용히 넘기지 않는다(목록 · 경고)
+  registry_missing <- greg[!RG, on = .(Date, Ticker)][order(Date, Ticker)]
+  registry_fix <- RG[!(is.finite(Ret) & abs(Ret - Ret_reg) <= 1e-12)]
+  RG <- NULL
+
   # ① 종목-일 지문 — off 행만(소수)
   C <- X[off == TRUE]
   X <- NULL; invisible(gc(verbose = FALSE))
@@ -137,8 +150,7 @@ rsa_audit <- function(dt, cfg = rsa_config(), known = rsa_known(cfg)) {
   hits_known <- H[known == TRUE][order(Date, Ticker)]
   # ★차단 대신 채움(RAWDATA-INTERNAL-BREAK-FILL-D2D3-20261114) — 가드와 같은 함수(seam_fill_resolve): 수동 등록부 → 시총 기준 실수익(날짜별 제한폭) → 아니면 그대로.
   #   새 단절: 채움 또는 차단(NA) · 알려진 단절(Ret 생비율) · 비어 있는 단절(NA): 채움 또는 손대지 않음(목록).
-  gcfg <- seam_guard_config(cfg$guard_config_path)
-  greg <- seam_fill_registry(gcfg, cfg$root)
+  #   (gcfg · greg = 위 ④ 에서 실었다 — 한 번만 읽는다)
   res <- function(h) {
     if (!nrow(h)) { h[, `:=`(fill_action = character(0), fill_ret = numeric(0), fill_limit = numeric(0))]; return(h) }
     r <- seam_fill_resolve(h$Date, h$Ticker, h$r_size - 1, 1L, gcfg, greg)
@@ -147,6 +159,7 @@ rsa_audit <- function(dt, cfg = rsa_config(), known = rsa_known(cfg)) {
   }
   hits_new <- res(hits_new); hits_known <- res(hits_known); hits_blocked <- res(hits_blocked)
   unresolved_new <- hits_new[fill_action == "block_ret", .N]
+  registry_fix <- registry_fix[!(i %in% c(hits_new$i, hits_known$i, hits_blocked$i))][order(Date, Ticker)]
 
   # 경보 = 채우지 못한 새 단절 · 집단 극단 수익일. 채운 새 단절은 [SEAM_FILL] 안내(경보 아님).
   status <- if (unresolved_new || nrow(days_alarm)) "alarm" else if (nrow(hits_new)) "filled" else "ok"
@@ -157,10 +170,12 @@ rsa_audit <- function(dt, cfg = rsa_config(), known = rsa_known(cfg)) {
                      fill_new = hits_new[fill_action != "block_ret", .N], unresolved_new = unresolved_new,
                      fill_known = hits_known[fill_action != "block_ret", .N], unresolved_known = hits_known[fill_action == "block_ret", .N],
                      fill_blocked = hits_blocked[fill_action != "block_ret", .N], unresolved_blocked = hits_blocked[fill_action == "block_ret", .N],
+                     registry_n = nrow(greg), registry_fix = nrow(registry_fix), registry_missing = nrow(registry_missing),
                      hits_new_dates = length(unique(hits_new$Date)), days_alarm = nrow(days_alarm),
                      date_from = as.character(min(dt$Date, na.rm = TRUE)), date_to = as.character(max(dt$Date, na.rm = TRUE)),
                      known_status = attr(known, "known_status") %||% NA_character_),
-       hits_new = hits_new, hits_known = hits_known, hits_blocked = hits_blocked, days_alarm = days_alarm, cfg = cfg)
+       hits_new = hits_new, hits_known = hits_known, hits_blocked = hits_blocked, registry_fix = registry_fix,
+       registry_missing = registry_missing, days_alarm = days_alarm, cfg = cfg)
 }
 
 #' 단절 처분 적용(이름은 구판 그대로 — 적재기 · 소급 수리가 부른다). ★2026-11-14 차단 대신 채움(RAWDATA-INTERNAL-BREAK-FILL-D2D3-20261114):
@@ -188,8 +203,16 @@ rsa_block_new <- function(dt, aud) {
       if (length(wb)) { set(dt, i = h$i[wb], j = "Ret", value = NA_real_); n_block <- n_block + length(wb) }
     }
   }
+  # 수동 등록부 강제(단절 지문 밖 행 · 2026-11-14) — 같은 행 일치 단정 뒤에만 쓴다
+  rf <- aud$registry_fix; n_reg <- 0L
+  if (!is.null(rf) && nrow(rf)) {
+    ok <- rf$i <= nrow(dt) & as.Date(dt$Date[rf$i]) == rf$Date & dt$Ticker[rf$i] == rf$Ticker
+    if (!all(ok)) stop("[seam_audit] 등록부 강제 대상 행 불일치(감사 뒤 행 순서가 바뀌었다) — 쓰지 않는다")
+    set(dt, i = rf$i, j = "Ret", value = rf$Ret_reg); n_reg <- nrow(rf)
+  }
   attr(dt, "seam_audit_blocked") <- n_block
   attr(dt, "seam_audit_filled") <- n_fill
+  attr(dt, "seam_audit_registry_fixed") <- n_reg
   dt
 }
 
@@ -202,6 +225,12 @@ rsa_print <- function(aud, label = "") {
   if (!is.null(k$fill_new))
     cat(sprintf("  [SEAM_FILL] 채움(시총 기준 · 수동 등록부): 새 %d · 알려진 %d · 비어 있던 %d — 못 채움: 새 %d(차단) · 알려진 %d · 비어 있던 %d(목록)\n",
                 k$fill_new, k$fill_known, k$fill_blocked, k$unresolved_new, k$unresolved_known, k$unresolved_blocked))
+  if (isTRUE(k$registry_fix > 0L))
+    cat(sprintf("  [SEAM_FILL] 수동 등록부 강제 %d행(단절 지문 밖 · 저장값 ≠ 등록부 값 → 등록부 값 · 등록부 %d행) — %s\n", k$registry_fix, k$registry_n,
+                paste(head(sprintf("%s %s", as.character(aud$registry_fix$Date), aud$registry_fix$Ticker), 8), collapse = " · ")))
+  if (isTRUE(k$registry_missing > 0L))
+    cat(sprintf("  ⚠ [SEAM_FILL] 수동 등록부 행 중 표에 없는 것 %d행(키 확인) — %s\n", k$registry_missing,
+                paste(head(sprintf("%s %s", as.character(aud$registry_missing$Date), aud$registry_missing$Ticker), 8), collapse = " · ")))
   if (identical(aud$status, "alarm")) {
     hn <- if ("fill_action" %in% names(aud$hits_new)) aud$hits_new[fill_action == "block_ret"] else aud$hits_new
     if (nrow(hn)) {
@@ -225,7 +254,8 @@ rsa_write_sidecar <- function(aud, label, dir_ = aud$cfg$SIDECAR_DIR) {
   payload <- list(schema = aud$schema, generated_at = aud$generated_at, label = label, status = aud$status,
                   counts = aud$counts, hits_new = fmt(aud$hits_new),
                   unresolved_known = fmt(if (!is.null(aud$hits_known) && "fill_action" %in% names(aud$hits_known)) aud$hits_known[fill_action == "block_ret"] else NULL),
-                  hits_blocked = fmt(aud$hits_blocked), hits_known_n_by_year =
+                  hits_blocked = fmt(aud$hits_blocked), registry_fix = fmt(aud$registry_fix), registry_missing = fmt(aud$registry_missing),
+                  hits_known_n_by_year =
                     if (nrow(aud$hits_known)) as.list(aud$hits_known[, .N, by = .(y = format(Date, "%Y"))][, setNames(N, y)]) else list(),
                   days_alarm = fmt(aud$days_alarm),
                   config = aud$cfg[c("SEAM_MAX_RET", "BASIS_SHARES_TOL", "DAY_FRAC_OFF_ALARM", "DAY_N_OFF_MIN", "RET_MATCH_TOL",
