@@ -1,6 +1,6 @@
 {
  "schema": "q_judgment_ledger_v1",
- "updated_at": "2026-11-14T15:50:12+0900",
+ "updated_at": "2026-11-15T04:15:50+0900",
  "judgments": [
   {
    "id": "J-20261016-001",
@@ -2735,6 +2735,32 @@
    "reviews": [],
    "supersedes": null,
    "superseded_by": null
+  },
+  {
+   "id": "J-20261115-001",
+   "at": "2026-11-15T03:48:03+0900",
+   "op": "OP-20261113-P1R04",
+   "kind": "verdict",
+   "summary": "[11-15 04:0x] P1R04 판정 해석 — 기계 판정 지지(계보 짝 읽기: 셈 대상 2/15 = 수급 IS 증분 t 2.60 · 기술적 2.28 · 토탈 셈 밖) · 역할별 자격: IC 가중(T1) 7/15 · 동일가중 기준(R0) 8/15(P1R03 T0 자격 집합과 같음) · 성장은 IC 가중에서 미달(알파 t 2.69 → 1.43). 개선은 두 엔진 모두 미달인 카테고리(음의 알파 → 0 근처)에서만 났고, 자격 카테고리 밸류 · 성장 · 쏠림과 국면은 증분 t ≤ −2. 원천 수 T1 4 < T0 5 · T1 이 연 원천 없음 → 사슬 1호 = 동일가중(T0) 엔진 그대로 · T1 엔진은 결합기 기본값으로 올리지 않는다",
+   "rationale": "등록 규칙(핀 도구 tools/p1r04_pair_reading.R · DESIGN §10 R-3) 그대로 지지. 정보: 귀무 독립 · 단측 t ≥ 2 기저율 약 6%(S-6) — 같은 기저율로 음의 쪽 4 계보(t ≤ −2)도 나왔으므로 '고른 개선'이 아니라 '약한 카테고리 구제 · 강한 카테고리 희석'의 교환이다(등록 규칙은 단측 · 음의 쪽은 판정에 안 쓰고 서술만). 기전 후보 = 시점별 IC 가중의 추정 오차가 분산된 동일가중을 못 이김(DeMiguel · Garlappi · Uppal 2009 RFS 22(5):1915 — 1/N) · 약한 카테고리에선 as-of ICIR⁺ 가 음의 구성원을 0 으로 빼 손실을 없앰. 방향 불일치 구성원(CR05 · V23 · C08)은 가중 0 달 0 · 13 · 15% · 카테고리 안 몫 중앙값이 동일가중과 비슷 → 'T1 이 어긋난 구성원을 뺀 효과' 섞임은 작다. 점검: 사이드카 설정 md5 = 등록 사본(S-2) · 30칸 기저 캐시 전부 미스(S-7 같은 배치) · 결측 계보 0(R-2) · 원천 셈 토탈 제외(R-4)",
+   "framework_refs": [
+    "results/pair_reading_visible.json · results/evaluation_visible.json · prereg c0e56611 · DESIGN §10"
+   ],
+   "evidence": [
+    "측정 30/30 ok(11-15 02:42~03:33 · 입력 지문 251ad1b7 시작 = 끝) · 짝 읽기 수동 실행(셸 줄 93 상대 경로 버그로 미실행 → 루트에서 재실행) · weight_trace_visible.json(IS · 성과 무참조)"
+   ],
+   "alternatives": [
+    "(가) 지지를 'T1 = 개선된 결합기'로 읽고 사슬 2호 기본 결합기로 채택 — 자격 카테고리에서 손실이라 기각 (나) 음의 쪽을 근거로 반증 처리 — 등록 규칙 위반"
+   ],
+   "expectation": "사슬 1호(P4C01)는 동일가중 엔진 · 다음 결합기 탐침 = IC 가중을 동일가중 쪽으로 수축(조정 없는 계수 — Tu & Zhou 2011 JFE 99(1):204 · Kan & Zhou 2007 JFQA) 또는 T2(횡단면 회귀) — 약한 카테고리 구제는 남기고 강한 카테고리 희석은 줄일 것으로 기대",
+   "confidence": 0.75,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261115-001",
+    "R-20261115-002"
+   ],
+   "supersedes": null,
+   "superseded_by": null
   }
  ],
  "reviews": [
@@ -3760,6 +3786,50 @@
     "C-20261113-079",
     "C-20261113-080",
     "C-20261113-081"
+   ]
+  },
+  {
+   "id": "R-20261115-001",
+   "at": "2026-11-15T04:11:06+0900",
+   "role": "judgment",
+   "trigger": "T2",
+   "scope": [
+    "J-20261115-001"
+   ],
+   "file": "04_Research/programs/_supervision/superfan/20261115_0405_T2.md",
+   "round": "P1R04_combiner_t1_icw",
+   "direction": null,
+   "challenges": [
+    "C-20261115-001",
+    "C-20261115-002",
+    "C-20261115-003",
+    "C-20261115-004",
+    "C-20261115-005",
+    "C-20261115-006",
+    "C-20261115-007",
+    "C-20261115-008"
+   ]
+  },
+  {
+   "id": "R-20261115-002",
+   "at": "2026-11-15T04:11:36+0900",
+   "role": "philosophy",
+   "trigger": "P2",
+   "scope": [
+    "J-20261115-001",
+    "J-20261113-005"
+   ],
+   "file": "04_Research/programs/_supervision/superfan/philosophy/20261115_0408_P2_P1R04.md",
+   "round": "P1R04_combiner_t1_icw",
+   "direction": "away",
+   "challenges": [
+    "C-20261115-009",
+    "C-20261115-010",
+    "C-20261115-011",
+    "C-20261115-012",
+    "C-20261115-013",
+    "C-20261115-014",
+    "C-20261115-015"
    ]
   }
  ],
@@ -10883,8 +10953,9 @@
      "change": "결정 LOWBETA-ENGINES-BASE-USE-20261113"
     }
    ],
-   "outcome": null,
-   "outcome_note": null
+   "outcome": "vindicated",
+   "outcome_note": "R-20261115-002 채점(IS): 같은 엔진(P1R04 R0 = P1R03 T0 md5)의 이 배치 보는 창 패킷에서 시가총액 × β 짝(등급 v3.5 계약) 승 FCROW 46% · FDEFE 46% · FLIQU 15% · FRISK 38% · TOTAL 38% · 라벨 size_beta_unseparated 5/5 — '선택 방어 근거 없음'이 계약 단위로 확인. 깊은 위기 분할 값은 패킷에 없어 위기 전체 과반(헌장 빈칸 2 의 첫 조건)으로 채점. 보류는 도훈 LOWBETA 결정 (나)로 닫힘.",
+   "outcome_at": "2026-11-15T04:13:02+0900"
   },
   {
    "id": "C-20261113-011",
@@ -10939,8 +11010,9 @@
      "change": "결정 GRADE-CR-NOTCH-BETA-SELECTION-20261113"
     }
    ],
-   "outcome": null,
-   "outcome_note": null
+   "outcome": "vindicated",
+   "outcome_note": "R-20261115-002 채점: 도훈 결정 GRADE-CR-NOTCH-BETA-SELECTION-20261113 (가)가 권고 B(노출 고정 분기에 크기 × β 짝 요구)를 채택했고 등급 v3.5 가 11-14 발효 — P1R04 저β 10칸(R0 5 · T1 5)이 MC8 'selection_defense' 라벨이어도 계약 라벨 size_beta_unseparated 10/10 으로 CR '강함' 선택 가점에서 빠진다.",
+   "outcome_at": "2026-11-15T04:13:02+0900"
   },
   {
    "id": "C-20261113-013",
@@ -10967,8 +11039,9 @@
      "change": "다음 라운드 세션 전달"
     }
    ],
-   "outcome": null,
-   "outcome_note": null
+   "outcome": "moot",
+   "outcome_note": "R-20261115-002 채점: 같은 사안을 판단 C-20261113-003 이 먼저 짚었고 그쪽 수용으로 P1R04 규칙에서 test_hold 가 빠졌다(evaluation_visible.json 열 = _vis · qualify). 내 반증 조건('평가 뒤 열이 없으면 틀렸다')은 수용 뒤 관측과 '처음부터 문제 없음'을 가르지 못하게 쓰였다(내 오류 — 앞으로 '수용이 없었다면' 조건을 붙인다) — 채점 불가.",
+   "outcome_at": "2026-11-15T04:13:02+0900"
   },
   {
    "id": "C-20261113-014",
@@ -11119,8 +11192,9 @@
      "change": "다음 라운드 세션 전달 · P1R03 닫기 탐침"
     }
    ],
-   "outcome": null,
-   "outcome_note": null
+   "outcome": "vindicated",
+   "outcome_note": "격리 방향 재판정(11-13 09:2x · factor_direction_blind_review_20261113) = 일치 61 · 불일치 3(V23 · C08 · CR05) · 불명 9 — 반증 조건 둘(문헌 출처 근거 · 70 전부 같음) 모두 미충족 · 확인 필요가 맞았다. 영향은 작았다: P1R04 가중 추적에서 셋의 0 가중 달은 IC 이력 조건 첫 36개월뿐(리뷰 R-20261115-001)",
+   "outcome_at": "2026-11-15T04:11:08+0900"
   },
   {
    "id": "C-20261113-020",
@@ -11272,8 +11346,9 @@
      "change": "tools/p1r04_pair_reading.R 표식 · 짝 기록 · round_spec conclusion_scope C-026 줄"
     }
    ],
-   "outcome": null,
-   "outcome_note": null
+   "outcome": "vindicated",
+   "outcome_note": "R-20261115-002 채점(IS): 반증 조건('t(α) 가 오른 짝이 모두 uc ≥ 0.8 × T0 ∧ 위기 비악화')이 성립하지 않음 — ILIQU(t 3.01 vs 2.85 · α 9.7% vs 11.3% · uc 0.74 vs 1.07) · ITOTAL(t 3.90 vs 3.79 · α 13.2% vs 14.8% · uc 0.94 vs 1.23)에서 예측한 '평시 변동 축소로 t 만 오르고 강세 참여를 잃는' 이동이 그대로 나왔다. 단 최종 통계(증분 알파 — 판단 C-20261113-001)가 두 짝을 음(−0.58 · −0.56)으로 읽어 표식이 판정을 바꾸지는 않았다(표식 강점 손실 5 · 위기 악화 6 은 기록으로 작동).",
+   "outcome_at": "2026-11-15T04:13:01+0900"
   },
   {
    "id": "C-20261113-027",
@@ -11304,8 +11379,9 @@
      "change": "tools/p1r04_lowrisk_share.R · round_spec conclusion_scope C-027 두 줄 · 측정 셸(측정 뒤 사이드카 → 짝 읽기)"
     }
    ],
-   "outcome": null,
-   "outcome_note": null
+   "outcome": "vindicated",
+   "outcome_note": "R-20261115-002 채점(IS · as-of 몫): 확장 부분의 반증 조건(몫 > T0 기준 달이 어느 엔진에서도 과반 아님)이 성립하지 않음 — 유동성 0.58 · 토탈 0.58 · 기술적 1.00 · 엔진 진단에 가중 기록이 없어 사이드카가 필요했다. 크기 단서: 유동성(0.531 vs 0.523) · 토탈(0.288 vs 0.286)은 근소한 차이고 '토탈이 저위험 합성이 된다'는 구조 추론은 크기로는 서지 않았다(토탈 T1 최대 몫 = 밸류 0.147) · 기술적 큰 몫(0.53)은 저β 가 아니라 낮은 일중 범위(대형주) 집중(β 1.15).",
+   "outcome_at": "2026-11-15T04:13:01+0900"
   },
   {
    "id": "C-20261113-028",
@@ -11334,8 +11410,9 @@
      "change": "tools/p1r04_pair_reading.R size_tilt 표식 · round_spec conclusion_scope C-028 줄"
     }
    ],
-   "outcome": null,
-   "outcome_note": null
+   "outcome": "refuted",
+   "outcome_note": "R-20261115-002 채점(IS): t(α) 가 같은 계보 T0 보다 오른 T1 칸 6 중 크기 성분(동일가중−시총가중 연환산)이 커진 칸은 1(수급 0.041 vs 0.038) — 과반 아님 · 전체로도 T1 이 크기 성분을 줄였다(12/15 · 같음 2). (나) 유동성 사이드카는 산출되지 않아 그 절은 미측정이지만, 측정된 계기로는 '측정 축 밖 IC → 소형주 쏠림' 구조 추론과 반대 방향이다.",
+   "outcome_at": "2026-11-15T04:13:01+0900"
   },
   {
    "id": "C-20261113-029",
@@ -12563,6 +12640,378 @@
    "claim": "C-20261113-063 정정 — 주장문의 현실 경로 중 '국면 조건부 블렌딩'은 현행 P4 도구 상자에 없다: engine_blend = 월별 rank-Z 등가중(rx_round.R:188 · rf_cell_engine.R:102-103 · 정적). 보유 β 가 시점마다 움직이는 현실 경로는 as-of ICIR 가중 결합기(P1R04 T1 · 저위험 카테고리 몫 이동 · C-20261113-027) 하나다. 도전의 핵심(노출 고정 + 보유 회전 = selection · 현금판 = 타이밍 — 합성 반증 조건)은 그대로다.",
    "evidence": [
     "02_Infrastructure/programs/rx_round.R:188 · :338-342 · 02_Infrastructure/reinforcement/rf_cell_engine.R:102-103 · J-20261113-005"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261115-001",
+   "at": "2026-11-15T04:11:06+0900",
+   "review": "R-20261115-001",
+   "target": "J-20261115-001",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "등록 규칙 그대로 읽었다 — 핀 도구 p1r04_pair_reading.R(md5 74f50629 = 핀 · 핀 124/124 일치) 산출 support 를 라벨로 두고 (나) 음의 쪽 반증 · (가) '개선된 결합기' 둘 다 기각 · 셸 결함 뒤 같은 핀 도구 재실행(재구현 아님 · 수리 733649080) · S-2 사이드카 설정 md5 6a2a1d21 일치 · S-7 FC 캐시 53 이관 + 칸 실계산 · 입력 지문 시작 = 끝 · R-2 · R-4 · R-5 · J 수치 = 보는 창 파일과 일치 · 불일치 구성원 V23 · C08 의 0 가중 36달 = IC 이력 조건 첫 36개월(이후 방향 때문 0 없음 — '섞임 작다'보다 강함). 판정 라벨 = 등록 규칙 · 처분 = 서술 증거로 나누는 방식 유지",
+   "evidence": [
+    "04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/results/pair_reading_visible.json",
+    "04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/results/evaluation_visible.json",
+    "04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/results/weight_trace_visible.json",
+    ".cache/scheduler_logs/p1r04_measure_20261114_215523.log"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261115-002",
+   "at": "2026-11-15T04:11:06+0900",
+   "review": "R-20261115-001",
+   "target": "J-20261115-001",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "'지지'는 등록 때 빠진 '악화 0' 조항의 산물이다 — 판단 T1 C-20261113-001 대안 (a)(지지 = 개선 계보 ≥ k ∧ 악화 0)를 수용하며 짝 증분 t · 문턱만 옮기고 악화 조항을 뺀 사실 · 이유가 응답 · 정정 기록에 없다(규약 §13-3). 결과는 그 조항이 판정을 뒤집는 경우다: 증분 t ≤ −2 4 계보(밸류 · 성장 · 쏠림 · 국면) · R0 자격 8 계보 증분 전부 음 · 토탈 −0.56 · 양의 증분 4/15 — 같은 독립 귀무 산술(설명용)이면 t ≤ −2 가 4개 이상 ≈ 3×10⁻⁴ vs t ≥ 2 가 2개 이상 ≈ 0.045(증거의 무게는 악화 쪽). J('같은 기저율로 음의 쪽 4')와 보고 초안(p1r04_report.R:35 '결합 개선 지지' · 차트 01 부제)이 이를 싣지 않아 결론 범위 [17] '지지 → T2'의 근거로 다시 읽힌다. 체계 §3 ② 알파 손실 없음이 규칙에 없고, §4 통과 처분(기본값 후보)에서 벗어나는 이유가 판정 문장과 분리돼 있지 않다",
+   "evidence": [
+    "04_Research/programs/_supervision/superfan/20261113_0755_T1.md:53-54",
+    "04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/prereg.json(spec.hypothesis · changes_after_superfan[0])",
+    "04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/results/pair_reading_visible.json",
+    "04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/tools/p1r04_report.R:35",
+    "00_Lawbook/specs/q_autonomy_decision_framework.md §3 · §4"
+   ],
+   "alternative": "판정 라벨 그대로 · 결과 무관: (1) 보고 판정 줄 · 닫기 note 에 1줄 '지지 = 등록 단측 규칙 — 등록 전 제안된 악화 조항(C-001 (a))은 등록본에 없다 · 있었으면 지지 아님 · R0 자격 8 계보 증분 전부 음 → §4 처분 대신 T1 = 기본값 후보 아님' + 차트 01 에 −2.0 선 (2) 결과 원장 교훈 '짝 판정은 양측 — 개선 계보 수 ∧ 하류에서 쓰는 계보(R0 자격) 악화 0(체계 §3 ②)' (3) 다음 결합기 사전등록: 지지 = 개선 계보 ≥ k ∧ R0 자격 계보 중 증분 t ≤ −문턱 0(같은 정본 참조) · 기저율은 독립 가정 대신 15 짝 차 수익의 경험 공분산(부호 뒤집기 재표집 등)으로 계산",
+   "falsifier": "등록 전 기록(DESIGN §10 · prereg changes_after_superfan · J-20261113-* · C-20261113-001 응답)에 '악화 0 을 넣지 않은 이유'가 이미 있거나, 닫기 note · 결과 원장 교훈 · 보고 판정 줄 중 하나에 '단측 규칙 · 악화 조항 없음(있었으면 지지 아님)'이 이 리뷰 전에 들어가 있으면 이 도전은 틀렸다",
+   "status": "accepted",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-11-15T04:13:39+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용 — 등록 때 C-20261113-001 대안 (a)의 '악화 0' 조항을 뺀 것은 의도가 아니었다(수용 응답 11-13 08:15 은 짝 통계 · 문턱만 옮겼고 뺀 이유 기록 없음 = 누락). 판정 라벨은 등록 규칙 그대로 '지지'로 두되, 판정 문장과 처분 문장을 나눈다: 지지 = 등록 단측 규칙 · 악화 조항 없음(있었으면 지지 아님 — 증분 t ≤ −2 4 계보 · R0 자격 8 계보 증분 전부 음) → 체계 §4 처분(기본값 후보) 대신 T1 = 결합기 기본값 후보 아님.",
+     "change": "보고 판정 줄 · 닫기 note 에 단측 규칙 · 악화 조항 부재 1줄 · 차트 01 에 −2.0 악화 참고선(등록 규칙 밖 표기) · 결과 원장 교훈 '짝 판정은 양측(개선 계보 수 ∧ 하류에서 쓰는 R0 자격 계보 악화 0 — 체계 §3 ②)' · 다음 결합기 사전등록 규칙 = 개선 ≥ k ∧ R0 자격 계보 악화 0 + 기저율은 15 짝 차 수익의 부호 뒤집기 재표집(경험 공분산)으로"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261115-003",
+   "at": "2026-11-15T04:11:07+0900",
+   "review": "R-20261115-001",
+   "target": "J-20261115-001",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "다음 탐침 '동일가중 쪽 수축(Tu & Zhou 2011 · Kan & Zhou 2007)'이 Q 자신의 기전과 어긋나고 등록된 반대 가설을 읽지 않았다 — (a) Tu-Zhou 볼록 결합 w = (1−δ)·1/N + δ·w_T1 은 0 가중 구성원에 (1−δ)/N 을 돌려 Q 가 꼽은 구제 기전(음의 구성원 0 처리)을 희석한다 · 기대('구제 유지 · 희석 감소')가 서려면 카테고리별 δ(수급 · 기술적 ≈ 1)의 식 · 출처가 있어야 하는데 J 에 없다(없으면 계수 = 고른 숫자) · Kan & Zhou 2007 은 1/N 수축이 아니라 세 펀드 규칙 (b) 가중 추적(성과 무참조 · 리뷰어 중앙값): R0 자격 7 카테고리 유지 비 0.74(0.50~0.88) · effn/n 0.63 vs 개선된 수급 · 기술적 유지 0.33 · effn/n 0.34 · 0.23 — 손실은 '몰림'이 아니라 대부분을 남긴 완만한 재가중에서 8/8 같은 부호(보고 초안 :48 '소수 팩터로 무게를 몰아'와 반대) (c) DESIGN §2 주된 반대 가설 ICIR 착시 · 결론 범위 [32] N3(긴 창 ICIR⁺ = 경기순응 품질 가중)가 J 에 없다 — 짝 기록에 재료 있음(위기 악화 6/15 · 깊은 위기 비악화 비 < 0.5 6 계보 · 강세 구간 보존 비 ≤ 0.5 4 계보)",
+   "evidence": [
+    "J-20261115-001 expectation",
+    "04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/results/weight_trace_visible.json(months)",
+    "04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/results/pair_reading_visible.json",
+    "04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/DESIGN.md §2",
+    "04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/prereg.json(conclusion_scope[32])",
+    "04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/tools/p1r04_report.R:48"
+   ],
+   "alternative": "(1) 다음 결합기 = 분해 설계 — T1s = 등록부 부호 × 1[ICIR > 0] 로 거른 뒤 생존 구성원 동일가중(같은 생성기 · 튜닝 없음 · T0 를 품음) · T1s − T0 = 거르기 효과 · T1 − T1s = 재가중 효과 · 사전 예측(성과 무참조로 지금): 유지 비 ≥ 0.8 카테고리 T1s ≈ T0(|증분 t| < 1) · 수급 · 기술적 T1s ≈ T1 · 수축을 쓰려면 '생존 구성원 안에서만(0 은 0)' + δ 카테고리별 식 · 출처를 등록 전에 (2) 새 측정 없이 짝 기록으로 ICIR 착시 · N3 판독 1줄을 닫기 note 에(지지 · 기각 · 미결) (3) 보고 기전 줄을 가중 추적대로",
+   "falsifier": "다음 결합기 초안(또는 응답이 가리키는 설계 메모)의 수축 식이 0 가중 구성원을 0 으로 두거나 카테고리별 δ 를 IC 통계(성과 무참조)로 정의하고 수급 · 기술적에서 1 근처임을 미리 계산해 두었으면 (a)는 틀렸다 · weight_trace_visible.json 을 다시 집계해 R0 자격 카테고리 effn/n 중앙값이 수급 · 기술적보다 낮게 나오면 (b)는 틀렸다 · 닫기 note · 보고에 ICIR 착시 · N3 판독이 이 리뷰 전에 있으면 (c)는 틀렸다",
+   "status": "accepted",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-11-15T04:13:40+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용 — 볼록 수축(Tu · Zhou 꼴)은 0 가중 구성원에 (1−δ)/N 을 돌려줘 내가 꼽은 구제 기전(거르기)을 희석한다 · 카테고리별 δ 식도 없었다(Kan · Zhou 2007 은 세 펀드 규칙 — 인용 정정). 가중 추적 재집계로 확인: R0 자격 7 카테고리 유지 비 중앙값 0.74(0.50~0.88) · effn/n 0.63(0.39~0.72) · 수급 0.33/0.26 · 기술적 0.33/0.23 — 손실은 '몰림'이 아니라 대부분 구성원을 남긴 재가중이 8/8 같은 쪽으로 낸 것(내 기전 줄 '소수 팩터로 몰아'는 틀렸다). 등록 반대 가설 판독(새 측정 없음 · 짝 기록): ICIR 착시 = 지지 쪽 · 미결(IC 높은 쪽으로 기울여도 R0 자격 8/8 증분 음 — 1/N 분산 상실과는 분해 설계가 가른다) · N3 경기순응 = 위기 쪽 부분 지지(깊은 위기 비악화 비 < 0.5 6 계보 · 위기 악화 표식 6) · 강세 쪽 반대(참여 손실 5 · 강세 구간 보존 ≤ 0.5 4 계보) → 미결.",
+     "change": "다음 결합기 탐침 = 분해 설계 T1s(등록부 부호 × 1[ICIR > 0] 생존 구성원 동일가중 · 같은 생성기 · 튜닝 없음) — T1s − T0 = 거르기 효과 · T1 − T1s = 재가중 효과 · 사전 예측(성과 무참조): 유지 비 ≥ 0.8 카테고리 T1s ≈ T0(|증분 t| < 1) · 수급 · 기술적 T1s ≈ T1 · 수축은 쓰더라도 생존 구성원 안에서만(0 은 0) + 카테고리별 δ 식 · 출처 등록 전 · 보고 기전 줄 교체 · 닫기 note 에 반대 가설 판독 1줄"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261115-004",
+   "at": "2026-11-15T04:11:07+0900",
+   "review": "R-20261115-001",
+   "target": "J-20261115-001",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "등록된 후속 결론 범위 [18](수급 · 기술적이 짝 문턱을 넘으면 등록부 방향 재검토 — 방향 정책 경로 · 성과 무참조)의 조건이 일어났는데(2.60 · 2.28) J 기대(다음 = 수축 또는 T2)에 없고 보고 초안 아이디어 ③(:53)에만 셋째로 있다 — 가중 추적(성과 무참조): 기술적 양의 가중 구성원 12 중 2000~03 5 · 2006~17 4 · 2019~21 3 = s_reg −1 넷(RSI14 · RSI28 · HLRange · AutoCorr)과 개수 일치 → 추세형 +1 여덟이 대부분 0 일 공산(HLRange 몫 0.53 · 기준 초과 1.0) · 수급 15(전부 +1) 중 9~10(2004~06) → 1~2(2020~22). 11-13 격리 재판정은 밸류 · 성장 · 컨센서스 · 쏠림 73 만(수급 · 기술적 27 미검토 · C-20261113-019 가 '사다리 쪽 뒤로' 미룸). TOTAL(R0 자격 · 도훈 LOWBETA-ENGINES-BASE-USE-20261113 (나)로 지금 기저 풀 부품)이 두 카테고리를 1/14 씩 담는다 → 체계 §2-1(결함이 닿는 결과를 쓰기 전) — 같은 부호로 다음 결합기를 먼저 돌리면 2 계보에서 또 '어긋난 부호 0 처리'를 잰다",
+   "evidence": [
+    "04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/prereg.json(conclusion_scope[18])",
+    "04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/results/weight_trace_visible.json(months)",
+    "04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/results/lowrisk_share_visible.json(summary.technical)",
+    "04_Research/strategies/FC_TOTAL_ICW/own_spec.json(core.members s_reg)",
+    "04_Research/01_reports/factor_direction_blind_review_20261113/README.md:3",
+    "04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/tools/p1r04_report.R:51-53"
+   ],
+   "alternative": "닫기 탐침 순서 = ① 수급 · 기술적 27 구성원 격리 방향 재판정(11-13 과 같은 절차 · 정의 · 코드 · 문헌만 · LLM 1회 · 임계 경로 밖) — 다르면 방향 정책 경로로 고치고 그 카테고리만 새 엔진(계보 시행 +1) ② 그 뒤 다음 결합기(C2 분해 설계 또는 T2) · 기술적 결과엔 '저위험 쌍둥이 지배(HLRange 0.53)' 병기 · 수급은 소멸형이라 재판정이 부호를 안 바꾸면 T1(동적 거르기)의 몫으로 기록",
+   "falsifier": "닫기 탐침(결과 원장 probes)이 방향 재검토를 다음 결합기 라운드보다 앞(또는 같은 순번 병행)에 두거나, 방향 재판정 기록에 수급 · 기술적 구성원이 이미 있으면 이 도전은 틀렸다 · (부분) 구성원 단위 가중 추적에서 기술적의 양의 가중 넷이 s_reg −1 넷이 아니면 '추세형 여덟 대부분 0' 부분은 틀렸다",
+   "status": "accepted",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-11-15T04:13:40+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용 — 등록 후속 [18] 조건(수급 2.60 · 기술적 2.28)이 일어났는데 J 에서 빠졌다. 근거 없이 ③ 으로 미뤘다(비용 · 임계 경로 근거 없음). 기술적 양의 가중 구성원 수 연 중앙값 5(2000~04) → 4(2005~18) → 3(2019~22) 재확인 · 수급은 9~10 → 1~2(소멸형 — 동적 거르기 몫일 수 있음). TOTAL(기저 풀 부품)이 두 카테고리를 담으므로 다음 결합기보다 먼저 둔다.",
+     "change": "닫기 탐침 순서: ① 수급 · 기술적 27 구성원 격리 방향 재판정(11-13 과 같은 절차 — 정의 · 코드 · 문헌만 · 성과 무참조 · 임계 경로 밖 · 다르면 방향 정책 경로 → 그 카테고리만 새 엔진 시행 +1) ② 다음 결합기(분해 설계 T1s 또는 T2) ③ 기술적 결과에 '저위험 쌍둥이 지배(HLRange 몫 0.53)' 병기 · 보고 아이디어 순서 교체"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261115-005",
+   "at": "2026-11-15T04:11:07+0900",
+   "review": "R-20261115-001",
+   "target": "J-20261115-001",
+   "grade": "note",
+   "rule": null,
+   "claim": "'사슬 1호 = 동일가중 엔진 그대로'는 이 판정의 귀결이 아니라 등록 전 고정(결론 범위 [14] · C-20261113-004 수용)이다 — 닫기 · 보고에서 '→'(추론) 대신 '등록 전 고정 그대로' · 시행 회계(45 · C-038)는 이미 이 라운드 30칸을 넣었으므로 바뀌는 것 없음",
+   "evidence": [
+    "04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/prereg.json(conclusion_scope[14])"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261115-006",
+   "at": "2026-11-15T04:11:07+0900",
+   "review": "R-20261115-001",
+   "target": "J-20261115-001",
+   "grade": "note",
+   "rule": null,
+   "claim": "'셈 대상' 서술 두 곳 — '음의 알파 → 0 근처'(J · 보고 :35 · :42)는 기술적(−2.78 → −0.27)엔 맞고 수급(−2.91 → −1.33 · 연 −10.4% → −5.1%)엔 과함 · 셈 대상 기술적 = 사이드카 저위험 쏠림(유효 구성원 2.76 · 결론 범위 [28] 원천 = 저위험 묶음) — 기계 보류는 lowrisk_tags.json(technical = true) · 코어 v4 RC_P4_LOWRISK_HOLD(쏠림 포함 — ICROW 도 덮음)가 이미 건다(확인) · 서술에 '(기술적 = 저위험 쏠림)' · 차트 01 '*' 는 저위험 4 에만",
+   "evidence": [
+    "04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/results/evaluation_visible.json",
+    "04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/results/lowrisk_tags.json",
+    "04_Research/programs/_lib/round_core/v4/p4.R:96"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261115-007",
+   "at": "2026-11-15T04:11:08+0900",
+   "review": "R-20261115-001",
+   "target": "J-20261115-001",
+   "grade": "note",
+   "rule": null,
+   "claim": "다음 탐침에 비용 1줄이 없다(11-11 '비용 자원 = 병목?') — 결합기 한 판 = 계보마다 시행 +1 · 같은 배치 기준을 다시 재면 C-038 규칙(같은 엔진 md5 를 칸으로 등록한 P1 라운드 = 원천)으로 그 뒤 등록되는 T0 기저 사슬의 원천 시행 집합에도 든다 → 비용 = A 관문(선택 현실 점검) 쪽 = 병목에 닿음 · 탐침 줄마다 1줄",
+   "evidence": [
+    "04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/DESIGN.md §10(사슬 1호 시행 집합)"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261115-008",
+   "at": "2026-11-15T04:11:08+0900",
+   "review": "R-20261115-001",
+   "target": "J-20261115-001",
+   "grade": "note",
+   "rule": null,
+   "claim": "다음 결합기 사전등록 exposures 1줄 — '동일가중 쪽' 설계는 Q 가 11-14 통지로 시험 창 Calmar · 전기간 등급 변화를 본 P1R03 엔진 쪽으로 움직인다 · DESIGN §10 마지막 줄은 이 라운드 닫기 · 보고만 덮는다",
+   "evidence": [
+    "04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/DESIGN.md §10(11-14 등록 뒤 노출)"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261115-009",
+   "at": "2026-11-15T04:12:10+0900",
+   "review": "R-20261115-002",
+   "target": "J-20261115-001",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "기계 '지지'는 등록 표식(위기 하락노출 중앙값) 위에서만 선다 — 헌장 단위로는 셈 대상이 수급 1 이라 지지가 아니다. 셈 대상 둘 중 기술적은 깊은 위기 7 중 4 에서 같은 배치 T0 보다 더 빠졌고(deep_crisis_nonworse_share 0.43) 빠른 깊은 급락 둘(2008-05 1.11 vs 1.06 · 2020-01 1.18 vs 0.86)에서도 모두 더 빠졌다 — 중앙값 표식(1.10 vs 1.37)이 이를 못 잡았다. 헌장 빈칸 2(원칙 2 '매번'은 깊은 위기를 빼고 세지 않는다)와 사슬 채택 규칙(p4_rules_v2 깊은 위기 비악화 · C-20261113-011 수용)과 같은 단위면 셈 1 · 토탈 셈 밖 = 등록 규칙의 반증 가지다. 또 두 셈 대상 모두 수익 엔진이 아니다(T1 알파 t −1.33 · −0.27 · 새 원천 0) — 기술적의 개선은 무게 절반이 한 구성원(T14_HLRange · 쌍둥이 몫 0.53 · 유효 구성원 2.8)에 몰린 결과이고 β 0.81 → 1.15 · 귀무 기저율 약 6%(S-6)에 음의 쪽도 4 계보 t ≤ −2. 등록 판정(R2)은 그대로 두되, 보고 · 닫기 · 결과 원장에 '지지'만 남으면 [17] 지지 가지(T1 자격 엔진 = 사슬 2호 기저 풀 후보 · 다음 = T2)가 '개선된 결합기'의 증거로 읽힌다.",
+   "evidence": [
+    "04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/results/pair_reading_visible.json(technical counted · deep_crisis_nonworse_share 0.43)",
+    "results/P1R04_ITECH_C0 · P1R04_FTECH_R0 /visible/diagnosis_packet.json behavior.crises(2008-05 · 2020-01)",
+    "results/lowrisk_share_visible.json(technical twin_share_median 0.527 · eff_n 2.76)",
+    "tools/p1r04_pair_reading.R:7 · :62-82(crisis_worse = 중앙값)",
+    "DESIGN.md §10 S-6 · 헌장 원칙 2 · 빈칸 2 · 6 · 13"
+   ],
+   "alternative": "등록 판정 무변경 · 새 숫자 없음: (a) 정식 보고 · 닫기 note · 결과 원장 교훈에 한 줄 — '지지(등록 표식 · 기계) — 셈 대상 2 모두 수익 엔진 아님 · 헌장 단위(깊은 위기 과반 · 빠른 급락)로는 기술적이 위기 악화 동반이라 셈 1 · 결합 개선의 증거로 쓰지 않는다' (b) 다음 결합기 짝 판정(수축 · T2 · T4)의 표식을 헌장 단위로 등록 — 강점 = 강세 구간 과반에서 같은 계보 기준의 80% 이상(빈칸 7 · RC_P4_UC_SEG_KEEP · 중앙값은 기록) · 위기 = 깊은 위기 비악화 과반(빈칸 2 · behavior_card.json majority_share) + 빠른 급락 기록(빈칸 6).",
+   "falsifier": "results/pair_reading_visible.json 의 technical 행 deep_crisis_nonworse_share 가 0.5 를 넘으면 이 도전은 틀렸다. 또 헌장 빈칸 2 는 방어 판정에만 쓰고 짝 비악화 표식에는 쓰지 않는다는 도훈 판정이 06_Registry/decision_register.json 에 있으면 틀렸다. (b) 는 다음 결합기 사전등록 초안 또는 P1R04 닫기의 06_Registry/round_outcomes.jsonl 탐침에 깊은 위기 비악화 과반 · 강세 구간별 과반이 이미 판정 표식으로 있으면 틀렸다.",
+   "status": "accepted",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-11-15T04:15:50+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용 — 기계 '지지'는 중앙값 표식 위에서만 선다. 기술적은 깊은 위기 비악화 3/7(악화 4/7) · 빠른 급락 2/2 악화라 헌장 단위(빈칸 2 — 위기별 과반)로 세면 셈 대상은 수급 1 이다. 판정 라벨은 등록 규칙 그대로 두고 서술을 나눈다.",
+     "change": "보고 판정 줄 · 닫기 note · 결과 원장에 '지지(기계) — 셈 대상 둘 다 수익 엔진 아님 · 헌장 단위로는 셈 1(수급)' · 다음 결합기 짝 표식 = 강세 구간별 · 깊은 위기 과반을 판정으로, 중앙값은 기록으로(C-013 자기 정정과 같은 방향)"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261115-010",
+   "at": "2026-11-15T04:12:22+0900",
+   "review": "R-20261115-002",
+   "target": "J-20261115-001",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "다음 결합기 탐침(J-001 기대 = IC 가중의 동일가중 쪽 수축 또는 T2 횡단면 회귀)은 둘 다 알파 표적이다 — 이 라운드는 알파 표적 결합 가중이 수익 엔진을 철학 반대로 옮긴다는 증거다(IS · T1 − 같은 배치 T0 · 동일가중 자격 8 계보: 증분 알파 8/8 음 · 연복리 8/8 하락 · Calmar 6/8 하락 · 회복 지연 4/8 · 하락/상승 β 비 악화 6/8 · 대형주 주도 강세 2016-02~2017-10 를 따라간 유일한 자격 엔진 성장 1.15 가 자격 상실 → T1 자격 7/7 이 그 강세 0.27 이하 · 5/7 저β 한 원천). 알파 t 표적은 유동성 · 토탈의 '알파↓ t↑ 상승 포착↓'(평시 변동 축소 · 빈칸 18)를 개선이라 부른다. 수축은 정의상 T1 과 T0 사이라 이번 교환(약한 카테고리 구제 · 강한 카테고리 희석)의 크기만 줄이고 철학 병목(깊은 위기 · 빠른 급락 · 대형주 주도 강세)을 겨누지 않는다. P1 N5(C-20261113-033)는 T4 를 지지 · 반증 어느 쪽에서든 다음 탐침 한 자리로 두라고 적었고, 결론 범위 [17] 반증 가지는 T4 를 이미 다음으로 적었다 — 헌장 단위로 읽으면(같은 리뷰 C1) 이 라운드는 그 가지다.",
+   "evidence": [
+    "06_Registry/q_judgment_ledger.json J-20261115-001 expectation",
+    "04_Research/programs/P1_RETURN/P1R04_combiner_t1_icw/round_spec.json conclusion_scope[17] · [32]",
+    "results/evaluation_visible.json · pair_reading_visible.json · results/<칸>/visible/diagnosis_packet.json(behavior.stats · bull_phases · crises)",
+    "04_Research/01_reports/factor_spine_design_20261111/README.md §4-2 · §9",
+    "헌장 원칙 1 · 5 · 빈칸 4 (C) · 6 · 7 · 18 · 23"
+   ],
+   "alternative": "닫기의 다음 탐침 ≥ 2 를 (1) 수축 또는 T2 — 판정 표식은 헌장 단위(같은 리뷰 C1 (b)) (2) 철학 표적 결합기 한 자리 — T4 상태 조건부 결합(as-of 조건부 IC · 조건은 시작 시점 이전 정보로만 · 빈칸 23 분류기 반증 검사와 함께) 또는 T5 상위 꼬리, 판정 = 같은 엔진(T0) 대비 깊은 위기 · 빠른 급락 하락노출 비악화 + 강세 구간별 참여 보존 + 증분 알파 비열등(빈칸 4 (C)) · 비용은 이번과 같은 꼴(CPU · LLM 0).",
+   "falsifier": "P1R04 닫기의 결과 원장 줄(06_Registry/round_outcomes.jsonl · round P1R04_combiner_t1_icw) 다음 탐침에 철학 표적 결합기(T4 · T5, 또는 깊은 위기 · 빠른 급락 · 강세 구간별을 판정으로 갖는 결합기)가 이미 한 자리 있으면 이 도전은 틀렸다.",
+   "status": "accepted",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-11-15T04:15:50+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용 — 수축 · T2 는 둘 다 알파 표적이라 철학 병목(깊은 위기 · 빠른 급락 · 대형주 주도 강세)을 겨누지 않는다. 판단 T2 의 분해 설계 T1s 와 함께, 다음 탐침 한 자리를 T4(상태 조건부) 또는 T5(상위 꼬리) 결합기로 둔다.",
+     "change": "닫기 탐침 ③ = T4 상태 조건부 또는 T5 상위 꼬리 결합 — 판정 = 동일가중 대비 깊은 위기 · 빠른 급락 비악화 + 강세 구간별 참여 보존 + 알파 비열등(사전 고정) · 비용 = 계보마다 시행 +1 → A 관문 시행 집합 쪽"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261115-011",
+   "at": "2026-11-15T04:12:43+0900",
+   "review": "R-20261115-002",
+   "target": "J-20261115-001",
+   "grade": "note",
+   "rule": null,
+   "claim": "밸류 희석의 대부분은 시작 구간(이력 부족 구성원 제외)이다 — 기전이 둘이다. 연도별 수익 차(T1 − T0) 합 2000~2003 / 2004~2022: 밸류 −194 / +17pp(2004~2022 양의 해 10/19) · 퀄리티 −101 / −36 · 토탈 −67 / +36 = 시작 구간 기전(결론 범위 [24] — 2000-01~2003-01 밸류 1/24 가중) · 성장 −29 / −132 · 쏠림 +5 / −145 · 유동성 +81 / −163 · 방어 +10 / −75 · 국면 −20 / −189 · 레버리지 +4 / −108 = 성숙 구간 기전. J-001 의 기전(시점별 추정 오차 · DeMiguel, Garlappi & Uppal 2009)은 후자에 맞다. 밸류 깊은 위기 악화 4 중 3(2000-06 · 2002-04 · 2002-12)이 시작 구간이고 2004 뒤 깊은 위기 4 중 3(2008-05 · 2011-05 · 2020-01)에서는 T1 밸류가 조금 덜 빠졌다(사후 구간 판독 · 기록). 다음 결합기에서 시작 구간 처리(예: 카테고리 구성원 중 IC 이력 36개월을 채운 몫이 majority_share 를 넘기 전 달은 T0 — 새 숫자 없음)를 수축과 따로 시험하지 않으면 두 기전이 '수축 효과'로 섞인다.",
+   "evidence": [
+    "results/<칸>/visible/diagnosis_packet.json performance.annual · behavior.crises",
+    "round_spec.json conclusion_scope[24]"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261115-012",
+   "at": "2026-11-15T04:12:43+0900",
+   "review": "R-20261115-002",
+   "target": "SYSTEM",
+   "grade": "note",
+   "rule": null,
+   "claim": "저위험 쏠림 꼬리표(가중 몫)는 저β 표기와 다르다 · 꼬리표 크기를 확인 묶음에. ITECH 는 쌍둥이 몫 0.53(기준 0.08)으로 꼬리표가 붙었지만 β 1.15 · 저β 묶음과 초과수익 상관 0.02~0.12 · 크기 성분 감소(대형주 쪽) — 낮은 일중 범위가 이 유니버스에선 대형주를 고른다. v4 표기 규칙(round_core/v4/p4.R:99 — 저위험 계열 ∨ lowrisk_tag → '저β 수익 엔진')은 이런 엔진에 측정 β 와 어긋난 이름을 붙인다 — 보류 · 확인 범위로는 맞고(한 구성원 집중) 표기만 측정 β(행동 카드)로. 유동성(방어 부호 몫 중앙 0.531 vs 기준 0.523) · 토탈(저위험 몫 0.288 vs 0.286)은 '과반 달' 문턱을 근소한 차로 넘었다(토탈 T1 의 최대 몫은 밸류 0.147 ≈ 기준 2배 · 저위험 4 몫 2004~2022 0.27~0.31 · 2000~2003 만 0.34~0.40) — 도훈 확인 묶음에 꼬리표 참/거짓과 함께 몫의 크기(중앙 · 기준)를 싣는다.",
+   "evidence": [
+    "results/lowrisk_share_visible.json · lowrisk_tags.json · weight_trace_visible.json",
+    "report/charts_is/10_t1_excess_correlation.png",
+    "04_Research/programs/_lib/round_core/v4/p4.R:99"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261115-013",
+   "at": "2026-11-15T04:12:44+0900",
+   "review": "R-20261115-002",
+   "target": "J-20261115-001",
+   "grade": "note",
+   "rule": null,
+   "claim": "자기 정정 — C-20261113-026 대안 1 은 강점 표식을 중앙값(빈칸 4 (B))으로 제안했는데 빈칸 7 은 판정 단위를 강세 구간별로 정했다(제 제안이 헌장 단위와 어긋남). 이 라운드에서 두 단위가 갈린 계보: 방어 · 토탈(중앙값 손실 · 구간 과반 보존 0.75 · 0.62) ↔ 쏠림(중앙값 보존 · 구간 과반 미달 0.50). 셈 대상 판정은 바뀌지 않았다. 다음 결합기 표식은 구간별 = 판정 · 중앙값 = 기록(같은 리뷰 C1 (b)).",
+   "evidence": [
+    "results/pair_reading_visible.json bull_seg_keep_share · strength_loss",
+    "헌장 빈칸 4 (B) · 7"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261115-014",
+   "at": "2026-11-15T04:12:44+0900",
+   "review": "R-20261115-002",
+   "target": "J-20261115-001",
+   "grade": "note",
+   "rule": null,
+   "claim": "정보 경계 — results/evaluation_visible.json 에 시험 창 열이 없다(열 = _vis · qualify) · C-20261113-013 · 032 의 우려는 이 라운드에서 해소. DESIGN §10 마지막 줄의 노출(Q 가 이음매 세션 통지에서 P1R03 엔진 = 이 라운드 R0 15 의 시험 창 값 · 전 기간 등급 변화를 봄)은 이 라운드 판정 · 사슬 1호 결정(측정 전 고정 [14])에 닿지 않는다 — 다음 결합기 사전등록(수축 · T2 · T4)의 exposures 에 옮겨 적는다(그 라운드의 기준 칸도 같은 R0 엔진).",
+   "evidence": [
+    "results/evaluation_visible.json table 열 목록",
+    "DESIGN.md §10 '11-14 재측정 일정 · 등록 뒤 노출'"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261115-015",
+   "at": "2026-11-15T04:12:44+0900",
+   "review": "R-20261115-002",
+   "target": "J-20261115-001",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "T1 을 결합기 기본값으로 올리지 않고 사슬 1호 = 동일가중 유지 — 판정 해석이 음의 쪽 4 계보와 기저율(S-6)을 함께 읽고 '고른 개선이 아니라 교환'이라 쓴 것은 헌장 원칙 1 · 6(복리)으로 읽어도 같은 결론이다. P1 수용분(C-20261113-026 · 027 · 028)이 실제로 작동했다 — 표식 13건(강점 손실 5 · 위기 악화 6 · 크기 틸트 2) · 저위험 몫 사이드카 · 꼬리표 기계 파일 · IS 전용 차트 판 · 결과 전 사이드카 설정 md5 대조(S-2) · 판정 해석이 이 표식들을 근거로 썼다.",
+   "evidence": [
+    "results/pair_reading_visible.json · lowrisk_tags.json · report/charts_is/ · J-20261115-001"
    ],
    "alternative": "",
    "falsifier": "",

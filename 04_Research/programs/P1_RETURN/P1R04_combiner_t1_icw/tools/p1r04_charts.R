@@ -149,7 +149,8 @@ same_out <- function(ln) {
 }
 L[, same := vapply(lineage, same_out, logical(1))]
 L[, gap := status %in% "evaluated" & !same & !(is.finite(d_t_vis) & is.finite(uc_t1) & is.finite(uc_t0))]
-VV <- switch(as.character(PR$verdict %||% "?"), support = "지지 — 결합 개선", falsified = "반증 — 개선 없음", untested = "미시험 — 측정 안 된 카테고리 있음", "판독 불가(결합 개선 판정 파일 없음)")
+## 11-15 판단 T2 C-20261115-002 수용: '지지'는 등록 단측 규칙(등록 전 제안된 악화 0 조항이 등록본에 없다) — 라벨은 그대로 두고 조항 부재를 같은 줄에 적는다
+VV <- switch(as.character(PR$verdict %||% "?"), support = "지지(등록 단측 규칙 · 악화 조항 없음 — 있었으면 지지 아님)", falsified = "반증 — 개선 없음", untested = "미시험 — 측정 안 된 카테고리 있음", "판독 불가(결합 개선 판정 파일 없음)")
 if (any(L$gap) && !identical(PR$verdict, "support")) VV <- "미시험 — 값이 빈 카테고리(사전등록 정정 기록)"
 ## OOS 짝 증분(보고 전용 · 계약 rc_pair_alpha 의 test)
 L[, `:=`(dt_test = NA_real_, da_test = NA_real_)]
@@ -186,6 +187,9 @@ if (!is.null(PT) && nrow(D1)) {
     geom_vline(xintercept = 0, colour = "#c3c2b7", linewidth = 0.4) +
     geom_vline(xintercept = TH_T, linetype = "dashed", colour = INK2, linewidth = 0.5) +
     annotate("text", x = TH_T, y = Inf, label = sprintf("문턱 t = %s", f2(TH_T, 1)), vjust = -0.4, hjust = -0.05, family = FAM, size = 3.2, colour = INK2) +
+    ## 악화 참고선(등록 규칙 밖 · 판단 T2 C-20261115-002) — 등록 전 제안된 '악화 = t ≤ −문턱' 조항이 등록본에 없어 판정에는 쓰지 않는다
+    geom_vline(xintercept = -TH_T, linetype = "dotted", colour = C_TAG, linewidth = 0.6) +
+    annotate("text", x = -TH_T, y = Inf, label = sprintf("악화 참고 t = −%s(등록 규칙 밖)", f2(TH_T, 1)), vjust = -0.4, hjust = -0.05, family = FAM, size = 3.0, colour = C_TAG) +
     geom_text(aes(x = lab_x, label = lab), hjust = 0, family = FAM, size = 3.2, colour = INK) +
     scale_y_discrete(labels = function(x) lin_lab(x)) +
     scale_fill_manual(values = c("셈 대상(문턱 ∧ 제외 표식 없음)" = C_PASS, "문턱 넘음 · 제외 표식" = C_TAG, "문턱 미달" = "#c9c7bf", "미시험" = "#e6e4dc"), drop = FALSE, name = NULL) +
