@@ -30,16 +30,24 @@ for (cc in c("factor_md5", "rawdata_vintage", "bench_vintage", "basis", "err", "
 if ("vintage_changed_during_run" %in% c(names(v4), names(v5))) stop("[v35 report] 드라이런 중 자료 판이 바뀌었다 — 드라이런부터 다시")
 lg <- function(x) tolower(as.character(x)) %in% "true"   # 전수 CSV 의 True/False(파이썬) → 논리
 for (x in c("c0", "cP")) { d0 <- get(x); if (is.null(d0)) next
-  for (cc in intersect(c("fa_stale", "scope", "scope_snapshot", "t4", "hard_fail", "judge_eligible", "benefit"), names(d0))) d0[, (cc) := lg(get(cc))]
+  for (cc in intersect(c("fa_stale", "scope", "scope_snapshot", "t4", "rec_inc", "hard_fail", "judge_eligible", "benefit"), names(d0))) d0[, (cc) := lg(get(cc))]
   assign(x, d0) }
 
 ## 이음매 수리 전 P1R03 측정(재측정본으로 대체 · 인용 대상 아님 — 부록 1 §2)
 P13 <- file.path(ROOT, "04_Research/programs/P1_RETURN/P1R03_factor_family_composites")
-art <- function(g) unique(unlist(lapply(Sys.glob(file.path(P13, g)), function(f) {
+## 칸마다 가장 늦은 결과 묶음(원 측정 results/ · 재측정 remeasure_*/results/ — 결과 파일 시각 순)의 기록만 현행 · 앞선 묶음의 기록 = 대체됨
+rs13 <- rbindlist(lapply(c(file.path(P13, "results"), Sys.glob(file.path(P13, "remeasure_*", "results"))), function(dd)
+  rbindlist(lapply(Sys.glob(file.path(dd, "P1R03_*_C0.json")), function(f) {
+    x <- tryCatch(fromJSON(f)$artifacts, error = function(e) NULL)
+    data.table(code = sub("\\.json$", "", basename(f)), dir = if (is.null(x)) NA_character_ else sub("^.*(stage_artifacts/)", "\\1", gsub("\\\\", "/", as.character(x)[1])),
+               t = file.mtime(f), set = basename(dirname(dd)))
+  }))), fill = TRUE)
+SUPER <- if (nrow(rs13)) { rs13 <- rs13[!is.na(dir)]; setdiff(rs13$dir, rs13[order(-as.numeric(t))][, .SD[1], by = code]$dir) } else character(0)
+## 중단된 측정(판정에 쓰지 않음 · 99_Archive/*aborted_measure*) — 예: P1R04 11-13 10:04~10:31(이음매 D1 예고로 멈춤 · DESIGN §10)
+ABORT <- unique(unlist(lapply(Sys.glob(file.path(ROOT, "99_Archive", "*aborted_measure*", c("*.json", "results/*.json"))), function(f) {
   x <- tryCatch(fromJSON(f)$artifacts, error = function(e) NULL)
   if (is.null(x)) character(0) else sub("^.*(stage_artifacts/)", "\\1", gsub("\\\\", "/", as.character(x)))
 })))
-SUPER <- setdiff(art("results/P1R03_*_C0.json"), art("remeasure_seam_20261113/results/P1R03_*_C0.json"))
 
 K <- c("dir", "strategy", "remeasured_at", "essence_grade", "rules_version", "fa_stale", "scope", "scope_snapshot", "t4", "judge_eligible")
 J <- merge(v4[, .(dir, g4 = grade, basis4 = basis, crn4 = cr_notch, band4 = band, fa4 = fa_notch, err4 = err, fmd5_4 = factor_md5, raw4 = rawdata_vintage)],
@@ -47,7 +55,7 @@ J <- merge(v4[, .(dir, g4 = grade, basis4 = basis, crn4 = cr_notch, band4 = band
                   cr, mc8_label, label_size_beta, size_beta_status, share_se, share_sb, share_se_path, share_sb_path, exposure_varies,
                   beta_leg, rho_median, card_beta, blocked5 = blocked_by, err5 = err, fmd5_5 = factor_md5, raw5 = rawdata_vintage)], by = "dir", all = TRUE)
 J <- merge(J, c0[, ..K], by = "dir", all.x = TRUE)
-J[, superseded := dir %in% SUPER]
+J[, superseded := dir %in% SUPER][, aborted := dir %in% ABORT]
 errs <- J[!is.na(err4) | !is.na(err5)]
 ## 두 드라이런이 같은 자료 판이었나(요인 md5 · RAWDATA 크기@시각)
 vint <- unique(J[is.na(err4) & is.na(err5), .(fmd5_4, fmd5_5, raw4, raw5)])
@@ -123,7 +131,7 @@ had <- function(b) b %in% c("selection", "timing_evidence")             # 가점
 P[, kind := fifelse(!mc8_label %in% "selection_defense", "선택 방어 아님(기존 판정부터)",
              fifelse(!had(basis4), "가점 없음(v3.4 부터 · 타이밍 증거 없음)",
              fifelse(had(basis5), "가점 유지(β 일치 대조도 통과)", "가점 해제(β 로 설명되는 방어)")))]
-P[, tag := fifelse(scope %in% TRUE & !superseded, sprintf("%s→%s", g4, g5), "")]
+P[, tag := fifelse(scope %in% TRUE & !superseded & !aborted, sprintf("%s→%s", g4, g5), "")]
 set.seed(20261113)
 g2 <- ggplot(P, aes(share_se, share_sb, colour = kind)) +
   annotate("rect", xmin = 0.5, xmax = Inf, ymin = -Inf, ymax = 0.5, fill = "#fbe9e8", alpha = 0.6) +
@@ -169,7 +177,7 @@ ggsave(file.path(OUT, "03_transition_by_cause.png"), g3, width = 8.6, height = 4
 
 ## ── 표 ──
 fwrite(J, file.path(OD, sprintf("data/regrade_table_%s.csv", RUN)))
-row1 <- function(x) x[, sprintf("| `%s` | %s | %s | %s | %s | %s | %s → %s | %s | %s | %s | %s | %s |%s", dir, paste0(fifelse(is.na(strategy), "", strategy), fifelse(superseded, " ※", "")), stored_grade, g4, g5, band5, basis4, basis5,
+row1 <- function(x) x[, sprintf("| `%s` | %s | %s | %s | %s | %s | %s → %s | %s | %s | %s | %s | %s |%s", dir, paste0(fifelse(is.na(strategy), "", strategy), fifelse(superseded, " ※", ""), fifelse(aborted, " †", "")), stored_grade, g4, g5, band5, basis4, basis5,
                                pct(share_se), pct(share_sb), fifelse(exposure_varies %in% TRUE, "변함", "고정"),
                                ifelse(is.finite(beta_leg), sprintf("%.2f", beta_leg), "–"), ifelse(is.finite(rho_median), sprintf("%.2f", rho_median), "–"), "")]
 hdr <- c("| 기록 | 전략 | 저장 | v3.4 | v3.5 | 띠 | 근거 v3.4 → v3.5 | 시가총액·노출 일치 | 시가총액·β 일치 | 노출 | 보유 β | ρ 중앙 |", "|---|---|---|---|---|---|---|---|---|---|---|---|")
@@ -189,7 +197,8 @@ md <- c("# 등급 v3.5 재채점 결과 — 사전등록 §4 · 부록 1 §4 표
         "", sprintf("## T1′ 위기 방어 가점 범위 %d건 — 저장 → v3.4(지금) → v3.5(지금)", nrow(RULE)), "",
         sprintf("### 등록 시점 %d", n_snap), "", hdr, row1(RULE[scope_snapshot %in% TRUE]),
         "", sprintf("### 등록 뒤 %d(사전등록 뒤 측정)", n_new), "", hdr, row1(RULE[!scope_snapshot %in% TRUE]),
-        "", "- ※ = 이음매 수리(RAWDATA 2026-03-30 정정) 전 P1R03 측정 — 재측정본으로 대체 · 인용 대상 아님(판 원장이 A 자격 보류)",
+        "", "- ※ = 같은 칸의 더 늦은 재측정으로 대체된 P1R03 측정 — 인용 대상 아님",
+        "- † = 중단된 측정(판정에 쓰지 않음 · 99_Archive 의 aborted_measure 기록 · 예: P1R04 11-13 10:04~10:31)",
         sprintf("- 규칙 효과(v3.4 → v3.5): %s", paste(RULE[, .N, by = rule_move][, sprintf("%s %d", rule_move, N)], collapse = " · ")),
         sprintf("- 데이터 갱신 효과(저장 → v3.4): %s", paste(RULE[, .N, by = data_move][, sprintf("%s %d", data_move, N)], collapse = " · ")),
         "", sprintf("## T5 팩터 수익률 갱신 재채점(규칙 무관) %d건 — 저장 → v3.4(지금)", nrow(FA)), "", tab(FA, "stored_grade", "g4"),
@@ -217,7 +226,14 @@ sm <- list(run = RUN, census_pre = CPRE, census_post = if (POST) CPOST else NA, 
            fa_moves = FA[!is.na(g4) & stored_grade != g4, .N, by = .(from = stored_grade, to = g4)], fa_rule_same = FA[!is.na(g4) & !is.na(g5) & g4 == g5, .N],
            dist = dist[, .(g = as.character(g), before, after, delta)], changed = if (POST) nrow(chg) else NA, benefit_new = if (POST) nrow(ben_new) else NA,
            a_down = nrow(a_down), a_down_book = nrow(a_down_book), judge_withdraw = nrow(judge_off), errors = nrow(errs), vintage_ok = vint_ok,
-           superseded_in_rule = RULE[superseded == TRUE, .N],
-           keep_notch = J[basis5 %in% c("selection", "timing_evidence") & crn5 %in% "strong", .N])
+           superseded_in_rule = RULE[superseded == TRUE, .N], aborted_in_rule = RULE[aborted == TRUE, .N],
+           keep_notch = J[basis5 %in% c("selection", "timing_evidence") & crn5 %in% "strong", .N],
+           ## 텔레그램 · README 서술용(숫자 · 식별자만) — 규칙 효과 내림 기록 · 범위 기록의 시가총액 · β 일치 대조 통과율 · 보유 β 범위
+           rule_down_list = RULE[rule_move == "내림", .(strategy, from = g4, to = g5, beta_leg = round(beta_leg, 2), share_sb = round(share_sb, 2), superseded, aborted)],
+           rule_sb_range = if (RULE[is.finite(share_sb), .N]) round(range(RULE[is.finite(share_sb)]$share_sb), 2) else NULL,
+           rule_beta_range = if (RULE[is.finite(beta_leg), .N]) round(range(RULE[is.finite(beta_leg)]$beta_leg), 2) else NULL,
+           rule_basis5 = as.list(table(RULE$basis5, useNA = "ifany")),
+           fa_total_moved = FA[!is.na(g4) & stored_grade != g4, .N],
+           n_rec_inc = if ("rec_inc" %in% names(c0)) J[dir %in% c0[rec_inc %in% TRUE]$dir, .N] else 0L)
 writeLines(toJSON(sm, auto_unbox = TRUE, pretty = TRUE, digits = NA, na = "null"), file.path(OD, "data", sprintf("report_summary_%s.json", RUN)), useBytes = TRUE)
 cat(md, sep = "\n")
