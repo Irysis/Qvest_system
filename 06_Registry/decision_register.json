@@ -5170,7 +5170,31 @@
       "note": "사후 보충 등록(오케스트레이터 11-14) — 판 원장 note: 가격 수준 기반 팩터의 원천 이음매 — Ret 수리(RAWDATA-SEAM-0330-REPAIR-20261113) 뒤에도 Close 수준이 03-30(351종) · 10-15(1) · 11-10(3) 처분 자리에서 끊겨, 날짜를 넘는 가격 비율을 쓰는 23팩터(모멘텀 M05 · M06 · M16 · M17 · M19 · M20 + 합성 M09 · 기술적 12 · D40 · L39 · V21 · TR01)가 2026-03~ as-of 에서 틀렸다(예: 10:1 분할 종목의 52주 고점 대비 0.1 · 거래정지 종목의 가짜 변동성 · ADX 100). 연속 가격 배율 px_cont(price_continuity.R · 코드 dda1e34ca)로 202603~202611 대상 23팩터 부분 재계산(정본 rebui",
       "registered_at": "2026-11-14T16:25:54+0900",
       "opened_at_basis": "id 날짜 = 도훈 지시일 · 시각 미상 — 06_Registry/factor_db_vintage.json 의 같은 id 기록에서 보충(11-14 커버리지 검사 · 이음매 세션 요청 · 결정 기록부 등록 누락)"
+    },
+    {
+      "id": "RAWDATA-INTERNAL-BREAK-FILL-D2D3-20261114",
+      "title": "원천 내부 단절 행(101 · 2000~ 89 · 측정 축 6) + 새 단절(10-15 A250030) 수익률 처리(이음매 보고서 D2 · D3)",
+      "status": "resolved",
+      "opened_at": "2026-11-14T16:31:28+0900",
+      "options": [
+        "시총 기준 실수익(r_size − 1) + 가격제한폭 안전장치",
+        "현행 유지(생비율 · 새 단절 차단)"
+      ],
+      "recommendation": "시총 기준 실수익(r_size − 1) + 가격제한폭 안전장치",
+      "default_until_decided": "현행(09-07 A안 · 차단)",
+      "blocks": [
+        "item:rawdata_ret",
+        "item:P1R04_measure",
+        "item:P1S03_measure"
+      ],
+      "owner": "dohoon",
+      "source": "04_Research/01_reports/rawdata_seam_20260330_repair_20261113/README.md §7 D2 · D3 · orchestrator 세션 11-14 카드",
+      "decision": "'데이터 빈 부분 제대로 채워' — 단절 행 · 새 단절 행 모두 실제 수익률로 채운다(시총 기준 실수익 r_size − 1 · 가격제한폭은 날짜별 — 2015-06-15 전 ±15%) · 제한폭 밖이라 그 방법이 맞지 않는 행은 차단(빈칸)으로 두지 말고 원천 재조회 등으로 맞는 값을 찾아 채운다 · 판 원장 1줄",
+      "decided_by": "dohoon",
+      "decided_at": "2026-11-14T16:31:29+0900",
+      "note": "11-14 카드 답(문구 그대로: '데이터 빈 부분 제대로 채워')",
+      "registered_at": "2026-11-14T16:31:28+0900"
     }
   ],
-  "last_updated": "2026-11-14T16:25:56+0900"
+  "last_updated": "2026-11-14T16:31:30+0900"
 }
