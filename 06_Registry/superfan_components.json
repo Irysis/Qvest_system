@@ -21,7 +21,8 @@
       {"severity": "warn", "regex": "\\[0c\\] ★적재 미달", "label": "적재 신선도 미달"},
       {"severity": "warn", "regex": "^\\[warn\\] \\[8\\.1r\\]", "label": "역할 재분류 실패"},
       {"severity": "fail", "regex": "dofork: child -1 - forked process \\d+ died unexpectedly", "label": "셸 fork 실패 — 로그오프 · 재시작 · 자원 고갈로 실행이 중도 사망(Done 없음 · 11-12 00:10 · 과거 5회 모두 중도 사망과 짝)"},
-      {"severity": "fail", "regex": "\\[SEAM_ALARM\\]", "label": "수정주가 기준 단절 — 적재기 이음매 감사(rawdata_seam_audit.R)가 새 단절 · 집단 극단 수익일을 봤거나 감사가 실패(그 행 Ret = NA · 11-13 RAWDATA 03-30 이음매 수리)"}]},
+      {"severity": "fail", "regex": "\\[SEAM_ALARM\\]", "label": "수정주가 기준 단절 — 적재기 이음매 감사(rawdata_seam_audit.R)가 새 단절 · 집단 극단 수익일을 봤거나 감사가 실패(그 행 Ret = NA · 11-13 RAWDATA 03-30 이음매 수리)"},
+      {"severity": "fail", "regex": "(WARN|ABORT) \\[autologin\\]", "label": "퀀티 '비밀번호 저장' 꺼짐(maincfg SAVEUSERPW=0) — 무인 재로그인 불가: 세션이 살아 있으면 그 세션으로 받고 끊기면 멈춘다 · 사람이 단말 로그인 창에서 '비밀번호 저장' 체크 후 1회 로그인(11-14 00:11 재로그인 직후 단말이 꺼서 밤 수급 0 · 자가 복구 5회 정지)"}]},
     {"id": "log_fresh", "kind": "freshness", "file": ".cache/scheduler_logs/daily_refresh.log", "max_age_h": 26, "severity": "fail", "cause": "task_run"},
     {"id": "data_current", "kind": "json_field", "file": ".cache/data_currency_stamp.json", "path": "verdict",
      "bad_values": ["stale_after_refresh", "stale_unfixable_by_refresh"], "severity": "fail", "cause": "own",
@@ -31,7 +32,8 @@
      "_why_max_event_age_h": "아침 로그는 날짜별 파일이고 줄에 날짜가 없어 사건 시각 = 파일 날짜 00:00 이다. 감시는 매시 새 줄만 읽으므로 새 사건은 24+1 시간 안에 잡힌다 · 26 = 처음 켤 때 어제 파일의 이미 다룬 사건(11-12 02:56 상한 초과)을 다시 알리지 않는 문턱",
      "patterns": [
       {"severity": "fail", "regex": "자가 복구 리프레시가 상한 \\d+s 를 넘김", "label": "자가 복구 시간 상한 초과(11-12 02:56 · OHLCVS 저장본 미적재)"},
-      {"severity": "warn", "regex": "리프레시 후에도 stale=\\d+ 잔존", "label": "자가 복구 뒤 낡음 잔존"}]}
+      {"severity": "warn", "regex": "리프레시 후에도 stale=\\d+ 잔존", "label": "자가 복구 뒤 낡음 잔존"},
+      {"severity": "fail", "regex": "(WARN|ABORT) \\[autologin\\]", "label": "퀀티 '비밀번호 저장' 꺼짐(maincfg SAVEUSERPW=0) — 무인 재로그인 불가: 세션이 살아 있으면 그 세션으로 받고 끊기면 멈춘다 · 사람이 단말 로그인 창에서 '비밀번호 저장' 체크 후 1회 로그인(11-14 00:11 재로그인 직후 단말이 꺼서 밤 수급 0 · 자가 복구 5회 정지)"}]}
    ]
   },
   {

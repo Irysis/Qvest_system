@@ -436,11 +436,16 @@ function QW-AliveDiag {
 }
 function Ensure-Login {
   if (QW-Alive) { return $true }
+  ## (2026-11-14) 비밀번호 저장이 꺼진 실행은 로그인하지 않는다(빈 비밀번호 제출 = 계정 잠금 경로 08-29) — 호출자 모두(라운드 루프 · LoginOnly)의 마지막 방어선.
+  ##   시작 점검 뒤에 꺼졌어도(11-14 꼴 · 원인 미상) 막도록 로그인 직전에 플래그를 다시 읽는다 — 꺼진 채로는 한 번도 제출하지 않는다.
+  if (-not $script:NO_SAVED_PW -and (Read-SavePw) -eq '0') { Enter-NoSavedPw 'found off right before a login' }
+  if ($script:NO_SAVED_PW) { Write-Host "[login] no saved password (SAVEUSERPW=0) - not logging in"; return $false }
   if (Kick-Dialog) {
     $script:KICKS++
     Write-Host "[login] duplicate-login termination dialog (kick #$($script:KICKS)) -> re-login (no limit, Dohoon 11-13)"
   }
   Write-Host "[login] no session -> launching + login"
+  $submitAt = Get-Date
   Get-Process qwMain -EA SilentlyContinue | Stop-Process -Force -EA SilentlyContinue
   Start-Sleep 1
   Start-Process $QWLAUNCH -EA SilentlyContinue
@@ -472,8 +477,9 @@ function Ensure-Login {
   if ($script:LOGIN_BLOCKED) { return $false }
   ## 제출 뒤 최대 30초(감시기가 승계 '예'를 누른다) — 살아나면 바로 돌아간다. 11-09 08:03 실측 제출 → 살아남 = 19초라
   ##   구 고정 9초면 false 를 돌려주고, 다음 시도가 Stop-Process 로 진행 중인 로그인을 죽인다.
-  for ($w = 0; $w -lt 30; $w++) { if (QW-Alive) { $script:LOGINS_OK++; return $true }; Start-Sleep 1 }
+  for ($w = 0; $w -lt 30; $w++) { if (QW-Alive) { $script:LOGINS_OK++; Test-SavePwAfterLogin $submitAt; return $true }; Start-Sleep 1 }
   $a = QW-Alive; if ($a) { $script:LOGINS_OK++ }
+  Test-SavePwAfterLogin $submitAt
   return $a
 }
 
@@ -577,12 +583,50 @@ function Refresh-One($f,$target) {
 #     (자격 자체를 여기서 채우지 않는다 — 비밀번호 취급은 사람의 영역이다.)
 #   ★건너뛰기: -SkipLogin 이면 이미 로그인된 세션 전제이므로 점검하지 않는다.
 $MAINCFG = "C:\WISEfn\Common\Data\maincfg.ini"
+## ★(2026-11-14 · refresh-root-fix) 비밀번호 저장이 꺼진 날도 **살아 있는 세션은 쓴다** — 로그인만 끈다.
+##   실사고 11-14: 00:10 중복 로그인 종료 → 재로그인(살아남 · 00:11:16) → 그 로그인 직후 단말이 maincfg 를 SAVEUSERPW=0 으로 다시 썼다
+##   (00:11:17 · 비밀번호 값 자체는 남음 · 원인 미상 — 11-13 07:32 같은 절차는 1 을 유지했다). 구판은 그 뒤 모든 드라이버 실행을 시작 전에
+##   끊어(exit 3) 세션이 살아 있었는데도(13:25 FundV2 피어 갱신 18/18 성공) 밤 수급 0 · 자가 복구 5회 · 세션 확인이 다 멈췄다.
+##   규칙: SAVEUSERPW=0 이면 로그인(LOGIN 클릭 · 비밀번호 칸 Enter)은 하지 않는다(08-29 계정 잠금 방지 그대로) — 세션이 살아 있으면
+##   -SkipLogin 처럼 그 세션으로 받고(no_saved_pw), 끊기면 그 자리에서 멈춘다. 세션이 없으면 종전대로 중단(exit 3).
+##   로그인 뒤 단말이 플래그를 0 으로 바꾸면(11-14 꼴) 그 실행의 남은 로그인도 끈다(Test-SavePwAfterLogin).
+##   해소 = 사람이 단말 로그인 창에서 '비밀번호 저장'을 켜고 1회 로그인(maincfg SAVEUSERPW=1). 감시 = superfan daily_refresh 'WARN/ABORT [autologin]' 줄.
+##   시험 = 08_Tests/scenarios/test_scn_qw_kick_relogin.sh N · W 절.
+function Read-SavePw {   # maincfg.ini [LOGIN] SAVEUSERPW 값('0' · '1' · 파일 · 줄 없으면 '') — 플래그만 읽는다(ID · 비밀번호 값은 읽지도 찍지도 않는다)
+  if (-not (Test-Path $MAINCFG)) { return '' }
+  $cfg = Get-Content $MAINCFG -Encoding Default -EA SilentlyContinue
+  $v = ($cfg | Where-Object { $_ -match '^\s*SAVEUSERPW\s*=' } | Select-Object -First 1) -replace '^[^=]+=', ''
+  return "$v".Trim()
+}
+function Resolve-SavedPwMode([string]$savepw, [bool]$alive) {   # ok = 저장 켜짐(또는 모름 · 종전대로) · no_saved_pw = 꺼짐 + 세션 살아 있음 · abort = 꺼짐 + 세션 없음
+  if ("$savepw".Trim() -ne '0') { return 'ok' }
+  if ($alive) { return 'no_saved_pw' }
+  return 'abort'
+}
+$script:NO_SAVED_PW = $false
+function Enter-NoSavedPw([string]$why) {   # 이 실행의 남은 로그인을 모두 끈다(라운드 루프 · LoginOnly · Ensure-Login 이 본다)
+  $script:NO_SAVED_PW = $true; $script:SkipLogin = $true
+  Write-Host "WARN [autologin] SAVEUSERPW=0 ($why) - no saved password: logins are OFF for this run (account-lock guard 08-29). A live session is used as is; a kick or a dead session stops the run."
+  Write-Host "     fix (person): Quantiwise login window -> tick 'Save password' (비밀번호 저장) -> log in once (maincfg SAVEUSERPW=1)."
+}
+function Test-SavePwAfterLogin([datetime]$since) {   # 로그인 뒤 단말이 SAVEUSERPW 를 다시 쓴 값 — 0 이면 남은 로그인을 끈다
+  ##   기다림 근거: 11-14 실측 = 세션 살아남(00:11:16) 1초 뒤 maincfg 기록(00:11:17) → 3초(실측의 3배) 쉰 뒤, 기록이 제출 시각보다 앞서면 10초까지 더 본다
+  Start-Sleep 3
+  for ($i = 0; $i -lt 10; $i++) {
+    $it = Get-Item $MAINCFG -EA SilentlyContinue
+    if (-not $it -or $it.LastWriteTime -ge $since) { break }
+    Start-Sleep 1
+  }
+  $v = Read-SavePw
+  Write-Host "[autologin] after login: SAVEUSERPW=$v"
+  if ($v -eq '0') { Enter-NoSavedPw 'written by the terminal right after this login' }
+}
 if (-not $SkipLogin) {
   if (Test-Path $MAINCFG) {
-    $cfg = Get-Content $MAINCFG -Encoding Default -EA SilentlyContinue
-    $savepw = ($cfg | Where-Object { $_ -match '^\s*SAVEUSERPW\s*=' } | Select-Object -First 1) -replace '^[^=]+=', ''
-    $savepw = "$savepw".Trim()
-    if ($savepw -eq '0') {
+    $savepw = Read-SavePw
+    $mode = Resolve-SavedPwMode $savepw (QW-Alive)
+    if ($mode -eq 'no_saved_pw') { Enter-NoSavedPw 'at start, session alive' }
+    if ($mode -eq 'abort') {
       Write-Host ""
       Write-Host "XX ABORT [autologin] maincfg.ini [LOGIN] SAVEUSERPW=0 — 비밀번호 저장이 꺼져 있습니다."
       Write-Host "   이 스크립트는 LOGIN 버튼을 클릭만 하므로, 저장된 비밀번호 없이는 **몇 번을 돌려도 실패**합니다."
@@ -592,7 +636,7 @@ if (-not $SkipLogin) {
       Write-Host "   확인:  Select-String -Path '$MAINCFG' -Pattern 'SAVEUSERPW'"
       exit 3
     }
-    Write-Host "[autologin] SAVEUSERPW=$savepw (자격 저장 확인)"
+    if ($mode -eq 'ok') { Write-Host "[autologin] SAVEUSERPW=$savepw (자격 저장 확인)" }
   } else {
     Write-Host "[autologin] maincfg.ini 부재 — 사전 점검 생략(로그인 실패 시 원인 특정 불가)"
   }
@@ -610,11 +654,17 @@ Start-DialogWatcher
 ##   한 번에 안 될 때가 있어(11-08 15:28 두 번째 클릭에 성공) 아래 라운드 루프의 '[login] failed, retry' 와 같게 5초 쉬고 다시 하되
 ##   3회까지만(계정 잠금 위험 · 08-29). LOGIN 단추를 다른 창이 덮었으면(11-09 07:44~46 방화벽 알림 덮개 — 4회 전부 거기 떨어짐) 곧바로 멈춘다.
 if ($LoginOnly) {
+  ## (2026-11-14) 비밀번호 저장 꺼짐 + 세션 살아 있음 = 할 일 없음(로그인하지 않는다) — 살아 있다고 답한다(qw_session_ensure.sh → alive)
+  if ($script:NO_SAVED_PW) {
+    Stop-DialogWatcher
+    Write-Host "===== LOGIN-ONLY END $(Get-Date -Format 'HH:mm:ss') / alive=True / kicks=0 / logins_ok=0 / no_saved_pw ====="
+    exit 0
+  }
   $alive = $false
   for ($i = 1; $i -le 3 -and -not $alive; $i++) {
     $alive = Ensure-Login
     if (-not $alive) {
-      if ($script:LOGIN_BLOCKED) { break }
+      if ($script:LOGIN_BLOCKED -or $script:NO_SAVED_PW) { break }   # NO_SAVED_PW = 이 로그인 뒤 단말이 저장을 껐다 — 빈 비밀번호로 다시 누르지 않는다
       Write-Host "[login-only] attempt $i failed"
       if ($i -lt 3) { Start-Sleep 5 }
     }
@@ -639,6 +689,7 @@ while ($spent -lt $MaxRounds) {
   if (-not $SkipLogin) {
     if (-not (Ensure-Login)) {
       if ($script:LOGIN_BLOCKED) { Write-Host "[round $round] stop: LOGIN button covered by $($script:LOGIN_BLOCKED) (dismiss that window, then re-run)"; break }
+      if ($script:NO_SAVED_PW) { Write-Host "[round $round] stop: no session and no saved password (SAVEUSERPW=0) - cannot log in unattended; a person must log in once with 'Save password' on"; break }
       $spent++; Write-Host "[login] failed, retry"; Start-Sleep 5; continue
     }
   }
@@ -649,6 +700,7 @@ while ($spent -lt $MaxRounds) {
     elseif ($r -eq "kicked") { $kicked=$true; break }
   }
   if ($kicked) {
+    if ($script:NO_SAVED_PW) { Write-Host "[round $round] stop: kicked and no saved password (SAVEUSERPW=0) - cannot re-login unattended; a person must log in once with 'Save password' on"; break }
     if ($progress) { $kickStreak = 0 } else { $kickStreak++ }
     if ($SkipLogin) { $spent++ }
     if ($KickStall -gt 0 -and $kickStreak -ge $KickStall) { Write-Host "[round $round] stop: $kickStreak consecutive kicks without finishing a book (runaway guard -KickStall $KickStall)"; break }

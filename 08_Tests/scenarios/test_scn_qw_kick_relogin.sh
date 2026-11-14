@@ -33,13 +33,13 @@ mk() {  # $1 = 루프 파일 → 하네스(.ps1)
     cat <<'PSH'
 $ErrorActionPreference = 'Stop'
 $MaxRounds = [int]$env:H_MAXR; $SkipLogin = ($env:H_SKIP -eq '1'); $KickStall = [int]$env:H_STALL
-$script:KICKS = 0; $script:LOGIN_BLOCKED = ''
+$script:KICKS = 0; $script:LOGIN_BLOCKED = ''; $script:NO_SAVED_PW = ($env:H_NOPW -eq '1')
 $sel = @(@{ name = 'A' }, @{ name = 'B' }); $state = @{}; $target = '20261112'
 $script:plan = @{ A = @(($env:H_A -split ',') | Where-Object { $_ }); B = @(($env:H_B -split ',') | Where-Object { $_ }) }
 $script:refreshes = 0; $script:logins = 0
 function Is-Done($st, $n, $t) { return $st.ContainsKey($n) }
 function Mark-Done($st, $n, $t) { $st[$n] = $t }
-function Ensure-Login { $script:logins++; if ($env:H_LOGIN -eq 'fail') { return $false }; return $true }
+function Ensure-Login { $script:logins++; if ($env:H_LOGIN -eq 'nopw') { $script:NO_SAVED_PW = $true; $script:SkipLogin = $true; return $false }; if ($env:H_LOGIN -eq 'fail') { return $false }; return $true }
 function Refresh-One($f, $t) {
   $script:refreshes++; if ($script:refreshes -gt 300) { throw 'runaway in harness' }
   if ($env:H_ALWAYS -eq $f.name) { return 'kicked' }
@@ -54,7 +54,7 @@ PSH
 }
 run() {  # $1 = 루프 파일 · 나머지 = 환경 대입 → RES 줄
   local lp="$1"; shift; mk "$lp"
-  env H_MAXR=2 H_SKIP=0 H_STALL=30 H_A= H_B= H_ALWAYS= H_LOGIN= "$@" powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(cygpath -w "$TMP/h.ps1")" 2>&1 | tr -d '\r' | grep '^RES ' | tail -n 1 | sed 's/^RES //'
+  env H_MAXR=2 H_SKIP=0 H_STALL=30 H_A= H_B= H_ALWAYS= H_LOGIN= H_NOPW= "$@" powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(cygpath -w "$TMP/h.ps1")" 2>&1 | tr -d '\r' | grep '^RES ' | tail -n 1 | sed 's/^RES //'
 }
 chk "K 끊김 3번 뒤 완료 · MaxRounds 2 → 끝까지(재로그인 4 · 라운드 5 = 끝 확인 포함)" "rounds=5 refreshes=5 logins=4 done=2" "$(run "$TMP/loop_new.ps1" H_A=kicked,kicked,kicked)"
 chk "G 늘 끊김 · KickStall 5 → 5라운드에서 멈춤(무한 반복 없음 · 완료 0)" "rounds=5 refreshes=5 logins=5 done=0" "$(run "$TMP/loop_new.ps1" H_ALWAYS=A H_STALL=5)"
@@ -135,5 +135,100 @@ if ! cmp -s "$TMP/qs.ps1" "$TMP/qs_mut.ps1"; then
   chk "OM 돌연변이(끊김에도 재시도 없음 · 구판 '끊기면 실행 멈춤') → O1 이 rc 4 · 단계 1번 — O1 은 수리의 발화다" "rc=4 steps=1 relogins=0" "$(qs_run "$TMP/qs_mut.ps1" H_RCS=4,4,0)"
 else chk "OM 돌연변이 치환" YES NO; fi
 chk "C1 주간 TS 수집은 -NoRelogin 없이 부른다 · 피어 갱신은 Invoke-QwStep 경유" "0 1" "$(sed 's/#.*$//' "$FUPD" | grep -c 'qw_fund_v2_tax_ts.ps1.*-NoRelogin') $(grep -c 'Invoke-QwStep { & powershell .*qw_peer_refresh.ps1' "$FUPD")"
+
+# ── 비밀번호 저장 꺼짐(2026-11-14 · refresh-root-fix) — 살아 있는 세션은 쓰고 로그인만 끈다 ────────────────────────────────────
+#   실사고 11-14: 00:11 재로그인 직후 단말이 maincfg SAVEUSERPW=0 으로 다시 썼고, 구판 드라이버 · 벤치 드라이버는 세션이 살아 있는데도
+#   시작 전에 끊어(exit 3) 밤 수급 0 · 자가 복구 5회 · 벤치 · 질의서가 다 멈췄다.
+#   N  라운드 루프: no_saved_pw(= SkipLogin) 첫 끊김에서 곧바로 멈춤 · 끊김 없으면 끝까지 · NM 돌연변이(멈춤 줄 삭제) → 예산까지 돈다
+#      N3 로그인이 꺼짐을 알리며 거짓이면 그 라운드에서 멈춤(죽은 세션에 수급하지 않음) · NM3 돌연변이
+#   W  판정 함수 · 로그인 뒤 재확인(실물 함수 · 모래상자 maincfg) · 배선(시작 점검 · Ensure-Login 마지막 방어선 · LoginOnly) · 구판 양성 대조
+#      W8 · W9 Ensure-Login 실물(단말 조회 · 종료 · 기동은 가림) — 로그인 직전 재확인 · W8M 돌연변이
+#   B  벤치 · 질의서 드라이버(data/qw_excel_refresh.ps1) — 로그인이 필요할 때만 rc 3 · 구판 양성 대조
+chk "N1 no_saved_pw · 늘 끊김 → 1라운드에서 멈춤(로그인 0)" "rounds=1 refreshes=1 logins=0 done=0" "$(run "$TMP/loop_new.ps1" H_ALWAYS=A H_SKIP=1 H_NOPW=1)"
+chk "N2 no_saved_pw · 끊김 없음 → 끝까지(로그인 0 · 완료 2)" "rounds=2 refreshes=2 logins=0 done=2" "$(run "$TMP/loop_new.ps1" H_SKIP=1 H_NOPW=1)"
+grep -v 'kicked and no saved password' "$TMP/loop_new.ps1" > "$TMP/loop_nm.ps1"
+if ! cmp -s "$TMP/loop_new.ps1" "$TMP/loop_nm.ps1"; then
+  chk "NM 돌연변이(멈춤 줄 삭제) → N1 이 예산(MaxRounds 2)까지 돈다 — N1 은 멈춤 줄의 발화다" "rounds=2 refreshes=2 logins=0 done=0" "$(run "$TMP/loop_nm.ps1" H_ALWAYS=A H_SKIP=1 H_NOPW=1)"
+else chk "NM 돌연변이 치환" YES NO; fi
+chk "N3 로그인 직전 꺼짐 발견(Ensure-Login 이 no_saved_pw 로 거짓) · 세션 없음 → 1라운드에서 멈춤(수급 0)" "rounds=1 refreshes=0 logins=1 done=0" "$(run "$TMP/loop_new.ps1" H_ALWAYS=A H_LOGIN=nopw)"
+grep -v 'no session and no saved password' "$TMP/loop_new.ps1" > "$TMP/loop_nm3.ps1"
+if ! cmp -s "$TMP/loop_new.ps1" "$TMP/loop_nm3.ps1"; then
+  chk "NM3 돌연변이(그 멈춤 줄 삭제) → 'retry' 로 한 라운드 더 돌아 죽은 세션에 수급한다 — N3 은 그 줄의 발화다" "rounds=2 refreshes=1 logins=1 done=0" "$(run "$TMP/loop_nm3.ps1" H_ALWAYS=A H_LOGIN=nopw)"
+else chk "NM3 돌연변이 치환" YES NO; fi
+fn_of Resolve-SavedPwMode < "$DRV" > "$TMP/rs.ps1"
+chk "W0 판정 함수 추출(Resolve-SavedPwMode)" YES "$([ -s "$TMP/rs.ps1" ] && echo YES || echo NO)"
+{ printf '\xef\xbb\xbf'; cat "$TMP/rs.ps1"
+  cat <<'PSH'
+$cases = @('1:1', '1:0', ':0', '0:1', '0:0', ' 0 :1')
+"RES " + (($cases | ForEach-Object { $p = $_.Split(':'); Resolve-SavedPwMode $p[0] ($p[1] -eq '1') }) -join ',')
+PSH
+} > "$TMP/rsh.ps1"
+chk "W1 판정표 — 1·살아있음=ok · 1·없음=ok · 모름=ok · 0·살아있음=no_saved_pw · 0·없음=abort · 공백 0=no_saved_pw" "ok,ok,ok,no_saved_pw,abort,no_saved_pw" "$(powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(cygpath -w "$TMP/rsh.ps1")" 2>&1 | tr -d '\r' | grep '^RES ' | sed 's/^RES //')"
+for f in Read-SavePw Enter-NoSavedPw Test-SavePwAfterLogin; do fn_of "$f" < "$DRV"; done > "$TMP/sp.ps1"
+sp_run() {  # $1 = 모래상자 maincfg 의 SAVEUSERPW 값 → RES(로그인 뒤 재확인의 결과)
+  printf '[LOGIN]\r\nSAVEID=1\r\nSAVEUSERPW=%s\r\nLOGINCOMPLETE=1\r\n' "$1" > "$TMP/maincfg.ini"
+  { printf '\xef\xbb\xbf'
+    printf '$MAINCFG = %s\n' "'$(cygpath -w "$TMP/maincfg.ini")'"
+    cat <<'PSH'
+$script:NO_SAVED_PW = $false; $script:SkipLogin = $false; $script:out = @()
+function Start-Sleep { }
+function Write-Host { param([Parameter(ValueFromRemainingArguments = $true)] $o) $script:out += (@($o) -join ' ') }
+PSH
+    cat "$TMP/sp.ps1"
+    cat <<'PSH'
+Test-SavePwAfterLogin ((Get-Date).AddMinutes(-1))
+$w = @($script:out | Where-Object { $_ -match '^WARN \[autologin\] SAVEUSERPW=0' }).Count
+"RES nopw=$($script:NO_SAVED_PW) skip=$([bool]$script:SkipLogin) warn=$w"
+PSH
+  } > "$TMP/sph.ps1"
+  powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(cygpath -w "$TMP/sph.ps1")" 2>&1 | tr -d '\r' | grep '^RES ' | sed 's/^RES //'
+}
+chk "W2 로그인 뒤 단말이 0 으로 씀 → 남은 로그인 끔(no_saved_pw · SkipLogin) + WARN 1줄" "nopw=True skip=True warn=1" "$(sp_run 0)"
+chk "W3 로그인 뒤 1 유지 → 그대로(끄지 않음 · WARN 0)" "nopw=False skip=False warn=0" "$(sp_run 1)"
+chk "W4 Ensure-Login — 로그인 끔 분기가 단말 종료(Stop-Process)보다 먼저 · 로그인 뒤 재확인 2곳(살아남 · 실패)" "YES 2" "$(printf '%s\n' "$el_new" | awk '/NO_SAVED_PW/ && !a {a=NR} /Stop-Process/ && !b {b=NR} END {print ((a && b && a < b) ? "YES" : "NO")}') $(printf '%s\n' "$el_new" | grep -c 'Test-SavePwAfterLogin \$submitAt')"
+chk "W5 LoginOnly — no_saved_pw 면 로그인 없이 alive=True · exit 0 · 재시도 고리는 NO_SAVED_PW 에서 끊김" "YES YES" "$(printf '%s\n' "$lo_new" | grep -q 'no_saved_pw =====' && printf '%s\n' "$lo_new" | grep -q 'exit 0' && echo YES || echo NO) $(printf '%s\n' "$lo_new" | grep -qF 'LOGIN_BLOCKED -or $script:NO_SAVED_PW' && echo YES || echo NO)"
+st_new=$(awk '/^if \(-not \$SkipLogin\) \{/{f=1} f{print} f&&/^\}$/{exit}' "$DRV")
+chk "W6 시작 점검 — 판정 함수 경유 · 중단(exit 3)은 abort 일 때만" "YES YES" "$(printf '%s\n' "$st_new" | grep -qF 'Resolve-SavedPwMode $savepw (QW-Alive)' && echo YES || echo NO) $(printf '%s\n' "$st_new" | awk '/mode -eq .abort./{f=1} f&&/exit 3/{print "YES"; exit}')"
+for f in Ensure-Login Read-SavePw Enter-NoSavedPw Test-SavePwAfterLogin; do fn_of "$f" < "$DRV"; done > "$TMP/el.ps1"
+el_run() {  # $1 = 모래상자 maincfg 의 SAVEUSERPW · $2 = 함수 파일 → RES(돌려준 값 · 단말 기동 횟수 · 꺼짐 표식 · WARN 수)
+  printf '[LOGIN]\r\nSAVEID=1\r\nSAVEUSERPW=%s\r\nLOGINCOMPLETE=1\r\n' "$1" > "$TMP/maincfg.ini"
+  { printf '\xef\xbb\xbf'
+    printf '$MAINCFG = %s\n' "'$(cygpath -w "$TMP/maincfg.ini")'"
+    cat <<'PSH'
+$script:NO_SAVED_PW = $false; $script:SkipLogin = $false; $script:LOGIN_BLOCKED = ''; $script:KICKS = 0; $script:LOGINS_OK = 0
+$script:out = @(); $script:launch = 0
+## 단말 무접촉 — 프로세스 조회 · 종료 · 기동을 모두 가린다(실물 qwMain 을 건드리지 않는다)
+function Get-Process { }
+function Stop-Process { }
+function Start-Process { $script:launch++ }
+function Start-Sleep { }
+function QW-Alive { $false }
+function Kick-Dialog { $false }
+function Write-Host { param([Parameter(ValueFromRemainingArguments = $true)] $o) $script:out += (@($o) -join ' ') }
+PSH
+    cat "$2"
+    cat <<'PSH'
+$r = Ensure-Login
+$w = @($script:out | Where-Object { $_ -match '^WARN \[autologin\] SAVEUSERPW=0' }).Count
+"RES ret=$r launch=$($script:launch) nopw=$($script:NO_SAVED_PW) warn=$w"
+PSH
+  } > "$TMP/elh.ps1"
+  powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(cygpath -w "$TMP/elh.ps1")" 2>&1 | tr -d '\r' | grep '^RES ' | sed 's/^RES //'
+}
+chk "W8 Ensure-Login · 시작 점검 뒤 꺼짐(표식 없음 · maincfg 0) → 단말을 띄우지 않고 거짓 · 꺼짐 표식 + WARN 1줄(빈 비밀번호 제출 0)" "ret=False launch=0 nopw=True warn=1" "$(el_run 0 "$TMP/el.ps1")"
+chk "W9 Ensure-Login · 저장 켜짐(1) → 종전대로 단말을 띄워 로그인(실패해도 꺼짐 표식 없음)" "ret=False launch=1 nopw=False warn=0" "$(el_run 1 "$TMP/el.ps1")"
+grep -vF 'found off right before a login' "$TMP/el.ps1" > "$TMP/el_m.ps1"
+if ! cmp -s "$TMP/el.ps1" "$TMP/el_m.ps1"; then
+  chk "W8M 돌연변이(로그인 직전 재확인 삭제) → W8 조건에서 단말을 띄운다(빈 비밀번호 제출 경로) — W8 은 그 줄의 발화다" "launch=1" "$(el_run 0 "$TMP/el_m.ps1" | grep -o 'launch=[0-9]*')"
+else chk "W8M 돌연변이 치환" YES NO; fi
+OLD_SP_REV="${QVEST_TEST_QWREFRESH_SP_REV:-70397a128}"   # 비밀번호 저장 꺼짐 수리 직전 판
+old_sp="$(git -C "$GITROOT" show "$OLD_SP_REV:02_Infrastructure/ops/qw_refresh.ps1" 2>/dev/null)"
+chk "W7 양성 대조 — 수리 전 판($OLD_SP_REV)은 꺼짐이면 세션과 무관하게 중단했다(판정 함수 없음 · 꺼짐 분기 안 exit 3)" "YES 0" "$(printf '%s\n' "$old_sp" | awk '/if \(\$savepw -eq .0.\)/{f=1} f&&/exit 3/{print "YES"; exit}') $(printf '%s\n' "$old_sp" | grep -c 'Resolve-SavedPwMode')"
+XLR="${QVEST_TEST_XLREFRESH_SRC:-$PROJ/02_Infrastructure/data/qw_excel_refresh.ps1}"
+OLD_XL_REV="${QVEST_TEST_XLREFRESH_OLD_REV:-23d965420e}"   # 벤치 드라이버 수리 직전 판
+OLDPAT="if (\$saveId -ne '1' -or \$savePw -ne '1'"; NEWPAT="if (-not \$autoOk) { Finish 3 'no_autologin' \$NO_AUTO_MSG }"
+chk "B1 벤치 · 질의서 드라이버 — 자격 꺼짐으로 곧바로 끊는 줄 없음 · rc 3 은 두 곳(새로 띄움 · 로그인 창)뿐 · WARN 줄" "0 2 1" "$(grep -cF "$OLDPAT" "$XLR") $(grep -cF "$NEWPAT" "$XLR") $(grep -c 'WARN \[autologin\]' "$XLR")"
+chk "B2 rc 3 자리 — 단말 기동(Start-Process) 앞 · 클릭 도우미(Invoke-QwClicker \$clicker) 앞" "YES YES" "$(awk -v p="$NEWPAT" 'index($0, p) && !a {a=NR} /Start-Process -FilePath \$QW_EXE/ && !b {b=NR} END {print ((a && b && a < b) ? "YES" : "NO")}' "$XLR") $(awk -v p="$NEWPAT" '/^if \(LoginWindowOpen\)/ {f=1} f && index($0, p) && !a {a=NR} f && /lrc = Invoke-QwClicker \$clicker/ && !b {b=NR} END {print ((a && b && a < b) ? "YES" : "NO")}' "$XLR")"
+chk "B3 양성 대조 — 수리 전 판($OLD_XL_REV)은 자격 꺼짐이면 단말 상태와 무관하게 끊었다" "1" "$(git -C "$GITROOT" show "$OLD_XL_REV:02_Infrastructure/data/qw_excel_refresh.ps1" 2>/dev/null | grep -cF "$OLDPAT")"
 
 fin "$PASS" "$FAIL"

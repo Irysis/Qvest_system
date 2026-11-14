@@ -102,8 +102,14 @@ function CfgFlag([string]$key) {
 $saveId = CfgFlag 'SAVEID'; $savePw = CfgFlag 'SAVEUSERPW'; $done = CfgFlag 'LOGINCOMPLETE'
 $hasId = (CfgFlag 'ID').Length -gt 0; $hasPw = (CfgFlag 'USERPW').Length -gt 0
 Say "자동로그인 플래그: SAVEID=$saveId SAVEUSERPW=$savePw LOGINCOMPLETE=$done (ID 저장=$hasId · PW 저장=$hasPw)"
-if ($saveId -ne '1' -or $savePw -ne '1' -or -not $hasId -or -not $hasPw) {
-  Finish 3 'no_autologin' '퀀티와이즈 자동로그인 미설정 — 단말에서 ID/PW 저장 체크 후 1회 로그인 필요(사람이 할 일)'
+## ★(2026-11-14 · refresh-root-fix) 자동 로그인 자격이 꺼져도 **로그인이 필요할 때만** 멈춘다(단말을 새로 띄울 때 · 로그인 창이 떠 있을 때).
+##   단말이 이미 로그인돼 있으면 그 세션으로 받는다 — 로그인 클릭이 없으니 계정 잠금 경로(08-29)도 없다.
+##   실사고 11-14: 00:11 재로그인 직후 단말이 SAVEUSERPW=0 으로 다시 썼고, 구판은 세션이 살아 있는데도 벤치 · 질의서([4gm]) 수급을 여기서 끊어
+##   (rc 3 = 전제 부재) 그날 Update_File 수급까지 건너뛰게 했다(자가 복구 'qw_updatefile_skipped(bench_rc=3)' 연쇄). 해소 = 사람 1회 로그인('비밀번호 저장' 체크).
+$autoOk = ($saveId -eq '1' -and $savePw -eq '1' -and $hasId -and $hasPw)
+$NO_AUTO_MSG = '퀀티와이즈 자동로그인 미설정 — 단말에서 ID/PW 저장 체크 후 1회 로그인 필요(사람이 할 일)'
+if (-not $autoOk) {
+  Say "WARN [autologin] SAVEID=$saveId SAVEUSERPW=$savePw (ID 저장=$hasId · PW 저장=$hasPw) — 자동 로그인 불가: 로그인이 필요하면 멈추고(rc 3), 이미 로그인된 세션이면 그대로 받는다"
 }
 
 $addinKey = "HKCU:\Software\Microsoft\Office\Excel\Addins\$ADDIN"
@@ -145,6 +151,7 @@ function WaitSessionStable($clicker, [int]$maxSec, [int]$stableSec, [int]$maxRec
 }
 $proc = QwProc
 if (-not $proc) {
+  if (-not $autoOk) { Finish 3 'no_autologin' $NO_AUTO_MSG }   # 새로 띄우면 저장된 자격으로 로그인해야 한다
   Say '단말 미기동 — 시작(저장된 자격으로 자동 로그인)'
   Start-Process -FilePath $QW_EXE | Out-Null
   $deadline = (Get-Date).AddSeconds(180)
@@ -161,6 +168,7 @@ if (-not $proc) {
 }
 
 if (LoginWindowOpen) {
+  if (-not $autoOk) { Finish 3 'no_autologin' $NO_AUTO_MSG }   # 저장된 비밀번호 없이 LOGIN 을 누르면 빈 비밀번호 제출(계정 잠금 경로)
   # 도훈 2026-09-18: "로그인 버튼 클릭까지 자동화" + "다른 컴퓨터에 로그인되어있으면 경고창까지 예 버튼을 눌러야해"
   #   ⇒ 자격증명은 단말이 채운 그대로 두고, **기본 버튼 + 중복로그인 경고의 '예'** 만 누른다.
   #     2단계 인증이 뜨면 거기서 멈춘다(rc=3) — 인증번호는 사람 몫이다.
