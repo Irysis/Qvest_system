@@ -21,7 +21,8 @@ pool <- data.table::as.data.table(rc_p4_base_pool(root))
 t0rx <- "^04_Research/strategies/FC_(FAM_[a-z_]+|TOTAL_EW)/engine\\.R$"
 ## 11-15 수리: P1S03 시드(FC_FAM_value — P1R03 T0 밸류와 같은 엔진)는 기저 풀 행 origin 이 "seed" 다. DESIGN_draft §2 의 "origin own_spec" 은 T0 엔진을 가리키는 말이었고
 ##   (§3 부품 목록에 밸류 포함) 시드를 빼려는 뜻이 아니었다 — 경로 규칙(FC T0 엔진) ∧ origin ∈ {own_spec, seed}. 수리 전 dry-run 이 시드를 뺀 후보 7 의 보는 창 S 를 보였다(노출 · DESIGN_draft §2).
-cand <- pool[eligible %in% TRUE & grepl(t0rx, engine_path) & !grepl("_ICW/", engine_path) & origin %in% c("own_spec", "seed")]
+## 11-15 판단 C-20261115-050: 판별자 = own_spec_engine 열(origin 대신 — 시드 · 스캔 항목 모두 TRUE)
+cand <- pool[eligible %in% TRUE & grepl(t0rx, engine_path) & !grepl("_ICW/", engine_path) & own_spec_engine %in% TRUE]
 cat(sprintf("[init_p4c01] 기저 풀 %d 행 · eligible %d · T0 후보 %d\n", nrow(pool), sum(pool$eligible %in% TRUE), nrow(cand)))
 if (!nrow(cand)) stop("[init_p4c01] T0 후보 0 — P1S03 통과 · v4 관문(철학 P2 · 저위험 풀림) 뒤에 다시")
 g <- data.table::rbindlist(lapply(seq_len(nrow(cand)), function(i) {
@@ -46,9 +47,13 @@ RULES <- list(
   list(id = "deep_crisis", type = "threshold", label = "깊은 위기 과반 비악화(N2)", metric = "deep_crisis_nonworse_share_vis", op = ">",
        value_ref = "06_Registry/behavior_card.json::majority_share", source = "헌장 §5 빈칸 2 · 23"),
   list(id = "beta_asym", type = "threshold", label = "β 비대칭(N5 — β 로 산 방어 아님)", metric = "beta_asym_ok_vis", op = ">=", value = 1,
-       basis = "정의 — N5 통과 = 1", source = paste0(RC_P4_BETA_ASYM_SOURCE, " · p4_rules_v3 필수(blend · 노출 층 걸음)")))
+       basis = "정의 — N5 통과 = 1", source = paste0(RC_P4_BETA_ASYM_SOURCE, " · p4_rules_v3 필수(blend · 노출 층 걸음)")),
+  ## 11-15 철학 P1 C-20261115-038(첫 사슬 판 조건 C-20261111-077) — N4 집중: 깊은 위기 한 종목 최악 기여가 문턱보다 나쁘면 채택 안 함 · 미측정 = 미시험
+  list(id = "concentration", type = "threshold", label = "집중(N4 — 깊은 위기 한 종목 기여)", metric = "worst_name_contrib_deep_vis", op = ">=",
+       value_ref = "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/prereg.json::final_selection_rule.single_name_loss_floor",
+       source = "헌장 §5 빈칸 1(집중) · 철학 C-002(P2R03 집중 손실 문턱 승계) · 첫 사슬 판 조건 C-20261111-077 · 철학 C-20261115-038"))
 BUD <- list(max_steps = 20L,
-            max_steps_source = paste0("programs/trial_budget.R(rc 0.8 — K 50 → 요구 t 2.52 · K 100 → 2.62) · 시행 집합 = 원천 45(P1R03 15 + P1R04 30 — 코어 v4 원천 시행) + 기저 1 + 걸음 ≤ 20 ≈ 66 → 요구 t ≈ 2.55 · ",
+            max_steps_source = paste0("programs/trial_budget.R(rc 0.8 — K 50 → 요구 t 2.52 · K 100 → 2.62) · 시행 집합 = 원천 45(P1R03 15 + P1R04 30 — 코어 v4 원천 시행 · 갈음 뒤 고유 경로 30 · 보수 쪽 — 판단 C-20261115-047) + 기저 1 + 걸음 ≤ 20 ≈ 66 → 요구 t ≈ 2.55 · ",
                                       "걸음을 늘려도 요구 t 증가가 완만해 시행이 아니라 생성 비용 · 시간이 상한을 정한다(DESIGN_draft §5)"),
             noise_k = 2L, noise_k_source = "체계 §4 R7(연속 2 걸음 '잡음 이내'면 닫기) · P2 R7 선례 · 파일럿 P4C90 와 같다")
 purpose <- paste0(
@@ -60,7 +65,13 @@ purpose <- paste0(
   "부품 = 같은 기저 풀의 P1R03 동일가중(T0) 자격 엔진(P1S03 통과 · v4 관문 통과분). T1(정보계수 가중) 엔진은 부품이 아니다(사슬 2호부터 — P1R04 결론 범위 · 판단 C-20261113-004). ",
   "저β 엔진(방어 · 위험 · 유동성 · 쏠림 · 토탈)은 '저β 수익 엔진' 표기 · 방어 주장 없음(도훈 LOWBETA-ENGINES-BASE-USE-20261113 · CHARTER-GAP-LOWBETA-DEFENSE-LABEL-20261113). ",
   "같은 계보(토탈 ⊃ 카테고리 · 같은 카테고리) 블렌드 = 꼬리표 same_lineage_blend(거부 아님 · 닫기 결론에 '한 원천의 결합 가중'). ",
-  "기저 = 기저 풀 T0 후보 가운데 보는 창 S 최대(기계 규칙 · base_selection.json). 닫기 = 마지막 채택 걸음 · 원천 시행 포함 선택 현실 점검 재채점(등급 v3.5).")
+  "기저 = 기저 풀 T0 후보 가운데 보는 창 S 최대(기계 규칙 · base_selection.json). 닫기 = 마지막 채택 걸음 · 원천 시행 포함 선택 현실 점검 재채점(등급 v3.5 · --regrade-write). ",
+  "걸음 = blend 블록만 — 비중 · 구성 · 유니버스 걸음은 이 사슬에서 열지 않는다(N5 β 비대칭 규칙이 그 걸음을 보지 않는다 · 철학 C-20261115-038). ",
+  "부품 = 동일가중(T0) 엔진만 — IC 가중(_ICW) 엔진은 기저 풀에 eligible 로 있어도 부품으로 쓰지 않는다(기계 차단 없음 · 생성기가 지킨다 · 판단 C-20261115-048). ",
+  "순서: 이 사슬이 열려 있는 동안 FC 엔진 재생성(방향 수정 · 생성기 개정)을 하지 않는다 — 사슬은 걸음 칸과 기준 칸의 엔진 md5 를 대조하지 않는다(판단 C-20261115-033 · 방향 수정은 닫기 뒤 새 엔진). ",
+  "닫기 판독(사전 고정 · 채택 규칙 밖): ① 알파 비악화 = 최종 후보 대 기저 rc_pair_alpha 보는 창 t > −tier_graduation.grade_b_min_portfolio_alpha_t ∧ 연 알파 감소 ≤ 1 − RC_P4_UC_SEG_KEEP(헌장 §5 빈칸 4 — 같은 엔진 기준의 80% 보존) — 어기면 결론 '알파 악화'(채택 규칙에 알파 차 지표가 없는 알려진 한계 · 판단 C-20261115-032 · 엄격안 = p4_rules_v4) ",
+  "② 시장 대비 위기 결론 = 깊은 위기 과반 비악화 + 빠른 급락 각각(중앙값은 기록 · 철학 C-20261115-037) ③ 최종 후보 귀속 = 시가총액 × β 짝 라벨 · 기저 대비 Δβ · 시드 띠 해당 없음(결정론 엔진) — 'β 만 낮춤' 반증 가지 판독(철학 C-20261115-036) ",
+  "④ 잡음 2 연속 닫기로 안 잰 부품은 '미시험'으로 적고 기각으로 읽지 않는다(판단 C-20261115-045) ⑤ 희소 구성원 쏠림 대조 = 미측정(사이드카 없음 · 철학 C-20261115-016).")
 
 sel <- list(schema = "p4c01_base_selection_v1", at = rc_now(), audience = "보는 창(τ_D 이전)만 · 등급 계약 gv3_S(rc_p4_gap) · 시험 창 값 없음",
             rule = "후보 = 기저 풀 eligible ∧ P1R03 T0 엔진(FC_FAM_<카테고리> · FC_TOTAL_EW · origin own_spec | seed — P1S03 시드 = T0 밸류) · 선택 = S_vis 최대 → port_t_vis → key",

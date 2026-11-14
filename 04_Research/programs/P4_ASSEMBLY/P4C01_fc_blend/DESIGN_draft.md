@@ -28,6 +28,8 @@
 ## 4. 채택 규칙(p4_rules_v3 · IS 만 · 숫자 = 정본 참조)
 - dS_vis ≥ `04_Research/programs/P3_CONSTRUCTION/P3R03_advanced_construction/prereg.json::final_selection_rule.tie_eps`(0.02 — 파일럿 P4C90 와 같은 규칙 · 잡음 수준 개선은 채택하지 않는다 · 11-14 정정: 초안의 '≥ 0' 은 근거 문서가 없었다) · uc_vis ≥ `06_Registry/behavior_card.json::uc_floor` · d_dd_capture_median_vis ≤ 0 · uc_seg_ok_share_vis > `behavior_card.json::majority_share` · deep_crisis_nonworse_share_vis > majority_share · beta_asym_ok_vis ≥ 1(N5 — blend · 노출 층 걸음 · 판단 C-20261113-011 · 격리 R6).
 
+- **11-15 감독 반영(사슬 판 v2 · md5 dd6efb13 — 철학 P1 R-20261115-004 · 판단 T1 R-20261115-006 도전 6 수용)**: 채택 규칙 7 = 위 6 + N4 집중(`worst_name_contrib_deep_vis` ≥ P2R03 `final_selection_rule.single_name_loss_floor` −0.1 · 미측정 = 미시험 · C-038). purpose 에 사전 고정: 걸음 = blend 블록만(C-038) · 부품 = 동일가중 엔진만(IC 가중은 eligible 이어도 쓰지 않음 · 기계 차단 없음 · C-048) · 사슬이 열려 있는 동안 FC 엔진 재생성 금지(엔진 md5 미대조 · C-033) · 닫기 판독 ① 알파 비악화(rc_pair_alpha 보는 창 t > −2 ∧ 연 알파 감소 ≤ 20% — 채택 규칙에 알파 차 지표가 없는 알려진 한계 · C-032 · 엄격안 = p4_rules_v4) ② 시장 대비 위기 = 깊은 위기 과반 + 빠른 급락 각각(C-037) ③ 최종 후보 시가총액 × β 귀속 · Δβ(C-036) ④ 미시험 부품 = 기각 아님(C-045) ⑤ 희소 구성원 쏠림 대조 = 미측정(C-016). 후보 판별자 = `own_spec_engine` 열(C-050). 닫기 재채점 = `--regrade-write`(등급 v3.5 발효 중 · 사슬 판이 등급 판을 고정하지 않는다 — C-049).
+
 ## 5. 예산(근거 문구 = 사슬 판 budget.*_source)
 - max_steps 20: `programs/trial_budget.R rc 0.8` — K 50 → 요구 t 2.52 · K 100 → 2.62. 시행 집합 = 원천 45(P1R03 15 + P1R04 30 — 코어 v4 원천 시행 · 판단 C-038) + 기저 1 + 걸음 ≤ 20 ≈ 66 → 요구 t ≈ 2.55. 걸음을 늘려도 요구 t 증가가 완만해 시행이 아니라 생성 비용 · 시간이 상한을 정한다.
 - noise_k 2: 연속 2 걸음 '잡음 이내'면 닫기 — P2 R7 선례(lean-loop 예산 · 목표 축 판독).
