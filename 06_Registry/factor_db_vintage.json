@@ -123,6 +123,40 @@
       "decision": "RAWDATA-SEAM-0330-REPAIR-20261113(도훈 11-13 '원천 이음매 결함 수리를 바로 시작해주고')",
       "note": "RAWDATA 2026-03-30 원천 이음매(퀀티 base → 증분 수출본) 처분이 11-11 11:28 적재부터 지워져 Ret 이 생비율이었다(351종 |Ret|>0.35 · 동일가중 +66%) — 적재기 수리(창 한정 재계산 · 전 전환점 재판정 · 쓰기 전 감사) + 소급 정정(11-13 09:07 · Ret 352행) 뒤 파생 재빌드: FF 요인(941e6a63d006) · 팩터 DB 202611 · IC 월간 원장 · 결합용 뷰. 오염 창 = 11-11 11:28 ~ 이 완료 시각(09-07 14:30 ~ 11-11 11:28 RAWDATA 는 깨끗 · 그 앞 측정은 앞 항목들로 이미 낡음). 범위 = 전체(수익 계열 · IC 방향 · Ret 연쇄 팩터가 거의 모든 측정에 닿는다). ★가격 수준 기반 팩터(M05 · M06 · M16 · M17 · M19)의 수준 이음매는 이 수리 범위 밖(결정 대기 D1).",
       "evidence": "04_Research/01_reports/rawdata_seam_20260330_repair_20261113/README.md · .cache/rawdata_seam_audit/audit_after_repair_20261113_090726.json · .cache/seam_scale_guard/seam_apply_quantiwise_to_quantiwise_update_20260330_20261113_090621.json"
+    },
+    {
+      "id": "PRICE-CONTINUITY-FACTORS-20261113",
+      "completed_at": "2026-11-14T16:23:39+09:00",
+      "scope": {
+        "factors": [
+          "M05_Trended_Mom",
+          "M06_High_52w",
+          "M09_Composite_Mom",
+          "M16_Trend_Factor",
+          "M17_Low_52w",
+          "M19_MACD",
+          "M20_Keller_Mom",
+          "T01_RSI14",
+          "T03_BB20",
+          "T04_OBV21",
+          "T05_MFI14",
+          "T06_PMA5",
+          "T07_PMA20",
+          "T08_PMA60",
+          "T09_PMA120",
+          "T10_RSI28",
+          "T13_Gap",
+          "T14_HLRange",
+          "T15_AutoCorr",
+          "D40_YangZhang_Vol",
+          "L39_Overnight_Spread",
+          "V21_Composite_Equity_Issuance",
+          "TR01_ADX_Proxy"
+        ]
+      },
+      "decision": "PRICE-CONTINUITY-FACTORS-20261113(도훈 11-13 '1번은 다시 계산해주고' — 원천 이음매 보고서 결정 대기 D1)",
+      "note": "가격 수준 기반 팩터의 원천 이음매 — Ret 수리(RAWDATA-SEAM-0330-REPAIR-20261113) 뒤에도 Close 수준이 03-30(351종) · 10-15(1) · 11-10(3) 처분 자리에서 끊겨, 날짜를 넘는 가격 비율을 쓰는 23팩터(모멘텀 M05 · M06 · M16 · M17 · M19 · M20 + 합성 M09 · 기술적 12 · D40 · L39 · V21 · TR01)가 2026-03~ as-of 에서 틀렸다(예: 10:1 분할 종목의 52주 고점 대비 0.1 · 거래정지 종목의 가짜 변동성 · ADX 100). 연속 가격 배율 px_cont(price_continuity.R · 코드 dda1e34ca)로 202603~202611 대상 23팩터 부분 재계산(정본 rebuild_factor_subset.R --from-stage) + IC 월간 원장 전체 재계산 + 결합용 뷰 증분 + FF 요인 UMD(모멘텀 정렬) 재빌드. IS(≤ 2026-02 as-of) 팩터 값 비트 동일(정정 자리 이전 배율 = 1 · 실자료 대조 2022-12 · 2026-02 6모듈 185팩터). 범위 = 23팩터(이 팩터를 선언한 측정이 낡음 — 모멘텀 · 기술적 · 방어 · 유동성 · 밸류 · 쏠림 카테고리와 토탈). FF 요인 변경은 요인 md5(fa_stale)로 따로 가린다. 함께 들어간 것: 신규 상장 보충으로 RAWDATA 에 생긴 이력(옛 월 파일에 없던 종목의 대상 팩터 값).",
+      "evidence": "04_Research/01_reports/rawdata_seam_20260330_repair_20261113/README.md §9 · .cache/scheduler_logs/factor_subset_repair_20261114_161304.json · .cache/factor_db/subset_rebuild_log.jsonl"
     }
   ]
 }
