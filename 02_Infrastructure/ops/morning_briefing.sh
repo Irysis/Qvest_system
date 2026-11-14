@@ -128,62 +128,17 @@ echo "[5c] 1계층 상태 (무음)..."
 cd "$BASE"
 Rscript --no-save -e 'source("02_Infrastructure/ops/morning_steps/l1_status_send.R")' >> /tmp/qm_morning.log 2>&1 || echo "[5c] l1_status 실패 (fail-soft)"
 
-echo "[6/6] P2 bearish forecast brief..."
-P2_BF_DIR="$BASE/04_Research/decision_framework/bearish_forecast_v3"
-P2_PY=""
-for _c in "$BASE/.venv_qvest_ml/Scripts/python.exe" "$BASE/.venv_qvest_ml/bin/python"; do
-  [ -x "$_c" ] && P2_PY="$_c" && break
-done
-if [[ -x "$P2_PY" && -d "$P2_BF_DIR" ]]; then
-  # 6_pre. (퇴역 2026-10-17 · 결정 BENCHMARK-QW-ONLY-20261017 — 도훈 '벤치마크도 퀀티 단일로 바꿔줘') 네이버 벤치 교차검증(트립와이어) 제거.
-  #   벤치 = 퀀티 정본(Benchmark_price.xlsx → build_index_cache.py) 단일 — 네이버 장중 값과 대조할 원천이 없다(구판 09-23 사고의 장중 값은
-  #   네이버 이어붙이기에서 왔다 · 그 경로도 함께 퇴역). 정본 정체는 밤 [1pre] 게이트(축 A · D)가 신고한다.
-  cd "$P2_BF_DIR"
-  # 6a. daily inference (오늘 forecast 추가) — P3.
-  # [2026-06-01 fix] 601 default(no --asof)는 ret_fwd-dropna로 마지막 행이 잘려 benchmark_max-1(1일 stale)을
-  #   forecast → brief가 매일 1일 정체. benchmark 최신 종가일을 --asof로 명시(검증된 forecast-only 경로)해 재발 방지.
-  ASOF_BM=$("$P2_PY" -c "import pandas as pd; print(pd.to_datetime(pd.read_parquet('$BASE/.cache/benchmark.parquet', columns=['Date'])['Date']).max().date())" 2>/dev/null)
-  if [[ -n "$ASOF_BM" ]]; then
-    echo "[6a] 601 inference --asof $ASOF_BM (benchmark 최신 종가일)"
-    "$P2_PY" scripts/601_daily_inference.py --model P3 --asof "$ASOF_BM" 2>&1 | tail -5
-  else
-    echo "[6a] ASOF_BM 추출 실패 — default 경로 fallback"
-    "$P2_PY" scripts/601_daily_inference.py --model P3 2>&1 | tail -5
-  fi
-  # 6a'. y_actual backfill (이전 forecast row의 realized 1d return 채움, 도훈 mandate 2026-05-28)
-  "$P2_PY" -c "
-import pandas as pd, numpy as np, sys, os
-sys.path.insert(0, '$P2_BF_DIR/03_models')
-import p1_hansen_skewt as HSK
-p3_path = '$P2_BF_DIR/03_models/daily_predictions/P3_daily.parquet'
-p3 = pd.read_parquet(p3_path); p3['Date'] = pd.to_datetime(p3['Date']); p3 = p3.sort_values('Date').reset_index(drop=True)
-bm = pd.read_parquet('$BASE/.cache/benchmark.parquet'); bm['Date'] = pd.to_datetime(bm['Date']); bm = bm.sort_values('Date').reset_index(drop=True)
-bm['log_ret'] = np.log(bm['BM_Close']).diff() * 100
-fwd_map = bm.assign(ret_fwd=bm.log_ret.shift(-1)).set_index('Date')['ret_fwd'].to_dict()
-n_filled = 0
-for i, row in p3.iterrows():
-    if pd.isna(row['y_actual']) and row['Date'] in fwd_map:
-        fwd = fwd_map[row['Date']]
-        if pd.notna(fwd):
-            p3.loc[i, 'y_actual'] = fwd
-            try:
-                pit = HSK.pit_per_obs(np.array([fwd]), np.array([row['mu']]), np.array([row['sigma']]), np.array([row['nu']]), np.array([row['lam']]))[0]
-                p3.loc[i, 'pit'] = pit
-            except Exception: pass
-            n_filled += 1
-p3.to_parquet(p3_path)
-print(f'[y_actual backfill] {n_filled} rows filled')
-" 2>&1 | tail -2
-  # 6b. brief 생성 (markdown + dist.png + trend.png)
-  "$P2_PY" scripts/600_morning_brief.py 2>&1 | grep -v "Glyph\|UserWarning" | tail -3
-  # 6b'. Risk Pro 9-Quadrant 강화 대시보드 (도훈 mandate 2026-05-27)
-  cd "$BASE"
-  Rscript "$BASE/04_Research/decision_framework/bearish_forecast_v3/scripts/613_p3_9quad_riskpro.R" 2>&1 | tail -2 || true
-  # 6c. 텔레그램 발송 (latest brief) — 외부화 2026-06-13 (한글/이모지 인라인 -e 깨짐 해소)
+echo "[6/6] K200 일간 위험 브리핑 — 본 모형 H1 · P3 비교 기록 (2026-11-14 도훈 결정 K200-RISK-H1-REPLACE-P3-20261114)"
+# 단계 정본 = morning_steps/k200_risk_brief.sh — 6a P3 601(비교 기록) · 6a' 실현값 · 6h H1 602 + 입력 점검 · 6b 603 발송 원천 결정
+#   (H1 | P3 대체 | 수치 보류) · 6b' 613(P3 대체 때만) · 6c 발송(p3_brief_send.R · brief_meta.json).
+#   구 [6/6] 블록(P3 단일 · 601 → 600 → 613 → p3_brief_send)은 git 태그 pre-k200-h1-20261114 판.
+if [ -f "$INFRA/ops/morning_steps/k200_risk_brief.sh" ]; then
+  bash "$INFRA/ops/morning_steps/k200_risk_brief.sh"
+  echo "[6/6] k200_risk_brief exit=$?"
+else
+  echo "[6/6] ⚠ morning_steps/k200_risk_brief.sh 부재 — 발송기만 돌려 정체 경보를 낸다"
   cd "$BASE"
   Rscript --no-save -e 'source("02_Infrastructure/ops/morning_steps/p3_brief_send.R")' >> /tmp/qm_morning.log 2>&1
-else
-  echo "[6/6] SKIP — venv or v3 dir missing"
 fi
 
 echo "=== Morning Briefing Full Done @ $(date) ==="

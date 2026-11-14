@@ -3,6 +3,7 @@
 - 지시: 도훈 11-13 "K200 일간 위험 브리핑 예측정확도 개선 연구 새 세션에서 시작해줘"
 - 대상: 모닝 체인 [6/6] P3(v3-fast Hansen · LASSO 분위회귀 11분위 → Hansen 비대칭 t) — `04_Research/decision_framework/bearish_forecast_v3`
 - 성격: 연구(운영 무변경). 운영 반영은 도훈 확인 뒤 스크래치 사본 → 시험 → 원자 교체.
+- **운영 반영(2026-11-14)**: 도훈 결정 `K200-RISK-H1-REPLACE-P3-20261114` "즉시 교체" — H1 본 모형 · 이상 입력 점검 · P3 비교 기록. 첫 발송 2026-11-16 07:10. 배포 기록 = [deploy/README.md](deploy/README.md) · 되돌리기 태그 `pre-k200-h1-20261114`
 - 정본 문서: 평가 규약 [prereg/PROTOCOL_v1.md](prereg/PROTOCOL_v1.md) · 가설 [prereg/PREREG_v1.md](prereg/PREREG_v1.md) · 기계 판독 [prereg/prereg_v1.json](prereg/prereg_v1.json)
 
 ## 1. 현행 모형 지도 (P3 · 운영)

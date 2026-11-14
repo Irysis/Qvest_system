@@ -1,0 +1,70 @@
+{
+  "version": "h1_guard_v1",
+  "decision": "K200-RISK-H1-REPLACE-P3-20261114",
+  "made_at": "2026-11-14T15:58:50",
+  "made_by": "04_Research/decision_framework/bearish_forecast_v3/scripts/604_h1_guard_calibrate.py",
+  "inputs": {
+    "benchmark_md5": "135e9247b14874db6daf5491a9ec8285",
+    "benchmark_max_date": "2026-11-13",
+    "indices_md5": "6c968345910e6d16c67ff31c40166f6e",
+    "fc_DR_newsvk_md5": "5a99ed4c60bfd924c5b148eb903f550b",
+    "fc_P3_replica_md5": "7d1fb79be500df558fe6315ca2e6bce9"
+  },
+  "price_limit": {
+    "down_log_pct": -35.66749439387324,
+    "up_log_pct": 26.236426446749107,
+    "basis": "한국거래소 유가증권시장 업무규정 제20조 · 2015-06-15 가격제한폭 ±30% — 지수 일간 로그수익(%) 물리 한계 = 100·ln(0.7) · 100·ln(1.3)"
+  },
+  "ewma_lambda": 0.94,
+  "ewma_basis": "J.P. Morgan/Reuters RiskMetrics Technical Document 4th ed.(1996) §5.3 — 일간 λ = 0.94 · 초깃값 = 처음 60개 수익 분산",
+  "w1_ratio_ewma": {
+    "lo": 0.3378393239570138,
+    "hi": 2.278084627028475,
+    "lo_date": "2020-03-24",
+    "hi_date": "2020-03-16",
+    "n": 3383,
+    "first": "2013-01-24",
+    "last": "2026-11-11",
+    "basis": "H1 워크포워드 σ/EWMA 최솟값 · 최댓값(B7 자료 오류일 · 다음 날 제외)"
+  },
+  "w2_day_over_day": {
+    "lo": 0.29521494079012023,
+    "hi": 2.498890766344955,
+    "lo_date": "2020-03-24",
+    "hi_date": "2024-08-05",
+    "basis": "H1 워크포워드 σ 전일 대비 비 최솟값 · 최댓값(B7 자료 오류일 · 다음 날 제외)"
+  },
+  "p3_w1_ratio_ewma": {
+    "lo": 0.3317876381174263,
+    "hi": 1.9377605016633779,
+    "lo_date": "2021-01-05",
+    "hi_date": "2014-05-29",
+    "n": 3386,
+    "first": "2013-01-24",
+    "last": "2026-11-11",
+    "basis": "P3 재현 워크포워드 σ/EWMA 최솟값 · 최댓값(대체 발송 시 경고 표시용)"
+  },
+  "w3_extrapolation": {
+    "show_if_abs_effect_ge": 0.1,
+    "basis": "외삽 경고는 늘 기록하고, 범위 밖 부분이 σ 를 10% 이상 바꿀 때만 브리핑에 표시(표시 관례 폭 — 작은 외삽 반복 표시는 경고를 무디게 한다)"
+  },
+  "b3_vk_range": {
+    "lo_factor": 0.5,
+    "hi_factor": 2.0,
+    "hist_min": 9.72,
+    "hist_min_date": "2017-02-22",
+    "hist_max": 96.94,
+    "hist_max_date": "2026-06-29",
+    "basis": "실행 때 그날 이전 이력의 최저 × 0.5 · 최고 × 2.0 — 단위 · 열 착오만 잡는 관례 폭(수준 변화는 막지 않는다)"
+  },
+  "b7_vk_jump": {
+    "abs_dlog": 0.3847521535370452,
+    "index_move_k": 1.0,
+    "history_hits": [
+      "2019-04-10",
+      "2019-04-11"
+    ],
+    "history_days": 5890,
+    "basis": "|Δlog V-KOSPI200| 99.9% 분위(전 이력) 초과 ∧ 같은 날 |r| < 1 × EWMA σ(t−1) — 하루 튀고 되돌아온 자료 오류 형태"
+  }
+}
