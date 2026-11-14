@@ -23,6 +23,8 @@
 #   Rscript 02_Infrastructure/factor_db/rebuild_factor_subset.R [--from YYYYMM] [--to YYYYMM] [--months YYYYMM,...] [--dry-run]
 #                                  [--log PATH] [--no-hash]   # 병렬 작업자 = 달 범위를 나누고 --log 를 따로 · 해시는 끝에 한 번(.write_build_hash)
 #   Rscript 02_Infrastructure/factor_db/rebuild_factor_subset.R --check-full YYYYMM   # 양성 대조: 부분 산출 = 전체 산출(대상 팩터 · 쓰기 없음)
+#   ... --from-stage DIR   # (2026-11-13 · 이음매 D1) 같은 코드 · 같은 모듈로 미리 계산해 둔 산출 DIR/new_YYYYMM.parquet(build_factor_db 반환 그대로)을
+#                          읽어 바꿔 끼운다 — 계산(메모리 · 시간)을 쓰기 창 밖으로 뺀다. 단정 · 낙관적 동시성 · 쓴 뒤 대조 · 기록은 그대로.
 #   ★월간 재빌드가 도는 동안에는 그 재빌드가 아직 안 지은 달을 건드리지 않는다(뒤에 옛 코드로 다시 덮인다) — --to 로 막는다.
 #==============================================================================
 suppressPackageStartupMessages({ library(data.table); library(arrow); library(jsonlite) })
@@ -90,7 +92,8 @@ local({
 }
 
 rebuild_factor_subset <- function(root = .rfs_root(), months = NULL, from = NULL, to = NULL, dry_run = FALSE,
-                                  log_path = NULL, verbose = TRUE, write_hash = TRUE, allow_concurrent = FALSE) {
+                                  log_path = NULL, verbose = TRUE, write_hash = TRUE, allow_concurrent = FALSE,
+                                  stage_in = NULL) {
   if (!dry_run && !isTRUE(allow_concurrent)) {
     ob <- .rfs_other_builds()
     if (length(ob)) stop("[subset] 다른 팩터 빌드가 돌고 있다 — 끝난 뒤 다시(쓰기 거부): ", paste(ob, collapse = " · "))
@@ -124,7 +127,18 @@ rebuild_factor_subset <- function(root = .rfs_root(), months = NULL, from = NULL
     old <- as.data.table(read_parquet(fp, mmap = FALSE))
     sig_d <- as.Date(old$Date[1])
     n_old_t <- old[Factor_Name %in% RFS_TARGET, .N]
-    invisible(capture.output(res <- build_factor_db(sig_d, save = FALSE, force = TRUE, modules = RFS_MODS)))
+    if (is.null(stage_in)) {
+      invisible(capture.output(res <- build_factor_db(sig_d, save = FALSE, force = TRUE, modules = RFS_MODS)))
+    } else {
+      # 미리 계산한 산출(--from-stage) — 신호일이 운영 월 파일과 다르면 그 달은 쓰지 않는다(다른 as-of 로 계산한 값)
+      sp_in <- file.path(stage_in, sprintf("new_%s.parquet", ym))
+      res <- if (file.exists(sp_in)) as.data.table(read_parquet(sp_in, mmap = FALSE)) else NULL
+      if (!is.null(res) && nrow(res) && !all(as.Date(res$Date) == sig_d)) {
+        cat(sprintf("  [ERR %s] 스테이징 산출 신호일(%s)이 운영 파일(%s)과 다르다 — 쓰지 않음
+", ym, format(as.Date(res$Date[1])), format(sig_d)))
+        n_bad <- n_bad + 1L; next
+      }
+    }
     empty <- is.null(res) || !nrow(res) || !"Factor_Name" %in% names(res)
     new <- if (empty) NULL else as.data.table(res)[Factor_Name %in% RFS_TARGET]
     if (empty || !nrow(new)) {
@@ -152,6 +166,7 @@ rebuild_factor_subset <- function(root = .rfs_root(), months = NULL, from = NULL
     rec <- list(ts = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), ym = ym, sig_date = format(sig_d), code_rev = rev,
                 decision = RFS_DECISION,
                 dry_run = dry_run, ok = ok, rows_old = nrow(old), rows_new = nrow(out), per_factor = cmp,
+                from_stage = if (is.null(stage_in)) NULL else gsub("\\\\", "/", stage_in),
                 secs = round(as.numeric(difftime(Sys.time(), t1, units = "secs")), 1))
     if (!ok) { cat(sprintf("  [ERR %s] 단정 실패(대상 밖 행 · 열 · 날짜) — 쓰지 않음\n", ym)); n_bad <- n_bad + 1L }
     if (ok && !dry_run) {
@@ -249,6 +264,6 @@ if (sys.nframe() == 0L) {
   }
   ms <- arg("--months"); ms <- if (is.null(ms)) NULL else strsplit(ms, ",", fixed = TRUE)[[1]]
   r <- rebuild_factor_subset(months = ms, from = arg("--from"), to = arg("--to"), dry_run = "--dry-run" %in% a,
-                             log_path = arg("--log"), write_hash = !("--no-hash" %in% a))
+                             log_path = arg("--log"), write_hash = !("--no-hash" %in% a), stage_in = arg("--from-stage"))
   quit(save = "no", status = if (r$bad > 0L) 1L else 0L)
 }

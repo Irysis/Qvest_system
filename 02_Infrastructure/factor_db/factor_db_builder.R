@@ -400,6 +400,15 @@ cat("[factor_db_builder] Loaded. FACTOR_DB_DIR:", FACTOR_DB_DIR, "\n")
   .fdb_env$C11_STATUS <- .vx$status
   rm(.vx)
 
+  # ★연속 가격 배율 px_cont (2026-11-13 · price_continuity.R · 도훈 "1번은 다시 계산해주고") — 원천 이음매(03-30)에서 끊긴 Close 수준을
+  #   저장 Ret 와 같은 기준으로 잇는다. 날짜를 넘는 가격 비율을 쓰는 모듈(모멘텀 M05 · M06 · M16 · M17 · M19 · M20 · 기술적 · D40 · L39 ·
+  #   V21 · TR01)만 소비한다. 정정 자리 밖 배율 = 정확히 1 → 그 이전(IS 전체) 팩터 값은 비트 단위로 같다.
+  if (!exists("fdb_px_cont", mode = "function")) source(file.path(COMPUTE_MOD_DIR, "price_continuity.R"))
+  .fdb_env$RAWDATA <- fdb_px_cont(.fdb_env$RAWDATA)
+  .pci <- attr(.fdb_env$RAWDATA, "px_cont_info")
+  cat(sprintf("  px_cont: 배율 정정 %d · 미측정 %d · 종목 %d · 첫 자리 %s\n", .pci$n_fixed, .pci$n_blocked, .pci$n_tickers, .pci$first_date))
+  rm(.pci)
+
   # Fundamentals
   # QVEST_FUND_MERGED (2026-11-09): 시범 산출용 경로 덮어쓰기(재무 병합 v2 한 달 대조 · README §8).
   #   기본값 = 지금 정본. 정규 체인은 이 변수를 쓰지 않는다.

@@ -725,11 +725,13 @@ compute_liquidity <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) 
   # --- L39: Overnight Spread Proxy = |Open_t / Close_{t-1} - 1| averaged ---
   # Vectorized by=Ticker (replaces lapply).
   if (all(c("Open", "Close") %in% names(rd))) {
+    .pm_ok <- "px_cont" %in% names(rd)   # 연속 가격 배율 px_cont(price_continuity.R · 2026-11-13) — 날짜를 넘는 가격 비율은 Ret 와 같은 기준. 열이 없으면 1
     l39_dt <- rd[!is.na(Open) & !is.na(Close) & Close > 0 & Open > 0, {
       n <- .N
       l39 <- NA_real_
       if (n >= 60L) {
-        gap <- abs(Open[-1L] / Close[-n] - 1)
+        pm <- if (.pm_ok) px_cont else 1
+        gap <- abs((Open * pm)[-1L] / (Close * pm)[-n] - 1)
         gap <- gap[!is.na(gap) & is.finite(gap)]
         if (length(gap) >= 30L) l39 <- -mean(gap)
       }

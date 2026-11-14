@@ -614,12 +614,14 @@ compute_defense <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
   if (all(c("High", "Low", "Close", "Open") %in% names(rd))) {
     rd_ohlc <- rd[!is.na(High) & !is.na(Low) & !is.na(Close) & !is.na(Open) &
                     High > 0 & Low > 0 & Close > 0 & Open > 0]
+    .pm_ok <- "px_cont" %in% names(rd_ohlc)   # 연속 가격 배율 px_cont(price_continuity.R · 2026-11-13) — 날짜를 넘는 가격 비율은 Ret 와 같은 기준. 열이 없으면 1
     d40_dt <- rd_ohlc[, {
       n <- .N
       d40 <- NA_real_
       if (n >= MIN_OBS_SD) {
-        overnight <- log(Open[-1] / Close[-n])
-        cc        <- log(Close[-1] / Close[-n])
+        pm <- if (.pm_ok) px_cont else 1; oc <- Open * pm; ccl <- Close * pm   # 날짜를 넘는 두 항만 연속 가격
+        overnight <- log(oc[-1] / ccl[-n])
+        cc        <- log(ccl[-1] / ccl[-n])
         rs        <- log(High / Close) * log(High / Open) +
                      log(Low / Close)  * log(Low / Open)
         rs_mean   <- mean(rs, na.rm = TRUE)

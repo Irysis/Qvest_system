@@ -264,7 +264,8 @@ krf_calendar <- function(RAW, min_rows) {
 
 #' 월말 행(그 달 마지막 거래일에 있는 종목 행) — ME = Size · 멤버 여부
 krf_snap <- function(RAW, ME) {
-  S <- merge(RAW[, .(Date, Ticker, Size, Close, member)], ME, by.x = "Date", by.y = "me_date")
+  px <- if ("px_cont" %in% names(RAW)) RAW$Close * RAW$px_cont else RAW$Close   # 연속 가격(이음매 D1) — 열이 없으면 원 종가(시험 · 구 호출)
+  S <- merge(RAW[, .(Date, Ticker, Size, Close = px, member)], ME, by.x = "Date", by.y = "me_date")
   S[, .(Ticker, ym, me_date = Date, ME = Size, Close, member)]
 }
 
@@ -519,6 +520,11 @@ krf_load_inputs <- function(root, cfg) {
   ep <- ma_epoch(NULL, root)
   setorder(RAW, Ticker, Date)
   RAW[, member := ma_membership(RAW, ep)]
+  # 연속 가격 배율(2026-11-13 · 이음매 D1 · 도훈 "1번은 다시 계산해주고") — 모멘텀 정렬(.krf_prior)의 월말 종가 비율이 원천 이음매
+  #   (2026-03-30 퀀티 base → 증분 수출본 · 351종 등)의 조정 기준 단절을 타지 않게 Ret 연쇄와 같은 기준의 가격을 쓴다(그날까지의 값만 · PIT).
+  #   측정 축 멤버십(동전주 바닥 = 수준)은 위에서 원 종가로 먼저 판정했다 — 수준 쓰임은 이 수리 밖이다.
+  source(file.path(root, "02_Infrastructure", "factor_db", "price_continuity.R"), local = TRUE)
+  RAW <- fdb_px_cont(RAW)
   RAW[, c("Vol", "AdminStock", "TradingHalt", "UnfaithfulDisc") := NULL]
   fp <- file.path(root, cfg$fundamentals$table)
   items <- KRF_FUND_ITEMS

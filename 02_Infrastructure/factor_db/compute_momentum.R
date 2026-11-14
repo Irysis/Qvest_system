@@ -80,6 +80,7 @@ compute_momentum <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
   if (nrow(window) == 0L) return(data.table(Ticker = character(), Factor_Name = character(), Raw_Value = numeric()))
 
   setorder(window, Ticker, Date)
+  .pm_ok <- "px_cont" %in% names(window)   # 연속 가격 배율 px_cont(price_continuity.R · 2026-11-13) — 날짜를 넘는 가격 비율은 Ret 와 같은 기준. 열이 없으면 1
 
   # ---- BM daily returns for CAPM ----
   bm_daily <- unique(window[, .(Date, BM_Ret)])
@@ -94,7 +95,7 @@ compute_momentum <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
     n <- .N
     rets  <- Ret
     dates <- Date
-    prices <- Close
+    prices <- if (.pm_ok) Close * px_cont else Close   # M05 · M06 — 연속 가격
 
     # --- M01: Mom_12_1 (252d lookback, skip last 21d) ---
     m01 <- NA_real_
@@ -226,7 +227,7 @@ compute_momentum <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
   mom_dt2 <- window[!is.na(Ret) & !is.na(Close), {
     n <- .N
     rets <- Ret
-    prices <- Close
+    prices <- if (.pm_ok) Close * px_cont else Close   # M16 · M17 · M19 · M20 — 연속 가격
     dates <- Date
 
     # --- M10: IntMom (252d to 147d, ~months 12 to 7) ---

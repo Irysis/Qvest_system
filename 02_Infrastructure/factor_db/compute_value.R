@@ -311,6 +311,7 @@ compute_value <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
   # Approximation: use 1260 trading days (~5 years).
   price_hist <- RAWDATA[Date <= sig_date & !is.na(Close) & Close > 0 & !is.na(Size)]
   setorder(price_hist, Ticker, Date)
+  .pm_ok <- "px_cont" %in% names(price_hist)   # 연속 가격 배율 px_cont(price_continuity.R · 2026-11-13) — 날짜를 넘는 가격 비율은 Ret 와 같은 기준. 열이 없으면 1
   cei_dt <- price_hist[, {
     n <- .N
     cei_val <- NA_real_
@@ -322,7 +323,8 @@ compute_value <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
       me_now  <- Size[n]
       me_past <- Size[n - lookback + 1L]
       if (me_now > 0 && me_past > 0) {
-        cum_ret <- Close[n] / Close[n - lookback + 1L] - 1
+        cx <- if (.pm_ok) Close * px_cont else Close   # 가격 수익 = 연속 가격 비율(시총 ME 는 원래 연속)
+        cum_ret <- cx[n] / cx[n - lookback + 1L] - 1
         cei_val <- log(me_now / me_past) - log(1 + cum_ret)
       }
     }

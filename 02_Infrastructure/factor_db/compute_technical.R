@@ -88,9 +88,11 @@ compute_technical <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) 
   rd <- rd[Date %in% ds]
   setorder(rd, Ticker, Date)
 
+  .pm_ok <- "px_cont" %in% names(rd)   # 연속 가격 배율 px_cont(price_continuity.R · 2026-11-13) — 날짜를 넘는 가격 비율은 Ret 와 같은 기준. 열이 없으면 1
   out <- rd[, {
-    cl <- as.numeric(Close); op <- as.numeric(Open)
-    hi <- as.numeric(High);  lo <- as.numeric(Low); vo <- as.numeric(Vol)
+    pm <- if (.pm_ok) as.numeric(px_cont) else 1   # 가격 × pm · 거래량 ÷ pm(거래대금 불변)
+    cl <- as.numeric(Close) * pm; op <- as.numeric(Open) * pm
+    hi <- as.numeric(High) * pm;  lo <- as.numeric(Low) * pm; vo <- as.numeric(Vol) / pm
     n <- length(cl)
     ok <- n >= 2L && is.finite(cl[n]) && cl[n] > 0
     ret <- if (n >= 2L) c(NA_real_, cl[-1L] / cl[-n] - 1) else NA_real_

@@ -30,6 +30,11 @@ suppressPackageStartupMessages({ library(data.table) })
 .cf_apply <- function(dt, tmpl, p, sig_date = NULL) {
   W <- as.integer(p$window %||% 0L); K <- as.integer(p$skip %||% 0L)
   col <- p$col %||% "Ret"
+  .pm_ok <- "px_cont" %in% names(dt)   # 연속 가격 배율 px_cont(price_continuity.R · 2026-11-13) — 날짜를 넘는 가격 비율은 Ret 와 같은 기준. 열이 없으면 1
+  if (tmpl %in% c("momentum", "reversal", "mean_reversion", "gap_freq")) {
+    dt <- copy(dt)
+    if (.pm_ok) { dt[, Close := Close * px_cont]; if ("Open" %in% names(dt)) dt[, Open := Open * px_cont] }
+  }
   if (tmpl == "momentum") {
     dt[, .(Raw_Value = { n<-.N; if (n < W+1L) NA_real_ else {
       a<-Close[n-K]; b<-Close[n-W]; if (is.na(a)||is.na(b)||b<=0) NA_real_ else a/b-1 } }), by=Ticker]

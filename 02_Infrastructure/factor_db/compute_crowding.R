@@ -476,12 +476,14 @@ compute_crowding <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
   # ---- TR01: ADX Proxy (Average Directional Index, Wilder 1978) ----
   # Requires High, Low, Close
   if (all(c("High", "Low", "Close") %in% names(rd))) {
+    .pm_ok <- "px_cont" %in% names(rd)   # price continuity multiplier (price_continuity.R, 2026-11-13)
     tr01 <- rd[!is.na(High) & !is.na(Low) & !is.na(Close), {
       if (.N >= 28L) {
         n <- .N
-        hi  <- High
-        lo  <- Low
-        cl  <- Close
+        pm  <- if (.pm_ok) px_cont else 1   # price continuity (px_cont) - cross-day TR / DM
+        hi  <- High * pm
+        lo  <- Low * pm
+        cl  <- Close * pm
 
         # True Range
         tr <- pmax(hi[-1] - lo[-1],
