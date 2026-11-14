@@ -19,8 +19,17 @@ def locate(i1, i2):
     hits = [j for j in range(len(idx) - len(pat) + 1) if idx[j:j + len(pat)] == pat]
     if len(hits) != 1: raise SystemExit('문맥 일치 %d곳 — 중단 (before %d:%d)' % (len(hits), i1, i2))
     return hits[0] + len(pre)
+import re
+TOPKEY = re.compile(r'^  "(version|updated_at)": ')   # 최상위 판 번호 · 갱신 시각 — 다른 세션의 미커밋 변경이 색인 판과 값을 벌려 놓는다 → 문맥 대신 키로 찾아 새 값으로 덮는다
 edits = []
 for tag, i1, i2, j1, j2 in ops:
+    if tag == 'replace' and before[i1:i2] and all(TOPKEY.match(x) for x in before[i1:i2] + after[j1:j2]):
+        for new_ln in after[j1:j2]:
+            k = TOPKEY.match(new_ln).group(1)
+            hit = [j for j, x in enumerate(idx) if TOPKEY.match(x) and TOPKEY.match(x).group(1) == k]
+            if len(hit) != 1: raise SystemExit('최상위 키 %s 가 색인 판에서 %d곳 — 중단' % (k, len(hit)))
+            edits.append((hit[0], hit[0] + 1, [new_ln], 'topkey:' + k))
+        continue
     s = locate(i1, i2); edits.append((s, s + (i2 - i1), after[j1:j2], tag))
 for s, e, rep, tag in sorted(edits, key=lambda x: -x[0]):
     idx[s:e] = rep
