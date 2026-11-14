@@ -160,11 +160,29 @@
     },
     {
       "id": "RAWDATA-INTERNAL-BREAK-FILL-D2D3-20261114",
-      "completed_at": "",
+      "completed_at": "2026-11-14T21:40:39+09:00",
       "scope": "all",
       "decision": "RAWDATA-INTERNAL-BREAK-FILL-D2D3-20261114(도훈 11-14 '데이터 빈 부분 제대로 채워' — 원천 이음매 보고서 결정 대기 D2 · D3)",
-      "note": "RAWDATA 수익률 단절 자리를 채웠다(writer 잠금 · seam_repair_locked.sh --apply · 적재기 규칙 e2d1df053 + 수동 등록부 강제). ① 11-14 17:31 — 시가총액 기준 실수익(그날 시총 ÷ 전날 시총 − 1 · 날짜별 가격제한폭 2015-06-15 전 ±15% · 뒤 ±30% 안) 159행. ② 11-14 18:22 정정 — DART 사건 종류 + 거래소 원주가(네이버 모바일 일별 시세)로 다시 확인해 10행을 바꿨다: 코넥스 → 코스닥 이전상장 첫날 5행(일반공모 신주가 시총을 부풀려 시총 기준이 틀렸다 → 생비율 = 보유자 수익 · A197210 A220100 A214610 A107640 A250030) · 장외 → 코스닥 신규 상장 첫날 4행(퀀티가 상장 뒤 가격만 이후 사건으로 수정해 생비율이 깨졌다 → 거래소 첫 종가 ÷ 장외 마지막 종가 · A042000 A046120 A053580 A062970) · 1998-01-05 A012170(토요일 행 결손 → 네이버 수정주가 같은 구간). 확인한 값 14행 = 06_Registry/ret_fill_registry.json(적재기가 매번 강제). 적용 전(11-14 아침) 대비 Ret 이 바뀐 행 = 155(03-30 이음매 71 · A008080 반올림 75 · 장외 → 상장 첫날 4 · A250030 · A012170 · 2000 전 3) · 이전상장 4행은 원래 값으로 돌아갔다. 못 채운 것 = 원천 내부 단절 10행(2000 전 8 · A008080 2원 반올림 2 · 측정 축 밖) · 첫 관측 11행(앵커 없음 = 빈칸이 맞다). 진행 중 = 팩터 DB(Ret · 연속 가격을 쓰는 10모듈 · 전 기간 · 18:28 재시작 — 17:38 실행은 정정 전 입력이라 멈췄다) · IC · 결합용 뷰 재계산 끝에 completed_at 을 채운다 — 그때까지 범위 all 의 측정은 낡음.",
-      "evidence": "04_Research/01_reports/rawdata_seam_20260330_repair_20261113/README.md §10 · .cache/rawdata_seam_audit/audit_after_repair_20261114_182246.json · .cache/rawdata_pre_seamguard_20261114.parquet(적용 전 사본) · 06_Registry/ret_fill_registry.json(14행 · 행마다 method · evidence) · RAWDATA md5 506a0e13736d(18:22) · FF 월간 내용 md5 3dd806e4f9ff(18:28)"
+      "note": "RAWDATA 수익률 단절 자리를 채웠다(writer 잠금 · seam_repair_locked.sh --apply · 적재기 규칙 e2d1df053 + 수동 등록부 강제). ① 11-14 17:31 — 시가총액 기준 실수익(그날 시총 ÷ 전날 시총 − 1 · 날짜별 가격제한폭 2015-06-15 전 ±15% · 뒤 ±30% 안) 159행. ② 11-14 18:22 정정 — DART 사건 종류 + 거래소 원주가(네이버 모바일 일별 시세)로 다시 확인해 10행을 바꿨다: 코넥스 → 코스닥 이전상장 첫날 5행(일반공모 신주가 시총을 부풀려 시총 기준이 틀렸다 → 생비율 = 보유자 수익 · A197210 A220100 A214610 A107640 A250030) · 장외 → 코스닥 신규 상장 첫날 4행(퀀티가 상장 뒤 가격만 이후 사건으로 수정해 생비율이 깨졌다 → 거래소 첫 종가 ÷ 장외 마지막 종가 · A042000 A046120 A053580 A062970) · 1998-01-05 A012170(토요일 행 결손 → 네이버 수정주가 같은 구간). 확인한 값 14행 = 06_Registry/ret_fill_registry.json(적재기가 매번 강제). 적용 전(11-14 아침) 대비 Ret 이 바뀐 행 = 155(03-30 이음매 71 · A008080 반올림 75 · 장외 → 상장 첫날 4 · A250030 · A012170 · 2000 전 3) · 이전상장 4행은 원래 값으로 돌아갔다. 못 채운 것 = 원천 내부 단절 10행(2000 전 8 · A008080 2원 반올림 2 · 측정 축 밖) · 첫 관측 11행(앵커 없음 = 빈칸이 맞다). 재계산 끝 = 팩터 DB(Ret · 연속 가격을 쓰는 10모듈 254팩터 · 442달 · 18:28 재시작 — 17:38 실행은 정정 전 입력이라 멈췄다 · 21:36 진행기 '성공' · IC · 대응표 · 결합용 뷰 rc 0) + 이번 달 202611(같은 명세 · 21:40:29) + 결합용 뷰 그 달(21:40:39). completed_at 앞의 측정은 범위 all 이라 전부 낡음 — 재측정 뒤에만 인용.",
+      "evidence": "04_Research/01_reports/rawdata_seam_20260330_repair_20261113/README.md §10 · .cache/rawdata_seam_audit/audit_after_repair_20261114_182246.json · .cache/rawdata_pre_seamguard_20261114.parquet(적용 전 사본) · 06_Registry/ret_fill_registry.json(14행 · 행마다 method · evidence) · RAWDATA md5 506a0e13736d(18:22) · FF 월간 내용 md5 3dd806e4f9ff(18:28) · .cache/scheduler_logs/factor_subset_repair_20261114_182836.json(result 성공 · 442달 · ic_rc 0 · parity_rc 0 · combinable_rc 0) · .cache/scheduler_logs/subset_d2_202611.jsonl(202611 ok) · build_hash 20261114214028_f89084e5e"
+    },
+    {
+      "id": "D2-XF-FILL-RESTORE-20261114",
+      "completed_at": null,
+      "scope": {
+        "factors": [
+          "V01_BM",
+          "V02_EP",
+          "V03_CFP",
+          "V08_PSR",
+          "GR01_Revenue_Growth",
+          "GR02_Earnings_Growth",
+          "GR03_Asset_Growth"
+        ]
+      },
+      "decision": "RAWDATA-INTERNAL-BREAK-FILL-D2D3-20261114(D2 팩터 DB 재계산의 부작용 수리 — 이음매 세션 결함 · 11-14 21:5x 발견)",
+      "note": "D2 팩터 DB 부분 재계산(stamp 20261114_182836 · 판 원장 RAWDATA-INTERNAL-BREAK-FILL-D2D3-20261114 21:40 완료)의 수리 명세 모듈 목록에 xlsx_fund 가 없어 빌더의 XF → DART 채움 병합(.fdb_xf_fill_merge — XF 행이 0 이면 건너뜀)이 돌지 않았다 → 밸류 · 성장 7팩터가 DART 행만 남았다(옛 파일 대비 '옛만' 약 7.4만 행 · 2015~ 연 1~7천 · 202611 340 · 값이 남은 행은 그대로). 다른 팩터는 영향 없음(채움 병합은 빌더 마지막 단계 · 대상 7팩터 행만 바꿔 끼웠다). 수리 = value · growth · xlsx_fund 모듈로 7팩터만 전 기간 다시 계산(양성 대조 = 부분 산출 = 전체 산출 한 달) → IC · 결합용 뷰 → 202611 → completed_at. 그때까지 7팩터에 닿는 측정은 낡음(팩터 목록을 선언한 칸 중 7팩터가 없는 칸만 비켜 간다 · 임의 코드 엔진은 닿은 것으로 본다).",
+      "evidence": ".cache/scheduler_logs/subset_worker_20261114_182836_r0_w*.jsonl(per_factor only_old) · .cache/scheduler_logs/subset_d2_202611.jsonl · 02_Infrastructure/factor_db/factor_db_builder.R .fdb_xf_fill_merge · 04_Research/01_reports/rawdata_seam_20260330_repair_20261113/d2_fill/repair_spec.json(modules 에 xlsx_fund 없음)"
     }
   ]
 }
