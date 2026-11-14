@@ -157,6 +157,14 @@
       "decision": "PRICE-CONTINUITY-FACTORS-20261113(도훈 11-13 '1번은 다시 계산해주고' — 원천 이음매 보고서 결정 대기 D1)",
       "note": "가격 수준 기반 팩터의 원천 이음매 — Ret 수리(RAWDATA-SEAM-0330-REPAIR-20261113) 뒤에도 Close 수준이 03-30(351종) · 10-15(1) · 11-10(3) 처분 자리에서 끊겨, 날짜를 넘는 가격 비율을 쓰는 23팩터(모멘텀 M05 · M06 · M16 · M17 · M19 · M20 + 합성 M09 · 기술적 12 · D40 · L39 · V21 · TR01)가 2026-03~ as-of 에서 틀렸다(예: 10:1 분할 종목의 52주 고점 대비 0.1 · 거래정지 종목의 가짜 변동성 · ADX 100). 연속 가격 배율 px_cont(price_continuity.R · 코드 dda1e34ca)로 202603~202611 대상 23팩터 부분 재계산(정본 rebuild_factor_subset.R --from-stage) + IC 월간 원장 전체 재계산 + 결합용 뷰 증분 + FF 요인 UMD(모멘텀 정렬) 재빌드. IS(≤ 2026-02 as-of) 팩터 값 비트 동일(정정 자리 이전 배율 = 1 · 실자료 대조 2022-12 · 2026-02 6모듈 185팩터). 범위 = 23팩터(이 팩터를 선언한 측정이 낡음 — 모멘텀 · 기술적 · 방어 · 유동성 · 밸류 · 쏠림 카테고리와 토탈). FF 요인 변경은 요인 md5(fa_stale)로 따로 가린다. 함께 들어간 것: 신규 상장 보충으로 RAWDATA 에 생긴 이력(옛 월 파일에 없던 종목의 대상 팩터 값).",
       "evidence": "04_Research/01_reports/rawdata_seam_20260330_repair_20261113/README.md §9 · .cache/scheduler_logs/factor_subset_repair_20261114_161304.json · .cache/factor_db/subset_rebuild_log.jsonl"
+    },
+    {
+      "id": "RAWDATA-INTERNAL-BREAK-FILL-D2D3-20261114",
+      "completed_at": "",
+      "scope": "all",
+      "decision": "RAWDATA-INTERNAL-BREAK-FILL-D2D3-20261114(도훈 11-14 '데이터 빈 부분 제대로 채워' — 원천 이음매 보고서 결정 대기 D2 · D3)",
+      "note": "RAWDATA 수익률 단절 자리를 시가총액 기준 실수익(그날 시총 ÷ 전날 시총 − 1 · 날짜별 가격제한폭 2015-06-15 전 ±15% · 뒤 ±30% 안)으로 채웠다(11-14 17:31 · writer 잠금 · seam_repair_locked.sh --apply · 적재기 규칙 e2d1df053). 바뀐 Ret = 159행뿐(전 열 대조): 원천 내부 단절 87행(1991~2024 · 생비율 −37 ~ −99% 였던 것) · 2026-03-30 이음매 차단 71행(NA → 채움) · 2026-10-15 A250030 1행(수동 등록부 · 하한가 근거). 못 채운 것 = 원천 내부 단절 14행(제한폭 밖 · 독립 계기 없음 — 거래정지 뒤 재개일 9 · 2원 반올림 2 · 그 밖 3 · 목록 = 보고서) · 첫 관측 11행(앵커 없음 = 수익률 미정의 · 빈칸이 맞다). IS 값이 바뀐다(87행 중 82행이 2000~2022). 진행 중 = 팩터 DB(Ret · 연속 가격을 쓰는 10모듈 · 전 기간) · IC · 결합용 뷰 재계산 끝에 completed_at 을 채운다 — 그때까지 범위 all 의 측정은 낡음.",
+      "evidence": "04_Research/01_reports/rawdata_seam_20260330_repair_20261113/README.md §10 · .cache/rawdata_seam_audit/audit_after_repair_20261114_*.json · .cache/rawdata_pre_seamguard_20261114.parquet(적용 전 사본) · 06_Registry/ret_fill_registry.json"
     }
   ]
 }
