@@ -733,6 +733,38 @@
       "depends_on": [],
       "tier": 3,
       "_note": "2026-07-26 P2-03: date_col='ym'(kind=ym) 선언 — 종전 mtime-only. 실측 2026-07-26: ym max 2026-06 (고유 138개월) → 월말 2026-06-30 → lag 26 ≤ 45 FRESH. ★P2-07(부분 스냅샷이 그 달 vintage 로 확정)은 이 축이 잡지 못한다 — 그건 '몇 월까지 왔나'가 아니라 '그 달이 몇 품목까지 찼나'라서 별도 축(행수/HS 고유수) 소관. FQ-073 관세청 품목별 HS 수출입. ★이 파일은 latest-revised **파생물**이며 권위는 fq073/vintage_store/customs_hs_<PULLDATE>.parquet 스냅샷이다 — API에 vintage 파라미터가 없고 개정이 무기한 반복(매월 15일경 과거 전체 현행화)되므로 최신판 덮어쓰기는 소급 정보주입이다(PIT_plan_fq073 §2). 게이트 판정은 pinned 스냅샷 기준 + vintage_basis 라벨 의무."
+    },
+    {
+      "path": ".cache/rawdata_pre_seamguard_20261113.parquet",
+      "producer": "02_Infrastructure/data/seam_scale_repair.R",
+      "entry_fn": "seam_repair_run(apply_writes = TRUE) — 소급 정정이 쓰기 전에 남기는 적용 전 사본(그날 첫 실행만 · 이미 있으면 재사용)",
+      "schedule": "on_demand",
+      "date_col": null,
+      "max_lag_days": null,
+      "depends_on": [
+        ".cache/RAWDATA.parquet"
+      ],
+      "tier": 3,
+      "no_content_check": {
+        "reason": "갱신되지 않는 고정 사본(되돌리기 · 전후 대조 근거) — 신선도 · 내용 도달 축이 적용되지 않는다."
+      },
+      "_note": "보존 사유: 2026-11-13 원천 이음매 수리(판 원장 RAWDATA-SEAM-0330-REPAIR-20261113 · 코드 bdf79b30b)의 적용 전 RAWDATA(09:06 · 426,167,161 B). 되돌리기 · 전후 대조 근거 — 보고서 04_Research/01_reports/rawdata_seam_20260330_repair_20261113/README.md. 폐기 = 도훈 결정(리프레시 세션 요청으로 11-14 등록)."
+    },
+    {
+      "path": ".cache/rawdata_pre_seamguard_20261114.parquet",
+      "producer": "02_Infrastructure/data/seam_scale_repair.R",
+      "entry_fn": "seam_repair_run(apply_writes = TRUE) — 소급 정정이 쓰기 전에 남기는 적용 전 사본(그날 첫 실행만 · 이미 있으면 재사용)",
+      "schedule": "on_demand",
+      "date_col": null,
+      "max_lag_days": null,
+      "depends_on": [
+        ".cache/RAWDATA.parquet"
+      ],
+      "tier": 3,
+      "no_content_check": {
+        "reason": "갱신되지 않는 고정 사본(되돌리기 · 전후 대조 근거) — 신선도 · 내용 도달 축이 적용되지 않는다."
+      },
+      "_note": "보존 사유: 2026-11-14 수익률 단절 채움 D2(판 원장 RAWDATA-INTERNAL-BREAK-FILL-D2D3-20261114 · 17:31 채움 + 18:22 사건 종류 정정 814fc1bfc)의 적용 전 RAWDATA(17:31 · 426,228,981 B). 되돌리기 · 전후 대조 근거(적용 전 대비 Ret 155행) — 보고서 같은 폴더 §10 · §10.1. 폐기 = 도훈 결정(리프레시 세션 요청으로 11-14 등록)."
     }
   ]
 }

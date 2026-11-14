@@ -1,5 +1,6 @@
 """퀀티 Close vs 거래소 종가(네이버 모바일 closePrice) — 월별 일치율. 어느 날부터 어긋났나.
-입력: argv[1] = scratchpad · argv[2] = RAWDATA 표본 csv(Date,Ticker,Close,Vol,source)
+입력: argv[1] = 작업 폴더(SP) · argv[2] = RAWDATA 표본 csv(Date,Ticker,Close,Vol,source — close_match_sample.R)
+출력: 화면 + SP/close_match_by_month.csv(month,n,close_same,vol_same,sources)
 """
 import csv, json, sys, time, urllib.request
 from collections import defaultdict
@@ -48,9 +49,14 @@ for t, dd in qw.items():
         src_by_month[m].add(s)
         if not same and len(ex) < 12 and d >= "2026-03-25" and d <= "2026-04-03":
             ex.append((d, t, c, oc, v, ov, s))
-for m in sorted(stat):
-    n, cs, vs = stat[m]
-    print(f"{m}  n={n:4d}  종가 일치 {cs:4d} ({100*cs/n:5.1f}%)  거래량 일치 {vs:4d} ({100*vs/n:5.1f}%)  원천 {','.join(sorted(src_by_month[m]))}")
+NL = chr(10)
+with open(f"{SP}/close_match_by_month.csv", "w", encoding="utf-8", newline="") as fo:
+    fo.write("month,n,close_same,vol_same,sources" + NL)
+    for m in sorted(stat):
+        n, cs, vs = stat[m]
+        srcs = sorted(src_by_month[m])
+        print(f"{m}  n={n:4d}  종가 일치 {cs:4d} ({100*cs/n:5.1f}%)  거래량 일치 {vs:4d} ({100*vs/n:5.1f}%)  원천 {','.join(srcs)}")
+        fo.write(f"{m},{n},{cs},{vs},{'|'.join(srcs)}" + NL)
 print("이음매 근처 불일치 예:")
 for e in ex:
     print("  ", e)
