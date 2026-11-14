@@ -3,6 +3,20 @@
 > CLAUDE.md는 "현재 유효한 헌법"만 담는다. 버전 연혁·릴리스 상세는 본 파일이 SOT.
 > 최신 릴리스 상세: `qvest_v8_4_asymmetry_ml_sot.md` (**v8.4 — 주력 SOT**) · `qvest_v8_3_alpha_discovery_sot.md` (v8.3) · `qvest_v8_1_sot.md` (v8.1) · `qvest_v8_0_upgrade_plan.md` (v8.0)
 
+## 등급 v3.5 — 위기 복원력 '강함' 가점의 선택 방어 = 시가총액 × β 짝 (2026-11-13 결정 · 11-14 16:03 발효 · 버전 미변경)
+
+**도훈**
+- 11-13 08:24 결정 카드 `GRADE-CR-NOTCH-BETA-SELECTION-20261113` (가) — "β까지 맞춰 수정"(크기 = 시가총액 설명 뒤).
+- 출발점: 철학 Superfan P2 C-20261113-012 — `grade_v3.R` 노출 고정 분기가 MC8 selection_defense(시가총액 분위 × 평균 노출 플라시보 · β 미맞춤)를 곧바로 선택 방어로 세어, 정적 β 축소(분위 안 저β 종목 보유)가 '강함' 가점을 받았다 · 헌장 §5 빈칸 14(선택 방어 = 크기 × β 동시 짝까지 넘을 때)와 불일치.
+
+**무엇** (사전등록 = `04_Research/01_reports/grade_v35_cr_beta_selection_20261113/PREREG.md` 69e44fb6b · 부록 1 31f58abda · 측정 전 고정)
+- MC8 ⑥ 시가총액 × β 플라시보(`contracts/matched_controls.R` · 설정 `matched_controls.json::size_beta`): 시가총액 분위 플라시보 경로마다 현금으로 전략 β 까지 낮춘 분포 — 배율 = 평균 노출 × min(전략 레그 β / 경로 β, 1) · 월간 OLS(행동 카드 β 추정기) · 상한 1 = 차입 없음. 기존 라벨 · 어휘는 그대로 두고 새 필드만 더했다(`share_beats_size_beta` · `label_size_beta` 등).
+- 등급 노치(`contracts/grade_v3.R` · `grade_v3.json::cr_notch.selection_control = size_beta` · v3.5 이상 설정에서 다른 값이면 멈춤): 선택 방어 = 기존 조건 + 시가총액 × β 짝 위기 과반 승(못 이기면 `beta_not_separated` · 못 쟀으면 `beta_unresolved` → 가점 없음) · 노출이 변하면 경로판 짝도. 조건만 더한다 — 같은 입력이면 등급이 오르지 않는다(검사 Z · 240경우).
+- 기록: `authoritative_remeasure.json::grade_v3` 에 노치 근거 · 선택 방어 짝 · 시가총액 × β 비율 · 레그 β(`essence_score.R::.essence_v3_record`) · 진단 패킷 IS 요약에 귀속 한 줄(`diagnosis_packet.R` · 새 필드만).
+- 재채점: `grade_v3.json::rules_version_compatible_unless` — v3.3 · v3.4 저장분은 CR 가점이 유지된 기록(`cr_notch_basis = strong`)만 다시 채점(`programs/grade_v3_backfill.R::gv3b_compat_unless`) · 원인 기록(`grade_v3_backfill.causes`) · `--dirs` · `--no-data-triggers` · 교체를 걸쳐 v3.5 필드 없이 적힌 기록(교체 전 essence_score.R + 교체 뒤 grade_v3.R)은 `record_fields_incomplete` 로 다시 채점 · 강등 뒤 Judge 트리거는 `rcg_withdraw`.
+- 검사: `08_Tests/contracts/test_cr_notch_size_beta.R`(합성 세계 — 음성 · 양성 2 · 현금 혼합 · 타이밍 · 상한 · 과반 경계 · 통합 경로 · fail-closed · 설정 위반 주입 · 돌연변이 6 · 단조성) + 기존 회귀(grade_v3 · fa_notch · behavior_card · matched_controls · diagnosis_packet · backfill_mark).
+- 교체: 미러 루트에서 시험 → 기준 md5 사전 점검 → 원자 교체(코드 먼저 · 설정 나중 · 11 파일) 11-14 16:03:33. 등록 라운드 · 상설 판 핀(RC_PIN_FILES_DEFAULT 6파일)이 바뀌므로 P1S02 · P1R04 는 측정 직전 재핀(결과 전 · lean-loop 5) · P1S03 · P4C01 은 새 핀으로 등록(오케스트레이터 조율 — P1S02 E2 측정 · 판정을 기다려 하루 늦춤).
+
 ## v10.2 전수 감사 · 정리 — 아키텍처 13영역 감사 · 적대적 검토 2회 · 안 쓰는 것 삭제 (2026-11-10 저녁 · 버전 미변경)
 
 **도훈**
