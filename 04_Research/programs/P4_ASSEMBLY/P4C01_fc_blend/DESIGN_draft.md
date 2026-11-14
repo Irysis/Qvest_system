@@ -23,7 +23,7 @@
 - 걸음 = 가설 하나 · 블록 하나 · 칸 하나 — 사슬 목적(purpose)에 '블렌딩 사슬: blend 블록(기저 + 부품 1개 추가)부터'를 적어 생성기(g1 · 무인 틱 chain_tick)의 설계 입력으로 준다. 같은 계보 · 토탈 ⊃ 카테고리 블렌드 = 꼬리표 same_lineage_blend(거부 아님 · 닫기 결론에 '한 원천의 결합 가중').
 
 ## 4. 채택 규칙(p4_rules_v3 · IS 만 · 숫자 = 정본 참조)
-- dS_vis ≥ 0 · uc_vis ≥ `06_Registry/behavior_card.json::uc_floor` · d_dd_capture_median_vis ≤ 0 · uc_seg_ok_share_vis > `behavior_card.json::majority_share` · deep_crisis_nonworse_share_vis > majority_share · beta_asym_ok_vis ≥ 1(N5 — blend · 노출 층 걸음 · 판단 C-20261113-011 · 격리 R6).
+- dS_vis ≥ `04_Research/programs/P3_CONSTRUCTION/P3R03_advanced_construction/prereg.json::final_selection_rule.tie_eps`(0.02 — 파일럿 P4C90 와 같은 규칙 · 잡음 수준 개선은 채택하지 않는다 · 11-14 정정: 초안의 '≥ 0' 은 근거 문서가 없었다) · uc_vis ≥ `06_Registry/behavior_card.json::uc_floor` · d_dd_capture_median_vis ≤ 0 · uc_seg_ok_share_vis > `behavior_card.json::majority_share` · deep_crisis_nonworse_share_vis > majority_share · beta_asym_ok_vis ≥ 1(N5 — blend · 노출 층 걸음 · 판단 C-20261113-011 · 격리 R6).
 
 ## 5. 예산(근거 문구 = 사슬 판 budget.*_source)
 - max_steps 20: `programs/trial_budget.R rc 0.8` — K 50 → 요구 t 2.52 · K 100 → 2.62. 시행 집합 = 원천 45(P1R03 15 + P1R04 30 — 코어 v4 원천 시행 · 판단 C-038) + 기저 1 + 걸음 ≤ 20 ≈ 66 → 요구 t ≈ 2.55. 걸음을 늘려도 요구 t 증가가 완만해 시행이 아니라 생성 비용 · 시간이 상한을 정한다.
@@ -40,4 +40,6 @@
 - 팩터 방향 불일치 구성원(V23 · C08 · CR05)이 든 카테고리 = 등록부 방향 결과 · 등록부 수정 뒤 새 엔진.
 
 ## 8. 감독 · 등록
+- 사슬 판 초안 = `tools/init_p4c01.R`(기저 선택 기록 base_selection.json 포함 · `--dry-run` = 후보 표만). 11-14: 후보 0(P1S03 미등록)이라 중단 확인.
 - 철학 P1 + 판단 T1(사슬 판 초안 뒤 동시) → `round.sh <사슬> p4-check` → `p4-register --p1 <id> --t1 <id>` → `p4-base-measure` → 무인 틱(걸음 측정 · 판정 · 다음 걸음) · 닫기는 감독 아래.
+- 순서(11-14 원 세션 · 도훈 D2 채택 RAWDATA-INTERNAL-BREAK-FILL-D2D3-20261114): D2 판 표식 → P1R04 측정 → P1S03 등록 · 측정(시드 대조 → 통과) → 영수증(P1R04 · P1S03) → 이 사슬 판 초안 · 감독 · 등록.
