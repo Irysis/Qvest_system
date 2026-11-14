@@ -25,6 +25,21 @@
   "_BASIS_LEG_MAX_LOG2": "거래대금 다리 불일치 문턱 — |log2(창 TV 비율)| 이 이 값을 넘으면 Close 와 Vol 이 **같은 기준으로 재척도되지 않았다**고 보고 그 창의 유동성을 차단한다. ★데이터 근거(2026-09-07): 액면분할은 Close 를 x k, Vol 을 x 1/k 로 움직이므로 **거래대금(Close*Vol)은 원리적으로 기준 불변**이고, 실측이 그것을 확인한다 — 기준단절 343건의 창 TV 비율(q25 0.610 · q50 0.867 · q75 1.377)이 무작위 대조 1,437건(q25 0.644 · q50 0.916 · q75 1.378)과 사실상 같다(중앙 |log2| 0.616 vs 0.557). 차이는 꼬리에만 있다: |log2|>2 가 기준단절 11.7% vs 대조 6.1% = 초과 5.6%p. 그 초과분이 '한쪽 다리만 재척도된' 잔여이고 이 문턱이 잡는 표적이다. ★대조가 이미 6.1% 이므로 이 검사는 **선별기**이지 증명이 아니다 — 그래서 처분이 수정이 아니라 차단(no_measure)이다.",
   "rescale_ret_enabled": true,
   "_rescale_ret_enabled": "adjustment_basis_break 로 배율이 **유일하게** 특정된 종목에 한해 이음매 하루 Ret 을 조정계수로 재정렬한다(Ret := ratio / canonical_scale - 1) — 벤치가 canonical scale 을 나눠 재체인하는 것과 같은 연산을 수익률 축에서 한다. false 면 전건 block_ret(NA). 어느 쪽이든 종목별 전후값이 사이드카에 남는다.",
+  "FILL_MC_ENABLED": true,
+  "_FILL_MC_ENABLED": "차단 대신 채움(도훈 결정 RAWDATA-INTERNAL-BREAK-FILL-D2D3-20261114 · 11-14 '데이터 빈 부분 제대로 채워'): block_ret 로 갈 행을 시가총액 기준 실수익(그날 시총 ÷ 앵커 시총 − 1)으로 채운다 — 단 그 값이 날짜별 가격제한폭(PRICE_LIMIT_SCHEDULE · 간격 세션 누적 (1 + 제한폭)^g − 1) 안일 때만. 밖이면 수동 채움 등록부(RET_FILL_REGISTRY)의 값, 그것도 없으면 차단(NA) 그대로. 시총은 조정 기준과 무관하다 — 분할 · 무상증자는 현금이 오가지 않아 정확하고, 2026-03-30 이음매에서 정수배 보정과 중앙 차 0 으로 검증됐다. 유상증자처럼 새 돈이 시총에 들어오는 사건은 수익을 부풀릴 수 있어 제한폭이 안전장치다. false = 구 동작(전건 차단).",
+  "PRICE_LIMIT_SCHEDULE": [
+    {
+      "from": "1900-01-01",
+      "limit": 0.15
+    },
+    {
+      "from": "2015-06-15",
+      "limit": 0.3
+    }
+  ],
+  "_PRICE_LIMIT_SCHEDULE": "일간 가격제한폭 구간표(구간 시작일 · 제한폭). 2015-06-15 한국거래소 가격제한폭 ±15% → ±30% 확대(유가 · 코스닥 동시). 그 전 값 ±15% 는 도훈 결정(RAWDATA-INTERNAL-BREAK-FILL-D2D3-20261114)의 단일 값이다 — 1998-12-07 전 실제 제한폭(±6 ~ ±12%)은 이보다 좁으므로 그 구간에서는 느슨한 쪽이고, 측정 축(2000~) 밖이다. 재개일(거래정지 뒤 첫날 · 감자 · 합병 재상장)처럼 하루 제한폭이 적용되지 않는 날은 시총 값이 맞더라도 밖으로 판정될 수 있다 — 그 행은 수동 등록부로 다룬다(조용히 넓히지 않는다).",
+  "RET_FILL_REGISTRY": "06_Registry/ret_fill_registry.json",
+  "_RET_FILL_REGISTRY": "수동 채움 등록부 — 시총 기준 값이 제한폭 밖인 행 중 다른 계기(거래소 규칙 · 원천 재조회 · 공시)로 맞는 값을 확인한 행만 싣는다. 행마다 근거(method · evidence). 가드와 감사기가 같은 함수(seam_fill_resolve)로 읽고, 등록부 값이 시총 값보다 우선한다.",
   "_verdicts": [
     "on_scale — |ratio-1| <= SEAM_MAX_RET. 같은 조정기준. 무처치",
     "adjustment_basis_break — 후보 배율 정확히 1개로 스냅. 조정기준 단절 확정",
@@ -39,7 +54,9 @@
     "none",
     "rescale_ret",
     "block_ret",
-    "no_measure"
+    "no_measure",
+    "fill_mc — block_ret 대상이었으나 시총 기준 실수익이 날짜별 제한폭 안이라 그 값으로 채움(RAWDATA-INTERNAL-BREAK-FILL-D2D3-20261114)",
+    "fill_manual — block_ret 대상이었으나 수동 채움 등록부의 확인된 값으로 채움"
   ],
   "_verdicts_within_source": [
     "★basis_break_scan.R (원천 **내부** 단절 — source 전환이 없는 자리). 판정축은 크기가 아니라 **발행주식수 불변성**이다: shares = Size/Close.",

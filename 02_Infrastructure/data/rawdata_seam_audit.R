@@ -109,6 +109,15 @@ rsa_audit <- function(dt, cfg = rsa_config(), known = rsa_known(cfg)) {
   D[, frac := n_off / n]
   days_alarm <- D[frac >= cfg$DAY_FRAC_OFF_ALARM & n_off >= cfg$DAY_N_OFF_MIN][order(Date)]
 
+  # ③ 지금 비어 있는(Ret NA) 기준 단절 — 지난 처분이 차단한 자리(예: 10-15 A250030). 채움 후보(RAWDATA-INTERNAL-BREAK-FILL-D2D3-20261114).
+  B <- X[!is.finite(Ret) & is.finite(Close) & is.finite(pc) & pc > 0 & is.finite(Size) & is.finite(ps) & ps > 0]
+  B[, `:=`(rc = Close / pc, rs = Size / ps)]
+  B[, r_shares := rs / rc]
+  hits_blocked <- B[abs(rc - 1) > mx & abs(r_shares - 1) > cfg$BASIS_SHARES_TOL & abs(rs - 1) <= mx,
+                   .(i, Date, Ticker, prev_close = pc, Close, prev_size = ps, Size, Ret, r_size = rs, r_shares,
+                     implied_ret_size = rs - 1)][order(Date, Ticker)]
+  B <- NULL
+
   # ① 종목-일 지문 — off 행만(소수)
   C <- X[off == TRUE]
   X <- NULL; invisible(gc(verbose = FALSE))
@@ -126,29 +135,61 @@ rsa_audit <- function(dt, cfg = rsa_config(), known = rsa_known(cfg)) {
   H[, known := paste(as.character(Date), Ticker) %in% kk]
   hits_new <- H[known == FALSE][order(Date, Ticker)]
   hits_known <- H[known == TRUE][order(Date, Ticker)]
+  # ★차단 대신 채움(RAWDATA-INTERNAL-BREAK-FILL-D2D3-20261114) — 가드와 같은 함수(seam_fill_resolve): 수동 등록부 → 시총 기준 실수익(날짜별 제한폭) → 아니면 그대로.
+  #   새 단절: 채움 또는 차단(NA) · 알려진 단절(Ret 생비율) · 비어 있는 단절(NA): 채움 또는 손대지 않음(목록).
+  gcfg <- seam_guard_config(cfg$guard_config_path)
+  greg <- seam_fill_registry(gcfg, cfg$root)
+  res <- function(h) {
+    if (!nrow(h)) { h[, `:=`(fill_action = character(0), fill_ret = numeric(0), fill_limit = numeric(0))]; return(h) }
+    r <- seam_fill_resolve(h$Date, h$Ticker, h$r_size - 1, 1L, gcfg, greg)
+    h[, `:=`(fill_action = r$action, fill_ret = r$fill_ret, fill_limit = r$limit)]
+    h
+  }
+  hits_new <- res(hits_new); hits_known <- res(hits_known); hits_blocked <- res(hits_blocked)
+  unresolved_new <- hits_new[fill_action == "block_ret", .N]
 
-  status <- if (nrow(hits_new) || nrow(days_alarm)) "alarm" else "ok"
+  # 경보 = 채우지 못한 새 단절 · 집단 극단 수익일. 채운 새 단절은 [SEAM_FILL] 안내(경보 아님).
+  status <- if (unresolved_new || nrow(days_alarm)) "alarm" else if (nrow(hits_new)) "filled" else "ok"
   list(schema = "rawdata_seam_audit_v1", status = status,
        generated_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
        counts = list(n_rows = nrow(dt), n_off = nrow(C), n_unrepaired_off = C[unrepaired == TRUE, .N],
-                     hits_known = nrow(hits_known), hits_new = nrow(hits_new),
+                     hits_known = nrow(hits_known), hits_new = nrow(hits_new), hits_blocked = nrow(hits_blocked),
+                     fill_new = hits_new[fill_action != "block_ret", .N], unresolved_new = unresolved_new,
+                     fill_known = hits_known[fill_action != "block_ret", .N], unresolved_known = hits_known[fill_action == "block_ret", .N],
+                     fill_blocked = hits_blocked[fill_action != "block_ret", .N], unresolved_blocked = hits_blocked[fill_action == "block_ret", .N],
                      hits_new_dates = length(unique(hits_new$Date)), days_alarm = nrow(days_alarm),
                      date_from = as.character(min(dt$Date, na.rm = TRUE)), date_to = as.character(max(dt$Date, na.rm = TRUE)),
                      known_status = attr(known, "known_status") %||% NA_character_),
-       hits_new = hits_new, hits_known = hits_known, days_alarm = days_alarm, cfg = cfg)
+       hits_new = hits_new, hits_known = hits_known, hits_blocked = hits_blocked, days_alarm = days_alarm, cfg = cfg)
 }
 
-#' 새 단절 차단 — hits_new 의 Ret := NA (가드 block_ret 와 같은 처분). 적재기만 부른다. 알려진 것 · 날짜 지문은 건드리지 않는다.
+#' 단절 처분 적용(이름은 구판 그대로 — 적재기 · 소급 수리가 부른다). ★2026-11-14 차단 대신 채움(RAWDATA-INTERNAL-BREAK-FILL-D2D3-20261114):
+#'   새 단절(hits_new)        : 채움(fill_manual · fill_mc) 또는 차단(Ret := NA)
+#'   알려진 단절(hits_known)  : 채움 또는 손대지 않음(제한폭 밖 · 등록부 없음 → 목록)
+#'   비어 있는 단절(hits_blocked): 채움 또는 손대지 않음(NA 그대로 → 목록)
+#'   날짜 지문(집단 극단 수익일)은 건드리지 않는다.
 rsa_block_new <- function(dt, aud) {
   stopifnot(is.data.table(dt), "Ret" %in% names(dt))
-  h <- aud$hits_new
-  if (!is.null(h) && nrow(h)) {
-    # ★감사가 본 행과 지금 행이 같은지 단정 — 순서가 바뀌었으면 엉뚱한 행을 지운다(조용한 오염)
+  n_block <- 0L; n_fill <- 0L
+  for (nm in c("hits_new", "hits_known", "hits_blocked")) {
+    h <- aud[[nm]]
+    if (is.null(h) || !nrow(h)) next
+    # ★감사가 본 행과 지금 행이 같은지 단정 — 순서가 바뀌었으면 엉뚱한 행을 고친다(조용한 오염)
     ok <- h$i <= nrow(dt) & as.Date(dt$Date[h$i]) == h$Date & dt$Ticker[h$i] == h$Ticker
-    if (!all(ok)) stop("[seam_audit] 차단 대상 행 불일치(감사 뒤 행 순서가 바뀌었다) — 쓰지 않는다")
-    set(dt, i = h$i, j = "Ret", value = NA_real_)
+    if (!all(ok)) stop("[seam_audit] 처분 대상 행 불일치(감사 뒤 행 순서가 바뀌었다) — 쓰지 않는다")
+    fa <- if ("fill_action" %in% names(h)) h$fill_action else rep("block_ret", nrow(h))
+    wf <- which(fa %in% c("fill_mc", "fill_manual"))
+    if (length(wf)) {
+      if (anyNA(h$fill_ret[wf])) stop("[seam_audit] 채움 처분인데 fill_ret 이 비었다 — 쓰지 않는다")
+      set(dt, i = h$i[wf], j = "Ret", value = h$fill_ret[wf]); n_fill <- n_fill + length(wf)
+    }
+    if (identical(nm, "hits_new")) {
+      wb <- which(fa == "block_ret")
+      if (length(wb)) { set(dt, i = h$i[wb], j = "Ret", value = NA_real_); n_block <- n_block + length(wb) }
+    }
   }
-  attr(dt, "seam_audit_blocked") <- if (is.null(h)) 0L else nrow(h)
+  attr(dt, "seam_audit_blocked") <- n_block
+  attr(dt, "seam_audit_filled") <- n_fill
   dt
 }
 
@@ -158,10 +199,14 @@ rsa_print <- function(aud, label = "") {
   cat(sprintf("[seam_audit%s] 전 이력 감사(%s ~ %s · %s행) — |Ret|>%.2f %d행 · 기준 단절 지문: 알려진 %d(등록부) · 새 %d(%d일) · 경보일 %d\n",
               if (nzchar(label)) paste0(":", label) else "", k$date_from, k$date_to, format(k$n_rows, big.mark = ","),
               aud$cfg$SEAM_MAX_RET, k$n_off, k$hits_known, k$hits_new, k$hits_new_dates, k$days_alarm))
+  if (!is.null(k$fill_new))
+    cat(sprintf("  [SEAM_FILL] 채움(시총 기준 · 수동 등록부): 새 %d · 알려진 %d · 비어 있던 %d — 못 채움: 새 %d(차단) · 알려진 %d · 비어 있던 %d(목록)\n",
+                k$fill_new, k$fill_known, k$fill_blocked, k$unresolved_new, k$unresolved_known, k$unresolved_blocked))
   if (identical(aud$status, "alarm")) {
-    if (nrow(aud$hits_new)) {
-      by_d <- aud$hits_new[, .N, by = Date][order(-N)]
-      cat(sprintf("  ⛔ [SEAM_ALARM] 새 기준 단절 %d행(Ret 생비율 그대로 · 주식수 지문) — 날짜 상위: %s\n", nrow(aud$hits_new),
+    hn <- if ("fill_action" %in% names(aud$hits_new)) aud$hits_new[fill_action == "block_ret"] else aud$hits_new
+    if (nrow(hn)) {
+      by_d <- hn[, .N, by = Date][order(-N)]
+      cat(sprintf("  ⛔ [SEAM_ALARM] 새 기준 단절 중 못 채운 %d행(시총 기준 값이 날짜별 가격제한폭 밖 · 수동 등록부 없음 → 차단) — 날짜 상위: %s\n", nrow(hn),
                   paste(sprintf("%s×%d", as.character(head(by_d$Date, 6)), head(by_d$N, 6)), collapse = ", ")))
     }
     if (nrow(aud$days_alarm))
@@ -178,7 +223,9 @@ rsa_write_sidecar <- function(aud, label, dir_ = aud$cfg$SIDECAR_DIR) {
   cap <- aud$cfg$MAX_LIST
   fmt <- function(x) { if (is.null(x) || !nrow(x)) return(list()); y <- copy(head(x, cap)); if ("Date" %in% names(y)) y[, Date := as.character(Date)]; y }
   payload <- list(schema = aud$schema, generated_at = aud$generated_at, label = label, status = aud$status,
-                  counts = aud$counts, hits_new = fmt(aud$hits_new), hits_known_n_by_year =
+                  counts = aud$counts, hits_new = fmt(aud$hits_new),
+                  unresolved_known = fmt(if (!is.null(aud$hits_known) && "fill_action" %in% names(aud$hits_known)) aud$hits_known[fill_action == "block_ret"] else NULL),
+                  hits_blocked = fmt(aud$hits_blocked), hits_known_n_by_year =
                     if (nrow(aud$hits_known)) as.list(aud$hits_known[, .N, by = .(y = format(Date, "%Y"))][, setNames(N, y)]) else list(),
                   days_alarm = fmt(aud$days_alarm),
                   config = aud$cfg[c("SEAM_MAX_RET", "BASIS_SHARES_TOL", "DAY_FRAC_OFF_ALARM", "DAY_N_OFF_MIN", "RET_MATCH_TOL",
@@ -208,7 +255,7 @@ rsa_write_sidecar <- function(aud, label, dir_ = aud$cfg$SIDECAR_DIR) {
   }, error = function(e) { cat(sprintf("⛔ [SEAM_ALARM] [seam_audit] 판독 불가: %s\n", conditionMessage(e))); NULL })
   if (is.null(res)) { cat("RSA\tstatus=unreadable\tnew=NA\tknown=NA\tdays=NA\n"); quit(status = 1L) }
   cat(sprintf("RSA\tstatus=%s\tnew=%d\tknown=%d\tdays=%d\n", res$status, res$counts$hits_new, res$counts$hits_known, res$counts$days_alarm))
-  quit(status = if (identical(res$status, "ok")) 0L else 3L)
+  quit(status = if (identical(res$status, "alarm")) 3L else 0L)   # filled = 채운 새 단절(경보 아님)
 }
 
 if (sys.nframe() == 0L && !interactive()) .rsa_main()

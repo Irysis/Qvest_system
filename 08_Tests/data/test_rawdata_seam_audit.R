@@ -49,6 +49,9 @@ mk_root <- function(name, guard_patch = NULL, audit_patch = NULL, registry = NUL
   writeLines(toJSON(g, auto_unbox = TRUE, digits = NA), file.path(r, "02_Infrastructure/data/seam_guard_config.json"))
   writeLines(toJSON(a, auto_unbox = TRUE, digits = NA), file.path(r, "02_Infrastructure/data/rawdata_seam_audit_config.json"))
   if (!is.null(registry)) writeLines(toJSON(registry, auto_unbox = TRUE), file.path(r, "06_Registry/basis_break_registry.json"))
+  # 수동 채움 등록부(2026-11-14 · 차단 대신 채움) — 가드 설정 RET_FILL_REGISTRY 가 가리키는 파일. 기본 = 빈 등록부
+  writeLines(toJSON(list(schema = "ret_fill_registry_v1", entries = list()), auto_unbox = TRUE),
+             file.path(r, "06_Registry/ret_fill_registry.json"))
   r
 }
 REG <- list(schema = "basis_break_registry_v1", generated_at = "2026-09-07T00:00:00+0900",
@@ -115,16 +118,83 @@ chk(identical(a$status, "alarm"), "a3_status_alarm", "새 단절 · 경보일 �
 k <- rsa_known(CFG0)
 chk(nrow(k) == 1L && identical(k$Ticker, "KNOWN"), "a1_transition_seam_not_known", "등록부 03-30 항목 = known 제외")
 
-# ── A4 차단 ────────────────────────────────────────────────────────────────────
+# ── A4 채움(2026-11-14 · 차단 대신 채움 — 도훈 결정 RAWDATA-INTERNAL-BREAK-FILL-D2D3-20261114) ─────────────
+#   시총이 이어지는 ×5 · ×2 단절 = 시총 기준 실수익(그날 시총 ÷ 전날 시총 − 1)이 제한폭 안 → 새 · 알려진 · 비어 있던(BLOCKED) 단절 모두 그 값으로 채운다.
 X2 <- copy(X); X2 <- rsa_block_new(X2, a)
 a2 <- rsa_audit(X2, CFG0)
-same_other <- isTRUE(all.equal(X[!paste(Ticker, Date) %in% exp_new]$Ret, X2[!paste(Ticker, Date) %in% exp_new]$Ret))
-chk(nrow(a2$hits_new) == 0L && nrow(a2$days_alarm) == 0L && nrow(a2$hits_known) == 1L && identical(a2$status, "ok") && same_other,
-    "a4_block_then_clean", "차단 뒤 재감사 ok · 알려진 것 그대로 · 다른 행 Ret 불변")
-chk(attr(X2, "seam_audit_blocked") == length(exp_new), "a4_block_count", sprintf("차단 %d행", attr(X2, "seam_audit_blocked")))
+fill_keys <- c(exp_new, paste("KNOWN", FX$dK), paste("BLOCKED", FX$dS))
+X[, mc := Size / shift(Size) - 1, by = Ticker]
+want <- X[paste(Ticker, Date) %in% fill_keys, .(Ticker, Date, mc)]
+got <- merge(want, X2[, .(Ticker, Date, Ret)], by = c("Ticker", "Date"))
+same_other <- isTRUE(all.equal(X[!paste(Ticker, Date) %in% fill_keys]$Ret, X2[!paste(Ticker, Date) %in% fill_keys]$Ret))
+X[, mc := NULL]
+chk(nrow(a2$hits_new) == 0L && nrow(a2$days_alarm) == 0L && nrow(a2$hits_known) == 0L && nrow(a2$hits_blocked) == 0L &&
+      identical(a2$status, "ok") && same_other && nrow(got) == length(fill_keys) && isTRUE(all.equal(got$Ret, got$mc, tolerance = 1e-12)),
+    "a4_fill_then_clean", "채움 뒤 재감사 ok · 새 31 + 알려진 1 + 비어 있던 1 = 시총 기준 실수익 · 다른 행 Ret 불변")
+chk(attr(X2, "seam_audit_filled") == length(fill_keys) && attr(X2, "seam_audit_blocked") == 0L, "a4_fill_count",
+    sprintf("채움 %d행 · 차단 %d행", attr(X2, "seam_audit_filled"), attr(X2, "seam_audit_blocked")))
+chk(identical(a$status, "alarm") && a$counts$fill_new == length(exp_new) && a$counts$unresolved_new == 0L,
+    "a4_status_counts", "집단 극단 수익일이 있으면 채워도 경보 · 새 단절 전부 채움 가능(못 채움 0)")
 X3 <- copy(X); setorder(X3, Date, Ticker)
 e4 <- tryCatch({ rsa_block_new(X3, a); "no_error" }, error = function(e) "stopped")
 chk(identical(e4, "stopped"), "a4_reordered_table_stops", "감사 뒤 행 순서가 바뀐 표 = 엉뚱한 행을 지우지 않고 stop")
+
+# ── A8 제한폭 밖 · 수동 등록부 · 날짜별 제한폭 ─────────────────────────────────────────
+#   OUT30: 2026 새 단절인데 시총이 하루 −33%(±30% 밖 · 감사 단절 대역 ±35% 안) → 차단(NA) + 경보 · OLD15: 2014 알려진 단절 시총 −20%(±15% 밖) → 손대지 않음(목록)
+#   OLD15b: 2014 알려진 단절 시총 −10%(안) → 채움 · MANUAL: 비어 있던 단절 시총 −33% 인데 수동 등록부 값(−0.123) → 등록부 값
+mk8 <- function() {
+  d1 <- seq(as.Date("2014-03-03"), by = "day", length.out = 20); d1 <- d1[!as.POSIXlt(d1)$wday %in% c(0L, 6L)][1:10]
+  d2 <- seq(as.Date("2026-04-01"), by = "day", length.out = 20); d2 <- d2[!as.POSIXlt(d2)$wday %in% c(0L, 6L)][1:10]
+  one <- function(tk, dd, f_close, f_size) { k <- seq_along(dd); cl <- 1000 + k; sh <- rep(1e6, length(dd))
+    cl[6:length(dd)] <- cl[6:length(dd)] * f_close; sz <- cl * sh; sz[6:length(dd)] <- sz[5] * f_size * (1 + 0.001 * (0:(length(dd) - 6)))
+    data.table(Ticker = tk, Date = dd, Close = cl, Size = sz) }
+  Y <- rbind(one("OUT30", d2, 5, 0.67), one("OLD15", d1, 5, 0.80), one("OLD15b", d1, 5, 0.90), one("MANUAL", d2, 5, 0.67))
+  setorder(Y, Ticker, Date); Y[, Ret := Close / shift(Close) - 1, by = Ticker]
+  Y[Ticker == "MANUAL" & Date == d2[6], Ret := NA_real_]
+  list(Y = Y, d1 = d1, d2 = d2)
+}
+F8 <- mk8()
+REG8 <- list(schema = "basis_break_registry_v1", generated_at = "2026-11-14T00:00:00+0900", scope = list(source_transition_seams = list()),
+             entries = list(list(Date = as.character(F8$d1[6]), Ticker = "OLD15", verdict = "adjustment_basis_break", action = "none"),
+                            list(Date = as.character(F8$d1[6]), Ticker = "OLD15b", verdict = "adjustment_basis_break", action = "none")))
+R8 <- mk_root("r8", registry = REG8)
+writeLines(toJSON(list(schema = "ret_fill_registry_v1", entries = list(list(Date = as.character(F8$d2[6]), Ticker = "MANUAL", Ret = -0.123,
+                                                                             method = "test", evidence = "test"))), auto_unbox = TRUE),
+           file.path(R8, "06_Registry/ret_fill_registry.json"))
+Sys.setenv(CLAUDE_PROJECT_DIR = R8, QM_ROOT = R8)
+CFG8 <- rsa_config(R8, reload = TRUE)
+a8 <- rsa_audit(F8$Y, CFG8)
+Y2 <- rsa_block_new(copy(F8$Y), a8)
+rget <- function(tk, d) Y2[Ticker == tk & Date == d, Ret]
+mc_of <- function(tk, d) { y <- F8$Y[Ticker == tk]; k <- which(y$Date == d); y$Size[k] / y$Size[k - 1L] - 1 }
+chk(is.na(rget("OUT30", F8$d2[6])) && identical(a8$status, "alarm") && a8$counts$unresolved_new == 1L, "a8_outside_limit_blocks",
+    "2026 새 단절 시총 −33% = ±30% 밖 → 차단(NA) · 경보")
+chk(isTRUE(all.equal(rget("OLD15", F8$d1[6]), F8$Y[Ticker == "OLD15" & Date == F8$d1[6], Ret])) && a8$counts$unresolved_known == 1L,
+    "a8_old_limit_15_untouched", "2014 알려진 단절 시총 −20% = ±15% 밖 → 손대지 않음(목록 1)")
+chk(isTRUE(all.equal(rget("OLD15b", F8$d1[6]), mc_of("OLD15b", F8$d1[6]))), "a8_old_inside_filled", "2014 알려진 단절 시총 −10% = 안 → 시총 기준 실수익")
+chk(isTRUE(all.equal(rget("MANUAL", F8$d2[6]), -0.123)), "a8_manual_registry_wins", "비어 있던 단절 · 시총 −33% 인데 수동 등록부 값(−0.123) 채택")
+
+# ── A9 채움 끔(FILL_MC_ENABLED = false) = 구 동작(새 단절 차단 · 알려진 것 무처치) · 수동 등록부는 그대로 ─────────────
+R9 <- mk_root("r9", guard_patch = list(FILL_MC_ENABLED = FALSE), registry = REG)
+Sys.setenv(CLAUDE_PROJECT_DIR = R9, QM_ROOT = R9)
+a9 <- rsa_audit(X, rsa_config(R9, reload = TRUE)); X9 <- rsa_block_new(copy(X), a9)
+chk(all(is.na(X9[paste(Ticker, Date) %in% exp_new]$Ret)) && isTRUE(all.equal(X9[Ticker == "KNOWN" & Date == FX$dK]$Ret, X[Ticker == "KNOWN" & Date == FX$dK]$Ret)),
+    "a9_fill_off_is_old_behavior", "채움 끔 = 새 단절 31행 차단 · 알려진 것 그대로")
+
+# ── A10 돌연변이 — rsa_block_new 의 채움 적용을 지운 사본은 A4 채움 단정이 빨개져야 한다 ─────────────
+SRC <- readLines(AUD, warn = FALSE, encoding = "UTF-8")
+pat <- "      set(dt, i = h$i[wf], j = \"Ret\", value = h$fill_ret[wf]); n_fill <- n_fill + length(wf)"
+hits <- which(SRC == pat)
+if (length(hits) != 1L) bad("a10_mutation_setup", sprintf("치환 대상 %d곳(1 이어야 함)", length(hits))) else {
+  MUT <- SRC; MUT[hits] <- "      n_fill <- n_fill + length(wf)"
+  mp <- tempfile(fileext = ".R"); writeLines(MUT, mp, useBytes = TRUE)
+  E <- new.env(parent = globalenv()); sys.source(mp, envir = E)
+  Sys.setenv(CLAUDE_PROJECT_DIR = R0, QM_ROOT = R0)
+  am <- E$rsa_audit(X, E$rsa_config(R0, reload = TRUE)); Xm <- E$rsa_block_new(copy(X), am)
+  still_raw <- isTRUE(all.equal(Xm[paste(Ticker, Date) %in% paste("SPLIT5", FX$dS)]$Ret, X[paste(Ticker, Date) %in% paste("SPLIT5", FX$dS)]$Ret))
+  chk(still_raw, "a10_mutation_reddens", "채움 적용 줄을 지운 사본 = SPLIT5 가 생비율 그대로(검사가 채움을 재고 있다)")
+}
+Sys.setenv(CLAUDE_PROJECT_DIR = R0, QM_ROOT = R0)
 
 # ── A5 설정 경유 ───────────────────────────────────────────────────────────────
 R1 <- mk_root("r1", audit_patch = list(DAY_FRAC_OFF_ALARM = 0.5), registry = REG)

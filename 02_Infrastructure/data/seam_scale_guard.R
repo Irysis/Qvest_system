@@ -39,6 +39,13 @@
 #   raw[, Ret := Close / shift(Close) - 1, by = Ticker]
 #   raw <- seam_apply_actions(raw, rep)                                 # 처분 적용
 #   seam_write_sidecar(rep, label = "quantiwise_update")
+#
+# ★2026-11-14 차단 대신 채움(도훈 결정 RAWDATA-INTERNAL-BREAK-FILL-D2D3-20261114 — '데이터 빈 부분 제대로 채워'):
+#   block_ret 로 갈 행(배율 특정 불가 · 앵커 문제)은 먼저 수동 채움 등록부(RET_FILL_REGISTRY — 다른 계기로 확인한 값)를 보고,
+#   없으면 시가총액 기준 실수익(그날 시총 ÷ 앵커 시총 − 1)이 날짜별 가격제한폭(PRICE_LIMIT_SCHEDULE · 간격 세션 누적) 안이면
+#   그 값으로 채운다(fill_mc). 둘 다 아니면 차단(NA) 그대로 — 제한폭 밖은 시총 방법이 맞는지 확인할 수 없어서다.
+#   시총은 조정 기준과 무관하다(분할 · 무상증자는 현금이 오가지 않아 정확 · 03-30 이음매에서 정수배 보정과 중앙 차 0).
+#   PIT: 그날과 앵커 날의 시총만 쓴다. 함수 = seam_price_limit · seam_fill_registry · seam_fill_resolve(감사기도 같은 함수를 쓴다).
 #==============================================================================
 
 suppressPackageStartupMessages({
@@ -163,6 +170,52 @@ seam_action_for <- function(verdict, cfg = seam_guard_config()) {
       fifelse(verdict %in% c("no_seam_close", "absent_at_seam"), "no_measure", "block_ret")))
 }
 
+#' 날짜별 일간 가격제한폭 — seam_guard_config.json::PRICE_LIMIT_SCHEDULE(구간 시작일 · 제한폭). 범위 밖 날짜 = NA(채우지 않음).
+seam_price_limit <- function(dates, cfg = seam_guard_config()) {
+  s <- cfg$PRICE_LIMIT_SCHEDULE
+  if (is.null(s)) stop("[seam_guard] PRICE_LIMIT_SCHEDULE 없음 — 제한폭을 코드에 박지 않는다")
+  s <- as.data.table(s)
+  if (!all(c("from", "limit") %in% names(s)) || !nrow(s)) stop("[seam_guard] PRICE_LIMIT_SCHEDULE 형식 오류(from · limit)")
+  fr <- as.Date(s$from); o <- order(fr); fr <- fr[o]; lm <- as.numeric(s$limit)[o]
+  idx <- findInterval(as.numeric(as.Date(dates)), as.numeric(fr))
+  out <- rep(NA_real_, length(idx)); ok <- !is.na(idx) & idx >= 1L; out[ok] <- lm[idx[ok]]
+  out
+}
+
+#' 수동 채움 등록부 — 시총 기준 값이 제한폭 밖인 행을 다른 계기로 확인해 채운 값(행마다 근거 · 06_Registry/ret_fill_registry.json).
+#'   설정 키가 있는데 파일이 없으면 멈춘다(조용히 빈 등록부로 떨어지지 않는다).
+seam_fill_registry <- function(cfg = seam_guard_config(), root = .seam_root()) {
+  empty <- data.table(Date = as.Date(character(0)), Ticker = character(0), Ret = numeric(0))
+  p <- cfg$RET_FILL_REGISTRY
+  if (is.null(p) || !nzchar(p)) return(empty)
+  fp <- if (grepl("^([A-Za-z]:)?/", p)) p else file.path(root, p)
+  if (!file.exists(fp)) stop("[seam_guard] 수동 채움 등록부 없음: ", fp)
+  e <- as.data.table(jsonlite::fromJSON(fp, simplifyVector = TRUE)$entries)
+  if (!nrow(e)) return(empty)
+  if (!all(c("Date", "Ticker", "Ret") %in% names(e))) stop("[seam_guard] 수동 채움 등록부 열 결손(Date · Ticker · Ret)")
+  e <- e[, .(Date = as.Date(Date), Ticker = as.character(Ticker), Ret = as.numeric(Ret))]
+  if (anyNA(e$Date) || anyNA(e$Ret) || anyDuplicated(paste(e$Date, e$Ticker))) stop("[seam_guard] 수동 채움 등록부 값 오류(빈 날짜 · 값 · 중복)")
+  e
+}
+
+#' 차단 대신 채움 결정 — 수동 등록부(우선) → 시총 기준 실수익(날짜별 제한폭 · 간격 세션 누적 (1 + 제한폭)^g − 1 안) → 아니면 block_ret.
+#' @return data.table(action ∈ {fill_manual, fill_mc, block_ret}, fill_ret, limit, tol)
+seam_fill_resolve <- function(Date, Ticker, mc, gap = 1L, cfg = seam_guard_config(), reg = seam_fill_registry(cfg)) {
+  n <- length(Date)
+  gap <- rep_len(as.integer(gap), n); gap[is.na(gap) | gap < 1L] <- 1L
+  lim <- seam_price_limit(Date, cfg)
+  tol <- (1 + lim)^gap - 1
+  mc <- rep_len(as.numeric(mc), n)
+  act <- rep("block_ret", n); val <- rep(NA_real_, n)
+  if (isTRUE(cfg$FILL_MC_ENABLED)) {
+    ok <- is.finite(mc) & is.finite(tol) & abs(mc) <= tol
+    act[ok] <- "fill_mc"; val[ok] <- mc[ok]
+  }
+  m <- match(paste(as.character(as.Date(Date)), Ticker), paste(as.character(reg$Date), reg$Ticker))
+  man <- !is.na(m); act[man] <- "fill_manual"; val[man] <- reg$Ret[m[man]]
+  data.table(action = act, fill_ret = val, limit = lim, tol = tol)
+}
+
 #' 이음매 판정표 — 지정한 거래일들에 대해 종목별 레벨 연속성을 잰다.
 #'
 #' ★Ret 재계산 **앞**에서 부른다 — 판정은 오염된 Ret 이 아니라 Close 에서만 나온다.
@@ -187,13 +240,16 @@ seam_scan_report <- function(dt, dates, cfg = seam_guard_config()) {
 
   # ── 앵커 후퇴: 유효 종가 행만 남기고 shift 하면 직전 **유효** 종가가 앵커다 ──
   #    (벤치의 anchor 후퇴와 동형 — 정지·결측일을 건너뛰어 뒤로 물러난다)
+  # 시총(Size)이 있으면 같이 싣는다 — 차단 대신 채움(시총 기준 실수익)의 재료 · 없으면 NA(채움 없음 = 구 동작)
+  has_size <- "Size" %in% names(dt)
   val <- dt[Date >= win_from & Date <= max(dates) & is.finite(Close) & Close > 0,
-            .(Date, Ticker, Close)]
+            .(Date, Ticker, Close, Size = if (has_size) as.numeric(Size) else NA_real_)]
   setorder(val, Ticker, Date)
-  val[, `:=`(anchor_close = shift(Close), anchor_date = shift(Date)), by = Ticker]
+  val[, `:=`(anchor_close = shift(Close), anchor_date = shift(Date), anchor_size = shift(Size)), by = Ticker]
 
-  tbl <- unique(dt[Date %in% dates, .(Ticker, Date, seam_close = Close)], by = c("Ticker", "Date"))
-  tbl <- merge(tbl, val[, .(Ticker, Date, anchor_close, anchor_date)],
+  tbl <- unique(dt[Date %in% dates, .(Ticker, Date, seam_close = Close,
+                                       seam_size = if (has_size) as.numeric(Size) else NA_real_)], by = c("Ticker", "Date"))
+  tbl <- merge(tbl, val[, .(Ticker, Date, anchor_close, anchor_date, anchor_size)],
                by = c("Ticker", "Date"), all.x = TRUE)
   tbl[, anchor_gap_sessions := as.integer(match(Date, sess) - match(anchor_date, sess))]
   tbl[, ratio := seam_close / anchor_close]
@@ -222,6 +278,15 @@ seam_scan_report <- function(dt, dates, cfg = seam_guard_config()) {
   }
 
   tbl[, action := seam_action_for(verdict, cfg)]
+  # ★차단 대신 채움(RAWDATA-INTERNAL-BREAK-FILL-D2D3-20261114) — block_ret 행만. 판정(verdict)은 그대로 남기고 처분만 바꾼다.
+  tbl[, `:=`(mc_ret = seam_size / anchor_size - 1, fill_ret = NA_real_, fill_limit = NA_real_)]
+  wb <- which(tbl$action == "block_ret")
+  if (length(wb)) {
+    rs <- seam_fill_resolve(tbl$Date[wb], tbl$Ticker[wb], tbl$mc_ret[wb], tbl$anchor_gap_sessions[wb], cfg)
+    set(tbl, i = wb, j = "action", value = rs$action)
+    set(tbl, i = wb, j = "fill_ret", value = rs$fill_ret)
+    set(tbl, i = wb, j = "fill_limit", value = rs$limit)
+  }
   setorder(tbl, Date, verdict, Ticker, na.last = TRUE)
 
   counts <- tbl[, .N, by = verdict][order(-N)]
@@ -339,6 +404,13 @@ seam_apply_actions <- function(dt, rep) {
   wb <- which(tbl$action == "block_ret" & !is.na(pos))
   if (length(wb)) set(dt, i = pos[wb], j = "Ret", value = NA_real_)
 
+  # 차단 대신 채움(fill_mc · fill_manual) — 판정표의 fill_ret 그대로
+  wf <- which(tbl$action %in% c("fill_mc", "fill_manual") & !is.na(pos))
+  if (length(wf)) {
+    if (anyNA(tbl$fill_ret[wf])) stop("[seam_guard] 채움 처분인데 fill_ret 이 비었다 — 쓰지 않는다")
+    set(dt, i = pos[wf], j = "Ret", value = tbl$fill_ret[wf])
+  }
+
   wr <- which(tbl$action == "rescale_ret" & !is.na(pos))
   if (length(wr)) {
     set(dt, i = pos[wr], j = "Ret", value = tbl$implied_ret[wr])
@@ -349,7 +421,7 @@ seam_apply_actions <- function(dt, rep) {
   rep$ret_after <- ifelse(is.na(pos), NA_real_, dt$Ret[pos])
   # ★처분이 있는 판정만 센다 — absent_at_seam 은 Date 가 없는(=행이 없는) 사유라
   #   구조적으로 미매칭이다. 그것까지 세면 경고가 상시 울려 진짜 유실을 덮는다.
-  rep$n_unmatched <- sum(is.na(pos) & tbl$action %in% c("block_ret", "rescale_ret"))
+  rep$n_unmatched <- sum(is.na(pos) & tbl$action %in% c("block_ret", "rescale_ret", "fill_mc", "fill_manual"))
   if (rep$n_unmatched > 0)
     cat(sprintf("  ⚠ [seam_guard] 판정 %d행이 dt 에서 미발견 — 처분 미적용\n", rep$n_unmatched))
   attr(dt, "seam_report") <- rep
@@ -407,4 +479,4 @@ seam_report_print <- function(rep, label = "") {
   invisible(rep)
 }
 
-cat("[seam_scale_guard] Loaded. seam_scale_report() / seam_detect() / seam_detect_changed() / seam_ret_recompute_window() / seam_apply_actions() / seam_write_sidecar()\n")
+cat("[seam_scale_guard] Loaded. seam_scale_report() / seam_detect() / seam_detect_changed() / seam_ret_recompute_window() / seam_apply_actions() / seam_write_sidecar() / seam_fill_resolve()\n")

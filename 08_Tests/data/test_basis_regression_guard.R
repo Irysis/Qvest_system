@@ -205,8 +205,9 @@ if (!is.null(rD2$err) && grepl("우선순위 정본 부재", rD2$err, fixed = TR
 ## ── E. 위반 주입 — 재검사 호출을 제거하면 오염이 살아남는다 ──────────────────
 cat("=== E. 위반 주입 — 재검사를 제거하면 빨강이어야 한다 ===\n")
 i_seam <- grep("seam_seeds <- tryCatch({", BLK, fixed = TRUE)
-i_rethd <- grep("# Ret 재계산", BLK, fixed = TRUE)
-i_retln <- grep("raw[, Ret := Close / shift(Close) - 1, by = Ticker]", BLK, fixed = TRUE)
+# ★2026-11-14 앵커 갱신: 11-13 수리(bdf79b30b)가 전 이력 재계산 줄을 창 한정 재계산으로 바꿨다 — 같은 뜻의 새 줄을 앵커로 쓴다
+i_rethd <- grep("# Ret 재계산 — ★교체한 창", BLK, fixed = TRUE)
+i_retln <- grep("raw <- seam_ret_recompute_window(raw, min(update_dates))", BLK, fixed = TRUE)
 if (length(i_seam) && length(i_rethd) && length(i_retln)) {
   MUT <- c(BLK[1:(i_seam[1] - 1L)], BLK[i_rethd[1]:i_retln[1]])
   ok(sprintf("E0 변이체 구성: 재검사 블록 %d줄 제거", length(BLK) - length(MUT)))
