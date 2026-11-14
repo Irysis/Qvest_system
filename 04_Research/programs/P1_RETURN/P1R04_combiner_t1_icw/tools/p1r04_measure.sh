@@ -10,7 +10,10 @@
 #   예상 소요 근거: P1R03 실측 칸당 2.5~3.6분(11-13 06:43~07:28 · 15칸 45분) · 30칸(T1 15 + T0 기준 15) + T1 의 달마다 IC 접근자 호출(T1 토탈 48달 7초 실측) → 약 90분.
 #   끝나면: 측정 앞뒤 뷰 · IC 원장 지문이 같으면 저위험 몫 사이드카(tools/p1r04_lowrisk_share.R) → 계보 짝 읽기(tools/p1r04_pair_reading.R) → 이정표 1통
 #     (푸시 · 기계 판정 요약 '해석 전'). 판정 해석 · 판단 T2 · 철학 P2 · 정식 보고 · 닫기는 세션.
-#   종료: 0 끝 · 1 measure 실패 · 6 대기 상한(기본 40시간) · 7 측정 중 뷰 · IC 원장 바뀜(재측정 — 기저 캐시까지 비운다 · DESIGN §8).
+#   종료: 0 끝 · 1 measure 실패 · 6 대기 상한(기본 40시간) · 7 측정 중 뷰 · IC 원장 바뀜(재측정 — 기저 캐시까지 비운다 · DESIGN §8) · 8 시작 시한 지남.
+#   환경 조정(11-14 · 원 세션 조율 — D1 뒤 같은 밤 재측정 · E2 는 캐시 채우기만 하고 판정은 내일 재측정분이라 함께 돌려도 된다):
+#     P1R04_MIN_FREE_GB(기본 10) · P1R04_IGNORE_SEED=1(판 2 시드 측정 중 · 시드 낮 창 조건을 건너뜀) · P1R04_PAR(기본 2 → round.sh --p · 엔진 묶음마다 칸 1개라 사실상 순차)
+#     P1R04_LATEST_START=HH:MM(그 시각이 지나도 조건이 안 서면 시작하지 않고 끝낸다 — 23:30 전 끝 · 칸 30 × 2.2~3.0분(11-13 실측) + 평가 · 사이드카 ≈ 100분).
 main() {
   set -u
   local ROOTP=/c/Users/99922/OneDrive/Quant_Module_Moltbot; cd "$ROOTP" || exit 2
@@ -20,6 +23,8 @@ main() {
   local ICL=.cache/factor_db/factor_ic_monthly.parquet
   local LOG=.cache/scheduler_logs/p1r04_measure_$(date +%Y%m%d_%H%M%S).log ST=.cache/scheduler_logs/p1r04_measure_state.txt
   local SEED_ST=.cache/scheduler_logs/p1s02_seed_watch_state.txt MAXW=${P1R04_MAX_WAIT_S:-144000} T0=$(date +%s) last=0
+  local MINFREE=${P1R04_MIN_FREE_GB:-10} IGSEED=${P1R04_IGNORE_SEED:-0} PAR=${P1R04_PAR:-2} LATEST=${P1R04_LATEST_START:-} late=""
+  if [ -n "$LATEST" ]; then late=$(date -d "$LATEST" +%s 2>/dev/null) || { echo "P1R04_LATEST_START 판독 불가: $LATEST" >&2; exit 2; }; fi   # 오늘 그 시각(띄운 날 기준 · 자정을 넘겨 다시 열리지 않게 절대 시각)
   local why nowm mg rc fp fp_prev="" fp_t=0 vl dl v0 v1 prl
   log() { printf '%s %s\n' "$(date '+%F %T')" "$*" >> "$LOG"; }
   st() { printf '%s\t%s\tlog=%s\n' "$(date '+%F %T')" "$*" "$LOG" > "$ST"; }
@@ -28,19 +33,20 @@ main() {
   inpfp() { { bash "$FPS" record .cache/factor_combinable; md5sum "$ICL" | cut -c1-32; } 2>/dev/null | md5sum | cut -c1-32; }
   fpnow() { { bash "$FPS" equality; inpfp; } 2>/dev/null | md5sum | cut -c1-32; }
   ms() { timeout 300 Rscript "$MS" "$@" >> "$LOG" 2>&1 || log "이정표 발송 rc=$?"; }
-  log "시작 · pid $$ · 체인 앞뒤 · 시드 창(시드 일 남았을 때) 제외 · 메모리 ≥ 10 GB · 지문(뷰 + IC 원장 포함) 10분 안정 · 뷰 마지막 달 ≥ 팩터 DB"; st "대기 — 시작"
+  log "시작 · pid $$ · 체인 앞뒤 · 시드 창(시드 일 남았을 때 · 건너뜀=${IGSEED}) 제외 · 메모리 ≥ ${MINFREE} GB · 병렬 ${PAR} · 시작 시한 ${LATEST:-없음} · 지문(뷰 + IC 원장 포함) 10분 안정 · 뷰 마지막 달 ≥ 팩터 DB"; st "대기 — 시작"
   while :; do
     [ $(( $(date +%s) - T0 )) -gt "$MAXW" ] && { log "대기 상한"; st "대기 상한 — 끝"; exit 6; }
     why=""; nowm=$((10#$(date +%H) * 60 + 10#$(date +%M)))
+    [ -n "$late" ] && [ "$(date +%s)" -gt "$late" ] && { log "시작 시한 ${LATEST} 지남 — 측정하지 않고 끝"; st "시작 시한 ${LATEST} 지남 — 끝(세션이 다음 창을 잡는다)"; exit 8; }
     { [ "$nowm" -ge 355 ] && [ "$nowm" -lt 480 ]; } && why="아침 체인 앞뒤(${nowm}분)"
     { [ "$nowm" -ge 1368 ] || [ "$nowm" -lt 90 ]; } && why="밤 체인 앞뒤(${nowm}분)"
-    [ -z "$why" ] && [ "$nowm" -ge 500 ] && [ "$nowm" -le 705 ] && grep -qE $'\t''(W|M)[ :(]' "$SEED_ST" 2>/dev/null && why="판 2 시드 낮 창(시드 일 남음 · ${nowm}분)"
+    [ -z "$why" ] && [ "$IGSEED" != "1" ] && [ "$nowm" -ge 500 ] && [ "$nowm" -le 705 ] && grep -qE $'\t''(W|M)[ :(]' "$SEED_ST" 2>/dev/null && why="판 2 시드 낮 창(시드 일 남음 · ${nowm}분)"
     [ -z "$why" ] && running Qvest_DailyRefresh && why="밤 체인 실행 중"
     [ -z "$why" ] && running Qvest_MorningBrief && why="아침 체인 실행 중"
     [ -z "$why" ] && { bash 02_Infrastructure/ops/refresh_barrier.sh status 2>/dev/null | grep -q "state=free" || why="리프레시 배리어 held"; }
-    [ -z "$why" ] && grep -qE "M 측정 중|W\(follow\)|W 대기\(P1S02_E3_RX0\)" "$SEED_ST" 2>/dev/null && why="판 2 시드 측정 중 · E3 직후 대기"
+    [ -z "$why" ] && [ "$IGSEED" != "1" ] && grep -qE "M 측정 중|W\(follow\)|W 대기\(P1S02_E3_RX0\)" "$SEED_ST" 2>/dev/null && why="판 2 시드 측정 중 · E3 직후 대기"
     if [ -z "$why" ]; then mg=$(timeout 90 powershell.exe -NoProfile -NonInteractive -Command "[math]::Floor((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory/1MB)" 2>/dev/null | tr -d '\r\n ')
-      { [ -n "$mg" ] && [ "$mg" -ge 10 ]; } 2>/dev/null || why="가용 메모리 ${mg:-?}GB < 10GB"; fi
+      { [ -n "$mg" ] && [ "$mg" -ge "$MINFREE" ]; } 2>/dev/null || why="가용 메모리 ${mg:-?}GB < ${MINFREE}GB"; fi
     [ -z "$why" ] && { bash "$RS" - fresh-check >> "$LOG" 2>&1 || why="자료 낡음(fresh-check)"; }
     if [ -z "$why" ]; then
       vl=$(grep -o '"last": *"[0-9]\{6\}"' .cache/factor_combinable/fc_meta.json 2>/dev/null | grep -o '[0-9]\{6\}' | head -1)
@@ -54,7 +60,7 @@ main() {
     else fp_prev=""; fi
     if [ -z "$why" ]; then
       v0=$(inpfp); log "조건 서면 — measure(--now) 시작 · 입력(뷰 + IC 원장) ${v0} · 가용 메모리 ${mg}GB"; st "측정 중 — 30칸"
-      bash "$RS" "$RD" measure --now >> "$LOG" 2>&1; rc=$?
+      bash "$RS" "$RD" measure --now --p="$PAR" >> "$LOG" 2>&1; rc=$?
       v1=$(inpfp); log "measure rc=$rc · 입력 끝 ${v1}"
       if [ "$rc" != "0" ]; then st "측정 실패 rc=$rc — 세션 확인"; ms failed "측정 실행 실패(종료 코드 $rc)" "로그 $LOG"; exit 1; fi
       if [ "$v0" != "$v1" ]; then st "측정 중 결합용 뷰 · IC 원장 바뀜 — 재측정 필요(세션)"; ms input_changed "측정 중 입력 데이터(팩터 점수 · 정보계수 이력)가 바뀌어 재측정이 필요하다" "로그 $LOG"; exit 7; fi
