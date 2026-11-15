@@ -326,6 +326,72 @@
         "P1S03_own_spec_qualification(자체 사양 갈래 판 1 — 등급 v3.5 핀 교체 뒤 사양 v2 · 등록)",
         "P4C01_fc_blend(블렌딩 사슬 1호 — 설계 초안 04_Research/programs/P4_ASSEMBLY/P4C01_fc_blend/DESIGN_draft.md)"
       ]
+    },
+    {
+      "version": "v5",
+      "status": "released",
+      "released_at": "2026-11-15T09:33:45+0900",
+      "manifest_md5": "1dc74f9861fbe606b36220cc0ab1115e",
+      "n_files": 20,
+      "files": {
+        "cell_eval.R": "ae8ad253f11908807c968ba3b526b045",
+        "driver.R": "f9a3ac1b29e74a920228d750667fa5c7",
+        "fingerprint.sh": "10b55bd509f587b6b0b5cfdce3d91b4e",
+        "freshness.R": "ece0989ff76a95ceb454e003d9c63b80",
+        "load.R": "448da1a7f8069ab1a1275165ea094330",
+        "measure_cell.R": "386258f2fbee28d04f4cbd2bbe2501fd",
+        "metrics.R": "8adb024271f00dedc7c9464dcb7f6b7e",
+        "outcomes.R": "71df00a7867f943cd51d166a28911353",
+        "p1.R": "ff68e659b2463ef86d4990f0165f4eab",
+        "p2.R": "d9680326f6d0e80d9649aecb3508693d",
+        "p3.R": "0d8ae1e527271cd02c63c030593c14f1",
+        "p4.R": "2c07eac711fe47aa20bdd9738711050f",
+        "pair.R": "d91be83f2ed42ffc56f8d105119787c6",
+        "pins.R": "dd7269af2e89313c3a957fe18b4eeb55",
+        "register.R": "e29e6be851f0228f4b9db2955e66818f",
+        "rules.R": "8bcb8b4b76cef999024eb01ed642b18b",
+        "rules_p2.R": "3cfea8f932a3ea76e86daa31e152bd1b",
+        "spec.R": "3de905adeac4530b39aff35c2688ab17",
+        "standing.R": "695ca86a6be70f1b3cab6bcb3ff604f9",
+        "util.R": "30fd690977ecdcf285e61f6978c600d5"
+      },
+      "source_commit": "632a7034e",
+      "released_by": "Q — P4C01 첫 무인 틱(11-15 08:37) 생성기 작업 폴더 실패 수리(라운드를 막는 결함 + 침묵 실패 · 판단 J-20261115-005 · 재개 저널 OP-20261113-P1R04) · 설계 04_Research/programs/P4_ASSEMBLY/P4C02_fc_blend/DESIGN_draft.md",
+      "immutability": "출시된 판의 파일은 고치지 않는다(v1 · v2 · v3 · v4 · v5) — 바꿀 일이 생기면 새 판(v6)",
+      "routing": "사양 core_version → round.sh rc_core_of · 02_Infrastructure/programs/chain_tick.R .ct_core_version(v[0-9]+ 일반 판독 — 고친 곳 없음) · 사양 없는 호출(round.sh - … · p4-pool 기본 판) = 이 항목이 들어간 뒤 v5(P4 생성기 입력 밖은 v4 와 같은 동작) · v4 사양(P1S03 · P1S04 · P4C01)은 그대로 v4",
+      "reviews": [
+        "04_Research/01_reports/round_core_v5_review_20261115/change_review_v5.md(변경분 점검 · revise(필수 M-1 목적 글 가림이 넓다 · 권고 R-1 ~ R-4) → 수리 → 재점검 revise(M-2 · 리뷰어 제안 식 그대로 반영 · S-7 반영) → 시험 77/0)",
+        "판단 T1 R-20261115-010(P4C02 등록 · J-20261115-005 체계 준수 · C-20261115-074 blend 블록의 factors · base_weight 축 구멍 → step_policy.axes · C-075 틱 경로 시험 승계 · C-076 예산 문구 계산값)",
+        "철학 P1 R-20261115-011(P4C02 등록 설계 · C-20261115-081 블렌드 단위 → blend_rule · C-085 풀 표 표기 열 · C-080 축 정책 양성 대조 재도출)"
+      ],
+      "changes_from_v4": [
+        "설계 입력 §1 사유 코드 설명마다 처방 입력 검사(.rcp4_reason_legend) — 못 지난 설명은 코드만 · 이은 줄이 다시 걸리면 코드만(v4 = 코어 상수의 리뷰 id 날짜 · '전 기간' · 'T4' 로 풀을 넘긴 모든 설계 입력이 마지막 전수 검사에서 멈춤)",
+        "설계 입력 §0 = 사슬 목적 글 + 걸음 정책 줄(.rcp4_section0 · .rcp4_purpose_view · .rcp4_policy_line) — 목적 글의 id 안 8자리 날짜만 § 로 가린다(그 밖의 날짜 · 연도는 남겨 거부) · v4 까지 목적 글은 생성기 입력에 없었다",
+        "등록 검사(rc_p4_chain_check)가 §0 두 줄을 설계 입력과 같은 도우미로 만들어 처방 입력 검사 — 실을 수 없는 목적 · 정책으로 등록하지 않는다",
+        "걸음 정책 step_policy(선택 · rc_p4_chain_new(step_policy =)) — blocks(블록 허용) · axes(바꿀 칸 사양 축 · RC_P4_POLICY_AXES) · part_engine_rx(기저 신호 엔진 · 블렌드 부품 정규식) · blend_rule(parent_plus_one — 부모 칸 엔진 전부 + 새 엔진 1개) · source. 등록(어휘 · 블록 · 축 짝 · 정규식 · 기저 엔진 · 기저 칸 사양) + 걸음 열기(rc_p4_step_open → .rcp4_step_policy_why · .rcp4_policy_parts_why · .rcp4_blend_rule_why)에서 기계 거부",
+        "설계 입력 §1 풀 표에 표기 열(label_class — 가족 겹침에서 온다 · 성과 무관)",
+        "판 표기 · 적재 경로(util RC_VERSION · load · driver · measure_cell · standing) — 바뀐 파일 여섯 · 나머지 14 = v4 와 같은 바이트"
+      ],
+      "tests_at_release": [
+        {
+          "path": "08_Tests/programs/test_round_core_v5.R",
+          "pass": 77,
+          "fail": 0,
+          "note": "632a7034e · 고친 곳마다 양방향(L 사유 코드 · U 목적 글(날짜 · 연도 꼴 열 거부) · S §0 · P 걸음 정책 · B 블렌드 규칙 · C 등록 검사(실제 P4C01 사슬 판) · R 사슬 판 왕복) · E 틱 경로 = 실제 P4C01 상태 · 실제 기저 풀로 설계 입력 · 생성기 작업 폴더(v4 에서 멈춘 단계 — 다음 판 시험이 승계 · 판단 C-20261115-075) · Z v1~v4 매니페스트 불변 · v5≠v4 파일 여섯 · 실제 파일 무접촉 · 걸음 열기 진입점 양성 대조 = P4C02 등록 · 기저 측정 뒤 실제 사슬에서(거부되는 열기는 원장 무기록)"
+        }
+      ],
+      "known_limits": [
+        "v4 known_limits 승계(README 'v4' 절 '알려진 한계')",
+        "틱 경로 시나리오 시험(08_Tests/programs/test_scn_chain_tick_core.R)은 코어 v1 고정 — v2 ~ v4 는 자기 판의 설계 입력 · 생성기 작업 폴더를 기저 풀과 함께 돈 시험이 없었다(이 결함이 출시 시험을 지난 까닭 · 판단 C-20261115-075) → 출시마다 그 판의 E 묶음(실제 사슬 상태 · 실제 풀)을 돈다",
+        "사슬은 코어 매니페스트를 핀하지 않는다(chain_registered = spec_md5 · git_head · core_version 은 라우팅만) — 등록 스크립트가 지금 파일 = RELEASES 매니페스트를 확인한다(P4C02 init) · 다음 판 후보: 등록 기록에 매니페스트 · 쓰기 경로 판 대조(변경분 점검 R-3 · S-4)",
+        "목적 글 = 처방 입력(설계 입력 §0) — 기계 검사는 날짜 · 연도 · 등급 · '키워드 + 수치'만 막는다 · 정성 서술은 교훈 카드와 같은 τ_D 규율 · 등록 리뷰(P1 · T1)가 본다(R-4) · id 처럼 적은 날짜는 § 가림을 빠져나간다(M-1 남는 위험)",
+        "생성기 g1(_generator/g1/step.md)은 §0 을 모른다 — 정책 밖 제안은 걸음 열기에서 기계 거부(chain_tick.sh 는 invalid 로 센다 · 연속 상한 → 차단 + 경보 · S-2 · C-078 (iii)) · 생성기 새 판은 거부가 실제로 생기면",
+        "§1 에서 설명이 생략되는 사유 코드 둘(philosophy_unread · lowrisk_confirm_pending — 상수 문구의 리뷰 id 날짜 · S-5 · C-078 (i))",
+        "v4 코어는 v5 사슬의 step_policy 를 모르는 필드로 무시한다 — 라우팅만 막는다(S-4) · .rcp4_norm_spec 의 $ 부분 일치(v1 부터 · 정책 검사는 unique 로 무영향 · S-6)"
+      ],
+      "first_consumers": [
+        "P4C02_fc_blend(블렌딩 사슬 1호 판 2 — P4C01 과 같은 설계 · step_policy blocks = blend · axes = base_signal · part_engine_rx = T0)"
+      ]
     }
   ]
 }

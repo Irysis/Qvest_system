@@ -155,6 +155,16 @@ round.sh <판> superfan-mark --codes a,b --kind pass|daily --p2 <id> --t2 <id>  
 - **출시**: RELEASES.json 은 고치지 않았다(변경분 점검 뒤 Q 가 넣는다 — 지금 넣으면 사양 없는 호출의 기본 판이 바뀐다). 새 라운드 · 판 · 사슬은 사양 `core_version: v4` 로 이 판을 고른다(round.sh 라우팅 그대로). 자체 사양 갈래 판정은 RELEASES v4 항목 뒤에만 돈다(9 의 판정 출시 관문).
 - **출시(2026-11-13 20:07)**: RELEASES.json v4 항목 — 매니페스트 95d4a286 · 파일 20 · 소스 커밋 028078396 · 시험 test_round_core_v4.R 71/0 · 격리 점검 전체(revise → 7037cd6cc) + 변경분(revise → 028078396 · M3 해소 Q 확인). 이 항목부터 사양 없는 호출(`round.sh - …` · p4-pool)의 기본 판 = v4 · 자체 사양 갈래 판정(R5) 열림.
 
+## v5 (2026-11-15 · P4 생성기 입력 수리 · 판단 J-20261115-005 · 설계 `04_Research/programs/P4_ASSEMBLY/P4C02_fc_blend/DESIGN_draft.md`)
+
+- **왜**: P4C01(v4 사슬) 첫 무인 틱(11-15 08:37)이 생성기 작업 폴더 만들기에서 멈췄다 — 설계 입력 §1 사유 코드 설명(상수 `RC_P4_REASONS`)의 리뷰 id 날짜 · '전 기간' · 'T4' 가 마지막 전수 검사(`rc_input_issues`)에 걸린다. 무인 틱은 늘 기저 풀을 넘기므로 **v4 사슬은 모두 같다**. 둘째 구멍: 사슬 목적 글(purpose)이 생성기 입력에 없었다 — 목적 글의 범위 문장('생성기가 지킨다')은 집행되지 않았다.
+- **바뀐 것**(v4 대비 파일 여섯 · 나머지 14 = 같은 바이트): ① §1 사유 코드 설명마다 처방 입력 검사(못 지나면 코드만) ② §0 = 목적 글(id 안 8자리 날짜만 § 로 가림 — 그 밖의 날짜 · 연도는 남겨 등록 거부) + 걸음 정책 줄 · 등록 검사가 같은 도우미(`.rcp4_section0`)로 검사 ③ 걸음 정책 `step_policy`(선택): `blocks` · `axes`(blend 블록은 factors · base_weight 축도 바꿀 수 있다) · `part_engine_rx` · `blend_rule = parent_plus_one` · `source` — 등록 + 걸음 열기에서 기계 거부 ④ §1 풀 표 표기 열(label_class) ⑤ 판 표기 · 적재 경로.
+- **쓰는 법**: 새 사슬 판은 `rc_p4_chain_new(..., step_policy = list(blocks = list("blend"), axes = list("base_signal"), part_engine_rx = "<정규식>", blend_rule = "parent_plus_one", source = "<근거>"))`. 범위 문장을 목적 글에 쓸 때는 그 문장을 거부하는 코드 자리를 함께 적는다(판단 T1 습관 제안 — P4C02 DESIGN §6 표). **목적 글은 처방 입력이다**(τ_D 통로 — 기계 검사는 날짜 · 연도 · 등급 · '키워드 + 수치'만 막는다 · 정성 서술은 교훈 카드와 같은 규율).
+- **출시 절차에 더함**(판단 C-20261115-075): 그 판의 load.R 로 실제 사슬 상태 · 실제 기저 풀의 설계 입력 · 생성기 작업 폴더를 도는 시험(v5 = `test_round_core_v5.R` E 묶음)을 출시마다 돈다 — 틱 경로 시나리오 시험(`test_scn_chain_tick_core.R`)은 v1 고정이라 v2 ~ v4 의 그 경로를 아무도 돌지 않았다.
+- **시험 · 점검**: `08_Tests/programs/test_round_core_v5.R` 77/0 · 변경분 점검 `04_Research/01_reports/round_core_v5_review_20261115/change_review_v5.md`(revise M-1 → 재점검 revise M-2 → 제안 식 반영) · 판단 T1 R-20261115-010 · 철학 P1 R-20261115-011.
+- **알려진 한계**: RELEASES v5 known_limits(사슬은 코어 매니페스트를 핀하지 않는다 · 생성기 g1 은 §0 을 모른다 · chain_tick.sh 는 정책 거부를 invalid 로 센다 · §1 설명 생략 둘 · v4 코어는 step_policy 를 모른다 · `$` 부분 일치).
+- **출시(2026-11-15)**: RELEASES.json v5 항목 — 매니페스트 1dc74f98 · 파일 20 · 소스 커밋 632a7034e. 이 항목부터 사양 없는 호출의 기본 판 = v5(P4 생성기 입력 밖은 v4 와 같은 동작) · v4 사양(P1S03 · P1S04 · P4C01)은 그대로 v4.
+
 ## P4 강화 사슬 (p4_chain · v1/p4.R · v10.2 · 2026-11-10)
 
 한 사슬 = 기저 엔진 1개에서 출발해 **한 걸음에 가설 하나 · 칸 하나 · 블록 유형 하나**씩 얹는 순차 루프(사슬형 — 스윕 아님). 규칙(채택 규칙 · 예산 · 생성기 판 핀)은 사슬 판 `chain_spec.json`(스키마 `rc_p4_chain_v1`)에 한 번 등록하고, 걸음은 추가 전용 원장 `chain_steps.jsonl`(앞 줄 md5 사슬)에 흐른다. 루프가 고쳐 쓰는 것은 생성기(`06_Registry/rx_generator.json` · 본문 `04_Research/programs/P4_ASSEMBLY/_generator/g<n>/*.md`)뿐이고, 판정 규칙을 바꾸려면 새 사슬 판을 등록한다.
@@ -249,4 +259,4 @@ round.sh - p4-generator-review [--out f]                                   # 블
 ## 다음
 - 측정 서버 `ms_submit` 연결(WP2) — 상설 측정(`standing-measure`)도 서버가 생기면 그쪽을 먼저 쓴다.
 - P1 상설 자격(WP5) — P1S01 판 1 등록(11-11 15:12 · 코어 v1) · 측정은 도훈 '파일럿부터'(L1-CHAIN-PILOT-FIRST-20261111)로 `tick_hold` 보류 중.
-- 출시: v1 = 11-11 13:44 · v2 = 11-11 18:29 · v3 = 11-11 23:30(RELEASES.json) · v4 = 11-13 작성 · 미출시(격리 점검 뒤 RELEASES 에 항목 — 위 'v4' 절). 출시본 대조 검사(디렉터리 매니페스트 ≠ 출시 값이면 실패)는 아직 없다 — 지금 보증은 사양 핀(rc_pins_mismatches)뿐.
+- 출시: v1 = 11-11 13:44 · v2 = 11-11 18:29 · v3 = 11-11 23:30 · v4 = 11-13 20:07 · v5 = 11-15(RELEASES.json · 위 'v4' · 'v5' 절). 출시본 대조 검사(디렉터리 매니페스트 ≠ 출시 값이면 실패)는 아직 없다 — 지금 보증은 사양 핀(rc_pins_mismatches)뿐.
