@@ -7,7 +7,7 @@
   "remeasured_at": "2026-09-25T13:00:05+0900",
   "bt_result_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_131648_5708/remeasure_close_t1_5562284e/bt_result.rds",
   "metric_type": "backtested",
-  "essence_grade": "B",
+  "essence_grade": "C",
   "grade_basis": "remeasure_sweep",
   "essence": {
     "net_sharpe": 0.707,
@@ -130,7 +130,7 @@
     },
     "reason": "하락월 110개: 초과 +1.90%/월 (t 4.71 · 적중 65%) · 벤치-10% 이하 10개: 초과 +6.93%/월 · 상승월 초과 -1.30%/월"
   },
-  "reasons": "v3: S 0.170 · B 경계 0.436 · 띠 C · CR strong(시험 창 normal) · 노치 +1 · A 아님 사유 floor:port_t,floor:cagr,floor:sharpe,oos:test_window_calmar_vs_bench,gate:dsr_sweep | v921 C: Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
+  "reasons": "v3: S 0.170 · B 경계 0.436 · 띠 C · CR strong(시험 창 normal) · 노치 +0 · A 아님 사유 floor:port_t,floor:cagr,floor:sharpe,oos:test_window_calmar_vs_bench,gate:dsr_sweep,cr:strong_beta_not_separated | v921 C: Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
   "remeasure": {
     "version": "remeasure_from_holdings_v1",
     "of_artifact": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_131648_5708",
@@ -215,27 +215,39 @@
   "grade_v3": {
     "status": "ok",
     "schema": "grade_v3_v1",
-    "grade": "B",
+    "grade": "C",
     "S": 0.1699,
     "S_B": 0.4359,
-    "rules_version": "v3.3",
+    "rules_version": "v3.5",
     "crisis_def": "lt_first_passage",
-    "cr_notch_basis": "strong",
+    "cr_notch_basis": "normal",
+    "notch_basis": "beta_not_separated",
+    "selection_control": "size_beta",
     "mc8": {
       "status": "ok",
       "label": "selection_defense",
       "share_beats_size_exposure": 0.6,
-      "median_placebo_p": 0.0398
+      "median_placebo_p": 0.0398,
+      "exposure_varies": false,
+      "share_beats_size_exposure_path": null,
+      "size_beta_status": "ok",
+      "label_size_beta": "size_beta_unseparated",
+      "share_beats_size_beta": 0.1,
+      "share_beats_size_beta_path": null,
+      "median_placebo_p_size_beta": 0.2562,
+      "beta_leg": 0.5425,
+      "rho_median": 0.75
     },
     "band": "C",
-    "notch": 1,
+    "notch": 0,
     "notch_a": false,
     "blocked_by": [
       "floor:port_t",
       "floor:cagr",
       "floor:sharpe",
       "oos:test_window_calmar_vs_bench",
-      "gate:dsr_sweep"
+      "gate:dsr_sweep",
+      "cr:strong_beta_not_separated"
     ],
     "floors": {
       "port_t": false,
@@ -298,7 +310,7 @@
         "epoch_mismatch",
         "gate:dsr_sweep"
       ],
-      "t_min": 1.3611,
+      "t_min": 1.4804,
       "t_min_model": "FF6",
       "test_all_pos": true,
       "n_months": 257,
@@ -306,49 +318,60 @@
       "tau_d": "2022-12-31",
       "models": {
         "FF3": {
-          "t": 1.6991,
-          "alpha_ann": 0.0523,
+          "t": 1.77,
+          "alpha_ann": 0.0549,
           "n": 257,
-          "test_alpha_ann": 0.0257,
+          "test_alpha_ann": 0.0426,
           "test_n": 43
         },
         "Carhart4": {
-          "t": 1.4957,
-          "alpha_ann": 0.0451,
+          "t": 1.5581,
+          "alpha_ann": 0.0478,
           "n": 257,
-          "test_alpha_ann": 0.0211,
+          "test_alpha_ann": 0.042,
           "test_n": 43
         },
         "FF5": {
-          "t": 1.5534,
-          "alpha_ann": 0.047,
+          "t": 1.686,
+          "alpha_ann": 0.0513,
           "n": 257,
-          "test_alpha_ann": 0.0331,
+          "test_alpha_ann": 0.0469,
           "test_n": 43
         },
         "FF6": {
-          "t": 1.3611,
-          "alpha_ann": 0.0398,
+          "t": 1.4804,
+          "alpha_ann": 0.0443,
           "n": 257,
-          "test_alpha_ann": 0.0272,
+          "test_alpha_ann": 0.0455,
           "test_n": 43
         }
       },
-      "factor_md5": "6a2970256f7d6bb216612978353e9229",
-      "factor_vintage": "kr_factor_returns_vintages/6a2970256f7d.parquet",
+      "factor_md5": "3dd806e4f9ffece8e304d6ffef392937",
+      "factor_vintage": "kr_factor_returns_vintages/3dd806e4f9ff.parquet",
       "factor_epoch": "all_hyg_px1000_2000_v1",
       "record_epoch": null,
       "error": null
     }
   },
   "grade_v3_backfill": {
-    "at": "2026-11-10T04:53:41+0900",
+    "at": "2026-11-15T09:48:00+0900",
     "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
-    "decision": "decision_register GRADE-V33-FACTOR-ALPHA-NOTCH-20261109 · GRADE-V33-OOS-TEST-WINDOW-CALMAR-20261109(규칙 판 재채점 v3.2 → v3.3)",
-    "rules_version": "v3.3",
-    "prior_rules_version": "v3.2",
+    "decision": "decision_register GRADE-CR-NOTCH-BETA-SELECTION-20261113(규칙 판 재채점 v3.3 → v3.5)",
+    "rules_version": "v3.5",
+    "prior_rules_version": "v3.3",
+    "trigger": "rules_version",
+    "causes": [
+      "rules_version"
+    ],
+    "prior_factor_md5": null,
+    "inputs": {
+      "factor_md5": "3dd806e4f9ffece8e304d6ffef392937",
+      "rawdata": "426228082 2026-11-15T00:14:45+0900",
+      "data_triggers": true,
+      "stored_returns": "측정 시점 판(03_period_returns.csv · 재채점은 수익을 다시 재지 않는다)"
+    },
     "prior_essence_grade": "B",
-    "prior_md5": "110f98338f826cf1e42c86393dc8fe27",
+    "prior_md5": "c2793a5797aa19d8f9dd3d2d47557c8f",
     "history": [
       {
         "rules_version": "v3.0",
@@ -361,7 +384,22 @@
       {
         "rules_version": "v3.2",
         "essence_grade": "B"
+      },
+      {
+        "rules_version": "v3.3",
+        "essence_grade": "B"
       }
+    ]
+  },
+  "rule_change_benefit": {
+    "benefit": false,
+    "measured_grade": "C",
+    "rules_version": "v3.5",
+    "prior_rules_version": "v3.3",
+    "prior_essence_grade": "B",
+    "at": "2026-11-15T09:48:00+0900",
+    "causes": [
+      "rules_version"
     ]
   }
 }

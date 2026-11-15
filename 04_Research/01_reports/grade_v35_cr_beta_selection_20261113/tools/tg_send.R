@@ -52,12 +52,13 @@ r <- tg_agent_brief(
                    if (length(sb) == 2L) sprintf("범위 기록의 동일 β 대조 통과율 %.0f~%.0f%%(과반 미달) · 보유 β %.2f~%.2f — v3.5 가점 유지 기록 %d건", 100 * sb[1], 100 * sb[2], bt[1], bt[2], S$keep_notch) else
                      sprintf("v3.5 가점 유지 기록 %d건", S$keep_notch),
                    sprintf("실데이터 음성 대조: 가점이 이미 없던 강함 기록 + 무작위 기록 %d건 → 등급 동일 %d/%d", S$n_t4, S$t4_same, S$n_t4),
-                   sprintf("팩터 수익률 갱신(규칙 무관 · %s) 재채점 %d건 → 등급 이동 %d건", Sys.getenv("V35_FA_NOTE", "원천 이음매 수리 D1 · D2 반영 — 팩터 조정 알파 노치만 다시 계산"), S$n_fa, S$fa_total_moved),
+                   sprintf("팩터 수익률 갱신(규칙 무관 · %s) 재채점 %d건 → 등급 이동 %d건", Sys.getenv("V35_FA_NOTE", "원천 수익률 정정(가격 연속성 · 내부 단절 채움) 반영 — 팩터 조정 알파 노치만 다시 계산"), S$n_fa, S$fa_total_moved),
                    sprintf("전체 %s건 분포: %s", fmt(S$n_records), dist_txt),
                    sprintf("상향 수혜 표식 %s건 · A 하향 %d건 · Judge 요청 회수 %d건", as.character(S$benefit_new), S$a_down, S$judge_withdraw))),
     list(type = "bullet", heading = "다음", emoji = "\U000027A1\UFE0F",
-         items = c("상설 자격 심사: P1R04 는 측정 직전 계약 고정값 갱신 · P1S02 는 3차 심사로 새로 등록 · P1S03 · P4C01 은 새 계약으로 등록",
-                   "P1R03 영향 7개 카테고리 엔진은 가격 수준 팩터 재계산으로 수익률이 바뀌어 재측정 예정 — 이 표의 P1R03 기록은 그 전 측정",
-                   "위기 무렵 보유 회전(노출 1 · 보유를 저β 로 교체): 도훈 결정 (나) — 위기 전 보유 동결 대조를 진단 기록으로 먼저 쌓는다(등급 반영 v3.6 은 따로) · 후속: 행동 카드 보고 문구를 동일 β 대조 결과와 맞추기"))),
+         items = c("1계층 라운드는 이미 새 계약 위에서 돈다 — P1R04(닫힘) · P1S03(판정) · P4C01 · P1S04(등록) 모두 v3.5 계약 고정값",
+                   "재채점 범위의 P1R03 기록은 원천 수익률 정정 전 측정(대체됨 · 인용 대상 아님) — 15개 엔진은 정정 뒤 v3.5 로 다시 측정됐다 · 정정 구간을 보유한 다른 기록의 저장 수익률은 측정 때 값이라 재측정 몫",
+                   sprintf("교체 뒤 v3.5 로 측정된 기록 %d건은 팩터 수익률 갱신만 다시 채점(등급 저장 그대로 %d/%d)", S$n_post_release %||% 0L, S$post_release_same %||% 0L, S$n_post_release %||% 0L),
+                   "위기 무렵 보유 회전(노출 1 · 보유를 저β 로 교체): 도훈 결정 (나) — 위기 전 보유 동결 대조를 진단 기록으로 쌓는다(등급 반영 v3.6 은 따로) · 후속: 행동 카드 보고 문구를 동일 β 대조 결과와 맞추기"))),
   charts = figs, relaxed = TRUE, glossary = FALSE)
 cat("ok:", isTRUE(r$ok %||% TRUE), "\n")

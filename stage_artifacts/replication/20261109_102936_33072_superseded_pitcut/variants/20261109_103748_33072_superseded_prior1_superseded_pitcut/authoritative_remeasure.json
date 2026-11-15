@@ -130,14 +130,25 @@
     "grade": "F",
     "S": 0,
     "S_B": 0.3911,
-    "rules_version": "v3.3",
+    "rules_version": "v3.5",
     "crisis_def": "lt_first_passage",
     "cr_notch_basis": "normal",
+    "notch_basis": null,
+    "selection_control": "size_beta",
     "mc8": {
       "status": "not_needed",
       "label": null,
       "share_beats_size_exposure": null,
-      "median_placebo_p": null
+      "median_placebo_p": null,
+      "exposure_varies": null,
+      "share_beats_size_exposure_path": null,
+      "size_beta_status": null,
+      "label_size_beta": null,
+      "share_beats_size_beta": null,
+      "share_beats_size_beta_path": null,
+      "median_placebo_p_size_beta": null,
+      "beta_leg": null,
+      "rho_median": null
     },
     "band": "F",
     "notch": 0,
@@ -210,44 +221,44 @@
         "test_window_alpha_not_all_positive",
         "gate:dsr_sweep"
       ],
-      "t_min": 1.5777,
+      "t_min": 1.4467,
       "t_min_model": "FF6",
       "test_all_pos": false,
-      "n_months": 270,
+      "n_months": 269,
       "nw_lag": 3,
       "tau_d": "2022-12-31",
       "models": {
         "FF3": {
-          "t": 2.0292,
-          "alpha_ann": 0.0529,
+          "t": 1.8602,
+          "alpha_ann": 0.05,
           "n": 269,
-          "test_alpha_ann": -0.0403,
+          "test_alpha_ann": -0.0599,
           "test_n": 46
         },
         "Carhart4": {
-          "t": 1.6416,
-          "alpha_ann": 0.0443,
+          "t": 1.4689,
+          "alpha_ann": 0.0409,
           "n": 269,
-          "test_alpha_ann": -0.0409,
+          "test_alpha_ann": -0.0633,
           "test_n": 46
         },
         "FF5": {
-          "t": 1.9555,
-          "alpha_ann": 0.0526,
+          "t": 1.8323,
+          "alpha_ann": 0.0505,
           "n": 269,
-          "test_alpha_ann": -0.0466,
+          "test_alpha_ann": -0.0513,
           "test_n": 46
         },
         "FF6": {
-          "t": 1.5777,
-          "alpha_ann": 0.0434,
+          "t": 1.4467,
+          "alpha_ann": 0.041,
           "n": 269,
-          "test_alpha_ann": -0.0479,
+          "test_alpha_ann": -0.0502,
           "test_n": 46
         }
       },
-      "factor_md5": "6a2970256f7d6bb216612978353e9229",
-      "factor_vintage": "kr_factor_returns_vintages/6a2970256f7d.parquet",
+      "factor_md5": "3dd806e4f9ffece8e304d6ffef392937",
+      "factor_vintage": "kr_factor_returns_vintages/3dd806e4f9ff.parquet",
       "factor_epoch": "all_hyg_px1000_2000_v1",
       "record_epoch": "all_hyg_px1000_2000_v1",
       "error": null
@@ -582,18 +593,48 @@
     "window_anchor_date_global": "2005-01-01"
   },
   "grade_v3_backfill": {
-    "at": "2026-11-10T05:00:46+0900",
+    "at": "2026-11-15T09:49:09+0900",
     "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
-    "decision": "decision_register GRADE-V33-FACTOR-ALPHA-NOTCH-20261109 · GRADE-V33-OOS-TEST-WINDOW-CALMAR-20261109(규칙 판 재채점 v3.2 → v3.3)",
-    "rules_version": "v3.3",
-    "prior_rules_version": "v3.2",
+    "decision": "decision_register GRADE-CR-NOTCH-BETA-SELECTION-20261113(규칙 판 재채점 v3.4 → v3.5)",
+    "rules_version": "v3.5",
+    "prior_rules_version": "v3.4",
+    "trigger": "factor_md5_changed",
+    "causes": [
+      "factor_md5_changed"
+    ],
+    "prior_factor_md5": "9240118d65e6d5fd685b13c197584183",
+    "inputs": {
+      "factor_md5": "3dd806e4f9ffece8e304d6ffef392937",
+      "rawdata": "426228082 2026-11-15T00:14:45+0900",
+      "data_triggers": true,
+      "stored_returns": "측정 시점 판(03_period_returns.csv · 재채점은 수익을 다시 재지 않는다)"
+    },
     "prior_essence_grade": "F",
-    "prior_md5": "53272ae2b6e8edeb7ede10090802991d",
+    "prior_md5": "a42fa916ebad90ab46f65c78b17e2ce1",
     "history": [
       {
         "rules_version": "v3.2",
         "essence_grade": "F"
+      },
+      {
+        "rules_version": "v3.3",
+        "essence_grade": "F"
+      },
+      {
+        "rules_version": "v3.4",
+        "essence_grade": "F"
       }
+    ]
+  },
+  "rule_change_benefit": {
+    "benefit": false,
+    "measured_grade": "F",
+    "rules_version": "v3.5",
+    "prior_rules_version": "v3.4",
+    "prior_essence_grade": "F",
+    "at": "2026-11-15T09:49:09+0900",
+    "causes": [
+      "factor_md5_changed"
     ]
   }
 }

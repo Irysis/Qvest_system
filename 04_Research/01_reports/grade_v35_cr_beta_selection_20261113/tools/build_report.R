@@ -63,20 +63,28 @@ vint_ok <- nrow(vint) == 1L && identical(vint$fmd5_4, vint$fmd5_5) && identical(
 
 rank_g <- c(F = 0L, C = 1L, B = 2L, A = 3L)
 mv <- function(a, b) fifelse(is.na(a) | is.na(b), "판정 불가", fifelse(a == b, "그대로", fifelse(rank_g[b] < rank_g[a], "내림", "오름")))
-## 규칙 효과 = 같은 입력 v3.4 → v3.5 · 자료 판 효과 = 저장 → v3.4(지금)
-J[, rule_move := mv(g4, g5)][, data_move := mv(stored_grade, g4)]
+## 규칙 효과 = 같은 입력 v3.4 → v3.5 · 자료 판 효과 = 저장 → 같은 규칙 판(지금)
+## (11-15 정밀화) 교체 뒤 현행 판(v3.5)으로 측정된 기록은 저장 등급이 이미 v3.5 다 — v3.4 → v3.5 는 반사실이라 범위 밖 규칙 효과 검사에서 빼고
+##   따로 적는다(리허설 11-14 16:25 때는 대상에 없었다 · 요인 낡음으로 대상에 든다). 자료 판 효과는 같은 규칙 판끼리 = 저장 → v3.5(지금).
+RV_NOW <- fromJSON(file.path(ROOT, "06_Registry/grade_v3.json"))$rules_version
+J[, post_release := stored_rules %in% RV_NOW][, g_data := fifelse(post_release, g5, g4)]
+J[, rule_move := mv(g4, g5)][, data_move := mv(stored_grade, g_data)]
 RULE <- J[scope %in% TRUE]; n_snap <- RULE[scope_snapshot %in% TRUE, .N]; n_new <- RULE[!scope_snapshot %in% TRUE, .N]
 RULE[, sub := fifelse(scope_snapshot %in% TRUE, sprintf("등록 시점 %d", n_snap), sprintf("등록 뒤 %d", n_new))]
 FA <- J[fa_stale %in% TRUE & !scope %in% TRUE]
 T4 <- J[t4 %in% TRUE]; t4_same <- T4[!is.na(g4) & !is.na(g5) & g4 == g5, .N]
-rule_outside <- J[rule_move %in% c("내림", "오름") & !scope %in% TRUE]
-rule_up <- J[rule_move == "오름"]
+rule_outside <- J[rule_move %in% c("내림", "오름") & !scope %in% TRUE & !post_release]   # 교체 전 저장분(v3.3 · v3.4)만
+post_diff <- J[post_release & rule_move %in% c("내림", "오름")]                         # 교체 뒤 측정분 — v3.4 였다면 달랐을 기록(참고)
+n_post <- J[post_release == TRUE, .N]; n_post_same <- J[post_release == TRUE & !is.na(g5) & stored_grade == g5, .N]
+rule_up <- J[rule_move == "오름"]                                                        # 단조성 = 전 기록
 
 ## T2 — 전체 권위 기록 분포(쓰기 직전 전수 → 쓰기 뒤 전수 · 없으면 쓰기 직전 전수에 드라이런 v3.5 를 얹은 예측)
 G <- c("A", "B", "C", "F")
 cnt <- function(x) x[scheme == "grade_v3" & essence_grade %in% G, .N, by = .(g = essence_grade)]
 before <- cnt(c0)
-after <- if (POST) cnt(cP) else { tmp <- copy(c0); tmp[J[is.na(err5)], on = "dir", essence_grade := i.g5]; cnt(tmp) }
+## 같은 기록 집합끼리 비교한다 — 쓰기 직전 전수 뒤에 새로 측정된 기록은 분포에서 빼고 건수만 적는다(11-15 · 두 전수 사이 측정이 섞이면 변화 합이 0 이 아니게 된다)
+n_new_post <- if (POST) cP[!dir %in% c0$dir & scheme == "grade_v3" & essence_grade %in% G, .N] else 0L
+after <- if (POST) cnt(cP[dir %in% c0$dir]) else { tmp <- copy(c0); tmp[J[is.na(err5)], on = "dir", essence_grade := i.g5]; cnt(tmp) }
 dist <- merge(data.table(g = G), before[, .(g, before = N)], by = "g", all.x = TRUE)
 dist <- merge(dist, after[, .(g, after = N)], by = "g", all.x = TRUE)
 dist[is.na(before), before := 0L][is.na(after), after := 0L][, delta := after - before]
@@ -108,7 +116,7 @@ th <- function(base = 12) theme_minimal(base_family = FAM, base_size = base) +
         axis.text = element_text(colour = INK2), legend.position = "top", legend.justification = "left", legend.title = element_blank(),
         plot.background = element_rect(fill = "white", colour = NA), plot.margin = margin(10, 14, 8, 10))
 pct <- function(x) ifelse(is.finite(x), sprintf("%.0f%%", 100 * x), "–")
-n_rule_down <- J[rule_move == "내림", .N]; n_data_mv <- J[data_move %in% c("내림", "오름"), .N]
+n_rule_down <- J[rule_move == "내림" & !post_release, .N]; n_data_mv <- J[data_move %in% c("내림", "오름"), .N]   # 교체 뒤 측정분의 반사실 차이는 규칙 효과로 세지 않는다
 
 ## 그림 1 — 전체 권위 기록 등급 분포(쓰기 직전 → 쓰기 뒤)
 L <- melt(dist, id.vars = c("g", "delta"), measure.vars = c("before", "after"), variable.name = "when", value.name = "n")
@@ -121,9 +129,9 @@ g1 <- ggplot(L, aes(g, n, fill = when)) + geom_col(position = position_dodge(wid
             colour = ifelse(lab$txt == "변화 없음", MUTED, C_LOSE)) +
   scale_fill_manual(values = c(C_OLD, C_NEW)) + scale_y_continuous(expand = expansion(mult = c(0, 0.18)), labels = scales::comma) +
   labs(title = "① 권위 등급 분포 — 재채점 전 vs 뒤", x = NULL, y = "기록 수",
-       subtitle = sprintf("저장 권위 기록 %s건 · 다시 채점 %d건 = 위기 방어 가점 범위 %d + 팩터 수익률 갱신 %d(겹침 제외)\n같은 입력 대조: 규칙 효과(v3.4 → v3.5) 내림 %d건 · 데이터 갱신 효과(저장 → v3.4 재계산) 이동 %d건",
+       subtitle = sprintf("저장 권위 기록 %s건 · 같은 입력 드라이런 %d건\n= 위기 방어 가점 범위 %d + 팩터 수익률 갱신 %d + 실데이터 음성 대조(겹침 제외)\n규칙 효과(v3.4 → v3.5) 내림 %d건 · 데이터 갱신 효과(저장 → 같은 규칙 버전으로 재계산) 이동 %d건",
                           format(sum(dist$before), big.mark = ","), nrow(J), nrow(RULE), nrow(FA), n_rule_down, n_data_mv),
-       caption = "등급 = 권위 등급 v3(essence) · 데이터 갱신 효과 = 팩터 조정 알파 노치를 현행 현행 팩터 수익률로 다시 계산 · RAWDATA 2026-03-30 정정 반영") + th()
+       caption = "등급 = 권위 등급 v3(essence) · 데이터 갱신 효과 = 팩터 조정 알파 노치를 현행 팩터 수익률로 다시 계산\n원천 수익률 정정(03-30 · 가격 연속성 · 내부 단절 채움) 반영") + th()
 
 ## 그림 2 — 위기 방어 '강함' 기록의 귀속: 시가총액 · 노출 일치 대조 통과율 vs 시가총액 · β 일치 대조 통과율
 P <- J[(scope %in% TRUE | dir %in% NEG) & is.finite(share_se)]
@@ -148,8 +156,8 @@ g2 <- ggplot(P, aes(share_se, share_sb, colour = kind)) +
        x = "시가총액 · 노출 일치 대조를 이긴 위기(v3.4 판정)", y = "시가총액 · β 일치 대조를 이긴 위기(v3.5 추가)",
        subtitle = "점선 = 과반(50%) · 둘 다 과반이어야 선택 방어 가점 · 라벨 = 가점 범위 기록의 등급(v3.4→v3.5 · 같은 입력)",
        caption = paste0("대조 = 같은 시가총액 분위에서 무작위로 고른 포트폴리오(characteristic-matched random portfolios) 200개의 위기 낙폭 5% 분위\n",
-                        "β 일치 = 각 대조를 현금 혼합으로 전략 β 까지 낮춤(월간 OLS β · 차입 없음) · 위기 = Lunde-Timmermann 20/20 · 전기간 · ",
-                        "라벨 없는 점 = 이음매 수리 전 P1R03 측정(재측정본으로 대체)")) + th()
+                        "β 일치 = 각 대조를 현금 혼합으로 전략 β 까지 낮춤(월간 OLS β · 차입 없음) · 위기 = Lunde-Timmermann 20/20 · 전기간\n",
+                        "라벨 없는 점 = 원천 수익률 정정 전 P1R03 측정(재측정본으로 대체) · 중단된 P1R04 측정 · 실데이터 음성 대조(가점이 이미 없던 강함 기록)")) + th()
 
 ## 그림 3 — 전이 행렬: 규칙 효과(범위 · v3.4 → v3.5) | 자료 판 효과(팩터 판 갱신 · 저장 → v3.4 재계산)
 tm <- function(x, a, b, ttl) {
@@ -166,12 +174,12 @@ tm <- function(x, a, b, ttl) {
 }
 g3 <- patchwork::wrap_plots(
   tm(RULE, "g4", "g5", sprintf("규칙 효과 — 위기 방어 가점 범위 %d건\n(같은 입력 · v3.4 → v3.5)", nrow(RULE))),
-  tm(FA, "stored_grade", "g4", sprintf("데이터 갱신 효과 — 팩터 수익률 갱신 %d건\n(저장 → v3.4 재계산 · 규칙 무관)", nrow(FA))), nrow = 1) +
+  tm(FA, "stored_grade", "g_data", sprintf("데이터 갱신 효과 — 팩터 수익률 갱신 %d건\n(저장 → 같은 규칙 버전으로 재계산 · 규칙 무관)", nrow(FA))), nrow = 1) +
   patchwork::plot_annotation(title = "③ 재채점 등급 이동 — 원인별",
-                             subtitle = sprintf("규칙 효과는 내림만 가능(조건만 추가) · 범위 밖 기록의 규칙 효과 %d건 · 실데이터 음성 대조 %d/%d 동일",
+                             subtitle = sprintf("규칙 효과는 내림만 가능(조건만 추가) · 범위 밖(교체 전 저장분) 규칙 효과 %d건 · 실데이터 음성 대조 %d/%d 동일",
                                                 nrow(rule_outside), t4_same, nrow(T4)),
                              theme = th())
-ggsave(file.path(OUT, "01_grade_distribution.png"), g1, width = 7.4, height = 4.8, dpi = 150, device = ragg::agg_png, bg = "white")
+ggsave(file.path(OUT, "01_grade_distribution.png"), g1, width = 7.4, height = 5.2, dpi = 150, device = ragg::agg_png, bg = "white")
 ggsave(file.path(OUT, "02_cr_strong_attribution.png"), g2, width = 7.6, height = 6.0, dpi = 150, device = ragg::agg_png, bg = "white")
 ggsave(file.path(OUT, "03_transition_by_cause.png"), g3, width = 8.6, height = 4.6, dpi = 150, device = ragg::agg_png, bg = "white")
 
@@ -192,7 +200,10 @@ md <- c("# 등급 v3.5 재채점 결과 — 사전등록 §4 · 부록 1 §4 표
                 nrow(J), nrow(RULE), n_snap, n_new, J[fa_stale %in% TRUE, .N], J[fa_stale %in% TRUE & scope %in% TRUE, .N], nrow(T4)),
         "", "## T4 실데이터 음성 대조 — 같은 입력에서 v3.4 = v3.5(기준 = 같은 데이터 시점 v3.4 · 부록 1 §2)",
         sprintf("- %d/%d 동일(강함인데 이미 보통 %d · 무작위 %d)", t4_same, nrow(T4), length(NEG), length(RND)),
-        sprintf("- 범위 밖 기록의 규칙 효과(v3.4 ≠ v3.5): %d건%s", nrow(rule_outside), if (nrow(rule_outside)) paste0(" — ", paste(rule_outside$dir, collapse = ", ")) else ""),
+        sprintf("- 범위 밖 기록의 규칙 효과(v3.4 ≠ v3.5 · 교체 전 저장분 v3.3 · v3.4): %d건%s", nrow(rule_outside), if (nrow(rule_outside)) paste0(" — ", paste(rule_outside$dir, collapse = ", ")) else ""),
+        sprintf("- 교체 뒤 %s 로 측정된 기록 %d건(요인 낡음으로 대상에 듦 · 저장 등급이 이미 %s — 재채점 규칙 효과 없음 · 저장 = %s 지금 %d/%d): v3.4 계약이었다면 달랐을 기록 %d건%s",
+                RV_NOW, n_post, RV_NOW, RV_NOW, n_post_same, n_post,
+                nrow(post_diff), if (nrow(post_diff)) paste0(" — ", paste(post_diff$dir, collapse = ", ")) else ""),
         sprintf("- 규칙 효과 오름: %d건(기대 0 — 조건만 추가)", nrow(rule_up)),
         "", sprintf("## T1′ 위기 방어 가점 범위 %d건 — 저장 → v3.4(지금) → v3.5(지금)", nrow(RULE)), "",
         sprintf("### 등록 시점 %d", n_snap), "", hdr, row1(RULE[scope_snapshot %in% TRUE]),
@@ -201,10 +212,14 @@ md <- c("# 등급 v3.5 재채점 결과 — 사전등록 §4 · 부록 1 §4 표
         "- † = 중단된 측정(판정에 쓰지 않음 · 99_Archive 의 aborted_measure 기록 · 예: P1R04 11-13 10:04~10:31)",
         sprintf("- 규칙 효과(v3.4 → v3.5): %s", paste(RULE[, .N, by = rule_move][, sprintf("%s %d", rule_move, N)], collapse = " · ")),
         sprintf("- 데이터 갱신 효과(저장 → v3.4): %s", paste(RULE[, .N, by = data_move][, sprintf("%s %d", data_move, N)], collapse = " · ")),
-        "", sprintf("## T5 팩터 수익률 갱신 재채점(규칙 무관) %d건 — 저장 → v3.4(지금)", nrow(FA)), "", tab(FA, "stored_grade", "g4"),
-        "", sprintf("- v3.4(지금) = v3.5(지금): %d/%d", FA[!is.na(g4) & !is.na(g5) & g4 == g5, .N], FA[!is.na(g4) & !is.na(g5), .N]),
+        "", sprintf("## T5 팩터 수익률 갱신 재채점(규칙 무관) %d건 — 저장 → 같은 규칙 버전(지금)", nrow(FA)), "",
+        sprintf("- 교체 전 저장분 %d건 = v3.4 계약(지금) · 교체 뒤 %s 측정분 %d건 = %s 계약(지금)", FA[post_release != TRUE, .N], RV_NOW, FA[post_release == TRUE, .N], RV_NOW), "",
+        tab(FA, "stored_grade", "g_data"),
+        "", sprintf("- 교체 전 저장분 v3.4(지금) = v3.5(지금): %d/%d", FA[post_release != TRUE & !is.na(g4) & !is.na(g5) & g4 == g5, .N], FA[post_release != TRUE & !is.na(g4) & !is.na(g5), .N]),
         "", "## T2 전체 권위 기록 분포", "", sprintf("| 등급 | 재채점 전 | 재채점 뒤%s | 변화 |", if (POST) "" else "(예측)"), "|---|---|---|---|",
         dist[, sprintf("| %s | %s | %s | %+d |", g, format(before, big.mark = ","), format(after, big.mark = ","), delta)],
+        if (POST) c("", sprintf("- 같은 기록 집합(쓰기 직전 전수 %s건)끼리 비교 · 그 뒤 새로 측정된 기록 %d건은 빼고 셌다(현행 판으로 측정 · 재채점 대상 아님)",
+                                format(sum(dist$before), big.mark = ","), n_new_post)) else character(0),
         if (POST) c("", sprintf("- 쓰기 전후 등급이 바뀐 기록 %d건 — 원인별:", nrow(chg)),
                     if (nrow(chg)) chg[, .N, by = .(cause = fifelse(is.na(causes), "(기록 없음)", causes), move)][, sprintf("  - %s · %s %d", cause, move, N)] else "  - (없음)",
                     sprintf("- 새 수혜 표식(등급이 측정 때보다 오른 기록): %d건%s", nrow(ben_new),
@@ -223,7 +238,10 @@ sm <- list(run = RUN, census_pre = CPRE, census_post = if (POST) CPOST else NA, 
            n_rule_snap = n_snap, n_rule_new = n_new, n_fa = nrow(FA), n_fa_overlap = J[fa_stale %in% TRUE & scope %in% TRUE, .N], n_t4 = nrow(T4), t4_same = t4_same,
            rule_moves = as.list(setNames(RULE[, .N, by = rule_move]$N, RULE[, .N, by = rule_move]$rule_move)),
            rule_down_by = RULE[rule_move == "내림", .N, by = .(from = g4, to = g5)], rule_outside = nrow(rule_outside), rule_up = nrow(rule_up),
-           fa_moves = FA[!is.na(g4) & stored_grade != g4, .N, by = .(from = stored_grade, to = g4)], fa_rule_same = FA[!is.na(g4) & !is.na(g5) & g4 == g5, .N],
+           fa_moves = FA[!is.na(g_data) & stored_grade != g_data, .N, by = .(from = stored_grade, to = g_data)],
+           fa_rule_same = FA[post_release != TRUE & !is.na(g4) & !is.na(g5) & g4 == g5, .N], fa_rule_n = FA[post_release != TRUE & !is.na(g4) & !is.na(g5), .N],
+           n_post_release = n_post, post_release_rule_diff = nrow(post_diff), n_new_post = n_new_post,
+           post_release_same = n_post_same, rules_version_now = RV_NOW,
            dist = dist[, .(g = as.character(g), before, after, delta)], changed = if (POST) nrow(chg) else NA, benefit_new = if (POST) nrow(ben_new) else NA,
            a_down = nrow(a_down), a_down_book = nrow(a_down_book), judge_withdraw = nrow(judge_off), errors = nrow(errs), vintage_ok = vint_ok,
            superseded_in_rule = RULE[superseded == TRUE, .N], aborted_in_rule = RULE[aborted == TRUE, .N],
@@ -233,7 +251,7 @@ sm <- list(run = RUN, census_pre = CPRE, census_post = if (POST) CPOST else NA, 
            rule_sb_range = if (RULE[is.finite(share_sb), .N]) round(range(RULE[is.finite(share_sb)]$share_sb), 2) else NULL,
            rule_beta_range = if (RULE[is.finite(beta_leg), .N]) round(range(RULE[is.finite(beta_leg)]$beta_leg), 2) else NULL,
            rule_basis5 = as.list(table(RULE$basis5, useNA = "ifany")),
-           fa_total_moved = FA[!is.na(g4) & stored_grade != g4, .N],
+           fa_total_moved = FA[!is.na(g_data) & stored_grade != g_data, .N],
            n_rec_inc = if ("rec_inc" %in% names(c0)) J[dir %in% c0[rec_inc %in% TRUE]$dir, .N] else 0L)
 writeLines(toJSON(sm, auto_unbox = TRUE, pretty = TRUE, digits = NA, na = "null"), file.path(OD, "data", sprintf("report_summary_%s.json", RUN)), useBytes = TRUE)
 cat(md, sep = "\n")

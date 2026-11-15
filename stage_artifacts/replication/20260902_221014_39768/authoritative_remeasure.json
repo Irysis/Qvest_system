@@ -36,7 +36,7 @@
   "structural_drawdown": false,
   "selection_type": "chain",
   "dsr_gate_applied": false,
-  "reasons": "v3: S 0.000 · B 경계 0.402 · 띠 F · CR strong(시험 창 normal) · 노치 +0 · A 아님 사유 floor:port_t,floor:cagr,floor:sharpe,oos:test_window_calmar_vs_bench | v921 F: non-positive alpha (PORT_t<=0 또는 net_IR<=0)",
+  "reasons": "v3: S 0.000 · B 경계 0.402 · 띠 F · CR strong(시험 창 normal) · 노치 +0 · A 아님 사유 floor:port_t,floor:cagr,floor:sharpe,oos:test_window_calmar_vs_bench,cr:strong_beta_not_separated | v921 F: non-positive alpha (PORT_t<=0 또는 net_IR<=0)",
   "replication": {
     "source_paper": {
       "title": "Ang, Hodrick, Xing & Zhang (2006), The Cross-Section of Volatility and Expected Returns, JF 61(1)",
@@ -133,14 +133,25 @@
     "grade": "F",
     "S": 0,
     "S_B": 0.4016,
-    "rules_version": "v3.3",
+    "rules_version": "v3.5",
     "crisis_def": "lt_first_passage",
-    "cr_notch_basis": "strong",
+    "cr_notch_basis": "normal",
+    "notch_basis": "beta_not_separated",
+    "selection_control": "size_beta",
     "mc8": {
       "status": "ok",
       "label": "selection_defense",
       "share_beats_size_exposure": 0.7,
-      "median_placebo_p": 0.005
+      "median_placebo_p": 0.005,
+      "exposure_varies": true,
+      "share_beats_size_exposure_path": 0.9,
+      "size_beta_status": "ok",
+      "label_size_beta": "size_beta_unseparated",
+      "share_beats_size_beta": 0.3,
+      "share_beats_size_beta_path": 0.2,
+      "median_placebo_p_size_beta": 0.3856,
+      "beta_leg": 0.4042,
+      "rho_median": 0.6102
     },
     "band": "F",
     "notch": 0,
@@ -149,7 +160,8 @@
       "floor:port_t",
       "floor:cagr",
       "floor:sharpe",
-      "oos:test_window_calmar_vs_bench"
+      "oos:test_window_calmar_vs_bench",
+      "cr:strong_beta_not_separated"
     ],
     "floors": {
       "port_t": false,
@@ -211,7 +223,7 @@
       "why_not": [
         "epoch_mismatch"
       ],
-      "t_min": 1.317,
+      "t_min": 1.3616,
       "t_min_model": "FF5",
       "test_all_pos": true,
       "n_months": 234,
@@ -219,49 +231,60 @@
       "tau_d": "2022-12-31",
       "models": {
         "FF3": {
-          "t": 1.412,
-          "alpha_ann": 0.0354,
+          "t": 1.4172,
+          "alpha_ann": 0.0359,
           "n": 234,
-          "test_alpha_ann": 0.0159,
+          "test_alpha_ann": 0.0192,
           "test_n": 43
         },
         "Carhart4": {
-          "t": 1.5246,
-          "alpha_ann": 0.039,
+          "t": 1.5305,
+          "alpha_ann": 0.0397,
           "n": 234,
-          "test_alpha_ann": 0.0189,
+          "test_alpha_ann": 0.0237,
           "test_n": 43
         },
         "FF5": {
-          "t": 1.317,
-          "alpha_ann": 0.0335,
+          "t": 1.3616,
+          "alpha_ann": 0.0344,
           "n": 234,
-          "test_alpha_ann": 0.0246,
+          "test_alpha_ann": 0.0271,
           "test_n": 43
         },
         "FF6": {
-          "t": 1.4312,
-          "alpha_ann": 0.0371,
+          "t": 1.4737,
+          "alpha_ann": 0.0382,
           "n": 234,
-          "test_alpha_ann": 0.0272,
+          "test_alpha_ann": 0.0304,
           "test_n": 43
         }
       },
-      "factor_md5": "6a2970256f7d6bb216612978353e9229",
-      "factor_vintage": "kr_factor_returns_vintages/6a2970256f7d.parquet",
+      "factor_md5": "3dd806e4f9ffece8e304d6ffef392937",
+      "factor_vintage": "kr_factor_returns_vintages/3dd806e4f9ff.parquet",
       "factor_epoch": "all_hyg_px1000_2000_v1",
       "record_epoch": null,
       "error": null
     }
   },
   "grade_v3_backfill": {
-    "at": "2026-11-10T04:35:43+0900",
+    "at": "2026-11-15T09:47:58+0900",
     "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
-    "decision": "decision_register GRADE-V33-FACTOR-ALPHA-NOTCH-20261109 · GRADE-V33-OOS-TEST-WINDOW-CALMAR-20261109(규칙 판 재채점 v3.2 → v3.3)",
-    "rules_version": "v3.3",
-    "prior_rules_version": "v3.2",
+    "decision": "decision_register GRADE-CR-NOTCH-BETA-SELECTION-20261113(규칙 판 재채점 v3.3 → v3.5)",
+    "rules_version": "v3.5",
+    "prior_rules_version": "v3.3",
+    "trigger": "rules_version",
+    "causes": [
+      "rules_version"
+    ],
+    "prior_factor_md5": null,
+    "inputs": {
+      "factor_md5": "3dd806e4f9ffece8e304d6ffef392937",
+      "rawdata": "426228082 2026-11-15T00:14:45+0900",
+      "data_triggers": true,
+      "stored_returns": "측정 시점 판(03_period_returns.csv · 재채점은 수익을 다시 재지 않는다)"
+    },
     "prior_essence_grade": "F",
-    "prior_md5": "9b5032e9810d37f766183c7602ae71cb",
+    "prior_md5": "4b42207a014b065ed0d6cbb6d928d035",
     "history": [
       {
         "rules_version": "v3.0",
@@ -274,7 +297,22 @@
       {
         "rules_version": "v3.2",
         "essence_grade": "F"
+      },
+      {
+        "rules_version": "v3.3",
+        "essence_grade": "F"
       }
+    ]
+  },
+  "rule_change_benefit": {
+    "benefit": false,
+    "measured_grade": "F",
+    "rules_version": "v3.5",
+    "prior_rules_version": "v3.3",
+    "prior_essence_grade": "F",
+    "at": "2026-11-15T09:47:58+0900",
+    "causes": [
+      "rules_version"
     ]
   }
 }

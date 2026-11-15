@@ -93,7 +93,7 @@
     },
     "reason": "하락월 110개: 초과 +2.76%/월 (t 7.76 · 적중 82%) · 벤치-10% 이하 10개: 초과 +7.84%/월 · 상승월 초과 -1.22%/월"
   },
-  "reasons": "v3: S 0.665 · B 경계 0.436 · 띠 B · CR strong(시험 창 normal) · 노치 +0 · A 아님 사유 floor:port_t | v921 C: Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
+  "reasons": "v3: S 0.665 · B 경계 0.436 · 띠 B · CR strong(시험 창 normal) · 노치 +0 · A 아님 사유 floor:port_t,cr:strong_beta_not_separated | v921 C: Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
   "replication": {
     "source_paper": {
       "url": "https://arxiv.org/abs/2002.06975",
@@ -128,20 +128,32 @@
     "grade": "B",
     "S": 0.6649,
     "S_B": 0.4363,
-    "rules_version": "v3.3",
+    "rules_version": "v3.5",
     "crisis_def": "lt_first_passage",
-    "cr_notch_basis": "strong",
+    "cr_notch_basis": "normal",
+    "notch_basis": "beta_not_separated",
+    "selection_control": "size_beta",
     "mc8": {
       "status": "ok",
       "label": "selection_defense",
       "share_beats_size_exposure": 0.7,
-      "median_placebo_p": 0.0124
+      "median_placebo_p": 0.0124,
+      "exposure_varies": true,
+      "share_beats_size_exposure_path": 0.8,
+      "size_beta_status": "ok",
+      "label_size_beta": "size_beta_unseparated",
+      "share_beats_size_beta": 0.2,
+      "share_beats_size_beta_path": 0.1,
+      "median_placebo_p_size_beta": 0.1095,
+      "beta_leg": 0.5425,
+      "rho_median": 0.7243
     },
     "band": "B",
     "notch": 0,
     "notch_a": false,
     "blocked_by": [
-      "floor:port_t"
+      "floor:port_t",
+      "cr:strong_beta_not_separated"
     ],
     "floors": {
       "port_t": false,
@@ -203,7 +215,7 @@
       "why_not": [
         "epoch_mismatch"
       ],
-      "t_min": 4.3451,
+      "t_min": 4.2846,
       "t_min_model": "FF6",
       "test_all_pos": true,
       "n_months": 258,
@@ -211,49 +223,60 @@
       "tau_d": "2022-12-31",
       "models": {
         "FF3": {
-          "t": 4.5814,
-          "alpha_ann": 0.1036,
+          "t": 4.5331,
+          "alpha_ann": 0.1035,
           "n": 258,
-          "test_alpha_ann": 0.0714,
+          "test_alpha_ann": 0.0732,
           "test_n": 43
         },
         "Carhart4": {
-          "t": 4.3697,
-          "alpha_ann": 0.0966,
+          "t": 4.3076,
+          "alpha_ann": 0.0964,
           "n": 258,
-          "test_alpha_ann": 0.0745,
+          "test_alpha_ann": 0.0787,
           "test_n": 43
         },
         "FF5": {
-          "t": 4.5501,
-          "alpha_ann": 0.1012,
+          "t": 4.5253,
+          "alpha_ann": 0.1018,
           "n": 258,
-          "test_alpha_ann": 0.0822,
+          "test_alpha_ann": 0.0936,
           "test_n": 43
         },
         "FF6": {
-          "t": 4.3451,
-          "alpha_ann": 0.0942,
+          "t": 4.2846,
+          "alpha_ann": 0.0947,
           "n": 258,
-          "test_alpha_ann": 0.0848,
+          "test_alpha_ann": 0.0995,
           "test_n": 43
         }
       },
-      "factor_md5": "6a2970256f7d6bb216612978353e9229",
-      "factor_vintage": "kr_factor_returns_vintages/6a2970256f7d.parquet",
+      "factor_md5": "3dd806e4f9ffece8e304d6ffef392937",
+      "factor_vintage": "kr_factor_returns_vintages/3dd806e4f9ff.parquet",
       "factor_epoch": "all_hyg_px1000_2000_v1",
       "record_epoch": null,
       "error": null
     }
   },
   "grade_v3_backfill": {
-    "at": "2026-11-10T04:46:23+0900",
+    "at": "2026-11-15T09:48:31+0900",
     "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
-    "decision": "decision_register GRADE-V33-FACTOR-ALPHA-NOTCH-20261109 · GRADE-V33-OOS-TEST-WINDOW-CALMAR-20261109(규칙 판 재채점 v3.2 → v3.3)",
-    "rules_version": "v3.3",
-    "prior_rules_version": "v3.2",
+    "decision": "decision_register GRADE-CR-NOTCH-BETA-SELECTION-20261113(규칙 판 재채점 v3.3 → v3.5)",
+    "rules_version": "v3.5",
+    "prior_rules_version": "v3.3",
+    "trigger": "rules_version",
+    "causes": [
+      "rules_version"
+    ],
+    "prior_factor_md5": null,
+    "inputs": {
+      "factor_md5": "3dd806e4f9ffece8e304d6ffef392937",
+      "rawdata": "426228082 2026-11-15T00:14:45+0900",
+      "data_triggers": true,
+      "stored_returns": "측정 시점 판(03_period_returns.csv · 재채점은 수익을 다시 재지 않는다)"
+    },
     "prior_essence_grade": "B",
-    "prior_md5": "8f92618b5af8ae9c94ea20d982ff7499",
+    "prior_md5": "976d3b209fe800bc90342dae315cf34f",
     "history": [
       {
         "rules_version": "v3.0",
@@ -266,7 +289,22 @@
       {
         "rules_version": "v3.2",
         "essence_grade": "B"
+      },
+      {
+        "rules_version": "v3.3",
+        "essence_grade": "B"
       }
+    ]
+  },
+  "rule_change_benefit": {
+    "benefit": false,
+    "measured_grade": "B",
+    "rules_version": "v3.5",
+    "prior_rules_version": "v3.3",
+    "prior_essence_grade": "B",
+    "at": "2026-11-15T09:48:31+0900",
+    "causes": [
+      "rules_version"
     ]
   }
 }
