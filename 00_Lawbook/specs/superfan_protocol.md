@@ -239,6 +239,8 @@ Superfan 도전 ─→ Q 응답 ─┬─ 수용(바꾼 것 기록) ────
 | `authoritative_remeasure.json`(전 기간 필드 전부) | **열지 않는다**(§7 그대로) | 연다 | 시험 창 포함 |
 | 재채점 결과(`programs/selection_regrade.R` 출력 · 등급 판 재채점 표) | **열지 않는다** | 연다 | 전 기간 등급 |
 | 상설 판 사람 쪽 판정 `results/standing/<code>.verdict.json` | **열지 않는다**(§11-1 그대로) | 연다 | 시험 창 열 |
+| 사슬 폴더 `results/step_report_full/`(걸음 보고 OOS 포함 차트 · 표식 `NO_VISIBLE_REVIEW.txt` · 11-15 텔레그램 보고 전담 에이전트 `telegram-reporter`) | **열지 않는다** | 연다 | 전 기간 누적 · 낙폭 · 지표 IS \| OOS = 시험 창 값(사람 쪽 보고) |
+| 텔레그램 본문 보관(`QVEST_TG_ARCHIVE_DIR` · 걸음 보고 · 상설 판 통과 push · Judge 1통 · telegram-reporter 발송분) | **열지 않는다** | 연다 | OOS 줄 · 권위 등급 줄이 실린다(사람 쪽) |
 | 기저 풀(`rc_p4_base_pool` · `round.sh - p4-pool`)의 `grade` 열 | 근거로 쓰지 않는다(자격 · 제외 사유 코드 · 키 · 경로는 읽어도 된다) | 연다 | `grade` = 권위 등급(사람 쪽 · 전 기간) |
 | 걸음 원장 `chain_steps.jsonl` · 사슬 판 `chain_spec.json` | 읽어도 된다 | 읽어도 된다 | 보는 창 지표만 싣는다(쓰기 때 τ_D 누출 검사 — `p4.R`) |
 | 설계 입력(`rc_p4_design_input` · `p4-design`) · 격차 표(`rc_p4_gap`) | 읽어도 된다 | 읽어도 된다 | 정보 경계에서 먼저 자른 보는 창 값 |
