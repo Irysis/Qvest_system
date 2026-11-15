@@ -248,7 +248,13 @@ chk("I4 집행 규약 어휘 밖 → 오류", inherits(tryCatch(.mc_exec_price(l
 
 cat("\n=== K. 보고 소비자(program_report.R) ===\n")
 chk("K1 크기 방어 문장", grepl("크기 방어", prep_card_digest(rB$card)$controls))
-chk("K2 선택 방어 문장", grepl("선택 방어", prep_card_digest(rC$card)$controls))
+## v3.5(11-14 · GRADE-CR-NOTCH-BETA-SELECTION-20261113): 보고 판정어 = β 라벨(⑥ label_size_beta). 세계 C 는 고른 종목의 β 가 0 에 가까워
+##   ⑤ 선택 방어이면서 β 를 맞춘 대조를 못 넘는다 — 보고는 '시장 β 로 설명되는 방어(선택 방어 아님)'(구 단정 '선택 방어' = v3.5 전 의미 ·
+##   β 대조까지 이긴 경우의 '선택 방어' 문장 = test_program_report.R J2)
+chk("K2 선택 방어 문장 — v3.5 β 라벨: 세계 C(⑤ 선택 방어 · β 대조 미달) → '시장 β 로 설명되는 방어(선택 방어 아님)'",
+    identical(att(rC)$label, "selection_defense") && identical(att(rC)$label_size_beta, "size_beta_unseparated") &&
+      grepl("시장 β 로 설명되는 방어(선택 방어 아님)", prep_card_digest(rC$card)$controls, fixed = TRUE),
+    sprintf("(label_size_beta=%s)", att(rC)$label_size_beta %||% "NA"))
 chk("K3 노출 방어 문장", grepl("노출 방어", prep_card_digest(rD1$card)$controls))
 chk("K3b 방어 없음 문장 · 시장 대비 비율이 실린다", grepl("방어 없음", prep_card_digest(rN1$card)$controls) &&
       grepl("시장보다 덜 빠진 위기 0%", prep_card_digest(rN1$card)$controls, fixed = TRUE))

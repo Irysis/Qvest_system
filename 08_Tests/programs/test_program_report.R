@@ -74,7 +74,7 @@ r4 <- prep_send(program = "충실구현", target = long_title, status = list(sta
 m4 <- r4$msg %||% ""; png4 <- file.path(tdir, "crisis_drawdown.png")
 chk("차트 모드 — 위기별 낙폭 글줄 섹션이 없다", !grepl("위기별 낙폭 — 시장 → 전략", m4, fixed = TRUE))
 chk("차트 모드 — 위기 차트를 산출물 폴더에 그렸다(빈 그림 아님)", file.exists(png4) && file.info(png4)$size > 20000, if (file.exists(png4)) file.info(png4)$size else "없음")
-chk("차트 모드 — 대조 1줄은 '위기 방어 귀속'으로 남는다", grepl("위기 방어 귀속", m4, fixed = TRUE) && grepl("짝 대조", m4, fixed = TRUE))
+chk("차트 모드 — 대조 1줄은 '위기 방어 귀속'으로 남는다", grepl("위기 방어 귀속", m4, fixed = TRUE) && grepl("무작위 대조 포트폴리오", m4, fixed = TRUE))   # 11-13 용어(짝 대조 → 무작위 대조 포트폴리오)
 chk("긴 논문명이 제목 · 대상 줄에 잘리지 않고 들어간다", grepl(long_title, m4, fixed = TRUE) && !grepl("Granger Causa…", m4, fixed = TRUE))
 .real_chart <- prep_crisis_chart
 prep_crisis_chart <- function(...) stop("주입 실패")                                   # 차트가 실패하면 글줄로 돌아간다(1통 보존)
@@ -94,8 +94,8 @@ chk("I3 판정 헤드라인 = '하락노출 중앙 …(최악 …)'", grepl("하
 cc <- card; pk <- as.data.table(card$crises)$peak_date
 cc$controls <- list(size_exposure_matched = list(per_crisis = data.frame(peak_date = as.character(pk), control_dd_capture = rep(0.62, length(pk)))))
 Dc <- prep_card_digest(cc, "overall")
-chk("I4 짝 대조가 있으면 값만 괄호로 · 머리에 '(괄호 = 크기·노출 짝 대조)' 1번 ★양방향(없으면 괄호 · 머리 꼬리 없음)",
-    all(grepl(" (0.62)", Dc$lines, fixed = TRUE)) && grepl("(괄호 = 크기·노출 짝 대조)", Dc$lines_heading, fixed = TRUE) &&
+chk("I4 대조가 있으면 값만 괄호로 · 머리에 '(괄호 = 무작위 대조 포트폴리오(시가총액·노출 일치))' 1번 ★양방향(없으면 괄호 · 머리 꼬리 없음)",
+    all(grepl(" (0.62)", Dc$lines, fixed = TRUE)) && grepl("(괄호 = 무작위 대조 포트폴리오(시가총액·노출 일치))", Dc$lines_heading, fixed = TRUE) &&
       !any(grepl("(0.62)", Dn$lines, fixed = TRUE)) && !grepl("괄호", Dn$lines_heading, fixed = TRUE), paste(head(Dc$lines, 1)))
 
 cat("\n=== F. 핵심 수치 = 산출물 권위 기록(essence)이 있으면 그 값 — 카드 월간 값과 등급 값 불일치(10-17 1801.01777) ===\n")
@@ -126,6 +126,49 @@ chk("G2 등록부가 없으면 전부 빈칸(날짜만)", all(!nzchar(.prep_even
 gpng <- file.path(groot, "g.png")
 chk("G3 사건명 차트가 그려진다(빈 그림 아님)", !is.null(tryCatch(prep_crisis_chart(card, gpng, root = groot), error = function(e) NULL)) &&
       file.exists(gpng) && file.info(gpng)$size > 20000)
+
+cat("\n=== J. 선택 방어 판정어 = β 라벨(등급 v3.5 · GRADE-CR-NOTCH-BETA-SELECTION-20261113 · 헌장 빈칸 14) ===\n")
+## 합성 귀속(수치는 검사용 — 실측 아님). 결함(11-15): ⑤ 라벨이 선택 방어인데 β 를 맞춘 대조를 과반에서 못 이긴 카드가 '선택 방어'로 찍혔다
+.att <- function(label, lsb = NULL, sb = NULL) {
+  w <- list(label = label, n_crisis = 6L, share_beats_size_exposure = 0.67, share_beats_exposure = 0.83, share_beats_bench = 1)
+  if (!is.null(lsb)) w$label_size_beta <- lsb
+  if (!is.null(sb)) w$share_beats_size_beta <- sb
+  list(status = "ok", exposure_profile = list(mean = 0.97),
+       attribution = list(placebo_alpha = 0.05, overall = w, visible = w, test = w))
+}
+verdict_of <- function(line) sub(" — .*$", "", sub("^[^:]*: ", "", line))      # '무작위 대조 포트폴리오(…): <판정어> — …' 의 판정어
+L1 <- .prep_controls_line(.att("selection_defense", "size_beta_unseparated", 0.33), "overall")
+chk("J1 ⑤ 선택 방어 + β 대조 미달 → 판정어 '시장 β 로 설명되는 방어(선택 방어 아님)' · β 대조 승률 줄이 붙는다",
+    identical(verdict_of(L1), "시장 β 로 설명되는 방어(선택 방어 아님)") && !startsWith(verdict_of(L1), "선택 방어") &&
+      grepl("무작위 대조 포트폴리오(시가총액 · β 일치)의 95%보다 덜 빠진 위기 33%", L1, fixed = TRUE), L1)
+L2 <- .prep_controls_line(.att("selection_defense", "selection_defense", 0.67), "overall")
+chk("J2 β 대조까지 이김 → '선택 방어'(미확인 꼬리표 없음) ★J1 과 양방향", identical(verdict_of(L2), "선택 방어") &&
+      grepl("(시가총액 · β 일치)의 95%보다 덜 빠진 위기 67%", L2, fixed = TRUE), L2)
+L3 <- .prep_controls_line(.att("selection_defense", "size_beta_unmeasured", NA_real_), "overall")
+chk("J3 β 대조를 못 잼 → '선택 방어 판정 불가(…)' · 승률 줄 없음(— 를 찍지 않는다)",
+    identical(verdict_of(L3), "선택 방어 판정 불가(시장 β 를 맞춘 대조를 못 잼)") && !grepl("β 일치)의", L3, fixed = TRUE), L3)
+L4 <- .prep_controls_line(.att("selection_defense"), "overall")
+chk("J4 β 필드 없는 구 카드의 선택 방어 → '선택 방어(시장 β 미확인)'(fail-closed)",
+    identical(verdict_of(L4), "선택 방어(시장 β 미확인)") && !grepl("β 일치)의", L4, fixed = TRUE), L4)
+L5 <- .prep_controls_line(.att("size_defense", "size_defense", 0.17), "overall")
+chk("J5 선택이 아닌 라벨은 종전 판정어 그대로(크기 방어) · β 대조 승률 줄은 붙는다", identical(verdict_of(L5), "크기 방어") &&
+      grepl("(시가총액 · β 일치)의 95%보다 덜 빠진 위기 17%", L5, fixed = TRUE), L5)
+L6 <- .prep_controls_line(.att("selection_defense", "weird_label", 0.9), "overall")
+chk("J6 어휘 밖 β 라벨 → '판정 불가'(선택 방어로 새지 않는다)", identical(verdict_of(L6), "판정 불가"), L6)
+L7 <- .prep_controls_line(list(status = "ok", size_matched = list(label = "selection_defense", share_beats = 0.6)), "overall")
+chk("J7 구 단일 대조(시가총액만)의 선택 방어 → '선택 방어(노출 · 시장 β 미확인)'", grepl("선택 방어(노출 · 시장 β 미확인)", L7, fixed = TRUE), L7)
+## 돌연변이 — 판정어가 β 라벨을 무시하던 구 동작(⑤ 라벨 그대로)을 되살리면 J1 조건이 깨져야 한다(검사 판별력)
+.real_dw <- .prep_defense_word
+.prep_defense_word <- function(aw) .prep_or(unname(PREP_DEFENSE_WORD[aw[["label"]]]), "판정 불가")
+M1 <- .prep_controls_line(.att("selection_defense", "size_beta_unseparated", 0.33), "overall")
+.prep_defense_word <- .real_dw
+chk("J8 돌연변이(β 라벨 무시) → 판정어가 '선택 방어'로 돌아가 J1 조건이 깨진다", identical(verdict_of(M1), "선택 방어"), M1)
+## 끝까지 — 실제 카드에 합성 귀속을 붙여 1통 조립(dry-run): 보고 본문에 β 판정어가 실린다
+cj <- card; cj$controls <- .att("selection_defense", "size_beta_unseparated", 0.33)
+mj <- prep_send(program = "수익 엔진", target = "검사용 전략", status = list(stage = "판정", position = "검사", previous = "없음"),
+                card = cj, artifact = tdir, push = FALSE)$msg %||% ""
+chk("J9 1통 본문에 '시장 β 로 설명되는 방어(선택 방어 아님)'가 실리고 '(시가총액·노출 일치): 선택 방어'는 없다",
+    grepl("시장 β 로 설명되는 방어(선택 방어 아님)", mj, fixed = TRUE) && !grepl("노출 일치): 선택 방어", mj, fixed = TRUE), substr(mj, 1, 300))
 
 cat(sprintf("\n== program_report: PASS %d · FAIL %d ==\n", PASS, FAIL))
 cat(sprintf('{"test":"program_report","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))   # 배터리 요약 계약(run_all_hooks.sh _last_summary_json)

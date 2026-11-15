@@ -33,11 +33,27 @@ PREP_VERDICT_WORD <- c(strong = "강함", normal = "보통", weak = "약함", in
 prep_verdict_word <- function(v) .prep_or(unname(PREP_VERDICT_WORD[v]), "판정 불가")
 
 ## 무작위 대조 포트폴리오(시가총액 · 노출 일치) 귀속(MC8 · contracts/matched_controls.R::mc_attribution) — 라벨 · 상태를 사람 말로(내부 코드 비노출)
+##   v3.5(11-14 발효 · GRADE-CR-NOTCH-BETA-SELECTION-20261113 · 헌장 빈칸 14): 선택 방어 판정어는 β 까지 맞춘 라벨(label_size_beta ·
+##   matched_controls.R ⑥)이 정본이다. ⑤ 라벨(label)이 선택 방어여도 무작위 대조 포트폴리오(시가총액 · β 일치)를 위기 과반에서 못 이기면
+##   '시장 β 로 설명되는 방어(선택 방어 아님)'(등급 노치 근거 beta_not_separated) · 못 쟀으면 '선택 방어 판정 불가'(beta_unresolved).
+##   β 필드가 없는 구 카드(v3.5 전 대조)의 선택 방어는 β 를 확인하지 않은 판정이라 '선택 방어(시장 β 미확인)'로 적는다(fail-closed — 등급 쪽과 같은 방향).
+##   문구 = qvest-telegram SKILL §0.2(무작위 대조 포트폴리오(시가총액 · β 일치)) · 'β 미분리'는 풀어 쓴다(오케스트레이터 11-15).
 PREP_DEFENSE_WORD <- c(selection_defense = "선택 방어", size_defense = "크기 방어",
-                       exposure_defense = "노출 방어", no_defense = "방어 없음", insufficient = "판정 불가(위기 2번 미만)")
+                       exposure_defense = "노출 방어", no_defense = "방어 없음", insufficient = "판정 불가(위기 2번 미만)",
+                       size_beta_unseparated = "시장 β 로 설명되는 방어(선택 방어 아님)",
+                       size_beta_unmeasured = "선택 방어 판정 불가(시장 β 를 맞춘 대조를 못 잼)")
+PREP_SELECTION_UNCHECKED_WORD <- c(beta = "선택 방어(시장 β 미확인)", exposure_beta = "선택 방어(노출 · 시장 β 미확인)")
 PREP_CONTROL_STATUS_WORD <- c(not_applicable_long_short = "롱숏 전략이라 대조 정의 밖", no_crises = "위기 구간 없음",
                               no_holdings = "보유 기록 없음", no_windows = "보유창에 수익일 없음",
                               no_basket = "크기 바스켓을 못 만듦")
+
+# 귀속 판정어 — v3.5 카드는 β 라벨(label_size_beta) · 필드 없는 구 카드의 선택 방어 = β 미확인 · 어휘 밖 라벨 = 판정 불가(fail-closed)
+.prep_defense_word <- function(aw) {
+  lsb <- aw[["label_size_beta"]]
+  has_b <- is.character(lsb) && length(lsb) == 1L && !is.na(lsb) && nzchar(lsb)
+  if (!has_b && identical(aw[["label"]], "selection_defense")) return(unname(PREP_SELECTION_UNCHECKED_WORD["beta"]))
+  .prep_or(unname(PREP_DEFENSE_WORD[if (has_b) lsb else aw[["label"]]]), "판정 불가")
+}
 
 # 위기 줄에 붙일 크기+노출 무작위 대조 포트폴리오의 하락노출 — 값만 괄호로(이름은 섹션 머리 1번 · 도훈 10-17) · 없으면 빈 문자열
 .prep_ctrl_capture <- function(ctrl, peaks) {
@@ -51,18 +67,22 @@ PREP_CONTROL_STATUS_WORD <- c(not_applicable_long_short = "롱숏 전략이라 �
   out
 }
 
-# 대조 한 줄 — 귀속 라벨(attribution)이 정본, 구 단일 대조(size_matched) 라벨은 하위 호환
+# 대조 한 줄 — 귀속 라벨(attribution)이 정본(선택 방어 판정어 = β 라벨 · v3.5), 구 단일 대조(size_matched) 라벨은 하위 호환
 .prep_controls_line <- function(ctrl, window) {
   if (is.null(ctrl) || identical(ctrl[["status"]], "not_provided"))
-    return("무작위 대조 포트폴리오(시가총액·노출 일치) 없음 — 방어가 실력인지 크기·노출 효과인지 아직 모른다")
+    return("무작위 대조 포트폴리오(시가총액·노출 일치) 없음 — 방어가 실력인지 크기·노출·β 효과인지 아직 모른다")
   att <- ctrl[["attribution"]]
   aw <- if (is.list(att)) att[[window]] else NULL
   if (is.list(aw) && !is.null(aw[["label"]])) {
     a <- suppressWarnings(as.numeric(.prep_or(att[["placebo_alpha"]], NA_real_)))
     top <- if (is.finite(a)) prep_fmt_pct(1 - a, 0L, signed = FALSE) else "대부분"
-    return(sprintf("무작위 대조 포트폴리오(시가총액·노출 일치): %s — 같은 크기 분포·평균 노출로 무작위로 고른 포트폴리오의 %s보다 덜 빠진 위기 %s · 같은 평균 노출의 시장보다 덜 빠진 위기 %s · 시장보다 덜 빠진 위기 %s (평균 노출 %s)",
-                   .prep_or(unname(PREP_DEFENSE_WORD[aw[["label"]]]), "판정 불가"), top,
-                   prep_fmt_pct(aw[["share_beats_size_exposure"]], 0L, signed = FALSE),
+    ## v3.5 — β 를 맞춘 대조의 위기 승률(잰 카드만 · 못 쟀으면 판정어가 '판정 불가'를 말한다)
+    sb <- suppressWarnings(as.numeric(.prep_or(aw[["share_beats_size_beta"]], NA_real_)))
+    sbt <- if (length(sb) == 1L && is.finite(sb))
+      sprintf(" · 현금을 섞어 전략 β 까지 낮춘 무작위 대조 포트폴리오(시가총액 · β 일치)의 %s보다 덜 빠진 위기 %s", top, prep_fmt_pct(sb, 0L, signed = FALSE)) else ""
+    return(sprintf("무작위 대조 포트폴리오(시가총액·노출 일치): %s — 같은 크기 분포·평균 노출로 무작위로 고른 포트폴리오의 %s보다 덜 빠진 위기 %s%s · 같은 평균 노출의 시장보다 덜 빠진 위기 %s · 시장보다 덜 빠진 위기 %s (평균 노출 %s)",
+                   .prep_defense_word(aw), top,
+                   prep_fmt_pct(aw[["share_beats_size_exposure"]], 0L, signed = FALSE), sbt,
                    prep_fmt_pct(aw[["share_beats_exposure"]], 0L, signed = FALSE),
                    prep_fmt_pct(aw[["share_beats_bench"]], 0L, signed = FALSE),
                    prep_fmt_ratio(ctrl[["exposure_profile"]][["mean"]])))
@@ -70,7 +90,7 @@ PREP_CONTROL_STATUS_WORD <- c(not_applicable_long_short = "롱숏 전략이라 �
   sm <- ctrl[["size_matched"]]
   if (is.list(sm) && !is.null(sm[["label"]]))
     return(sprintf("무작위 대조 포트폴리오(시가총액 일치): %s(위기 %s에서 대조보다 덜 빠짐)",
-                   if (identical(sm[["label"]], "selection_defense")) "선택 방어" else "크기·노출 방어",
+                   if (identical(sm[["label"]], "selection_defense")) unname(PREP_SELECTION_UNCHECKED_WORD["exposure_beta"]) else "크기·노출 방어",
                    prep_fmt_pct(sm[["share_beats"]], 0L, signed = FALSE)))
   paste0("무작위 대조 포트폴리오(시가총액·노출 일치) 판정 불가 — ", .prep_or(unname(PREP_CONTROL_STATUS_WORD[.prep_or(ctrl[["status"]], "")]), "대조 생성 실패"))
 }
