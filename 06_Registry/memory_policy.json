@@ -53,6 +53,11 @@
       "gb": 12.7,
       "basis": "instantaneous_estimate",
       "source": "11-11 THGNN 레인 측정 커밋 12.7 GB(R 검증 5.2 + 파이썬 학습 7.5 · reference-main-pc-commit-limit) — 작업 집합 실측 없음 · 첫 성공 뒤 역산"
+    },
+    "round_cell": {
+      "gb": 7.5,
+      "basis": "instantaneous",
+      "source": "P1R04 측정 셸(p1r04_measure.sh · round.sh measure — 측정 서버 셀 워커 · FC_* 자체 사양 엔진 · 엔진 묶음마다 칸 1개 순차): 셀 워커 순간 정점 7.45 GB(11-03 메인 PC 실측) · 같은 FC_* 엔진의 P4C02 걸음 셀 워커 약 7.5 GB(11-15). 성공 출발 11-15 02:42 가용 18 GB(p1r04_measure_20261114_215523.log) → 역산 14.8 GB 는 순간 정점보다 커서 쓰지 않음(역산은 순간 정점을 낮출 때만 — peak_definition '첫 성공 뒤 역산값으로 낮춘다' · 1계층 세션 11-15)"
     }
   },
   "conflicts": {
@@ -77,6 +82,11 @@
       "dnn_rolling\\.py"
     ],
     "lane_verify_gpu": [
+      "rf_replication_verify\\.R",
+      "rf_cell_worker\\.R",
+      "dnn_rolling\\.py"
+    ],
+    "round_cell": [
       "rf_replication_verify\\.R",
       "rf_cell_worker\\.R",
       "dnn_rolling\\.py"
