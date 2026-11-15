@@ -13,7 +13,8 @@
 - 같은 행에 소비 규약(재무 원천 parquet 을 직접 읽는 엔진 · 빌더 = 행의 Factor_Date ≤ 결정 시점 · 고정 시차는 pmax 로 늦추는 쪽만) — f111ff5ad · 이어서 행을 현행 규칙으로 시작하게 재배열(법정 마감 규칙 = 생산자 안 대체용 · 판단 Superfan C-20261116-002).
 - 레인 사전검사 `rf_preaudit.py` P14(`06_Registry/rf_preaudit.json::pit_fundamental`) — 재무 원천을 읽는데 Factor_Date 를 쓰지 않는 엔진 = fail(측정 전 재구현 피드백). 정적 검사기 `lookahead_detector.R` 는 P1S03 · P1S04 사전등록 핀이라 다음 코어 판 후보.
 - 결정 카드 `FUNDAMENTAL-ORIGINAL-FILINGS-PIPELINE-20261116`(원 공시본 확보 A 정정 이력 마스크 · B 원문 · C 그대로 — 도훈 대기) — 1a403418c.
-- `.claude/rules/pit.md` C6 경계 기록 — 도훈 11-16 '상장전 코넥스가격이력은 무시해'(`RAWDATA-PRELISTING-C6-20261115` = 그대로 두기 · 상장일 거르기 없음 · C6 위반으로 보지 않는다). 장외(K-OTC · 프리보드) 상장 전 이력은 결정 기록부 해당 항목을 따른다(확인 중).
+- `.claude/rules/pit.md` C6 — 상장 전 이력 사용 금지(도훈 11-16 `RAWDATA-PRELISTING-EXCLUDE-20261116`): 나중 상장 종목의 상장 전 이력(장외 K-OTC · 프리보드 · 코넥스)은 백테스트 · 팩터 · 유니버스에 쓰지 않는다 · 유가증권 · 코스닥 첫 상장 시점 이후 퀀티와이즈 가격부터 · 그 전 기간은 유니버스 제외 · 장외 · 코넥스 데이터 수집 안 함. (같은 날 앞서 Q 가 '상장전 코넥스가격이력은 무시해'를 '그대로 두기 · C6 위반 아님'으로 적은 `RAWDATA-PRELISTING-C6-20261115` 기록과 C6 행 문구는 오독이었다 — 이 줄이 정정한다.)
+- C4 — 원 공시본 확보 결정 = C(도훈 11-16 · 퀀티와이즈 정본 · 원 공시본 따로 수집 안 함 · 승인돼 있던 KRFF-LATE-DART 최초 제출본 수집도 중단). 재무 정정 덮어쓰기 경계는 남는다(그 값에 기대는 전략은 Judge 인증 불가).
 
 **검증**
 - `08_Tests/ops/test_rf_preaudit.py` 104/0(새 C4a~C4d: 양성 · pmax 음성 · 주석 돌연변이 · 비대상 침묵).
