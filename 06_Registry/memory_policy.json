@@ -58,6 +58,11 @@
       "gb": 7.5,
       "basis": "instantaneous",
       "source": "P1R04 측정 셸(p1r04_measure.sh · round.sh measure — 측정 서버 셀 워커 · FC_* 자체 사양 엔진 · 엔진 묶음마다 칸 1개 순차): 셀 워커 순간 정점 7.45 GB(11-03 메인 PC 실측) · 같은 FC_* 엔진의 P4C02 걸음 셀 워커 약 7.5 GB(11-15). 성공 출발 11-15 02:42 가용 18 GB(p1r04_measure_20261114_215523.log) → 역산 14.8 GB 는 순간 정점보다 커서 쓰지 않음(역산은 순간 정점을 낮출 때만 — peak_definition '첫 성공 뒤 역산값으로 낮춘다' · 1계층 세션 11-15)"
+    },
+    "judge_run": {
+      "gb": 8.2,
+      "basis": "instantaneous_estimate",
+      "source": "Judge 재현 검증 = 산출을 같은 러너(run_paper_replication)로 다시 잰다 — 레인 검증기 추정(lane_verify_cpu)과 같은 값 · LLM 세션은 1 GB 미만 · 첫 성공 뒤 역산"
     }
   },
   "conflicts": {
@@ -87,6 +92,11 @@
       "dnn_rolling\\.py"
     ],
     "round_cell": [
+      "rf_replication_verify\\.R",
+      "rf_cell_worker\\.R",
+      "dnn_rolling\\.py"
+    ],
+    "judge_run": [
       "rf_replication_verify\\.R",
       "rf_cell_worker\\.R",
       "dnn_rolling\\.py"

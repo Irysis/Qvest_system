@@ -64,6 +64,9 @@ mkdir -p "$(dirname "$LOG")"
   #   그대로 쥔다(v10.01: 그 claim 을 같이 쥐던 고정 격자 러너는 퇴역 — 지금은 2계층 실행끼리의 중복 방지만 한다).
   #   레인 파일 부재/조건 미충족 = 즉시 종료. 순서 = 충실구현 → 2계층(검사 test_rf_l2_auto.sh ⑤).
   [ -f "$ROOT/02_Infrastructure/ops/rf_l2_auto.sh" ] && bash "$ROOT/02_Infrastructure/ops/rf_l2_auto.sh"
+  # ★A 라우터 + 무인 Judge(2026-11-15 도훈 "A가 나오면 바로 judge로 가게 배선해줘" · A-ROUTE-IMMEDIATE-JUDGE-20261115) — 셀 엔진 A(구판 요청만 남는 산출)를
+  #   후보면 선택 현실 점검 재채점 → A 자격 관문 → eligible 이면 Judge 무인 스폰(메모리 관문 · 하루 상한). 끄기 = 06_Registry/a_router.json enabled · judge_auto.
+  [ -f "$ROOT/02_Infrastructure/ops/a_route_tick.sh" ] && bash "$ROOT/02_Infrastructure/ops/a_route_tick.sh"
   # (v10.01 2026-10-13) 강화 러너(reinforce_auto_parallel.R) 호출 삭제 — 1계층은 리서치 프로그램(06_Registry/research_programs.json) 단위로
   #   세션이 돌린다(.claude/skills/research-program/SKILL.md). 무인 부분 = 위 두 레인 + 아침 체인의 논문 수집 · 트리아지 · 재료 동기화 · 메커니즘 지도.
   echo "=== $(date -Iseconds) tick 종료 rc=$? ==="

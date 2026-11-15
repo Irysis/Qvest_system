@@ -26,6 +26,7 @@ allowed-tools: Bash(Rscript*) Read Grep Glob Write
   ① ~~1계층 강화 후보별 요청~~(`reinforce_auto_parallel.R` · `qepm/mailbox/judge_request_<BID>_<n>.json` ∧ `grade_a_queue` awaiting_judge) —
      **v10.01(2026-10-13) 퇴역**: 고정 격자 강화 러너가 삭제돼 이 경로로는 새 요청이 나오지 않는다. 남은 `grade_a_queue` 항목은 사료로만 읽는다.
      1계층 프로그램 라운드(research-program SKILL)의 측정은 `run_paper_replication` 을 거치므로 A 면 아래 ③ 과 같은 관문·트리거를 탄다.
+     ★(2026-11-15 정정 · A-ROUTE-IMMEDIATE-JUDGE-20261115) 셀 엔진 측정(상설 판 · 강화 사슬 · 라운드 칸)은 §11 이 구판 `judge_request.json` 만 남긴다(트리거 아님). A 라우터(`02_Infrastructure/programs/a_router.R` · 8분 레인 틱 `a_route_tick.sh`)가 후보(상설 판 통과 항목 · 열린 사슬의 지금 머리)를 선택 현실 점검 재채점 → `round_candidate_gate.R::rcg_route` 로 같은 `judge_request.eligible.json`(③ 트리거)을 내고 `judge_run.sh` 가 무인으로 스폰한다. 후보가 아닌 A(기각 걸음 · 미통과 항목 · 라운드 칸)는 `a_route.json` 기록 · 알림만.
   ② **2계층** = `06_Registry/l2_judge_request.json`(`status=pending` · `rf_l2_auto.R` — essence A ∧ 풀 자격 보류 관문 `rf_l2_lib.R::l2_a_eligibility` 통과일 때만 발행 · v10.2 2026-11-10: 풀의 모든 모듈이 현 측정 축 · 팩터 DB 판 최신이어야 한다 · 보류 = `l2_judge_request.held.json` — 트리거 아님).
   ③ **1계층 충실구현 · 프로그램 라운드**(`run_paper_replication` 단독 실행 · 무인 충실구현 레인 `rf_replication_verify.R` · 프로그램 라운드 측정 · 어드바이저 측정) =
      `run_paper_replication.R` §11 이 A 면 **A 자격 관문**(`rf_runner_gates.R::rf_a_eligibility` · 충실구현 입력 어댑터

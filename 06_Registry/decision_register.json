@@ -5423,7 +5423,29 @@
       "decided_at": null,
       "note": null,
       "registered_at": "2026-11-15T16:15:39+0900"
+    },
+    {
+      "id": "A-ROUTE-IMMEDIATE-JUDGE-20261115",
+      "title": "권위 등급 A 가 나오면 곧바로 Judge 로 — 셀 엔진 측정(상설 판 · 사슬 · 라운드 칸)의 A 는 구판 요청만 남아 Judge 로 가는 길이 없었다(상설 판 A P1S03_FVALU_RX0 이 신호 없이 묻힘)",
+      "status": "resolved",
+      "opened_at": "2026-11-15T17:19:45+0900",
+      "options": [
+        "A 라우터 + 무인 Judge",
+        "사슬 · 라운드 닫기 때만(현행)"
+      ],
+      "recommendation": "A 라우터 + 무인 Judge",
+      "default_until_decided": "닫기 때만",
+      "blocks": [
+        "item:a_route_judge"
+      ],
+      "owner": "dohoon",
+      "source": "오케스트레이터 세션 11-15",
+      "decision": "A 라우터(02_Infrastructure/programs/a_router.R) + 무인 Judge(judge_run.sh) — 8분 레인 틱(a_route_tick.sh)이 구판 요청만 남은 A 를 찾아 후보(상설 판 통과 항목 · 열린 사슬의 지금 머리)면 선택 현실 점검 재채점(사슬 닫기 · 사슬 등록과 같은 시행 집합) → A 자격 관문 → eligible 이면 Judge 를 띄운다(한 번에 하나 · 하루 상한 3 · 메모리 관문 judge_run · 모델 fable/max → 한도면 opus). 후보가 아닌 A(기각 걸음 · 미통과 항목 · 라운드 칸)는 a_route.json 기록 · 알림만 — 사전등록 선택 규칙(보는 창)이 고르지 않은 칸을 전기간 등급으로 올리지 않는다(τ_D 선택 규율 · Q 설계 판단). 설정 = 06_Registry/a_router.json · 원장 = 06_Registry/a_route_ledger.jsonl",
+      "decided_by": "dohoon",
+      "decided_at": "2026-11-15T17:19:46+0900",
+      "note": "'A가 나오면 바로 judge로 가게 배선해줘'",
+      "registered_at": "2026-11-15T17:19:45+0900"
     }
   ],
-  "last_updated": "2026-11-15T16:15:40+0900"
+  "last_updated": "2026-11-15T17:19:47+0900"
 }
