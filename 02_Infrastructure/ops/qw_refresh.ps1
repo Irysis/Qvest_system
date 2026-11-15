@@ -10,8 +10,13 @@
 #  Architecture:
 #    1) Per-file state (.cache/qw_refresh_state.json) -> only process pending (idempotent)
 #    2) Fast files first (Benchmark, OHLCVS) -> preserve partial progress across kicks
-#    3) DialogWatcher (background job): takeover MessageBox Yes(id=6) / kick OK(id=1) auto
+#    3) DialogWatcher (background job): takeover MessageBox Yes(id=6) / kick OK(id=1) auto; the terminal's content-update
+#       prompt '-Quantiwise7G Update-' -> No(id=7) (2026-11-15 - Dohoon 11-15 'ga': never update the terminal under a job)
 #    4) Round loop: ensure login -> refresh pending -> on kick re-login -> until all done
+#    5) Follow guard (2026-11-15, same decision): ops/qw_follow_guard.ps1 beside each book's Excel (protocol
+#       qw_follow_guard_client.ps1) - closes terminal picker forms ('Item Lookup' ...), declines the update prompt, kills that
+#       Excel when one sheet's Follow runs longer than -StallSec. A book the guard acted on is NOT saved and is retried next
+#       round; acted on in 2 rounds = give up that book for this run. No guard = no refresh (exit 1). -LoginOnly is unaffected.
 #
 #  Validated refresh core: hyperlink with ScreenTip "Quantiwise*" .Follow() (login required)
 #    proof: Benchmark Last Update 18:29 -> 18:39 ; ribbon Book 05-15 -> 06-30
@@ -38,7 +43,9 @@ param(
   [string[]]$FromOverride = @(),
   # ★2026-11-08(BUILD_20261108.md §2 · PLAN §3.3): core = 아래 New-QwBookTable 5책(기본 · 동작 불변) · ext = 등록부
   #   02_Infrastructure/data/qw_updatefile_registry.json 의 group=ext · layout=ts 책(glossary 코드로 만든 질의서 · 03_Universe/Update_File_ext).
-  [ValidateSet('core', 'ext')][string]$Group = 'core'
+  [ValidateSet('core', 'ext')][string]$Group = 'core',
+  # ★2026-11-15(헤더 5): 한 시트의 Follow 가 이보다 길면 감시기가 그 책의 엑셀을 끝낸다 — 끝없는 대기를 끝내는 상한(정상 책 갱신은 분 단위 · 4책 전체 ~250분)
+  [int]$StallSec = 5400
 )
 $ErrorActionPreference = "Continue"
 $ROOT = "C:\Users\99922\OneDrive\Quant_Module_Moltbot"
@@ -172,7 +179,12 @@ public class WD{
     $BM=[uint32]0xF5
     while ($true) {
       [WD]::EnumWindows({ param($h,$l)
-        if ([WD]::Txt($h) -like "*Quantiwise7*") {
+        $t=[WD]::Txt($h)
+        if ($t -eq '-Quantiwise7G Update-') {   # (2026-11-15) content-update prompt -> No(id=7), never Yes (header 3)
+          $no=[WD]::GetDlgItem($h,7)
+          if ($no -ne [IntPtr]::Zero) { [WD]::SendMessage($no,$BM,[IntPtr]::Zero,[IntPtr]::Zero)|Out-Null }
+        }
+        elseif ($t -like "*Quantiwise7*") {
           $yes=[WD]::GetDlgItem($h,6)          # IDYES  (takeover: proceed)
           if ($yes -ne [IntPtr]::Zero) { [WD]::SendMessage($yes,$BM,[IntPtr]::Zero,[IntPtr]::Zero)|Out-Null }
           else { $ok=[WD]::GetDlgItem($h,1)     # IDOK   (kick notice: dismiss)
@@ -510,6 +522,9 @@ function Get-SheetB5($b5, $ovr, $anchorB5, $cell) {   # 이 시트에 쓸 B5($nu
 # ---- refresh one file -> ok | kicked | skip | err ----
 function Refresh-One($f,$target) {
   if (-not (Test-Path $f.path)) { Write-Host "[$($f.name)] missing, skip"; return "skip" }
+  ## ★(2026-11-15 · 헤더 5) 감시기가 이 실행에서 이 책에 두 라운드 손댔으면(선택 창 · 업데이트 확인 창 · 정체 종료) 이번 실행은 포기 —
+  ##   같은 창이 라운드마다 뜨면 MaxRounds 까지 책 전체를 다시 받지 않게(남은 책 · 다음 실행은 그대로)
+  if ($script:FG_ACTS -and [int]$script:FG_ACTS[$f.name] -ge 2) { Write-Host "[$($f.name)] [guard] acted in $($script:FG_ACTS[$f.name]) rounds - give up this book for this run"; return "skip" }
   ## ★F2(2026-11-06): B5 앵커 = 책이 먹이는 출력 전부의 min(max)+1 (Get-BookAnchor · OHLCVS 는 qw_base = 이음매 구멍 방지 incident 20260711).
   ##   'cache already >= target -> done' 도 모든 출력 기준이고, 출력 하나라도 판단 불가면 done 대신 keep(기존 B5)으로 받는다.
   $a = Get-BookAnchor $f $target
@@ -527,19 +542,29 @@ function Refresh-One($f,$target) {
   $b5txt = if ($ovr -and -not $a.b5) { "min(workbook,$ovr)" } elseif ($b5) { "$b5" } else { 'keep' }
   Write-Host ("[{0}] refresh start (B5={1} B6=CPD-1TD) {2}" -f $f.name, $b5txt, (Get-Date -Format HH:mm:ss))
   if ($WhatIf) { return "skip" }
-  $xl=$null; $wb=$null; $result="err"
+  $xl=$null; $wb=$null; $result="err"; $keepBook=$true; $tb = FG-Now
   try {
     $xl = New-Object -ComObject Excel.Application
     $xl.Visible=$true; $xl.DisplayAlerts=$false; $xl.EnableEvents=$true; $xl.AskToUpdateLinks=$false
+    ## ★(2026-11-15 · 헤더 5) 감시기를 엑셀 옆에 띄우고 준비 신호를 본 뒤에만 받는다 — 못 띄우면 이 책은 받지 않는다(다음 라운드 재시도)
+    if (-not (Start-FollowGuardForExcel $xl $StallSec)) { throw "follow guard did not start - not refreshing unguarded" }
     $wb = $xl.Workbooks.Open($f.path)
     foreach ($ws in $wb.Worksheets) {
       $ws.Activate()
       if ("$($ws.Range('A5').Value2)" -like "Period*From*") { $w5 = Get-SheetB5 $b5 $ovr $a.b5 $ws.Range('B5').Value2; if ($w5) { $ws.Range("B5").Value2 = [double]$w5 } }   # 11-13: keep + 보충 = 시트마다 min(통합문서 B5, 보충일)
       if ("$($ws.Range('A6').Value2)" -like "Period*To*") { $ws.Range("B6").Value2 = "CPD-1TD" }
+      Set-FollowBeat "$($f.name)/$($ws.Name)"
       foreach ($h in $ws.Hyperlinks) { if ($h.ScreenTip -like "Quantiwise*") { $h.Follow() } }
+      Set-FollowBeat ''
     }
     Start-Sleep -Seconds 6
-    if (-not (QW-Alive)) { Write-Host "[$($f.name)] session kicked"; Write-Host "[$($f.name)] $(QW-AliveDiag)"; $result="kicked" }
+    $acts = @(Get-FollowGuardActs $tb)
+    if ($acts.Count -gt 0) {
+      ## ★(2026-11-15) 감시기가 손댄 책 = 그 시트 전송이 잘렸을 수 있다 → 저장하지 않는다(파일 = 이전 판 · 적재기는 수정 시각이 그대로라 건너뜀) · 다음 라운드에 다시
+      $script:FG_ACTS[$f.name] = 1 + [int]$script:FG_ACTS[$f.name]; $keepBook = $false; $result = "err"
+      Write-Host "[$($f.name)] [guard] acted - $(Format-FollowGuardActs $acts) -> book NOT saved, retry next round ($($script:FG_ACTS[$f.name])/2)"
+    }
+    elseif (-not (QW-Alive)) { Write-Host "[$($f.name)] session kicked"; Write-Host "[$($f.name)] $(QW-AliveDiag)"; $result="kicked" }
     else {
       # Completion = EVERY query sheet's resolved Period(To) (B6 bracket) >= target.
       #   (2026-09-19 fix) old check = sheet1 bracket == target. After midnight / before RAWDATA
@@ -563,10 +588,15 @@ function Refresh-One($f,$target) {
       else { Write-Host "[$($f.name)] target $target not reached: $b6 -> retry"; $result="err" }
     }
   } catch {
-    Write-Host "[$($f.name)] exception: $($_.Exception.Message)"
+    $msg = $_.Exception.Message
+    ## (2026-11-15) 감시기가 엑셀을 끝낸 것이면 그렇게 적고(COM 오류만으론 우연한 엑셀 사고처럼 읽힌다) 이 책의 손댄 라운드로 센다 · 저장하지 않는다
+    $kill = Get-FollowGuardKill $tb
+    if ($kill) { $msg = "follow guard killed this Excel ($($kill.detail)) - $msg"; $script:FG_ACTS[$f.name] = 1 + [int]$script:FG_ACTS[$f.name]; $keepBook = $false }
+    Write-Host "[$($f.name)] exception: $msg"
     if (-not (QW-Alive)) { $result="kicked" } else { $result="err" }
   } finally {
-    if ($wb) { try { $wb.Close($true) } catch {} }
+    Stop-FollowGuard
+    if ($wb) { try { $wb.Close($keepBook) } catch {} }
     if ($xl) { try { $xl.Quit() } catch {}; [Runtime.InteropServices.Marshal]::ReleaseComObject($xl)|Out-Null }
     [GC]::Collect(); [GC]::WaitForPendingFinalizers()
   }
@@ -673,6 +703,15 @@ if ($LoginOnly) {
   Write-Host "===== LOGIN-ONLY END $(Get-Date -Format 'HH:mm:ss') / alive=$alive / kicks=$($script:KICKS) / logins_ok=$($script:LOGINS_OK)$(if ($script:LOGIN_BLOCKED) { " / covered by $($script:LOGIN_BLOCKED)" }) ====="
   exit $(if ($alive) { 0 } else { 4 })
 }
+## ★(2026-11-15 · refresh-root-fix · 도훈 11-15 "가") 애드인 새로고침 감시기(헤더 5 · 규약 ops/qw_follow_guard_client.ps1).
+##   실사고 11-14 13:38: FundV2 TS 수집이 단말 'Item Lookup' 창에 2시간+ 묶였다 — 이 드라이버도 같은 Follow 경로라 같은 교착에 노출(정체 끊기 · 절대 상한 없음).
+##   감시기가 없으면 수급하지 않는다(감시 없는 수급 = 옛 교착 위험). 엑셀 전 1회 = 떠 있는 확인 창 · 선택 창 정리(-WhatIf 는 단말 무접촉).
+$fgClient = Join-Path $PSScriptRoot 'qw_follow_guard_client.ps1'
+if (-not (Test-Path -LiteralPath $fgClient)) { Stop-DialogWatcher; Write-Host "[guard] ERROR follow guard client missing ($fgClient) - not refreshing unguarded"; exit 1 }
+. $fgClient
+if (-not (Initialize-FollowGuard (Join-Path $env:TEMP 'qvest_qw_updatefile'))) { Stop-DialogWatcher; Write-Host "[guard] ERROR follow guard missing ($script:FgScript) - not refreshing unguarded"; exit 1 }
+if (-not $WhatIf) { foreach ($e in @(Invoke-FollowGuardOnce)) { Write-Host "[guard] start: terminal prompt handled - $($e.kind) '$($e.title)' ($($e.detail))" } }
+$script:FG_ACTS = @{}   # 책 -> 감시기가 손댄 라운드 수(Refresh-One 이 2 에서 그 책을 포기)
 ## ★F1(2026-11-06 · PLAN §3.0): PowerShell 5.1 은 결과가 1개면 배열이 아니라 해시테이블 하나를 돌려주고 .Count = 키 수(3)다 →
 ##   'done 3/4'(실제 1/4) · 1개 선택 시 미완료가 숨었다. 결과는 언제나 @() 로 감싼다.
 $sel = @(if ($Only.Count -gt 0) { $FILES | Where-Object { $Only -contains $_.name } } else { $FILES })

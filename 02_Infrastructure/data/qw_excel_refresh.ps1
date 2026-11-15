@@ -28,7 +28,7 @@ qw_excel_refresh.ps1 — QuantiWise 정본 xlsx 를 **우리 인프라 안에서
 사용:
   powershell -NoProfile -ExecutionPolicy Bypass -File qw_excel_refresh.ps1
       -Source <원본 xlsx> -Out <결과 xlsx> [-TimeoutSec 1800] [-Visible] [-JsonOut <file>]
-종료코드: 0=갱신됨 / 2=갱신 없음(이미 최신·무변화) / 3=전제 부재(단말·애드인·자동로그인 미설정 · 애드인 응답 없음 — 2026-10-17 퀀티 단일) / 1=실패
+종료코드: 0=갱신됨 / 2=갱신 없음(이미 최신·무변화) / 3=전제 부재(단말·애드인·자동로그인 미설정 · 애드인 응답 없음 — 2026-10-17 퀀티 단일) / 1=실패(2026-11-15: 애드인 감시기 없음 no_guard · 감시기가 같은 시트에 두 번 개입 guard_prompt · 감시기가 정체로 엑셀 종료 포함)
 #>
 [CmdletBinding()]
 param(
@@ -37,7 +37,9 @@ param(
   [ValidateSet('Sheet','Book')][string]$Scope = 'Sheet',   # ★질의 시트가 여럿인 통합문서(Update_File 계열)는 Book
   [int]$TimeoutSec = 1800,
   [switch]$Visible,
-  [string]$JsonOut = ''
+  [string]$JsonOut = '',
+  # ★2026-11-15(아래 (2b) 감시기): 한 번의 Follow · QBroker.Run 이 이보다 길면 감시기가 이 엑셀을 끝낸다 — 끝없는 대기를 끝내는 상한(정상 시트는 분 단위)
+  [int]$StallSec = 3600
 )
 
 $ErrorActionPreference = 'Stop'
@@ -187,6 +189,18 @@ if (LoginWindowOpen) {
 }
 Say ("로그인 창 없음 — 세션 있는 것으로 본다 (LOGINCOMPLETE=" + (CfgFlag 'LOGINCOMPLETE') + ")")
 
+# --- (2b) 애드인 새로고침 감시기 (2026-11-15 · refresh-root-fix · 도훈 11-15 "가") -------------------------------
+#   ★왜: 11-14 13:38 FundV2 TS 수집이 단말 'Item Lookup' 창(사람용 선택 창)에 2시간+ 묶였다 — 애드인은 요청을 단말에 넘길 뿐이라
+#     창이 뜨면 Follow 가 돌아오지 않는다. 이 드라이버의 Follow · QBroker.Run 도 같은 경로다(아래 대기 상한 -TimeoutSec 은 Follow 가
+#     돌아온 뒤에만 돈다). 엑셀 옆 감시기(ops/qw_follow_guard.ps1 · 규약 ops/qw_follow_guard_client.ps1): 선택 창 닫기 · 업데이트 확인 창
+#     '아니요' · 한 번의 Follow 가 -StallSec 을 넘으면 그 엑셀만 종료. 감시기가 손댄 시트는 한 번 더 받고, 또 손대면 저장하지 않고 rc 1('guard_prompt').
+#   감시기가 없으면 받지 않는다(rc 1 'no_guard' — 감시 없는 수급 = 옛 교착 위험). 시험 = 08_Tests/scenarios/test_scn_qw_follow_guard.sh.
+$fgClient = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\ops\qw_follow_guard_client.ps1'))
+if (-not (Test-Path -LiteralPath $fgClient)) { Finish 1 'no_guard' "애드인 감시기 규약 파일 없음: $fgClient — 감시 없이 받지 않는다" }
+. $fgClient
+if (-not (Initialize-FollowGuard (Join-Path $env:TEMP 'qvest_qw_xlrefresh'))) { Finish 1 'no_guard' "애드인 감시기 없음: $script:FgScript — 감시 없이 받지 않는다" }
+foreach ($e in @(Invoke-FollowGuardOnce)) { Say "감시기(엑셀 전 1회): 단말 창 처리 — $($e.kind) '$($e.title)' ($($e.detail))" }
+
 # --- (3) 작업본 (정본은 제자리에서 절대 건드리지 않는다) ---------------------
 $work = [System.IO.Path]::GetFullPath($Out)
 Copy-Item -LiteralPath $Source -Destination $work -Force
@@ -202,6 +216,9 @@ try {
   $xl.AskToUpdateLinks = $false
   $xl.EnableEvents = $true        # ★애드인 이벤트 핸들러가 살아야 한다
   $xl.ScreenUpdating = [bool]$Visible
+  $gp = Start-FollowGuardForExcel $xl $StallSec   # (2b) — 준비 신호를 본 뒤에만 받는다
+  if (-not $gp) { Finish 1 'no_guard' '애드인 감시기를 띄우지 못했다(준비 신호 없음) — 감시 없이 받지 않는다' }
+  Say ("감시기 pid {0} (한 번의 Follow 가 {1}초를 넘으면 이 엑셀을 끝낸다)" -f $gp.Id, $StallSec)
 
   $connected = $false
   foreach ($a in $xl.COMAddIns) {
@@ -239,7 +256,9 @@ try {
     $b = SheetStateOf $sh
     Say ("[{0}] 갱신 전: {1} · Period(To)={2} · 마지막일={3}" -f $b.name, $b.stamp, $b.period_to, $b.last_date)
     $sh.Activate() | Out-Null
+    $ta = FG-Now; Set-FollowBeat "$($b.name)"     # (2b) 심박 — 감시기가 이 Follow 의 정체를 잰다
     $sh.Hyperlinks.Item(1).Follow()
+    Set-FollowBeat ''
     $dl = (Get-Date).AddSeconds($tmo); $chg = $null; $sig0 = "$($b.stamp)|$($b.last_row)"; $st = 0
     while ((Get-Date) -lt $dl) {
       Start-Sleep -Seconds 5
@@ -254,7 +273,9 @@ try {
     $adv = -not ($a.last_date -eq $b.last_date -and $a.last_row -le $b.last_row)
     $note = ''; if (-not $chg) { $note = ' (응답 없음)' }
     Say ("[{0}] 갱신 후: {1} · Period(To)={2} · 마지막일={3} · 전진={4}{5}" -f $a.name, $a.stamp, $a.period_to, $a.last_date, $adv, $note)
-    return @{ name = $a.name; before = $b; after = $a; responded = [bool]$chg; advanced = [bool]$adv }
+    $acts = @(Get-FollowGuardActs $ta)   # (2b) 이 시트를 받는 동안 감시기가 단말 창을 처리했는가
+    if ($acts.Count -gt 0) { Say ("[{0}] 감시기 개입 — {1}" -f $a.name, (Format-FollowGuardActs $acts)) }
+    return @{ name = $a.name; before = $b; after = $a; responded = [bool]$chg; advanced = [bool]$adv; guard = ($acts.Count -gt 0) }
   }
 
   # --- (4) 대상 시트 ------------------------------------------------------------
@@ -272,13 +293,17 @@ try {
       try {
         $broker = New-Object -ComObject qwMain.QBroker
         $miss = [System.Reflection.Missing]::Value
+        $tq = FG-Now; Set-FollowBeat "QBroker.Run($mid)"   # (2b) 같은 단말 호출 — 심박
         $broker.Run([int16]$mid, $xl, $miss, $miss, $miss, $miss)
+        Set-FollowBeat ''
         $fired = $true; $result.method = "qbroker_run_$mid"; Say "Refresh 발화 = qwMain.QBroker.Run($mid)"
         break
-      } catch { Say "QBroker.Run($mid) 실패: $($_.Exception.Message)" }
+      } catch { Set-FollowBeat ''; Say "QBroker.Run($mid) 실패: $($_.Exception.Message)" }
     }
     if (-not $fired) { Finish 1 'refresh_not_fired' 'Refresh 를 발화시키지 못했다(하이퍼링크 없음 · QBroker 실패)' }
     Start-Sleep -Seconds ([Math]::Min($TimeoutSec, 120))
+    $qa = @(Get-FollowGuardActs $tq)
+    if ($qa.Count -gt 0) { $wb.Close($false) | Out-Null; $wb = $null; Finish 1 'guard_prompt' ("폴백 갱신 중 감시기 개입 — {0} · 저장하지 않는다(작업본만 버림 · 정본 무접촉)" -f (Format-FollowGuardActs $qa)) }
     $a0 = SheetStateOf $ws
     $result.before = $b0; $result.after = $a0
     if ($a0.last_date -eq $b0.last_date -and $a0.last_row -le $b0.last_row) {
@@ -295,7 +320,14 @@ try {
   foreach ($sh in $targets) {
     $k++
     Say ("--- 시트 {0}/{1}" -f $k, $targets.Count)
-    $res += ,(RefreshSheet $sh $TimeoutSec)
+    $r1 = RefreshSheet $sh $TimeoutSec
+    if ($r1.guard) {
+      # (2b) 감시기가 손댄 시트 = 전송이 잘렸을 수 있다 → 한 번 더 · 또 손대면 저장하지 않고 끝낸다(작업본만 버림 · 정본 무접촉)
+      Say ("[{0}] 감시기가 손댄 시트 — 한 번 더 받는다" -f $r1.name)
+      $r1 = RefreshSheet $sh $TimeoutSec
+      if ($r1.guard) { $wb.Close($false) | Out-Null; $wb = $null; Finish 1 'guard_prompt' ("[{0}] 단말 확인 창 · 선택 창이 두 번 연속 끼어들었다 — 저장하지 않는다(작업본만 버림 · 정본 무접촉)" -f $r1.name) }
+    }
+    $res += ,$r1
   }
   $result.before = $res[0].before; $result.after = $res[0].after
   $result.sheets = @($res | ForEach-Object { @{ name = $_.name; before = $_.before.last_date; after = $_.after.last_date;
@@ -324,10 +356,13 @@ try {
 }
 catch {
   $msg = $_.Exception.Message
+  $kill = Get-FollowGuardKill   # (2b) 감시기가 엑셀을 끝낸 것이면 그렇게 적는다(COM 오류만으론 우연한 엑셀 사고처럼 읽힌다)
+  if ($kill) { $msg = "애드인 감시기가 이 엑셀을 끝냈다($($kill.detail)) — $msg" }
   try { if ($wb) { $wb.Close($false) | Out-Null } } catch {}
   Finish 1 'error' $msg
 }
 finally {
+  Stop-FollowGuard   # (2b) — exit(Finish) 로 끝나도 finally 는 돈다
   try { if ($xl) { $xl.Quit() } } catch {}
   foreach ($v in @($ws, $wb, $xl)) {
     try { if ($v) { [void][System.Runtime.InteropServices.Marshal]::ReleaseComObject($v) } } catch {}

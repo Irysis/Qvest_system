@@ -6,12 +6,15 @@
 #    Invoke-FollowGuardOnce                one pass before Excel starts (picker forms closed, update prompt declined) -> acts
 #    Start-FollowGuard <pid> <ticks> <s>   the guard beside that Excel (stall limit s per Follow) - exits with the caller;
 #                                          returns the process only after the guard's 'ready' event (<= 60 s), else $null
+#    Start-FollowGuardForExcel <xl> <s>    the same from an Excel.Application object (pid + start ticks resolved here)
 #    Set-FollowBeat '<label>' / ''         before / after each Follow (the guard measures the stall from it); throws when the
 #                                          guard has exited (no unguarded Follow)
-#    Get-FollowGuardActs <since>           guard actions since a unix second (lookup_closed, update_declined)
-#    Get-FollowGuardKill                   the last excel_killed event (waits 2 s once - the event may land after the COM error)
+#    Get-FollowGuardActs <since>           guard actions since a unix MILLISECOND (lookup_closed, update_declined)
+#    Get-FollowGuardKill [since]           the last excel_killed event since a unix ms (waits 2 s once - the event may land after
+#                                          the COM error; a driver with one Excel per book passes that book's start)
 #    Stop-FollowGuard                      stop file, 5 s, then kill
-#  Users: ops/qw_fund_v2_tax_ts.ps1, ops/qw_peer_refresh.ps1. Test: 08_Tests/scenarios/test_scn_qw_follow_guard.sh.
+#  Users: ops/qw_fund_v2_tax_ts.ps1, ops/qw_peer_refresh.ps1, ops/qw_refresh.ps1 (Update_File), data/qw_excel_refresh.ps1 (bench ·
+#    query books). Test: 08_Tests/scenarios/test_scn_qw_follow_guard.sh.
 # ==============================================================================
 $script:FgScript = Join-Path $PSScriptRoot 'qw_follow_guard.ps1'
 $script:FgEvents = ''; $script:FgBeat = ''; $script:FgStop = ''; $script:FgProc = $null
@@ -60,6 +63,16 @@ function Start-FollowGuard([int]$ExcelPid, [long]$ExcelTicks, [int]$StallSec) {
   try { if (-not $p.HasExited) { $p.Kill() } } catch {}
   return $null
 }
+# 2026-11-15: the same for a caller that holds only the Excel.Application object (night drivers qw_refresh.ps1 · qw_excel_refresh.ps1)
+function Start-FollowGuardForExcel($Excel, [int]$StallSec) {
+  if (-not ('FgPidOf' -as [type])) {
+    Add-Type -TypeDefinition 'using System; using System.Runtime.InteropServices; public static class FgPidOf { [DllImport("user32.dll")] public static extern int GetWindowThreadProcessId(IntPtr h, out int pid); }'
+  }
+  $xp = 0; try { [void][FgPidOf]::GetWindowThreadProcessId([IntPtr]$Excel.Hwnd, [ref]$xp) } catch { return $null }
+  if ($xp -le 0) { return $null }
+  $tk = 0L; try { $tk = (Get-Process -Id $xp -EA Stop).StartTime.Ticks } catch { return $null }
+  return (Start-FollowGuard $xp $tk $StallSec)
+}
 function Set-FollowBeat([string]$Label) {
   if (-not $script:FgProc -or -not $script:FgBeat) { return }
   # a guard that exited mid-run (it only exits on its own when the Excel is gone) -> no unguarded Follow
@@ -67,9 +80,9 @@ function Set-FollowBeat([string]$Label) {
   $v = ''; if ($Label) { $v = "$Label|$(FG-Now)" }
   try { [IO.File]::WriteAllText($script:FgBeat, $v) } catch {}
 }
-function Get-FollowGuardKill {
-  $k = @(Get-FollowGuardEvents 0 | Where-Object { $_.kind -eq 'excel_killed' }) | Select-Object -Last 1
-  if (-not $k -and $script:FgProc) { Start-Sleep 2; $k = @(Get-FollowGuardEvents 0 | Where-Object { $_.kind -eq 'excel_killed' }) | Select-Object -Last 1 }
+function Get-FollowGuardKill([int64]$Since = 0) {   # $Since: a caller with several Excel sessions per run (one per book) passes the session start
+  $k = @(Get-FollowGuardEvents $Since | Where-Object { $_.kind -eq 'excel_killed' }) | Select-Object -Last 1
+  if (-not $k -and $script:FgProc) { Start-Sleep 2; $k = @(Get-FollowGuardEvents $Since | Where-Object { $_.kind -eq 'excel_killed' }) | Select-Object -Last 1 }
   return $k
 }
 function Stop-FollowGuard {
