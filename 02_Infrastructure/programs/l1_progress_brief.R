@@ -52,6 +52,7 @@ classify <- function(z) {
   if (grepl("판정 —", z, fixed = TRUE)) return(list(kind = "step", why = "이번 틱에 걸음 판정"))
   if (grepl("measured", z, fixed = TRUE) || grepl("측정 —", z, fixed = TRUE)) return(list(kind = "step", why = "이번 틱에 걸음 측정"))
   if (grepl("열림", z, fixed = TRUE)) return(list(kind = "step", why = "이번 틱에 걸음 설계"))
+  if (grepl("생성기 호출", z, fixed = TRUE)) return(list(kind = "step", why = "걸음 설계 중(생성기 호출)"))
   list(kind = "other", why = "틱 실행(걸음 변화 없음)")
 }
 CH <- list()
