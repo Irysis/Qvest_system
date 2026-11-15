@@ -196,6 +196,21 @@ def main():
         d9 =make_fx(tmp, "M9", engine=GOOD_ENGINE + "# Z <- pmin(Z, 3)  set.seed(1) tryCatch(\n")
         rc9, rep9 = run_pa(d9)
         check("M9 constructs inside comments do not fire", rc9 == 0, "codes=%s" % codes(rep9))
+        # ── P14 PIT C4 — 재무 원천을 직접 읽으면 행의 Factor_Date 를 써야 한다(2026-11-16 · J-20261116-002 · C-20261116-002) ──
+        ENG_FUND_FIX = GOOD_ENGINE + ('FUND_PATH <- file.path(CACHE_DIR, "fundamental_merged.parquet")\n'
+                                      'fm <- as.data.table(arrow::read_parquet(FUND_PATH))\n'
+                                      'fm[, usable := fixed_c4(Period)]\n')
+        ENG_FUND_OK = ENG_FUND_FIX.replace("fm[, usable := fixed_c4(Period)]", "fm[, usable := pmax(fixed_c4(Period), as.Date(Factor_Date))]")
+        mut("C4a 재무 원천 + 엔진 안 고정 시차만(Factor_Date 없음)", engine=ENG_FUND_FIX, expect="P14_pit_fundamental_no_factor_date")
+        d19b = make_fx(tmp, "C4b", engine=ENG_FUND_OK)
+        rc19b, rep19b = run_pa(d19b)
+        check("C4b 재무 원천 + pmax(고정, Factor_Date) → pass", rc19b == 0, "codes=%s" % codes(rep19b))
+        d19c = make_fx(tmp, "C4c", engine=ENG_FUND_FIX + "# Factor_Date 는 나중에 쓴다\n")
+        rc19c, rep19c = run_pa(d19c)
+        check("C4c 주석 속 Factor_Date 는 근거가 아니다 → P14 발화", "P14_pit_fundamental_no_factor_date" in codes(rep19c), "codes=%s" % codes(rep19c))
+        rc19d, rep19d = run_pa(make_fx(tmp, "C4d"))
+        check("C4d 재무 원천을 안 읽는 엔진 → P14 침묵(통계 0줄)", rc19d == 0 and (rep19d.get("stats") or {}).get("fundamental_read_lines") == 0,
+              "rc=%s stats=%s" % (rc19d, rep19d.get("stats")))
         # ── P7 상수표 · 새 범주(month_skip · zscore_disclosure) ─────────────────────
         ENG_K = GOOD_ENGINE.replace("set.seed(7L)", "set.seed(7L)\nPAP_L <- 12L\nAX_MIN <- 20L")
 

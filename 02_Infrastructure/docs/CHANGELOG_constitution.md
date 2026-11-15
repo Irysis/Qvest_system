@@ -3,6 +3,21 @@
 > CLAUDE.md는 "현재 유효한 헌법"만 담는다. 버전 연혁·릴리스 상세는 본 파일이 SOT.
 > 최신 릴리스 상세: `qvest_v8_4_asymmetry_ml_sot.md` (**v8.4 — 주력 SOT**) · `qvest_v8_3_alpha_discovery_sot.md` (v8.3) · `qvest_v8_1_sot.md` (v8.1) · `qvest_v8_0_upgrade_plan.md` (v8.0)
 
+## PIT C4 — 재무 쓸 수 있는 첫날 = 공개일 + 1개월 · 소비 규약 · 레인 사전검사 P14 (2026-11-16 · 버전 미변경)
+
+**도훈**
+- 11-16 07:07 결정 카드 `FUNDAMENTAL-AVAIL-LAG-20261115` 'A 1달 일괄'(Q 권고는 B) — 계기 = 무인 Judge 11-15 20:14 PIT 인증 불가(L-JG-20261115_200516 · C4 hard = 2014년 이전 재무 = 퀀티 정정 덮어쓰기 값).
+
+**무엇**
+- `.claude/rules/pit.md` C4: 쓸 수 있는 첫날 = 공개일 + 1개월 뒤 첫 거래일 · 정정 덮어쓰기 = PIT 경계(원 공시본 전 Judge 인증 불가) — 20fa9981c(구현 · 정본 교체 · 팩터 DB 전체 재빌드 착수 · 판 표식 FUNDAMENTAL-AVAIL-LAG-1M-20261116).
+- 같은 행에 소비 규약(재무 원천 parquet 을 직접 읽는 엔진 · 빌더 = 행의 Factor_Date ≤ 결정 시점 · 고정 시차는 pmax 로 늦추는 쪽만) — f111ff5ad · 이어서 행을 현행 규칙으로 시작하게 재배열(법정 마감 규칙 = 생산자 안 대체용 · 판단 Superfan C-20261116-002).
+- 레인 사전검사 `rf_preaudit.py` P14(`06_Registry/rf_preaudit.json::pit_fundamental`) — 재무 원천을 읽는데 Factor_Date 를 쓰지 않는 엔진 = fail(측정 전 재구현 피드백). 정적 검사기 `lookahead_detector.R` 는 P1S03 · P1S04 사전등록 핀이라 다음 코어 판 후보.
+- 결정 카드 `FUNDAMENTAL-ORIGINAL-FILINGS-PIPELINE-20261116`(원 공시본 확보 A 정정 이력 마스크 · B 원문 · C 그대로 — 도훈 대기) — 1a403418c.
+
+**검증**
+- `08_Tests/ops/test_rf_preaudit.py` 104/0(새 C4a~C4d: 양성 · pmax 음성 · 주석 돌연변이 · 비대상 침묵).
+- 실제 경로 양성 대조: 재무를 직접 읽는 레인 엔진 9 사본에서 P14 가 고정 시차만 쓰는 4(1806.01743 · 2002.06975 · 2202.05702 · COMBO 1403·8125·2002.06975)에서만 발화 · Factor_Date 를 쓰는 5 에서 침묵.
+
 ## 등급 v3.5 — 위기 복원력 '강함' 가점의 선택 방어 = 시가총액 × β 짝 (2026-11-13 결정 · 11-14 16:03 발효 · 버전 미변경)
 
 **도훈**

@@ -4,7 +4,8 @@
 #
 # 왜: 셀 엔진 측정(상설 판 · 강화 사슬 · 프로그램 라운드 칸)은 A 여도 구판 요청 judge_request.json(트리거 아님)만 남긴다
 #   (run_paper_replication.R §11 — 관문은 10-13 에 퇴역한 강화 러너가 태웠다). v10.2 round_candidate_gate.R 은 라운드 · 사슬을
-#   닫을 때 최종 후보만 관문에 태운다. 그래서 11-15 상설 판 A(P1S03_FVALU_RX0)가 아무 신호 없이 묻혔다.
+#   닫을 때 최종 후보만 관문에 태운다. 그래서 11-15 상설 판 통과 칸 1건의 판정이 아무 신호 없이 묻혔다
+#   (칸 · 등급 글자는 τ_D 대상 세션이 읽는 주석에 적지 않는다 — 사람 쪽 = 06_Registry/a_route_ledger.jsonl · Superfan C-20261116-001).
 # 무엇(8분 레인 틱마다 — 02_Infrastructure/ops/a_route_tick.sh):
 #   ① 찾기 — 구판 요청만 있고 관문 결과(judge_request.eligible.json · judge_request.held.json · a_route.json)가 없는 A 산출
 #   ② 주인 — 상설 판 항목(원장 마지막 판정 qualify) · 강화 사슬 기준 칸 · 걸음(사슬 원장) · 그 밖(프로그램 라운드 칸 · 모름)

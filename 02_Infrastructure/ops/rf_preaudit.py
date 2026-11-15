@@ -876,6 +876,25 @@ def run(wdir, root, cfg):
             (cat.get("guide") or "논문에 없는 처리라면 changed 에 적고, 논문에 있는 처리라면 paper_steps 에 원문 인용과 함께 적어라.")
             + " 해당 줄: " + ", ".join("L%d" % i for i in hits[:12]), hits)
 
+    # ── P14 PIT C4 — 재무 원천 parquet 을 직접 읽는데 행의 Factor_Date 를 쓰지 않는다(엔진 안 고정 시차만) ──────
+    #   pit.md C4 소비 규약(2026-11-16 · 판단 J-20261116-002 · Superfan C-20261116-002): 고정 시차(익년 3/31 · +45일 · 분기 고정일)만으로는
+    #   공개일 + 1개월보다 이르다. 주석은 지운 코드(strip_r_comments)로 본다 — 주석 속 'Factor_Date' 는 근거가 아니다.
+    #   한계: Factor_Date 를 읽기만 하고 거르는 데 안 쓰는 엔진은 못 잡는다(그것은 충실도 감사 timing 축 · Judge 몫).
+    PF = cfg.get("pit_fundamental") or {}
+    if PF.get("enabled"):
+        try:
+            rrx = [re.compile(r) for r in PF.get("read_regex") or []]
+            qrx = [re.compile(r) for r in PF.get("require_regex") or []]
+        except re.error as e:
+            raise RuntimeError("설정 정규식 오류(pit_fundamental): %s" % e)
+        reads = sorted({i for rx in rrx for i in _lines_matching(code_lines, rx)})
+        if reads and qrx and not any(_lines_matching(code_lines, rx) for rx in qrx):
+            add("P14_pit_fundamental_no_factor_date", PF.get("severity") or "fail",
+                "재무 원천을 직접 읽는데 행의 Factor_Date 를 쓰지 않는다(%d줄) — 엔진 안 고정 시차만으로는 공개일 + 1개월보다 이르다(PIT C4)" % len(reads),
+                (PF.get("guide") or "재무 원천을 읽으면 행의 Factor_Date ≤ 결정 시점으로 거른다(pit.md C4 소비 규약).")
+                + " 해당 줄: " + ", ".join("L%d" % i for i in reads[:12]), reads)
+        stats["fundamental_read_lines"] = len(reads)
+
     n_fail = sum(1 for f in F if f["severity"] == "fail")
     verdict = "pass" if n_fail == 0 else "findings"
     return {"schema": "rf_preaudit_report_v1", "verdict": verdict, "n_fail": n_fail,

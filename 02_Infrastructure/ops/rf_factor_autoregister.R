@@ -162,8 +162,10 @@ main <- function(argv) {
                direction = "higher_better",          # 엔진 스코어는 내림차순 정렬이 곧 선호
                source = "rawdata",
                evidence_tier = grade,
-               definition = sprintf("논문 충실구현 신호(동결 패널). 출처: %s · 등급 %s · 패널 %d행 %s~%s",
-                                    as.character(sp$url %||% "?"), grade, nrow(PN),
+               # 정의 문구에 권위 등급(전기간)을 싣지 않는다 — 등록부 정의는 τ_D 대상 세션 · 격리 리뷰어도 읽는다(11-16 Superfan C-20261116-001).
+               #   등급은 evidence_tier(위) · 레인 원장에만 남는다.
+               definition = sprintf("논문 충실구현 신호(동결 패널). 출처: %s · 패널 %d행 %s~%s",
+                                    as.character(sp$url %||% "?"), nrow(PN),
                                     as.character(min(PN$Date)), as.character(max(PN$Date))),
                note = sprintf("origin=paper_replication_auto · artifacts=%s · dedup max|rho|=%s(%s)",
                               ART, if (is.finite(DD$max_rho %||% NA)) round(DD$max_rho, 4) else "NA",
