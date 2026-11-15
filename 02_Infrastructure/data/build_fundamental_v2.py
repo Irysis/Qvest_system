@@ -11,9 +11,9 @@
   .cache/RAWDATA.parquet(거래일 달력).
 출력(원자적 쓰기 · 기본 .cache/fundamental_v2/):
   fund_v2_quarterly.parquet  Ticker · Period · Period_Date · Item · Value · Avail_Date(그 값이 공개된 날) ·
-                             Factor_Date(Avail_Date 다음 거래일 = 쓸 수 있는 첫날) · Avail_Basis · Check · Db
+                             Factor_Date(Avail_Date + 시차 개월 뒤 첫 거래일 = 쓸 수 있는 첫날 · 시차 = 등록부 avail_lag_months · 11-16 = 1) · Avail_Basis · Check · Db
   fund_v2_annual_check.parquet  Ticker · FY · Item · QW_Value · DART_Value · Rel_Diff · DART_Date ·
-                             DART_Factor_Date(DART 접수일 다음 거래일) · Same
+                             DART_Factor_Date(DART 접수일 + 시차 개월 뒤 첫 거래일) · Same
   fund_v2_build_report.json  행 수 · 검사 결과 · 날짜 근거 분포
 Avail_Basis: qw_report(퀀티 공시일) · dart_rcept(DART 접수일이 더 늦음) · rule(공시일 없음 → 고정 규칙) ·
   restated_next_fy(정정 의심 → 다음 회계연도 사업보고서 공시일)
@@ -83,6 +83,27 @@ def rule_date(p: np.ndarray, fy_month: np.ndarray) -> np.ndarray:
     return np.where(is_fye, fye, pe + np.timedelta64(45, "D"))
 
 
+def avail_lag_months(root: Path, override) -> int:
+    """쓸 수 있는 첫날의 공시 시차(개월) — 정본 06_Registry/fundamental_source.json::avail_lag_months
+    (도훈 11-16 FUNDAMENTAL-AVAIL-LAG-20261115 'A 1달 일괄'). 키가 없거나 읽지 못하면 멈춘다 — 0 으로 조용히 돌아가지 않게.
+    --lag-months 는 시험 전용(후보를 스크래치 폴더에 만들 때)."""
+    if override is not None:
+        return int(override)
+    reg = json.loads((root / "06_Registry/fundamental_source.json").read_text(encoding="utf-8"))
+    v = reg.get("avail_lag_months")
+    if not isinstance(v, int) or v < 0:
+        raise ValueError(f"fundamental_source.json::avail_lag_months 판독 불가({v!r}) — 시차를 정하지 않고는 날짜를 만들지 않는다")
+    return v
+
+
+def add_months(d: np.ndarray, m: int) -> np.ndarray:
+    """달력 m 개월 뒤(말일 보정 — 1/31 + 1개월 = 2월 말일) · NaT 는 그대로."""
+    if m == 0:
+        return d
+    s = pd.Series(pd.to_datetime(d))
+    return (s + pd.DateOffset(months=m)).to_numpy("datetime64[D]")
+
+
 def next_trading_day(d: np.ndarray, cal: np.ndarray) -> np.ndarray:
     """첫 거래일 > d. 달력 밖(달력 시작 전 · 미래)은 d + 1일."""
     idx = np.searchsorted(cal, d, side="right")
@@ -112,6 +133,8 @@ def build(a) -> int:
     dart_p = Path(a.dart) if a.dart else root / ".cache/fundamental_dart.parquet"
     raw_p = Path(a.dart_raw) if a.dart_raw else root / ".cache/dart/dart_raw_financials.parquet"
     cal_p = Path(a.rawdata) if a.rawdata else root / ".cache/RAWDATA.parquet"
+    lag = avail_lag_months(root, a.lag_months)
+    print(f"[fund-v2-build] 공시 시차 = {lag}개월(쓸 수 있는 첫날 = 공개일 + {lag}개월 뒤 첫 거래일 · FUNDAMENTAL-AVAIL-LAG-20261115)")
     need = [v2 / f"{d}.parquet" for d in NUM_DBS + ["FundV2_META"]] + [v2 / "fiscal_month.parquet", dart_p, raw_p, cal_p]
     miss = [str(p) for p in need if not p.exists()]
     if miss:
@@ -230,10 +253,11 @@ def build(a) -> int:
     # ---- 4. 다음 거래일 = Factor_Date ------------------------------------------------------------------
     cal = pc.unique(pq.read_table(cal_p, columns=["Date"])["Date"]).to_numpy(zero_copy_only=False).astype("datetime64[D]")
     cal = np.sort(cal)
-    keys["Factor_Date"] = next_trading_day(keys["Avail_Date"].to_numpy("datetime64[D]"), cal)
+    # 쓸 수 있는 첫날 = 공개일 + 시차(개월) 뒤 첫 거래일(도훈 11-16 FUNDAMENTAL-AVAIL-LAG-20261115 'A 1달 일괄' — 공개일 근거 모두 · 정정 의심 연도 포함)
+    keys["Factor_Date"] = next_trading_day(add_months(keys["Avail_Date"].to_numpy("datetime64[D]"), lag), cal)
     # 연간 대조 표: DART 당시 보고서 값을 쓸 수 있는 첫날(병합 v2 가 다른 칸을 DART 값으로 바꿀 때 쓴다)
     dd2 = chk["DART_Date"].to_numpy("datetime64[D]")
-    chk["DART_Factor_Date"] = np.where(np.isnat(dd2), np.datetime64("NaT", "D"), next_trading_day(dd2, cal))
+    chk["DART_Factor_Date"] = np.where(np.isnat(dd2), np.datetime64("NaT", "D"), next_trading_day(add_months(dd2, lag), cal))
 
     # ---- 5. 붙이기 · 쓰기 ------------------------------------------------------------------------------------
     rows["Ticker"] = rows["Ticker"].astype(str)
@@ -265,6 +289,7 @@ def build(a) -> int:
         "item_diff_rate": {i: round(float(1 - g["Same"].mean()), 4) for i, g in chk.groupby("Item")},
         "avail_basis_rows": {str(b): int(n) for b, n in res["Avail_Basis"].value_counts().items()},
         "check_rows": {str(b): int(n) for b, n in res["Check"].value_counts().items()},
+        "avail_lag_months": int(lag),
     }
     (out / "fund_v2_build_report.json").write_text(json.dumps(rep, ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"[fund-v2-build] 저장 {out / 'fund_v2_quarterly.parquet'} · 행 {len(res):,}")
@@ -282,6 +307,7 @@ def main() -> int:
     ap.add_argument("--rawdata", default="")
     ap.add_argument("--out-dir", default="")
     ap.add_argument("--tol", type=float, default=TOL)
+    ap.add_argument("--lag-months", type=int, default=None)   # 시험 전용 — 정본 실행은 등록부 값만 쓴다
     try:
         return build(ap.parse_args())
     except Exception as e:  # noqa: BLE001

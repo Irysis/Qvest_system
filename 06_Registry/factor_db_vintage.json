@@ -183,6 +183,14 @@
       "decision": "RAWDATA-INTERNAL-BREAK-FILL-D2D3-20261114(D2 팩터 DB 재계산의 부작용 수리 — 이음매 세션 결함 · 11-14 21:5x 발견)",
       "note": "D2 팩터 DB 부분 재계산(stamp 20261114_182836 · 판 원장 RAWDATA-INTERNAL-BREAK-FILL-D2D3-20261114 21:40 완료)의 수리 명세 모듈 목록에 xlsx_fund 가 없어 빌더의 XF → DART 채움 병합(.fdb_xf_fill_merge — XF 행이 0 이면 건너뜀)이 돌지 않았다 → 밸류 · 성장 7팩터가 DART 행만 남았다(옛 파일 대비 '옛만' 약 6.8만 행(442달 67,645 + 202611 340) · 2015~ 연 1~7천 · 202611 340 · 값이 남은 행은 그대로). 다른 팩터는 영향 없음(채움 병합은 빌더 마지막 단계 · 대상 7팩터 행만 바꿔 끼웠다). 수리 끝 = value · growth · xlsx_fund 모듈로 7팩터만 전 기간 다시 계산(진행기 stamp 20261114_215843 '성공' · 442달 · IC · 대응표 · 결합용 뷰 rc 0) + 이번 달 202611(같은 명세 · writer 잠금 · 23:09:39) + 결합용 뷰 그 달(23:09:48). 되살린 행 = 442달 67,853(D2 가 잃은 67,645 와 달 · 팩터마다 같음 + 202603~202610 밸류 4팩터 208행 — 그 달들의 이전 파일이 11-09 빌드라 그 뒤 늘어난 퀀티 패널의 채움이 지금 더 들어갔다 · 202609 전 모듈 빌드 = 부분 빌드 7/7) · 202611 340(잃은 행과 같음) · 값이 남은 행은 전부 그대로 · 새로 잃은 행 0. 양성 대조 201806 · 202609 = 부분 산출 = 전체 산출 7/7. completed_at 앞의 측정 중 7팩터에 닿는 것(팩터 목록을 선언하지 않은 엔진 칸 포함)은 낡음.",
       "evidence": ".cache/scheduler_logs/subset_worker_20261114_182836_r0_w*.jsonl(per_factor only_old) · .cache/scheduler_logs/subset_d2_202611.jsonl · 02_Infrastructure/factor_db/factor_db_builder.R .fdb_xf_fill_merge · 04_Research/01_reports/rawdata_seam_20260330_repair_20261113/d2_fill/repair_spec.json(modules 에 xlsx_fund 없음) · .cache/scheduler_logs/factor_subset_repair_20261114_215843.json(result 성공) · .cache/scheduler_logs/subset_xffix_202611.jsonl(202611 ok · 340행) · 04_Research/01_reports/rawdata_seam_20260330_repair_20261113/d2_fill/check_full_{201806,202609}.csv(로컬)"
+    },
+    {
+      "id": "FUNDAMENTAL-AVAIL-LAG-1M-20261116",
+      "completed_at": null,
+      "scope": "all",
+      "decision": "FUNDAMENTAL-AVAIL-LAG-20261115(도훈 11-16 'A 1달 일괄' — 재무 쓸 수 있는 첫날 = 공개일 + 1개월 뒤 첫 거래일 · DART 당시 값도 같다)",
+      "note": "재무 v2 의 Factor_Date · DART_Factor_Date 를 1개월 늦췄다(build_fundamental_v2.py · 등록부 fundamental_source.json avail_lag_months = 1). 병합 표 · 분기 표(XF) · 재무 원천 팩터 전부 · 결합용 뷰 · 한국 FF 요인(팩터 조정 알파 노치 입력 = 모든 등급)이 바뀐다 — 범위 all. 계기 = 무인 Judge 11-15 L-JG-20261115_200516(PIT 인증 불가 · C4). 완료 = 팩터 DB 전체 재빌드(월간 · 일간 · IC) + 결합용 뷰 --full + FF 요인이 모두 rc 0 일 때 .cache/fund_lag_rebuild_20261116/run_chain.sh 가 completed_at 을 채운다. 그 전 측정은 재측정 전 A 자격 · 기저 자격 없음.",
+      "evidence": "06_Registry/decision_register.json FUNDAMENTAL-AVAIL-LAG-20261115 · .cache/fund_lag_rebuild_20261116/candidate.log(후보 112초 · 병합 8,913,581행 · 분기 7,692,734행 · 순서 감사 겹침 0 · 역전 0) · 시험: 시차 0 = 정본 로직 · 시차 1 = 공개일 뒤 29~42일(중앙 32)"
     }
   ]
 }
