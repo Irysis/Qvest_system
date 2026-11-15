@@ -5331,7 +5331,99 @@
       "decided_at": "2026-11-15T13:19:34+0900",
       "note": "11-15 '청정 엔진으로 봐'",
       "registered_at": "2026-11-15T13:19:33+0900"
+    },
+    {
+      "id": "MEMORY-GATE-LANE-TICKS-20261115",
+      "title": "레인 측정(약 12.7 GB 추정)과 :37 틱 측정(7.5~7.9 GB)의 메모리 겹침 — 두 출발 모두 관문 없음",
+      "status": "resolved",
+      "opened_at": "2026-11-15T16:15:35+0900",
+      "options": [
+        "관문 넣고 켜기",
+        "레인 먼저 · 틱 쉬기",
+        "레인 계속 정지"
+      ],
+      "recommendation": "관문 넣고 켜기",
+      "default_until_decided": "레인 정지",
+      "blocks": [
+        "item:replication_lane",
+        "item:memory_gates"
+      ],
+      "owner": "dohoon",
+      "source": "오케스트레이터 세션 결정 카드 11-15",
+      "decision": "레인 검증기 출발(rf_replication_auto.sh rp_verify) · 상설 판 측정(standing_board_run.sh) · 사슬 측정과 새 걸음 열기(chain_tick.sh) 직전에 02_Infrastructure/ops/mem_gate.py(정책 식 + 먼저 뜬 무거운 작업 표지 — 레인 검증기 · 셀 워커 · DNN) — 먼저 뜬 작업이 돌고 나머지는 다음 틱 · 레인 대기 상한 뒤 memory_gate_deferred(verify-only) · 관문 배포 뒤 레인을 다시 켠다",
+      "decided_by": "dohoon",
+      "decided_at": "2026-11-15T16:15:36+0900",
+      "note": "'관문 넣고 켜기 (권장)'",
+      "registered_at": "2026-11-15T16:15:35+0900"
+    },
+    {
+      "id": "MEMORY-PEAK-BACKCALC-20261115",
+      "title": "메모리 정책 식의 '예상 정점' 정의(DNN 시드 실측 순간 15.3 · 지속 11.5 · 성공 출발 역산 12.8 GB)",
+      "status": "resolved",
+      "opened_at": "2026-11-15T16:15:36+0900",
+      "options": [
+        "성공 출발 역산",
+        "지속 정점",
+        "순간 정점"
+      ],
+      "recommendation": "성공 출발 역산",
+      "default_until_decided": "역산 12.8(잠정)",
+      "blocks": [
+        "item:memory_gates"
+      ],
+      "owner": "dohoon",
+      "source": "오케스트레이터 세션 결정 카드 11-15",
+      "decision": "예상 정점 = 실제로 성공한 출발의 가용 − reserve_gb(성공 출발 역산) · 기록 없는 작업은 순간 정점(없으면 보수 추정)으로 시작해 첫 성공 뒤 역산으로 낮춘다 · 값 정본 = 06_Registry/memory_policy.json peaks(출처 병기)",
+      "decided_by": "dohoon",
+      "decided_at": "2026-11-15T16:15:37+0900",
+      "note": "'성공 출발 역산 (권장)'",
+      "registered_at": "2026-11-15T16:15:36+0900"
+    },
+    {
+      "id": "QW-FILE-IS-REFERENCE-20261115",
+      "title": "퀀티 종가 ≠ 거래소 종가(2026-09~ 월 일치율 54 → 5 → 4% · 거래량 일치) 처리 · 이음매 묶음 적용 시점",
+      "status": "resolved",
+      "opened_at": "2026-11-15T16:15:38+0900",
+      "options": [
+        "원인 · 규모부터",
+        "바로 수리",
+        "이음매 묶음만 지금"
+      ],
+      "recommendation": "원인 · 규모부터",
+      "default_until_decided": "수리 없음",
+      "blocks": [
+        "item:rawdata_close"
+      ],
+      "owner": "dohoon",
+      "source": "오케스트레이터 세션 결정 카드 11-15",
+      "decision": "수리 · 거래소 대조 없음 — 퀀티에서 받은 파일이 기준 · 이음매 묶음(값 변경 3 + 고정 5행)은 '지금 적용'을 고르지 않아 기본안(다음 범위 all 팩터 DB 수리 때) 유지(Q 해석) · 상장 전 장외 · 코넥스 이력(C6 의심)은 RAWDATA-PRELISTING-C6-20261115 로 따로",
+      "decided_by": "dohoon",
+      "decided_at": "2026-11-15T16:15:39+0900",
+      "note": "'퀀티는 수정주가라서 다를거야' → (Q 가 '수정주가면 최근 값은 거래소와 같아야 하고 관측은 반대'라고 다시 여쭘) → '퀀티에서 받은 파일이 기준이다'",
+      "registered_at": "2026-11-15T16:15:38+0900"
+    },
+    {
+      "id": "RAWDATA-PRELISTING-C6-20261115",
+      "title": "RAWDATA 상장 전 장외(K-OTC · 프리보드) · 코넥스 가격 이력이 측정 유니버스에 들어감 — 나중에 상장한 종목에만 실렸다면 생존 · 백필 편향(PIT C6)",
+      "status": "open",
+      "opened_at": "2026-11-15T16:15:39+0900",
+      "options": [
+        "규모부터 재기(데이터 쓰기 없음)",
+        "그대로 두기"
+      ],
+      "recommendation": "규모부터 재기(데이터 쓰기 없음)",
+      "default_until_decided": "측정 유니버스 그대로(상장일 거르기 없음)",
+      "blocks": [
+        "item:measurement_axis_universe"
+      ],
+      "owner": "dohoon",
+      "source": "오케스트레이터 세션 결정 카드 11-15",
+      "decision": null,
+      "decided_by": null,
+      "decided_at": null,
+      "note": null,
+      "registered_at": "2026-11-15T16:15:39+0900"
     }
   ],
-  "last_updated": "2026-11-15T13:19:35+0900"
+  "last_updated": "2026-11-15T16:15:40+0900"
 }

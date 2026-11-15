@@ -27,6 +27,14 @@
 set -u
 ROOT=${RC_ROOT_POSIX:-/c/Users/99922/OneDrive/Quant_Module_Moltbot}
 ROOT_WIN=${RC_ROOT_WIN:-C:/Users/99922/OneDrive/Quant_Module_Moltbot}
+# >>> memgate(11-15 · 도훈 MEMORY-GATE-LANE-TICKS-20261115 — 식 MEMORY-USE-90PCT-20261115 · 정점 MEMORY-PEAK-BACKCALC-20261115) — 판정 = mem_gate.py(단일 출처 · 정본 06_Registry/memory_policy.json).
+#   rc 0 통과 · 1 대기(가용 부족 · 먼저 뜬 무거운 작업 — 레인 검증기 · 셀 워커 · DNN) · 2 판독 불가 — 0 이 아니면 그 측정만 다음 틱(원장 무기록 · 실패 무증가). 끄기(시험) = QVEST_MEMGATE=off
+MG_PYF="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)/mem_gate.py"
+MG_PY=""; for c in "$ROOT/.venv_qvest_ml/Scripts/python.exe" "${QVEST_PY:-}" python; do [ -n "$c" ] && command -v "$c" >/dev/null 2>&1 && { MG_PY=$c; break; }; done
+mem_gate() { [ "${QVEST_MEMGATE:-on}" = "off" ] && { echo "꺼짐(QVEST_MEMGATE=off)"; return 0; }
+  [ -n "$MG_PY" ] || { echo "판독 불가 — 파이썬 없음"; return 2; }
+  local o rc; o=$("$MG_PY" -X utf8 "$MG_PYF" "$1" 2>&1); rc=$?; printf '%s' "$o" | tail -n 1 | tr -d '\r'; return $rc; }
+# <<< memgate
 OPS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 SH=${BASH:-bash}                                   # 지금 도는 Git Bash 그대로(bare bash 금지 — WSL 가로챔 · 금칙 ⑦)
 RS=${CT_RS:-$ROOT/04_Research/programs/_lib/round_core/round.sh}
@@ -168,6 +176,7 @@ MEAS_LEFT=0
 do_measure(){ # $1 = 사슬 $2 = measure_base|measure_step $3 = k
   local cid st rc; cid=$(basename "$1")
   [ "$MEAS_LEFT" -gt 0 ] || { log "[$cid] 이번 틱 측정 상한 소진 — 다음 틱"; return 1; }
+  local mgo; if ! mgo=$(mem_gate chain_step); then log "[$cid] $2 k=${3:-0} → 메모리 관문 대기 — ${mgo} — 다음 틱"; MEAS_LEFT=0; return 0; fi
   MEAS_LEFT=$((MEAS_LEFT - 1))
   if [ "$2" = "measure_base" ]; then rs "$1" p4-base-measure; else rs "$1" p4-step-measure --k "$3"; fi; rc=$?
   # 상태 토큰 = 상태 줄의 *첫* ' — ' 바로 뒤(driver.R '[p4-*-measure] <대상> — <status> · <reason>' · 사유 문구에도 ' — ' 가 든다 — 재수리 11-10)
@@ -292,6 +301,7 @@ if [ "$BARRIER_OK" = "1" ] && [ "${#HEAVY[@]}" -gt 0 ]; then
     open)
       if [ "$BACKOFF" = "yes" ]; then log "[$cid] 생성 물러남(사용 한도) — 이번 틱 설계 안 함"
       elif [ "$MEAS_LEFT" -lt 1 ]; then log "[$cid] 측정 예산 0 — 열고 못 재는 걸음을 만들지 않는다"
+      elif ! MGO=$(mem_gate chain_step); then log "[$cid] 메모리 관문 대기 — ${MGO} — 새 걸음을 열지 않는다(다음 틱)"
       elif ! rs "$PICK" fresh-check; then log "[$cid] 데이터 신선도 미달 — 새 걸음을 열지 않는다(다음 틱)"
       elif gen_step "$PICK" "$K"; then
         plan "$PICK"; [ "$ACT" = "measure_step" ] && do_measure "$PICK" measure_step "$K"

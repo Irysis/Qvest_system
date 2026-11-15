@@ -4,9 +4,83 @@
   "decided_by": "dohoon",
   "quote": "가용메모리 기준 너무 타이트하다 90퍼센트까진 쓸 수 있게 해",
   "physical_gb": 31.8,
-  "max_use_frac": 0.90,
+  "max_use_frac": 0.9,
   "reserve_gb": 3.2,
   "rule": "작업 출발 관문 = 가용 메모리(Available MBytes) − 그 작업의 예상 정점 ≥ reserve_gb(물리의 10%). 고정 'GB 이상' 문턱 대신 이 식을 쓴다. 예상 정점 = 실측(셀 워커 약 7.5 GB · DNN 워커 3개 시드 칸 · 레인 측정 등 각 셸 주석의 실측값).",
   "core_note": "round_core measure_server.R 은 이미 reserve 3 GB(QVEST_MS_RESERVE_GB) — 그대로. 코어 파일은 등록 라운드 핀이라 고치지 않는다.",
-  "updated_at": "2026-11-15"
+  "updated_at": "2026-11-15",
+  "peak_definition": {
+    "decided": "MEMORY-PEAK-BACKCALC-20261115",
+    "decided_by": "dohoon",
+    "quote": "성공 출발 역산 (권장)",
+    "rule": "예상 정점 = 실제로 성공한 출발의 가용 − reserve_gb(성공 출발 역산). 성공 출발 기록이 없는 작업은 순간 정점(PeakWorkingSet · 없으면 보수 추정)으로 시작하고, 첫 성공 뒤 역산값으로 낮춘다. 적재 순간의 정점은 여유분을 몇 분 쓸 수 있다.",
+    "options_seen": "DNN 시드 실측 — 순간 15.3 · 지속 11.5 · 성공 출발 역산 12.8 GB(11-15 · fa514c4e4)"
+  },
+  "gates": {
+    "decided": "MEMORY-GATE-LANE-TICKS-20261115",
+    "decided_by": "dohoon",
+    "quote": "관문 넣고 켜기 (권장)",
+    "judge": "02_Infrastructure/ops/mem_gate.py(단일 출처 · rc 0 통과 · 1 대기 · 2 판독 불가 = 출발 안 함)",
+    "where": [
+      "충실구현 레인 검증기 출발 — rf_replication_auto.sh rp_verify(감사 + 측정 전 · 대기 최대 RP_MEMGATE_WAIT_S 뒤 memory_gate_deferred 로 pending 복원 · verify-only)",
+      "상설 판 standing-measure 직전 — standing_board_run.sh(대기면 그 판 측정만 다음 틱)",
+      "강화 사슬 측정 · 새 걸음 열기 직전 — chain_tick.sh(대기면 다음 틱)"
+    ],
+    "rule": "먼저 뜬 작업이 돌고 나머지는 다음 틱에 뜬다 — 가용 식 + conflicts(출발 직후라 아직 정점에 닿지 않은 무거운 작업의 프로세스 표지)."
+  },
+  "peaks": {
+    "dnn_seed_cell": {
+      "gb": 12.8,
+      "basis": "back_calc",
+      "source": "11-15 P1S04 E2(2002.06975 DNN · 워커 3) 성공 출발 가용 16 GiB − 3.2(fa514c4e4) · 순간 15.3 · 지속 11.5"
+    },
+    "standing_cell": {
+      "gb": 7.9,
+      "basis": "instantaneous",
+      "source": "11-15 P1S04 E3 셀 워커 순간 정점 7.8 GB + 래퍼(p1s04_seed_watch.sh PEAK_E3F · 1계층 세션 87fc7c79a 판단 값) — 성공 출발 역산 기록 없음"
+    },
+    "chain_step": {
+      "gb": 7.5,
+      "basis": "instantaneous",
+      "source": "11-15 1계층 세션 실측 보고(P4C02 걸음 셀 워커 약 7.5 GB) · 다른 셸 셀 워커 순간 정점 7.45 GB — 성공 출발 역산 기록 없음"
+    },
+    "lane_verify_cpu": {
+      "gb": 8.2,
+      "basis": "instantaneous_estimate",
+      "source": "R 검증기 본체 5.2 GB(11-11 THGNN 레인 측정의 R 검증 프로세스 커밋 · reference-main-pc-commit-limit) + R 병렬 작업자 6 × 0.5 GB 상한(2407.10175 가속판 speedopt_equivalence/README.md 자원 절 · 시험 관측 0.16~0.23 GB) — 작업 집합 실측 없음 · 첫 성공 뒤 역산"
+    },
+    "lane_verify_gpu": {
+      "gb": 12.7,
+      "basis": "instantaneous_estimate",
+      "source": "11-11 THGNN 레인 측정 커밋 12.7 GB(R 검증 5.2 + 파이썬 학습 7.5 · reference-main-pc-commit-limit) — 작업 집합 실측 없음 · 첫 성공 뒤 역산"
+    }
+  },
+  "conflicts": {
+    "dnn_seed_cell": [
+      "rf_replication_verify\\.R",
+      "rf_cell_worker\\.R",
+      "dnn_rolling\\.py"
+    ],
+    "standing_cell": [
+      "rf_replication_verify\\.R",
+      "rf_cell_worker\\.R",
+      "dnn_rolling\\.py"
+    ],
+    "chain_step": [
+      "rf_replication_verify\\.R",
+      "rf_cell_worker\\.R",
+      "dnn_rolling\\.py"
+    ],
+    "lane_verify_cpu": [
+      "rf_replication_verify\\.R",
+      "rf_cell_worker\\.R",
+      "dnn_rolling\\.py"
+    ],
+    "lane_verify_gpu": [
+      "rf_replication_verify\\.R",
+      "rf_cell_worker\\.R",
+      "dnn_rolling\\.py"
+    ]
+  },
+  "conflicts_note": "명령줄 정규식 — 레인 검증기(감사 단계 포함) · 셀 워커(상설 · 사슬 · 라운드 측정) · DNN 학습. 관문은 자기 작업이 뜨기 전에 부르므로 살아 있는 표지는 다른 작업이다."
 }

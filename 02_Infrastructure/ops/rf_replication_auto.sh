@@ -568,6 +568,33 @@ d['status']='pending'; d['failure']='refresh_lock_deferred'; d['refresh_deferred
 io.open(r'$REQ','wb').write(json.dumps(d,ensure_ascii=False,indent=1).encode('utf-8'))"
     return 75
   fi
+  # >>> memgate(11-15 · 도훈 MEMORY-GATE-LANE-TICKS-20261115 — 식 MEMORY-USE-90PCT-20261115 · 정점 MEMORY-PEAK-BACKCALC-20261115) — 검증기(감사 + 측정) 출발 전.
+  #   판정 = mem_gate.py(단일 출처 · 정본 06_Registry/memory_policy.json): 가용 − 예상 정점 ≥ 여유 ∧ 먼저 뜬 무거운 작업(셀 워커 · DNN · 다른 레인 검증기) 없음.
+  #   대기(rc 1)면 RP_MEMGATE_WAIT_S(기본 3000초 — :37 틱 측정 한 번이 끝날 시간) 동안 RP_MEMGATE_POLL_S(기본 60초)마다 다시 보고, 그래도 대기거나
+  #   판독 불가(rc 2)면 **측정 없이** pending + failure=memory_gate_deferred 로 되돌린다(refresh_lock_deferred 와 같은 verify-only 경로 · auto_retries 무소모) — rc 75.
+  #   끄기(시험) = QVEST_MEMGATE=off.
+  if [ "${QVEST_MEMGATE:-on}" != "off" ]; then
+    local MGF MGK MGO MGRC MGW=0
+    MGF="$(dirname "${BASH_SOURCE[0]:-$0}")/mem_gate.py"; [ -f "$MGF" ] || MGF="$ROOT/02_Infrastructure/ops/mem_gate.py"
+    case "$(rp_slot_class)" in gpu*) MGK=lane_verify_gpu ;; *) MGK=lane_verify_cpu ;; esac
+    while :; do
+      MGO=$("$PY" -X utf8 "$MGF" "$MGK" 2>&1); MGRC=$?
+      MGO=$(printf '%s' "$MGO" | tail -n 1 | tr -d '\r')
+      [ "$MGRC" = "0" ] && break
+      if [ "$MGRC" != "1" ] || [ "$MGW" -ge "${RP_MEMGATE_WAIT_S:-3000}" ]; then
+        jl verify_deferred_memory_gate "key=$MGK" "waited_s=$MGW" "rc=$MGRC" "gate=$MGO" "note=측정 없이 pending 복원 — 다음 틱 verify-only(엔진 보존 · auto_retries 무소모)"
+        "$PY" -c "
+import io,json,time
+d=json.loads(io.open(r'$REQ','rb').read().decode('utf-8'))
+d['status']='pending'; d['failure']='memory_gate_deferred'; d['memgate_deferred_at']=time.strftime('%Y-%m-%dT%H:%M:%S%z')
+io.open(r'$REQ','wb').write(json.dumps(d,ensure_ascii=False,indent=1).encode('utf-8'))"
+        return 75
+      fi
+      sleep "${RP_MEMGATE_POLL_S:-60}"; MGW=$((MGW + ${RP_MEMGATE_POLL_S:-60}))
+    done
+    jl verify_memory_gate_ok "key=$MGK" "waited_s=$MGW" "gate=$MGO"
+  fi
+  # <<< memgate
   # ★RP_LANE_MODE(FA-CLEAN-BASE-PATH) — 청정이면 검증기가 충실도 감사를 청정 조건(산출물 경로 비공개 + 같은 가드 표식)으로 부른다.
   #   가드 표식 자체는 여기서 싣지 않는다(검증기의 측정·원장 쓰기에 새면 안 된다 — 감사 스폰 한 번에만 검증기가 싣는다).
   # ★검증기 시작 표식(2026-11-10 레인 D) — 측정 도중 크래시 · 전원 차단 · 기기 전환으로 claim 이 고아가 되면, 되살린 다음 착수가 이 표식과
@@ -643,13 +670,15 @@ rp_gpu_gate_pre_verify(){
   rp_slot_handoff "engine_gpu_dependency_pre_verify:${cl#* }" 1
 }
 # ★gpu_handoff(2026-10-20 · WP3) — CPU 슬롯이 측정 직전 GPU 엔진을 발견해 넘긴 요청. 엔진은 그대로(사전검사 통과분) → GPU 슬롯은 검증기만.
-if { [ "$PREV_FAIL" = "audit_not_run" ] || [ "$PREV_FAIL" = "refresh_lock_deferred" ] || [ "$PREV_FAIL" = "audit_ruled" ] || [ "$PREV_FAIL" = "session_reverify" ] || [ "$PREV_FAIL" = "gpu_handoff" ] || [ "$PREV_FAIL" = "verify_interrupted" ] || [ "$HAS_RULING" = "1" ]; } && [ -s "$WDIR/engine.R" ]; then
+if { [ "$PREV_FAIL" = "audit_not_run" ] || [ "$PREV_FAIL" = "refresh_lock_deferred" ] || [ "$PREV_FAIL" = "memory_gate_deferred" ] || [ "$PREV_FAIL" = "audit_ruled" ] || [ "$PREV_FAIL" = "session_reverify" ] || [ "$PREV_FAIL" = "gpu_handoff" ] || [ "$PREV_FAIL" = "verify_interrupted" ] || [ "$HAS_RULING" = "1" ]; } && [ -s "$WDIR/engine.R" ]; then
   rp_gpu_gate_pre_verify
   # ★refresh_lock_deferred(2026-09-24) — 검증기 직전 리프레시 배리어로 측정 없이 연기된 요청. 엔진은 멀쩡하다 → 검증기만.
   # ★audit_ruled(2026-10-14) — 감사 상충을 세션이 판정해 suspect 수용 · 진행으로 정한 요청(요청의 audit_ruling). 엔진은 그대로 →
   #   검증기만(감사도 다시 사지 않는다 — 감사 관문이 남은 감사 파일 + 판정 처분으로 간다 · alpha-search SKILL §5).
   if [ "$PREV_FAIL" = "refresh_lock_deferred" ]; then
     jl verify_only_retry "paper=$P_KEY" "note=리프레시 배리어 연기분 재시도 — 에이전트 없이 검증기(측정+감사)만 재실행(엔진 보존)"
+  elif [ "$PREV_FAIL" = "memory_gate_deferred" ]; then
+    jl verify_only_retry "paper=$P_KEY" "note=메모리 관문 연기분 재시도 — 에이전트 없이 검증기(측정+감사)만 재실행(엔진 보존 · 11-15 MEMORY-GATE-LANE-TICKS-20261115)"
   elif [ "$PREV_FAIL" = "audit_ruled" ] || [ "$HAS_RULING" = "1" ]; then
     jl verify_only_retry "paper=$P_KEY" "note=감사 상충 세션 판정 반영 — 에이전트 · 감사 재스폰 없이 검증기만(엔진 보존)"
   elif [ "$PREV_FAIL" = "session_reverify" ]; then

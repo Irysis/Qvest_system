@@ -31,6 +31,14 @@ SA_ROOT=${RC_SA_ROOT:-$ROOT}
 RS="$ROOT/04_Research/programs/_lib/round_core/round.sh"
 RB=${RB_SH:-$ROOT/02_Infrastructure/ops/refresh_barrier.sh}
 SH=${BASH:-bash}                                   # 지금 도는 Git Bash 그대로(bare bash 금지 — WSL 가로챔 · 금칙 ⑦)
+# >>> memgate(11-15 · 도훈 MEMORY-GATE-LANE-TICKS-20261115 — 식 MEMORY-USE-90PCT-20261115 · 정점 MEMORY-PEAK-BACKCALC-20261115) — 판정 = mem_gate.py(단일 출처 · 정본 06_Registry/memory_policy.json).
+#   rc 0 통과 · 1 대기(가용 부족 · 먼저 뜬 무거운 작업 — 레인 검증기 · 셀 워커 · DNN) · 2 판독 불가 — 0 이 아니면 그 측정만 다음 틱(원장 무기록 · 실패 무증가). 끄기(시험) = QVEST_MEMGATE=off
+MG_PYF="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)/mem_gate.py"
+MG_PY=""; for c in "$ROOT/.venv_qvest_ml/Scripts/python.exe" "${QVEST_PY:-}" python; do [ -n "$c" ] && command -v "$c" >/dev/null 2>&1 && { MG_PY=$c; break; }; done
+mem_gate() { [ "${QVEST_MEMGATE:-on}" = "off" ] && { echo "꺼짐(QVEST_MEMGATE=off)"; return 0; }
+  [ -n "$MG_PY" ] || { echo "판독 불가 — 파이썬 없음"; return 2; }
+  local o rc; o=$("$MG_PY" -X utf8 "$MG_PYF" "$1" 2>&1); rc=$?; printf '%s' "$o" | tail -n 1 | tr -d '\r'; return $rc; }
+# <<< memgate
 DRY=0; SEND=0
 for a in "$@"; do case "$a" in --dry-run) DRY=1 ;; --send) SEND=1 ;; *) echo "usage: standing_board_run.sh [--dry-run] [--send]" >&2; exit 2 ;; esac; done
 
@@ -116,6 +124,7 @@ for b in "${BOARDS[@]}"; do
   else
     bs=$(barrier_state); brc=$?
     if [ "$brc" != "0" ]; then log "[$b] 측정 대기 $NP · 리프레시 배리어 ${bs:-?} — 이번 틱 측정 건너뜀(다음 틱)"
+    elif ! MGO=$(mem_gate standing_cell); then log "[$b] 측정 대기 $NP · 메모리 관문 대기 — ${MGO} — 이번 틱 측정 건너뜀(다음 틱)"
     else
       log "-- [$b] standing-measure(대기 $NP · 배리어 ${bs:-?})"
       run "$b" standing-measure || { log "[$b] standing-measure 실패(rc $?)"; RC=1; }
