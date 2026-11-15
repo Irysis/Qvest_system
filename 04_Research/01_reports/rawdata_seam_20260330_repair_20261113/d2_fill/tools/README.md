@@ -17,3 +17,5 @@ DART 키는 `.env` 의 `DART_API_KEY` 에서 읽고 출력하지 않는다.
 | 10 | `check_full_by_factor.R` | 양성 대조(팩터별) — 한 달을 전 모듈로 지은 값 vs 명세 모듈 부분 빌드, 명세 대상 팩터마다 행 · 값 대조(쓰기 없음). `Rscript … <YYYYMM> <명세.json> [명세2.json …]` | `SP/check_full_<YYYYMM>.csv` |
 | 11 | `vintage_add_xffix.py` | 판 원장에 D2 부작용 수리 항목(진행 중 · 범위 = 밸류 · 성장 7팩터) 추가(추가 전용) | `06_Registry/factor_db_vintage.json` |
 | 12 | `requery_1115_check.py` | 11-15 퀀티 재조회 14행 판정 재현(쓰기 없음) — 행별 주식 수 비율 · 시총 기준 · A012470 토요일 · 원주가 호가 검사 · A037030 거래소 공식 시세와 상한가 산술. `python … <SP> [RAWDATA.parquet]` | `SP/requery_1115_rows.csv` |
+| 13 | `list9_check.py` | 남은 9행(+ 대조 A012470) — 단절 앞뒤 시총 최대공약수 비교(주식 수 불변 판별) · A008080 2012-11-30 부동소수점 경계(쓰기 없음). `python … <SP> [RAWDATA.parquet] [창=20]` | `SP/list9_rows.csv` |
+| 14 | `list9_dart.R` | DART 목록 API 공시 제목(종목 · 기간 셋씩 · 키 출력 없음 · 조회 실패와 '없음' 구분). `Rscript … <Ticker> <YYYYMMDD> <YYYYMMDD> …` | (화면) |
