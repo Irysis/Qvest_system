@@ -1,6 +1,6 @@
 {
  "schema": "q_judgment_ledger_v1",
- "updated_at": "2026-11-15T06:28:47+0900",
+ "updated_at": "2026-11-15T09:34:46+0900",
  "judgments": [
   {
    "id": "J-20261016-001",
@@ -2839,6 +2839,31 @@
    "reviews": [],
    "supersedes": null,
    "superseded_by": null
+  },
+  {
+   "id": "J-20261115-005",
+   "at": "2026-11-15T09:00:04+0900",
+   "op": "OP-20261113-P1R04",
+   "kind": "harness_change",
+   "summary": "[11-15 08:4x] P4C01 첫 무인 틱(08:37) 실패 진단 = 코어 v4 설계 입력 결함(사유 코드 설명 = 코어 상수 RC_P4_REASONS 의 리뷰 id 날짜 · '전 기간' · 'T4' 가 마지막 전수 검사에 걸림 — 풀을 넘기는 모든 v4 사슬) + 둘째 구멍(목적 글이 생성기 입력에 없음 — P4C01 범위 문장 '생성기가 지킨다'가 거짓) → 코어 v5(v4 + 생성기 입력 수리 셋: 사유 코드 설명 검사 · 설계 입력 §0 목적 글(§ 가림 · 등록 때 표시 가능 검사) · 걸음 정책 step_policy) + P4C02 재등록(같은 설계 · blocks = blend · part_engine_rx = T0) · P4C01 보류 고정(닫지 않음)",
+   "rationale": "라운드를 실제로 막는 결함(CLAUDE.md 인프라 작업 ①)이고 둘째는 침묵 실패(②) — 출시 판 불변(RELEASES immutability)이라 v4 수정 불가 · 사슬 판 core_version 은 등록 뒤 못 바꾼다(spec md5) → 새 판 + 재등록이 유일한 정본 경로. 범위는 생성기 입력 쪽만(판정 규칙 · 채택 규칙 · 측정 무접촉) · 시험 41/0(고친 곳마다 양방향 · v1~v4 매니페스트 불변 · v5≠v4 파일 여섯) · 격리 변경분 점검 진행 중(출시 전)",
+   "framework_refs": [
+    "04_Research/programs/P4_ASSEMBLY/P4C02_fc_blend/DESIGN_draft.md"
+   ],
+   "evidence": [
+    ".cache/scheduler_logs/chain_tick_20261115_083723.log · 진단(설계 입력 107줄 중 42번 줄 = 사유 코드 줄만 걸림 · 도구 상자 · 부모 칸 사양 · 헌장 통과) · 08_Tests/programs/test_round_core_v5.R 41/0"
+   ],
+   "alternatives": [
+    "(a) v4/p4.R 직접 수정 — 출시 판 불변 위반 · P1S03 · P1S04 · P4C01 핀(코어 판 · 매니페스트) 동시 파손 (b) 세션이 손으로 걸음마다 작업 폴더 만들기 — 무인 사슬 목적 상실 · 20 걸음 손일 (c) 풀 없이 설계 입력 — blend 걸음을 낼 수 없다(사슬 목적 무효) (d) v5 = 사유 코드 줄만 — 목적 미노출 구멍이 P4C02 에 그대로(범위 문장이 다시 허구) (e) 원 세션 상신 — 라운드 막는 결함 수리는 Q 권한 · 대기 비용"
+   ],
+   "expectation": "v5 변경분 점검 ok(또는 필수 수리 뒤 ok) → RELEASES v5 → P4C02 철학 P1 · 판단 T1 → 등록 → 기저 측정이 P4C01 기저와 같은 구성 · 같은 보는 창 지표 → round.sh p4-workdir 통과(§0 목적 · 정책 줄) → tick_hold 삭제 뒤 첫 무인 틱이 걸음 1 을 연다(정책 밖 걸음은 기계 거부)",
+   "confidence": 0.7,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261115-010"
+   ],
+   "supersedes": null,
+   "superseded_by": null
   }
  ],
  "reviews": [
@@ -4065,6 +4090,45 @@
     "C-20261115-071",
     "C-20261115-072",
     "C-20261115-073"
+   ]
+  },
+  {
+   "id": "R-20261115-010",
+   "at": "2026-11-15T09:17:03+0900",
+   "role": "judgment",
+   "trigger": "T1",
+   "scope": [
+    "J-20261115-005"
+   ],
+   "file": "04_Research/programs/_supervision/superfan/20261115_0915_T1_P4C02.md",
+   "round": "P4C02_fc_blend",
+   "direction": null,
+   "challenges": [
+    "C-20261115-074",
+    "C-20261115-075",
+    "C-20261115-076",
+    "C-20261115-077",
+    "C-20261115-078",
+    "C-20261115-079"
+   ]
+  },
+  {
+   "id": "R-20261115-011",
+   "at": "2026-11-15T09:27:43+0900",
+   "role": "philosophy",
+   "trigger": "P1",
+   "scope": [],
+   "file": "04_Research/programs/_supervision/superfan/philosophy/20261115_0923_P1_P4C02.md",
+   "round": "P4C02_fc_blend",
+   "direction": null,
+   "challenges": [
+    "C-20261115-080",
+    "C-20261115-081",
+    "C-20261115-082",
+    "C-20261115-083",
+    "C-20261115-084",
+    "C-20261115-085",
+    "C-20261115-086"
    ]
   }
  ],
@@ -14573,6 +14637,308 @@
    "evidence": [
     "06_Registry/research_programs.json P1_RETURN rounds P1R02 verdict.note · C-20261018-078"
    ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261115-074",
+   "at": "2026-11-15T09:17:23+0900",
+   "review": "R-20261115-010",
+   "target": "J-20261115-005",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "걸음 정책의 '부품 = T0 엔진만 · 걸음 열기에서 기계로 거부'는 blend 블록의 factors · base_weight 축을 못 본다 — RC_P4_KEY_BLOCKS(p4.R:37) factors = blend · rc_p4_spec_diff 는 base_signal 이 바뀔 때만 풀 자격을 보고 .rcp4_step_policy_why 는 base_signal 경로만 대조한다. v5 실증: 기저 칸 + factors 1개 칸 = spec_diff ok · 정책 사유 0(양성 대조 ICW engine_blend = 사유 1) · rx_validate 도 받고 셀 엔진은 50:50 으로 섞는다(rf_cell_engine.R:431-436). P4C01 '생성기가 지킨다'와 같은 꼴이 '기계 검사' 문장으로 재발",
+   "evidence": [
+    "04_Research/programs/_supervision/superfan/20261115_0915_T1_P4C02.md",
+    "04_Research/programs/_lib/round_core/v5/p4.R",
+    "02_Infrastructure/reinforcement/rf_cell_engine.R"
+   ],
+   "alternative": "(가) v5 출시 전: step_policy 어휘에 axes(바꿀 수 있는 칸 사양 축 · P4C02 = [base_signal])를 더해 걸음 열기에서 dif$changed ⊆ axes · 양방향 시험 2 (가′) part_engine_rx 가 있으면 blend 걸음의 factors · base_weight 변경 거부(fail-closed) (나) 코드 없이 목적 글 · DESIGN §2 · §5 에 'blend = base_signal engine_blend 만 — factors · base_weight 축은 열지 않는다(정책 밖 · 생성기 몫)'",
+   "falsifier": "v5 rc_p4_step_open 이 P4C02 사슬 판(step_policy 포함)에서 부모 = 기저 칸 · block = blend · delta = factors 1개 추가 칸을 거부하거나(chain_tick compile 의 rx_validate 포함), 셀 엔진이 엔진 기저 칸의 factors 를 무시해 부모와 같은 포트폴리오를 내면 이 도전은 틀렸다",
+   "status": "accepted",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-11-15T09:34:45+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용 — blend 블록은 base_signal 말고도 factors · base_weight 축을 바꿀 수 있어(RC_P4_KEY_BLOCKS) 부품 정규식만으로는 '부품 = T0 엔진만'이 기계로 참이 아니었다.",
+     "change": "코어 v5 step_policy.axes(바꿀 수 있는 칸 사양 축 · RC_P4_POLICY_AXES · 등록 검사 + 걸음 열기 rc_p4_step_open 의 changed 대조) · P4C02 정책 axes = [base_signal] · 시험 P6 · P7 · P14 · P15 · 출시 632a7034e/74e76922a"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261115-075",
+   "at": "2026-11-15T09:17:23+0900",
+   "review": "R-20261115-010",
+   "target": "J-20261115-005",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "진단이 '출시 시험 · 격리 점검이 못 잡았다'에서 멈췄다 — 무인 틱 경로(풀 + 설계 입력 + 전수 검사)를 도는 유일한 시나리오 시험 test_scn_chain_tick_core.R 이 코어 v1 에 고정(:15)이고 v2~v4 단위 시험엔 design_input · generator_workdir 호출이 없다(grep 0). v5 E1 이 v5 에선 닫았지만 '고친 곳마다 양방향만' 규율이면 v6(이미 후보 셋 — p4_rules_v4 · 엔진 md5 대조 · 걸음마다 확인)은 E1 을 다시 돌리지 않는다 — 같은 종류가 등록 뒤 첫 틱에서 사슬을 또 죽일 수 있다",
+   "evidence": [
+    "04_Research/programs/_supervision/superfan/20261115_0915_T1_P4C02.md",
+    "08_Tests/scenarios/test_scn_chain_tick_core.R",
+    "04_Research/programs/_lib/round_core/RELEASES.json"
+   ],
+   "alternative": "(가) 시험을 늘리지 않고: E1(실제 사슬 상태 · 실제 기저 풀 · 그 판 rc_p4_design_input 전수 검사 통과)을 출시마다 도는 한 줄로 RELEASES v5 항목 · round_core README 출시 절차에 적고 다음 판 시험 파일이 그 판 load.R 로 승계 · known_limits 에 '틱 시나리오 시험 = 코어 v1 고정' (나) 시나리오 :15 를 환경변수(기본 = RELEASES 마지막 판)로 — 합성 등록부 손질 비용이 커 권하지 않음",
+   "falsifier": "v2~v4 출시 기록 · 커밋에 그 판의 rc_p4_design_input 또는 rc_p4_generator_workdir 를 비어 있지 않은 기저 풀과 함께 부른 시험 실행이 있거나, test_scn_chain_tick_core.R 이 코어 판을 바꿔 도는 경로(인자 · 환경변수)를 이미 갖고 있으면 이 도전은 틀렸다",
+   "status": "accepted",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-11-15T09:34:45+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용 — 틱 경로 시나리오 시험은 코어 v1 고정이라 v2~v4 는 자기 판 설계 입력 · 작업 폴더를 풀과 함께 돈 적이 없다(이번 결함이 출시 시험을 지난 까닭).",
+     "change": "v5 시험 E 묶음(실제 P4C01 상태 · 실제 기저 풀로 그 판 설계 입력 · rc_p4_generator_workdir) · RELEASES v5 tests_at_release · known_limits 에 v1 고정 사실 · README 'v5' 절 출시 절차에 '출시마다 그 판의 E 묶음' 줄"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261115-076",
+   "at": "2026-11-15T09:17:24+0900",
+   "review": "R-20261115-010",
+   "target": "J-20261115-005",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "예산 근거 문구(init_p4c02.R:39 max_steps_source 덧붙임) '요구 t 변화 무시할 만함'은 금지 표현 꼴('영향 미미')이 근거 자리에 있는 것이다 — 등록되면 사슬 판 md5 안이라 못 고친다. 결론은 맞다: 같은 계약(trial_budget.R tb_rc_required_t_rho · ρ 0.8 · 계약 씨앗) K 66 → 2.554 · K 67 → 2.564(Δ 0.010) · 더해지는 시행은 같은 칸 사양 사본이라 max-T 에 둔감(C-20261113-054) — 형용사 대신 그 숫자 · 논거를",
+   "evidence": [
+    "04_Research/programs/_supervision/superfan/20261115_0915_T1_P4C02.md",
+    "04_Research/programs/P4_ASSEMBLY/P4C02_fc_blend/tools/init_p4c02.R",
+    "02_Infrastructure/programs/trial_budget.R"
+   ],
+   "alternative": "'판 2: 같은 기저의 앞 사슬 P4C01 기저 측정 1(같은 칸 사양 사본)이 닫기 시행 집합에 더해진다(p4.R .rcp4_same_base_trials) — trial_budget.R rc ρ 0.8: K 66 → 67 요구 t 2.554 → 2.564 · 사본은 max-T 에 둔감(판단 C-20261113-054)'",
+   "falsifier": "등록된 P4C02 chain_spec.json budget.max_steps_source 에 '무시할 만함' 대신 계산값 또는 사본 논거가 있거나, 체계 · 규약에 *_source 문구는 정성 판단만으로 충분하다는 조항이 있으면 이 도전은 틀렸다",
+   "status": "accepted",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-11-15T09:34:45+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용 — '무시할 만함'은 금지 표현 꼴이다 · 계산값으로 쓴다(Q 재계산: trial_budget.R tb_rc_required_t_rho ρ 0.8 · K 66 → 2.554 · K 67 → 2.564 — 리뷰 값과 같음).",
+     "change": "init_p4c02.R budget.max_steps_source = 'K 66 → 67 요구 t 2.554 → 2.564 · 더해지는 시행은 기저 칸 사본' · DESIGN_draft §2"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261115-077",
+   "at": "2026-11-15T09:17:37+0900",
+   "review": "R-20261115-010",
+   "target": "J-20261115-005",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "진단 · 경로 · 권한 · P4C01 처리 · 정보 경계 · 과정이 체계대로다 — 틱 오류를 v4 RC_P4_REASONS 에서 재도출(따로 걸리는 설명 = philosophy_unread · lowrisk_confirm_pending · '전 기간'은 이은 줄에서만) · 출시 판 불변 + 사양 md5(p4.R:981)라 새 판 + 재등록이 유일한 정본 경로 · 체계 §2-1 · §2-2 · §6(Q 권한) · 판정 규칙 무접촉 · 걸음 정책은 P1S04 §5-7 ① 손 보류를 기계로 대신해 '막지 않는다'에 맞다 · P4C01 기저는 .rcp4_same_base_trials(p4.R:1771-1794)가 P4C02 닫기 시행에 합친다 · 기저 = 기계 규칙 + 동일성 단정 · 채택 규칙 값 그대로라 노출이 닿을 자유도 없음 · §0 목적 · 정책 줄 rc_input_issues 통과(내 v5 확인) · 시험 41 은 11-12 지시와 맞다",
+   "evidence": [
+    "04_Research/programs/_supervision/superfan/20261115_0915_T1_P4C02.md",
+    ".cache/scheduler_logs/chain_tick_20261115_083723.log",
+    "04_Research/programs/P4_ASSEMBLY/P4C02_fc_blend/DESIGN_draft.md"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261115-078",
+   "at": "2026-11-15T09:17:37+0900",
+   "review": "R-20261115-010",
+   "target": "SYSTEM",
+   "grade": "note",
+   "rule": null,
+   "claim": "생성기 입력 다듬기 셋(v5 미출시 · 싸다): (i) 설명이 빠지는 두 코드(philosophy_unread · lowrisk_confirm_pending)는 v5 상수 문구에서 id 날짜만 빼면 생성기가 제외 사유를 그대로 읽는다 (ii) P4C02 목적 첫머리(init_p4c02.R:50-53)는 하네스 사연이라 처방 신호가 아니다 — DESIGN 으로 (iii) g1 step.md:32 는 블록 9종을 열거하고 §0 을 모른다 — 생성기 판은 등록 때 핀되므로 바꾸려면 지금(g2 한 줄) · 정책 밖 걸음은 gen_fail → 상한 → 경보로 시끄럽게 멈춰 급하지 않다",
+   "evidence": [
+    "04_Research/programs/_supervision/superfan/20261115_0915_T1_P4C02.md",
+    "04_Research/programs/P4_ASSEMBLY/_generator/g1/step.md"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261115-079",
+   "at": "2026-11-15T09:17:38+0900",
+   "review": "R-20261115-010",
+   "target": "SYSTEM",
+   "grade": "note",
+   "rule": null,
+   "claim": "같은 전제가 남은 곳 = P1S04 DESIGN.md:39 '목적이 부품을 묶는다(P4C01 선례)' — v4 사슬에선 거짓(목적 미노출) · v5 에선 step_policy 를 건 사슬에서만 기계로 참(축 구멍 전까지 엔진 부품만). 'v5 사슬 판 step_policy.part_engine_rx 로 묶는다 · 정책 없는 사슬 = 생성기가 §0 을 읽는 것뿐'으로 고칠 것. grep 으로 본 다른 활성 사슬 · 상설 판 문서엔 같은 전제 없음",
+   "evidence": [
+    "04_Research/programs/_supervision/superfan/20261115_0915_T1_P4C02.md",
+    "04_Research/programs/P1_RETURN/P1S04_standing_qualification/DESIGN.md"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261115-080",
+   "at": "2026-11-15T09:27:43+0900",
+   "review": "R-20261115-011",
+   "target": "J-20261115-005",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "판 2 는 범위를 생성기가 보는 곳(설계 입력 §0 — 목적 1,973자 + 정책 줄 · 처방 입력 검사 통과 · id 안 날짜만 가림)과 기계(blocks · axes · part_engine_rx)로 옮겼다. 양성 대조: factors 틸트 칸(D02_Beta defensive · 점수 50%)은 axes 전 판에서 rx_validate · 컴파일 · 칸 차이 · 정책을 모두 통과했고 지금 판에서 거부된다(판단 C-20261115-074 독립 재도출) · 기저 + 성장 통과 · 정규식 + 풀 자격 = 부품 여덟(등록 뜻) · IC 가중 밸류 · 컨센서스 · 레인 엔진 거부(C-20261115-040 기계로 닫힘 · P1S04 §5-7 ① 등가 확인 · 추첨 행운 차단) · C-038 · C-048 의 '생성기가 지킨다' 전제가 처음으로 참",
+   "evidence": [
+    "스크래치 양성 대조 ①④ · p4.R:785-826 · :1290 · .rcp4_section0 렌더 · 정규식 대 FC 폴더 30 · 시험 P12 · P13"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261115-081",
+   "at": "2026-11-15T09:27:43+0900",
+   "review": "R-20261115-011",
+   "target": "J-20261115-005",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "걸음 정책이 목적 글의 걸음 단위 '기저 + 부품 1개 추가'를 싣지 않는다 — engine_blend 는 풀 자격 · key ≥ 2 · 정규식만 보고 부모 엔진 포함 · 추가 수를 보지 않는다(p4.R:1187-1213 · :806-826). 양성 대조(지금 판 · axes 포함 POLICY): 기저를 뺀 블렌드(성장 + 컨센서스) · 한 걸음 부품 둘(밸류 + 위험 + 방어)이 spec_diff ok · 정책 사유 0 으로 통과. 부품 둘 = 두 장치의 조립을 N2 한 번으로 판정(헌장 빈칸 23 '장치마다' 우회 · 저β 둘이면 점수 2/3 가 저β · 계보가 달라 same_lineage 꼬리표 없음) · 기저 뺀 블렌드 = S0 '이 엔진을 지키며'와 규약 §13-1 ③ 이 결과 규칙(N1 · 닫기 ①)으로만 남고 보유 겹침(빈칸 19) 미기록. DESIGN §5 '부품 수 · 블렌드 구성은 채택 규칙이 본다'는 사실과 다르다(채택 규칙 7 에 그런 조건 없음) · §6 표에 이 줄이 없다",
+   "evidence": [
+    "스크래치 양성 대조 ②③(axes 전 · 뒤 판 모두 통과) · p4.R:1187-1213 · :806-826 · :1290 · 도구 상자 §8 · P4C02 목적 글 · DESIGN §5 · §6 · 헌장 §5 S0 · 빈칸 19 · 23 · 3 · 8 · 규약 §13-1 ③"
+   ],
+   "alternative": "(가) v5 출시 전(axes 와 같은 변경분 점검 안): step_policy 에 blend_rule = parent_plus_one(engine_blend 엔진 집합 ⊇ 부모 칸 엔진 ∧ 새 엔진 수 = 1 · 기저 칸에서 첫 블렌드 = 기저 + 1) · 걸음 열기가 읽는 부모 칸 사양을 .rcp4_step_policy_why 에 넘김 · 시험 양성 대조 셋(기저 뺀 블렌드 거부 · 부품 둘 거부 · 기저 + 성장 통과) · DESIGN §5 · §6 고침 — 비용 코드 십여 줄 · LLM 0 · 측정 0. (나) 그대로 출시면 목적 글에 '블렌드 칸 = 부모 칸 엔진 전부 + 부품 1개 — 기저를 빼거나 한 걸음에 둘 이상 더하지 않는다(정책 밖 · 글로만)'를 적고, 닫기 P2 가 그 꼴 걸음을 '사슬 범위 밖'으로 읽어 블렌드 결론과 분리",
+   "falsifier": "이 사슬 판 걸음 정책(지금 POLICY) 아래에서 코어 v5 걸음 열기가 기저 엔진을 뺀 engine_blend(성장 + 컨센서스) 또는 부모 엔진에 둘을 더한 engine_blend(밸류 + 위험 + 방어)를 거부하면(스크래치 양성 대조 · 시험) 이 도전은 틀렸다. 등록본 채택 규칙 · 닫기 판독이 부모 엔진 포함 · 부품 수를 이미 기계로 판정하면 틀렸다.",
+   "status": "accepted",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-11-15T09:34:46+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용 (가) — 목적 글의 걸음 단위 '기저 + 부품 1개'가 기계로 안 묶였다(기저 뺀 블렌드 · 한 걸음 둘이 통과 — 양성 대조 재현).",
+     "change": "코어 v5 step_policy.blend_rule = parent_plus_one(.rcp4_blend_rule_why — 기저 신호를 바꾸는 걸음 = engine_blend · 부모 칸 엔진 ⊆ 자식 · 새 엔진 정확히 1개 · 판독 불가 = 거부 · 걸음 열기가 부모 칸 사양을 넘긴다) · 시험 B1 ~ B9 · P4C02 정책에 blend_rule · DESIGN §6 표 줄 · §5 문장 고침 · 출시 632a7034e"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261115-082",
+   "at": "2026-11-15T09:27:43+0900",
+   "review": "R-20261115-011",
+   "target": "J-20261115-005",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "수용분 C-20261115-070(소형주 착시 — 유동성 3분위 위기 손익 귀속 사이드카 · 기준 칸 · 최종 후보 · 닫기 판독 ⑥) · C-20261115-068 (가) 새 원천 탐침 · (나) 기저 풀 철학 표의 배선 지점이 재개 저널에 'P4C01 닫기 때'로 적혀 있는데, P4C02 DESIGN §3 은 P4C01 을 닫지 않는다로 고정한다. 판 2 목적 글(등록 뒤 불변 · 닫기 P2 가 대조)의 닫기 판독은 ①~⑤ 뿐(⑤ = 미측정) · DESIGN · v5 변경분 점검 · 판단 T1 어디에도 없고 · P4C01 기준 칸 측정 뒤 사이드카 산출도 없다. 그대로면 첫 사슬 닫기에서 소형주 착시가 또 미측정(10-18 C-076 → 11-15 C-070) — 사슬 기저 밸류는 깊은 위기 창 보유의 58~76% 가 크기 1분위(보는 창 · R-20261115-009 C3)",
+   "evidence": [
+    "판단 원장 C-20261115-070 · 068 응답 change · 06_Registry/session_resume.json(06:29 줄 ③ · 뒤 줄 ⑤) · P4C02 DESIGN_draft §3 · §4 · §0 렌더 · P4C01 폴더 목록 · 헌장 §4 소형주 착시"
+   ],
+   "alternative": "init_p4c02.R 목적 글 끝에 '⑥ 소형주 착시 = 유동성 3분위 위기 손익 귀속(rc_p2_liq_tercile_cell 재사용 · 보는 창 · 기준 칸 = p4-base-measure 직후 · 최종 후보 = 닫기 · 기록 · 판정 무접촉 · 못 재면 소형주 착시 미측정 꼬리표 · 철학 C-20261115-070)' (선택 '⑦ 닫기 다음 탐침 한 자리 = 새 기저 신호 원천(C-068 (가)) · 기저 풀 철학 표 사이드카(C-068 (나) · 없으면 미측정)') · DESIGN §4 절차 2 에 ⑥ 기준 칸 사이드카 · 재개 저널 'P4C01 닫기 때' → 'P4C02 기준 칸 · 닫기' — 코드 0 · 새 숫자 0",
+   "falsifier": "등록본 P4C02 목적 글 · DESIGN_draft §4 · 재개 저널 가운데 하나에 C-070 사이드카 실행 지점이 P4C02 기준 칸 · 닫기로 이미 적혀 있으면 이 도전은 틀렸다. P4C01 기준 칸의 유동성 3분위 위기 손익 귀속 R 산출이 이미 있으면 기준 칸 쪽은 틀렸다(닫기 쪽만 남는다).",
+   "status": "accepted",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-11-15T09:34:46+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용 — C-070 사이드카 · C-068 (가)(나)의 실행 지점이 닫지 않는 P4C01 에 묶여 있었다.",
+     "change": "P4C02 목적 글(등록 뒤 불변)에 닫기 판독 ⑥ 소형주 착시(유동성 3분위 위기 손익 귀속 · 기준 칸 = 기저 측정 뒤 · 최종 후보 = 닫기 · 기록만 · 못 재면 미측정 꼬리표) · ⑦ 닫기 다음 탐침 한 자리 = 새 기저 신호 원천 · 기저 풀 철학 표 사이드카 · DESIGN §4 절차 2 · 재개 저널의 'P4C01 닫기 때' → 'P4C02 기준 칸 · 닫기'"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261115-083",
+   "at": "2026-11-15T09:27:44+0900",
+   "review": "R-20261115-011",
+   "target": "J-20261115-005",
+   "grade": "note",
+   "rule": null,
+   "claim": "§0 목적 글의 생성기 오도 문구 셋 — ① 'blend 블록(기저 + 부품 1개 추가)부터 설계한다' ↔ '걸음 = blend 블록만'(g1 step.md 블록 아홉 · §7 p4.R:1730-1731 이 '부터'를 거든다 · 정책 밖 산출 = gen_fail 연속 2 → 차단 · 판단 C-078 (iii) 과 같은 결) → '만 설계한다' ② 반증 괄호 '(N5 β 비대칭 · same_lineage_blend 표식)' — 채택 걸음은 정의상 N5 = 1 · 판독은 닫기 ③ → '(닫기 판독 ③ — 시가총액 × β 라벨 · 기저 대비 Δβ)' ③ '(방향 수정 · 생성기 개정)' = FC 엔진 생성기 — 처방 생성기와 이름이 같다 → 'FC 엔진 생성기 개정'",
+   "evidence": [],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261115-084",
+   "at": "2026-11-15T09:27:44+0900",
+   "review": "R-20261115-011",
+   "target": "J-20261115-005",
+   "grade": "note",
+   "rule": null,
+   "claim": "생성기는 측정 원천 넷(밸류 · 성장 · 컨센서스 · 저β 하나)을 모른다 — 가설 전제 '원천이 다른 엔진의 초과수익은 상관이 낮아'를 저β 다섯에 적용해 β 몫을 '낙폭 시점 어긋남'으로 적을 공산 · same_lineage 꼬리표는 계보만 봐 같은 측정 원천의 다른 카테고리를 못 거른다 · noise_k 2 + 기저 S 가 부품 모두보다 높음(판단 C-045) + step.md 병목 우선 → 저β 둘로 닫히고 성장(대형주 주도 강세 공백 · 철학 쪽 최선)이 미시험일 수 있다. 권고: 목적 글에 '저β 다섯은 측정 원천 하나로 센다(P1R03 · P1R04 판정) — 저β 상대끼리 바꿔 끼우는 걸음은 새 원천 시행이 아니다' · 선택 = 원천이 다른 부품(성장 · 컨센서스)과 저β 묶음 하나를 먼저(탐색 순서 · 등록 때 고정)",
+   "evidence": [],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261115-085",
+   "at": "2026-11-15T09:27:44+0900",
+   "review": "R-20261115-011",
+   "target": "J-20261115-005",
+   "grade": "note",
+   "rule": null,
+   "claim": "'저β 수익 엔진' 표기는 글이다 — 걸음 단위 기계 없음 · 설계 입력 §1 풀 표에 풀 열 label_class 가 없어 생성기는 key 이름으로 맞춘다 · 가설 · 기전 글은 처방 입력 검사만 받아 저β 블렌드를 '방어'로 쓴 문장이 걸음 원장 → 다음 설계 입력 §4 → 결과 원장으로 흐른다. 권고(선택): §1 표에 label_class 열(C1 (가)와 같은 판) · 걸음 열기 꼬리표 lowbeta_defense_wording(거부 아님) · 없으면 닫기 P2 가 R-20261115-004 N4 목록으로 읽는다",
+   "evidence": [],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261115-086",
+   "at": "2026-11-15T09:27:44+0900",
+   "review": "R-20261115-011",
+   "target": "J-20261115-005",
+   "grade": "note",
+   "rule": null,
+   "claim": "판 2 에서 바꿀 것 없음(확인): C-069 — engine_blend = 월별 rank-Z 등가중 고정이라 상태 조건부 무게(보유 회전 β 타이밍)를 낼 수 없고 regime_exposure · tail_overlay(blocks) · 국면 팩터 틸트(axes)가 막힌다 · 탐침 소비(C-041) — 무인 틱 p4-step-open 호출에 --probe 가 없어(chain_tick.sh:229) 무인 걸음은 P1R04#3 을 못 지운다(손 걸음만 가능 — 쓰지 않기를 권함) · 레인 보류 등가(DESIGN §4.5) 맞음 · 생성기 g1 은 §0 을 모른다(판단 C-078 (iii)) — 정책 밖 산출이 실제로 나오면 rxg_revise(새 판 · 철학 P1)로 한 줄",
+   "evidence": [],
    "alternative": "",
    "falsifier": "",
    "status": "closed_note",
