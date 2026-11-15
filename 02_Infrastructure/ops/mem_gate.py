@@ -46,7 +46,9 @@ def proc_rows():
     if f:
         lines = open(f, encoding="utf-8").read().splitlines()
     else:
-        ps = "Get-CimInstance Win32_Process | ForEach-Object { '{0}`t{1}' -f $_.ProcessId, $_.CommandLine }"
+        # 탭은 [char]9 로 만든다 — 작은따옴표 문자열 안의 `t 는 이스케이프가 아니라 글자 그대로라(11-15 af597c328 판) 탭 구분 행이 0 이 되어
+        # 겹침 표지가 한 번도 발화하지 않았다(1계층 세션 11-15 16:2x 재현: 522줄 중 탭 0 · 글자 `t 468).
+        ps = "Get-CimInstance Win32_Process | ForEach-Object { '{0}{1}{2}' -f $_.ProcessId, [char]9, $_.CommandLine }"
         r = subprocess.run(["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", ps], capture_output=True, timeout=90)
         if r.returncode != 0 or not r.stdout:
             raise OSError("프로세스 목록 조회 실패(rc %s)" % r.returncode)
@@ -58,6 +60,8 @@ def proc_rows():
         pid, cl = ln.split("\t", 1)
         if cl.strip() and not SELF_RX.search(cl):
             rows.append((pid.strip(), cl))
+    if not f and not rows:   # 실제 목록이 탭 구분 0행 = 판독 실패(프로세스가 하나도 없을 수는 없다) — 조용히 '겹침 없음'으로 통과시키지 않는다
+        raise OSError("탭 구분 행 0(원본 %d줄) — 조회 형식 결함" % len(lines))
     return rows
 
 
