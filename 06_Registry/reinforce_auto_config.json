@@ -2,7 +2,7 @@
   "schema": "reinforce_auto_config_v1",
   "enabled": false,
   "replication_lane": {
-    "enabled": true,
+    "enabled": false,
     "speedopt_paused_at": "2026-11-15T09:29",
     "speedopt_note": "도훈 11-15 '머신러닝 딥러닝 쓰는건 좋은데 코드속도 최적화 필요할꺼 같네' — 2407.10175(단일 코어 · 두 변형이 같은 추정 반복 · 6~10일 예상)를 멈추고 엔진 가속(월 병렬 · 변형 공유 캐시 · 결과 동일 실증 · 충실도 재감사) 뒤 재측정 · 그 사이 P1S04 측정 창 · 가속 끝나면 오케스트레이터가 다시 켠다",
     "yield_resumed_at": "2026-11-14T16:06",
@@ -29,7 +29,9 @@
     "not_before_note": "시작 관문 — 이 시각 전에는 레인이 아무 일도 하지 않는다(rf_replication_auto.sh · 스위치 바로 뒤) · 해제 = rf_replication_slots.py config not-before clear",
     "not_before_cleared_at": "2026-11-11T10:01:48+0900",
     "speedopt_resumed_at": "2026-11-15T15:02",
-    "speedopt_resumed_note": "도훈 11-15 결정 LANE-SPEEDOPT-2407-20261115 의 '가속 끝나면 오케스트레이터가 다시 켠다' 이행 — 가속판 엔진(01c36de86 · md5 227a1f64 · 결과 동일 13개월 × 2변형) 청정 인정(ENGINE-2407-SPEEDOPT-CLEAN-20261115 · adf6466fc) · P1S04 판 3 E2·E3 측정 · 판정 끝(6c76a9ed5 · 87fc7c79a) → gpu1 요청 2407.10175(failure=session_reverify)가 재구현 없이 6축 재감사 → 측정(작업자 6) · 상설 판 2106.06164 는 CPU 엔진이라 레인 GPU 관문 대상 아님"
+    "speedopt_resumed_note": "도훈 11-15 결정 LANE-SPEEDOPT-2407-20261115 의 '가속 끝나면 오케스트레이터가 다시 켠다' 이행 — 가속판 엔진(01c36de86 · md5 227a1f64 · 결과 동일 13개월 × 2변형) 청정 인정(ENGINE-2407-SPEEDOPT-CLEAN-20261115 · adf6466fc) · P1S04 판 3 E2·E3 측정 · 판정 끝(6c76a9ed5 · 87fc7c79a) → gpu1 요청 2407.10175(failure=session_reverify)가 재구현 없이 6축 재감사 → 측정(작업자 6) · 상설 판 2106.06164 는 CPU 엔진이라 레인 GPU 관문 대상 아님",
+    "memgate_paused_at": "2026-11-15T15:03",
+    "memgate_paused_note": "1계층 세션 경고(11-15 14:4x) 확인 — 레인 측정(검증기 본체 약 12.7 GB + 작업자 6)과 매시 :37 틱(상설 판 셀 측정 약 7.9 GB · P4C02 걸음 약 7.5 GB)이 겹치면 가용(약 16 GB)을 넘는데, 레인 출발 · :37 틱에는 메모리 관문(MEMORY-USE-90PCT-20261115 정책 식)이 없다 → 14:58 에 띄운 2407.10175 실행(충실도 감사 단계 · 측정 전)을 멈추고 레인 정지 · 도훈 결정(겹침 처리) 뒤 다시 켠다 · gpu1 요청은 in_progress 로 남아 다음 켜짐 때 verify_only_retry(재구현 없음)로 되살아난다"
   },
   "retired_v10_01": "2026-10-13 도훈 지시 — 1계층 고정 격자 강화 러너 퇴역(v10.01 목표 역산형 3엔진 리서치로 교체 · 설계 04_Research/01_reports/l1_prescription_redesign_20261013/README.md · 롤백 태그 pre-v10.01-prescription-20261013). enabled=false 는 러너 영구 정지. 이 파일에 남는 키는 다른 레인(llm.lanes · factor_autoregister · replication)이 읽는 것뿐이다.",
   "deploy_window_20260925": "Q 배포 창 22:58~23:4x 종료 — PREREG·V6·B5LAB·CATB 배포(23:35~23:38) · B5_16~20 possible 표식 후 true 복원. 남은 창: R3R_rb·ALLOWP(러너 tick 사이 또는 다음 창)",
