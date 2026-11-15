@@ -7,7 +7,7 @@
 #   코어 v3 · v4 의 측정(rc_standing_measure_item)은 GPU 관문(레인 측정 0 + 임대)을 스스로 지난다 — 임대는 코어 관문이 측정 때 잡고 측정이 끝나면 놓는다.
 #   이 셸은 **임대를 미리 쥐지 않는다**(창을 기다리는 동안 레인 GPU 슬롯을 세우지 않는다 · 옛 판은 레인 측정 0 이 되자마자 임대를 쥐고 창을 기다렸다).
 #   순서 = W(측정 창) → L(레인 측정 0) → M(측정):
-#   W: 측정 창 — 낮 창 시작 08:20~11:45(측정 E2 + E3 약 6시간 가정 → 17:45 전 종료) · 밤/아침 체인 미실행 · 배리어 free · 지문 20분 안정 · 가용 메모리 ≥ 16 GB
+#   W: 측정 창 — 낮 창 시작 08:20~11:45(측정 E2 + E3 약 6시간 가정 → 17:45 전 종료) · 밤/아침 체인 미실행 · 배리어 free · 지문 20분 안정 · 가용 메모리 − 그 측정의 예상 정점 ≥ 여유(메모리 정책 · 11-15 — 아래 MEM_POL 주석)
 #      (신선도는 코어가 측정 직전에 본다). 이른 창(02:30~)은 없앴다 — 밤 체인(00:03~약 06:00)과 아침 체인(07:10) 사이에 6시간 창이 없다.
 #   L: 창이 열려 있는 동안 레인 GPU 슬롯 측정 0 을 본다(임대 요청 없음). 둘 다 서면 M.
 #   M: measure-item E2 → (E2 ok · 지문 동일이면) E3 용 임대를 곧바로 한 번 선점(관문이 쓸 것과 같은 보유자 이름 — 관문 요청은 already_held 로 통과)
@@ -38,10 +38,21 @@ main() {
   WINPID=$(cat /proc/$$/winpid 2>/dev/null)
   DAY_A=${P1S04_DAY_A:-500};     DAY_Z=${P1S04_DAY_Z:-600}   # 판 3: 시작 상한 10:00(워커 3 · 측정 시간 미실측 — 밤 체인 22:48 전 12시간 남김)          # 낮 창 시작 허용(분) 08:20~11:45 — 측정 약 6시간 가정(판 1 추정 J-017 · 5~6시간) → 17:45 전 종료
   FP_STABLE_S=${P1S04_FP_STABLE_S:-1200}
-  # 가용 메모리 하한 16 GB 의 근거: 물리 31.8 GB − 레인 측정 실측 12.7 GB − 기저 사용 약 3 GB ≈ 16 GB.
-  #   즉 '레인급 작업이 지금 돌고 있지 않다'는 표지다(DNN 칸 지속 25~33 GB 를 보장하는 문턱이 아니다 — 그 겹침은 레인 측정 0 조건이 막는다).
-  #   근거 = 기억 카드 main-pc-commit-limit(11-11 실측: 레인 12.7 GB + R 작업 8.7 GB · 물리 31.8 GB).
-  MEM_MIN_GB=${P1S04_MEM_MIN_GB:-16}
+  # 메모리 관문(11-15 · 도훈 MEMORY-USE-90PCT-20261115 · 정본 06_Registry/memory_policy.json): 가용 메모리(Available MBytes = FreePhysicalMemory)
+  #   − 그 측정의 예상 정점 ≥ 여유(reserve_gb · 물리 31.8 GB 의 10%). 구 고정 하한 16 GB(레인급 작업 부재 표지)는 폐기 — 레인 겹침은 L(레인 측정 0)이 막는다.
+  #   예상 정점 = 11-15 첫 측정 실측(물리 작업 집합 · 커밋 아님 · 세션 표본기 20초 + 프로세스 PeakWorkingSet64):
+  #     DNN 측정 15.3 GB — E2(11:11~14:01): 셀 워커 R 적재 단계 15.2 GB(DNN 워커 뜨기 전) + 래퍼 약 0.1 GB · 워커 단계 합계 최대 11.5 GB(R + DNN 워커 3 × 4.6~4.8 GB).
+  #       E3 보통 대기(지문이 E2 때와 달라짐 → 기저 캐시 키가 갈려 DNN 을 다시 돈다)도 이 값.
+  #     E3 follow 7.9 GB — E3(14:01~14:04 · E2 기저 캐시 적중 · DNN 없음): 셀 워커 7.8 GB + 래퍼 약 0.1 GB.
+  #       follow 는 지문 = E2 측정 시작 때라야 잰다(같은 자료 판) — 그래도 캐시가 빗나가면 DNN 정점이 이 관문을 넘어 페이징으로 느려질 수 있다(실패는 아님 · 커밋 상한 183.8 GB).
+  MEM_POL=${P1S04_MEM_POLICY:-06_Registry/memory_policy.json}
+  PEAK_DNN=${P1S04_PEAK_GB_DNN:-15.3}; PEAK_E3F=${P1S04_PEAK_GB_E3F:-7.9}
+  local pv
+  for pv in "$PEAK_DNN" "$PEAK_E3F"; do
+    { [[ "$pv" =~ ^[0-9]+([.][0-9]+)?$ ]] && awk -v p="$pv" 'BEGIN{exit !(p > 0)}'; } || { echo "예상 정점 판독 불가: $pv(P1S04_PEAK_GB_DNN · P1S04_PEAK_GB_E3F)" >&2; exit 2; }
+  done
+  RESV=$(timeout 60 "$PY" -X utf8 -c "import json,sys;v=float(json.load(open(sys.argv[1],encoding='utf-8'))['reserve_gb']);sys.exit(1) if not v > 0 else print(v)" "$MEM_POL" 2>/dev/null | tr -d '\r\n')
+  [ -n "$RESV" ] || { echo "메모리 정책 판독 불가($MEM_POL::reserve_gb) — 띄우지 않는다" >&2; exit 2; }
   MAX_WAIT_S=${P1S04_MAX_WAIT_S:-172800}
   T0=$(date +%s)
   case "$WINPID" in ''|*[!0-9]*) echo "winpid 판독 불가" >&2; exit 2 ;; esac
@@ -50,11 +61,18 @@ main() {
     LOG=/dev/stdout
     echo "winpid=$WINPID · lane_dir_busy=$(lane_dir_busy && echo 1 || echo 0) · lane_status=$(lane_status) · lease=$(lease_now)"
     echo "DailyRefresh running=$(task_running Qvest_DailyRefresh && echo 1 || echo 0) · MorningBrief running=$(task_running Qvest_MorningBrief && echo 1 || echo 0)"
-    echo "barrier_free=$(barrier_free && echo 1 || echo 0) · mem_gb=$(mem_gb) · fp=$(bash "$FPS" equality 2>/dev/null | md5sum | cut -c1-12) · nowm=$((10#$(date +%H) * 60 + 10#$(date +%M))) · 낮 창 ${DAY_A}~${DAY_Z}분"
+    echo "barrier_free=$(barrier_free && echo 1 || echo 0) · fp=$(bash "$FPS" equality 2>/dev/null | md5sum | cut -c1-12) · nowm=$((10#$(date +%H) * 60 + 10#$(date +%M))) · 낮 창 ${DAY_A}~${DAY_Z}분"
+    local sc sm
+    for sc in "P1S04_E2_C0 normal" "P1S04_E3_RX0 follow" "P1S04_E3_RX0 normal"; do
+      read -r sc sm <<< "$sc"
+      if mem_ok "$sc" "$sm"; then echo "메모리 관문 $sc($sm): 통과 — 가용 ${mg}GB − 정점 ${pk}GB ≥ 여유 ${RESV}GB(출발 ${nm} MiB)"
+      else echo "메모리 관문 $sc($sm): 대기 — 가용 ${mg}GB − 정점 ${pk}GB < 여유 ${RESV}GB(출발 ${nm} MiB)"; fi
+    done
     exit 0
   fi
   trap 'on_exit' EXIT
-  log "시작 · msys pid $$ · winpid $WINPID · 낮 창 ${DAY_A}~${DAY_Z}분 · 지문 안정 ${FP_STABLE_S}s · 메모리 ≥ ${MEM_MIN_GB}GB · 임대 미리 안 쥠"
+  log "시작 · msys pid $$ · winpid $WINPID · 낮 창 ${DAY_A}~${DAY_Z}분 · 지문 안정 ${FP_STABLE_S}s · 메모리 = 가용 − 정점(DNN ${PEAK_DNN} · E3 follow ${PEAK_E3F} GB) ≥ 여유 ${RESV}GB(정책 ${MEM_POL}) · 임대 미리 안 쥠"
+  [ -n "${P1S04_MEM_MIN_GB:-}" ] && log "P1S04_MEM_MIN_GB=${P1S04_MEM_MIN_GB} 는 11-15 폐기(메모리 정책 식) — 무시"
 
   # ── M: 측정(판정 · 발송 없음) ────────────────────────────────────────────────────
   local rc_e2 rc_e3=-1 e2ok exitc=0
@@ -94,7 +112,7 @@ measure_until_done() {   # $2 = normal | follow(E3 — E2 와 같은 창 · 같�
 
 # W: 측정 창 · L: 레인 측정 0 — 둘 다 서면 0 · 대기 상한이면 1(임대를 잡지 않는다)
 wait_window_and_lane() {   # $2 = normal | follow — follow 면 시각 창 · 지문 안정 대기를 건너뛰되 지문 = E2 측정 시작 때여야 한다
-  local code=$1 mode=${2:-normal} now fp_last="" fp_since last_why=0 why fp nowm mg ls fpe2
+  local code=$1 mode=${2:-normal} now fp_last="" fp_since last_why=0 why fp nowm mg pk nm ls fpe2
   fp_since=$(date +%s)
   if [ "$mode" = "follow" ]; then
     fpe2=$(cat "$FP_E2" 2>/dev/null)
@@ -118,7 +136,7 @@ wait_window_and_lane() {   # $2 = normal | follow — follow 면 시각 창 · �
     if [ -z "$why" ]; then task_running Qvest_MorningBrief && why="아침 체인 실행 중"; fi
     if [ -z "$why" ]; then barrier_free || why="리프레시 배리어 held"; fi
     if [ -z "$why" ] && [ "$mode" != "follow" ] && [ $((now - fp_since)) -lt "$FP_STABLE_S" ]; then why="지문 안정 $((now - fp_since))s < ${FP_STABLE_S}s"; fi
-    if [ -z "$why" ]; then mg=$(mem_gb); { [ -n "$mg" ] && [ "$mg" -ge "$MEM_MIN_GB" ]; } 2>/dev/null || why="가용 메모리 ${mg:-?}GB < ${MEM_MIN_GB}GB"; fi
+    if [ -z "$why" ]; then mem_ok "$code" "$mode" || why="가용 메모리 ${mg}GB − 정점 ${pk}GB < 여유 ${RESV}GB"; fi
     if [ -z "$why" ]; then
       if lane_dir_busy; then why="레인 GPU 슬롯 claim 디렉터리 있음"
       else ls=$(lane_status); { [ "$ls" = "live" ] || [ "$ls" = "unreadable" ]; } && why="레인 측정 status=$ls"; fi
@@ -189,7 +207,15 @@ task_running() {
   [ "$s" = "Running" ]
 }
 barrier_free() { bash 02_Infrastructure/ops/refresh_barrier.sh status 2>/dev/null | grep -q "state=free"; }
-mem_gb() { timeout 90 powershell.exe -NoProfile -NonInteractive -Command "[math]::Floor((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory/1MB)" 2>/dev/null | tr -d '\r\n '; }
+mem_mib() { timeout 90 powershell.exe -NoProfile -NonInteractive -Command "[math]::Floor((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory/1KB)" 2>/dev/null | tr -d '\r\n '; }
+mem_ok() {   # $1 = code · $2 = normal | follow — 메모리 정책 식: 가용 MiB ≥ (그 측정의 예상 정점 + 여유) × 1024 · 부르는 쪽 변수 mg(GB) · pk(GB) · nm(MiB)를 채운다
+  local am
+  case "$1:$2" in P1S04_E3_RX0:follow) pk=$PEAK_E3F ;; *) pk=$PEAK_DNN ;; esac
+  nm=$(awk -v p="$pk" -v r="$RESV" 'BEGIN{printf "%d", (p + r) * 1024 + 0.5}')
+  am=$(mem_mib)
+  mg=$(awk -v m="$am" 'BEGIN{ if (m ~ /^[0-9]+$/) printf "%.1f", m / 1024; else print "?" }')
+  [[ "$am" =~ ^[0-9]+$ ]] && [ "$am" -ge "$nm" ]
+}
 run() { log "M: round.sh <판> $*"; bash "$RS" "$BOARD" "$@" >> "$LOG" 2>&1; local rc=$?; log "M: rc=$rc ($*)"; return $rc; }
 on_exit() {
   local rc=$? h out
