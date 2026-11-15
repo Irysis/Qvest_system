@@ -16,3 +16,4 @@ DART 키는 `.env` 의 `DART_API_KEY` 에서 읽고 출력하지 않는다.
 | 9 | `vintage_finalize_d2.py` | 판 원장 항목 닫기(completed_at · note 의 진행 중 문장 → 끝난 사실 · evidence 꼬리 · 다른 바이트 보존) — D2 항목 21:40:39 · XF 채움 수리 항목 | `06_Registry/factor_db_vintage.json` |
 | 10 | `check_full_by_factor.R` | 양성 대조(팩터별) — 한 달을 전 모듈로 지은 값 vs 명세 모듈 부분 빌드, 명세 대상 팩터마다 행 · 값 대조(쓰기 없음). `Rscript … <YYYYMM> <명세.json> [명세2.json …]` | `SP/check_full_<YYYYMM>.csv` |
 | 11 | `vintage_add_xffix.py` | 판 원장에 D2 부작용 수리 항목(진행 중 · 범위 = 밸류 · 성장 7팩터) 추가(추가 전용) | `06_Registry/factor_db_vintage.json` |
+| 12 | `requery_1115_check.py` | 11-15 퀀티 재조회 14행 판정 재현(쓰기 없음) — 행별 주식 수 비율 · 시총 기준 · A012470 토요일 · 원주가 호가 검사 · A037030 거래소 공식 시세와 상한가 산술. `python … <SP> [RAWDATA.parquet]` | `SP/requery_1115_rows.csv` |
