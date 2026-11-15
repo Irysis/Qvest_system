@@ -19,3 +19,5 @@ DART 키는 `.env` 의 `DART_API_KEY` 에서 읽고 출력하지 않는다.
 | 12 | `requery_1115_check.py` | 11-15 퀀티 재조회 14행 판정 재현(쓰기 없음) — 행별 주식 수 비율 · 시총 기준 · A012470 토요일 · 원주가 호가 검사 · A037030 거래소 공식 시세와 상한가 산술. `python … <SP> [RAWDATA.parquet]` | `SP/requery_1115_rows.csv` |
 | 13 | `list9_check.py` | 남은 9행(+ 대조 A012470) — 단절 앞뒤 시총 최대공약수 비교(주식 수 불변 판별) · A008080 2012-11-30 부동소수점 경계(쓰기 없음). `python … <SP> [RAWDATA.parquet] [창=20]` | `SP/list9_rows.csv` |
 | 14 | `list9_dart.R` | DART 목록 API 공시 제목(종목 · 기간 셋씩 · 키 출력 없음 · 조회 실패와 '없음' 구분). `Rscript … <Ticker> <YYYYMMDD> <YYYYMMDD> …` | (화면) |
+| 15 | `ca7_rejudge.py` | 남은 7행 재판정(11-15 · 리프레시 세션 퀀티 재조회 사본 `seam_ca7_daily · summary_20261115.csv`) — 시장구분 · 발행 · 상장주식수 · 기준가로 사건 분류((가) 유가증권 이전상장 첫날 = 생비율 확정 · (나) 상장 뒤 첫 체결 = 현행 유지) · 새 기준가 대 제한가 대조 · 판정 불가면 종료 3(쓰기 없음). `python … <SP> [RAWDATA.parquet]` | `SP/ca7_rejudge_rows.csv` |
+| 16 | `bundle_1115_build.py` | 적용 대기 묶음 명세(값 변경 3 + 고정 5 · 행마다 method · evidence · 적용 전 저장값 단정 · 절차) — 적용 직전 다시 돌린다(등록부 · RAWDATA 쓰기 없음). `python … <SP = ca7_rejudge_rows.csv 폴더> [RAWDATA.parquet]` | `d2_fill/pending_bundle_20261115.json` |
