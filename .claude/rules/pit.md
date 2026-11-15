@@ -24,7 +24,7 @@
 | C3 | 같은 기간 집계 → 적용 |
 | C4 | 재무제표 lag 위반 — ★현행(11-16~): 쓸 수 있는 첫날 = 공개일(퀀티 공시일과 DART 접수일 중 늦은 날 · 공시일이 없을 때만 아래 법정 마감 규칙 · 정정 의심 연도 = 다음 회계연도 사업보고서 공개일) **+ 1개월 뒤 첫 거래일**(도훈 FUNDAMENTAL-AVAIL-LAG-20261115 'A 1달 일괄' · 등록부 `06_Registry/fundamental_source.json::avail_lag_months` · DART 당시 값도 같다 · 재무 v2 = 11-09~ active). ★소비 규약(11-16): 재무 원천 parquet 을 직접 읽는 엔진 · 빌더는 행의 `Factor_Date`(생산자가 위 규칙으로 계산한 쓸 수 있는 첫날) ≤ 결정 시점으로만 거른다 — 기간 끝 + 고정 시차(익년 3/31 · +45일 · 분기 고정일)만 쓰면 공개일 + 1개월보다 이르다. 고정 규칙은 `pmax(고정, Factor_Date)` 처럼 늦추는 쪽으로만 덧댄다(레인 사전검사 P14 가 잡는다). 2014년 이전 · 2015~ DART 미대조 값의 정정 덮어쓰기(퀀티는 정정 뒤 값으로 덮는다)는 PIT 경계로 기록 — 그 값에 기대는 전략은 원 공시본 확보 전 Judge 인증 불가(L-JG-20261115_200516). (법정 마감 규칙 = 생산자 안의 대체용 — 엔진이 단독으로 쓰지 않는다: annual = 익년 3/31, quarterly 45일+ / DART 분기 고정일 5/15·8/15·11/15 — 2026-07-25 도훈 확정 · data_collector_dart.R:840 · 구 표기 'annual 5월' 폐기 · ⚠ xlsx 경로의 Q4 일률 +45d(≈익년 2/14)는 3/31 대비 공격적 — 수리 항목, AST v1.1 SOT §3.) ★팩터 DB 수리 이전 측정은 재측정 전 인용 · 소비 금지 — 기계 판정 = `contracts/factor_db_vintage.R`(A 자격 상시 보류 `factor_db_stale`) |
 | C5 | overlay signal 타이밍 위반 — 신호는 **홀딩월 시작 전** 데이터만 (§ 오버레이 신호 타이밍) |
-| C6 | survivorship bias |
+| C6 | survivorship bias — ★경계 기록(11-16 도훈 '상장전 코넥스가격이력은 무시해' · RAWDATA-PRELISTING-C6-20261115): RAWDATA 에 실린 나중 상장 종목의 상장 전 코넥스 가격 이력은 무시한다(측정 유니버스 상장일 거르기 없음 — C6 위반으로 보지 않는다). 장외(K-OTC · 프리보드) 상장 전 이력은 결정 기록부 해당 항목을 따른다 |
 | C7 | 자동 탐지 패턴 (lookahead_detector.R) |
 | C8 | FM weight same-day 사용 |
 | C9 | VT/DD same-day 사용 (`dd_lag <- c(0, dd_pct[-n])`) |
