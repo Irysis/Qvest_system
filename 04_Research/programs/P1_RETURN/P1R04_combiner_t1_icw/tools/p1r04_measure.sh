@@ -4,7 +4,9 @@
 #   시작 조건(모두):
 #     · 시각 — 아침 체인(07:10) 앞뒤 05:55~08:00 · 밤 체인(00:03) 앞뒤 22:48~01:30 에는 시작하지 않는다(예상 소요 60분이 체인과 겹치지 않게).
 #       판 2 시드 감시가 아직 일을 들고 있으면(상태 W · M) 그 낮 창 08:20~11:45 도 비운다(메모리 — 한 번에 무거운 작업 하나).
-#     · 밤/아침 체인 미실행 · 리프레시 배리어 free · 판 2 시드 측정 중 아님 · 가용 메모리 ≥ 10 GB(셀 워커 정점 7.45 GB · 11-03 실측)
+#     · 밤/아침 체인 미실행 · 리프레시 배리어 free · 판 2 시드 측정 중 아님 · 가용 메모리 − 예상 정점 ≥ 여유(11-15 도훈 결정 MEMORY-USE-90PCT-20261115 — 구 고정 문턱 10 GB 대체)
+#       여유 = 06_Registry/memory_policy.json::reserve_gb(물리의 10% · 판독 불가 = 띄우지 않음) · 정점 = 셀 워커 1개 7.45 GB(11-03 메인 PC 실측) · 워커를 더 띄울지는
+#       측정 서버가 그때 여유 RAM 으로 다시 정한다(round_core/measure_server.R ms_workers_auto) · 가용 = Win32_OperatingSystem.FreePhysicalMemory(= Available MBytes · 11-15 대조)
 #     · fresh-check 신선 · 결합용 뷰 마지막 달 ≥ 팩터 DB 마지막 달
 #     · 데이터 지문(equality + 결합용 뷰 record + IC 원장 md5)이 10분 이상 그대로 — 결합용 뷰는 칸 지문 밖 · IC 원장은 칸 지문 안이지만 기저 캐시 키 밖(T1 엔진의 두 입력).
 #   예상 소요 근거: P1R03 실측 칸당 2.5~3.6분(11-13 06:43~07:28 · 15칸 45분) · 30칸(T1 15 + T0 기준 15) + T1 의 달마다 IC 접근자 호출(T1 토탈 48달 7초 실측) → 약 90분.
@@ -12,7 +14,7 @@
 #     (푸시 · 기계 판정 요약 '해석 전'). 판정 해석 · 판단 T2 · 철학 P2 · 정식 보고 · 닫기는 세션.
 #   종료: 0 끝 · 1 measure 실패 · 6 대기 상한(기본 40시간) · 7 측정 중 뷰 · IC 원장 바뀜(재측정 — 기저 캐시까지 비운다 · DESIGN §8) · 8 시작 시한 지남.
 #   환경 조정(11-14 · 원 세션 조율 — D1 뒤 같은 밤 재측정 · E2 는 캐시 채우기만 하고 판정은 내일 재측정분이라 함께 돌려도 된다):
-#     P1R04_MIN_FREE_GB(기본 10) · P1R04_IGNORE_SEED=1(판 2 시드 측정 중 · 시드 낮 창 조건을 건너뜀) · P1R04_PAR(기본 2 → round.sh --p · 엔진 묶음마다 칸 1개라 사실상 순차)
+#     P1R04_PEAK_GB(기본 7.45 · 예상 정점 — 구 P1R04_MIN_FREE_GB 는 11-15 폐기: 주면 무시하고 로그에 남긴다) · P1R04_GATE_SELFTEST=1(메모리 관문만 한 번 보고 끝 — 0 통과 · 1 대기 · 측정 · 로그 없음) · P1R04_IGNORE_SEED=1(판 2 시드 측정 중 · 시드 낮 창 조건을 건너뜀) · P1R04_PAR(기본 2 → round.sh --p · 엔진 묶음마다 칸 1개라 사실상 순차)
 #     P1R04_LATEST_START=HH:MM(그 시각이 지나도 조건이 안 서면 시작하지 않고 끝낸다 — 23:30 전 끝 · 칸 30 × 2.2~3.0분(11-13 실측) + 평가 · 사이드카 ≈ 100분).
 #     P1R04_EARLIEST_START='YYYY-MM-DD HH:MM'(그 전에는 시작하지 않는다) · P1R04_MORNING_END=HH:MM(아침 체인 앞뒤 창의 끝 · 기본 08:00 — 원 세션 권고 '아침 체인 뒤 07:30' ·
 #       아침 체인 실행 중 판독(Qvest_MorningBrief Running)은 그대로 막는다). 두 시각 모두 date -d 판독 · 둘 다 띄운 시점 기준 절대 시각.
@@ -33,8 +35,19 @@ main() {
   local ICL=.cache/factor_db/factor_ic_monthly.parquet
   local LOG=.cache/scheduler_logs/p1r04_measure_$(date +%Y%m%d_%H%M%S).log ST=.cache/scheduler_logs/p1r04_measure_state.txt
   local SEED_ST=.cache/scheduler_logs/p1s02_seed_watch_state.txt MAXW=${P1R04_MAX_WAIT_S:-144000} T0=$(date +%s) last=0
-  local MINFREE=${P1R04_MIN_FREE_GB:-10} IGSEED=${P1R04_IGNORE_SEED:-0} PAR=${P1R04_PAR:-2} LATEST=${P1R04_LATEST_START:-} late=""
+  local PEAK=${P1R04_PEAK_GB:-7.45} POL=06_Registry/memory_policy.json RESV="" NEEDM="" am="" IGSEED=${P1R04_IGNORE_SEED:-0} PAR=${P1R04_PAR:-2} LATEST=${P1R04_LATEST_START:-} late=""
   if [ -n "$LATEST" ]; then late=$(date -d "$LATEST" +%s 2>/dev/null) || { echo "P1R04_LATEST_START 판독 불가: $LATEST" >&2; exit 2; }; fi   # 오늘 그 시각(띄운 날 기준 · 자정을 넘겨 다시 열리지 않게 절대 시각)
+  ## 메모리 출발 관문(11-15 MEMORY-USE-90PCT-20261115): 가용(MiB) ≥ (예상 정점 + 정책 여유) × 1024 — 여유는 정책 파일에서만 읽는다(판독 불가 = 띄우지 않음)
+  { [[ "$PEAK" =~ ^[0-9]+([.][0-9]+)?$ ]] && awk -v p="$PEAK" 'BEGIN{exit !(p > 0)}'; } || { echo "P1R04_PEAK_GB 판독 불가: $PEAK" >&2; exit 2; }
+  RESV=$(timeout 60 python -c "import json,sys;v=float(json.load(open(sys.argv[1],encoding='utf-8'))['reserve_gb']);sys.exit(1) if not v > 0 else print(v)" "$POL" 2>/dev/null | tr -d '\r\n')
+  [ -n "$RESV" ] || { echo "메모리 정책 판독 불가($POL::reserve_gb) — 띄우지 않는다" >&2; exit 2; }
+  NEEDM=$(awk -v p="$PEAK" -v r="$RESV" 'BEGIN{printf "%d", (p + r) * 1024 + 0.5}')
+  avail_mib() { timeout 90 powershell.exe -NoProfile -NonInteractive -Command "[math]::Floor((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory/1KB)" 2>/dev/null | tr -d '\r\n '; }
+  mem_ok() { am=$(avail_mib); mg=$(awk -v m="$am" 'BEGIN{ if (m ~ /^[0-9]+$/) printf "%.1f", m / 1024; else print "?" }'); [[ "$am" =~ ^[0-9]+$ ]] && [ "$am" -ge "$NEEDM" ]; }
+  if [ "${P1R04_GATE_SELFTEST:-0}" = "1" ]; then   # 메모리 관문만 한 번(측정 · 로그 · 상태 파일 없음)
+    if mem_ok; then echo "gate pass · 가용 ${am} MiB ≥ 출발 ${NEEDM} MiB(정점 ${PEAK} + 여유 ${RESV} GB)"; exit 0; fi
+    echo "gate wait · 가용 ${am:-?} MiB < 출발 ${NEEDM} MiB(정점 ${PEAK} + 여유 ${RESV} GB)"; exit 1
+  fi
   local EARLY=${P1R04_EARLIEST_START:-} early="" MEND=${P1R04_MORNING_END:-08:00} mendm
   if [ -n "$EARLY" ]; then early=$(date -d "$EARLY" +%s 2>/dev/null) || { echo "P1R04_EARLIEST_START 판독 불가: $EARLY" >&2; exit 2; }; fi
   mendm=$((10#${MEND%%:*} * 60 + 10#${MEND##*:})) || exit 2
@@ -50,7 +63,8 @@ main() {
   inpfp() { { bash "$FPS" record .cache/factor_combinable; md5sum "$ICL" | cut -c1-32; } 2>/dev/null | md5sum | cut -c1-32; }
   fpnow() { { bash "$FPS" equality; inpfp; } 2>/dev/null | md5sum | cut -c1-32; }
   ms() { timeout 300 Rscript "$MS" "$@" >> "$LOG" 2>&1 || log "이정표 발송 rc=$?"; }
-  log "시작 · pid $$ · 체인 앞뒤 · 시드 창(시드 일 남았을 때 · 건너뜀=${IGSEED}) 제외 · 메모리 ≥ ${MINFREE} GB · 병렬 ${PAR} · 시작 시한 ${LATEST:-없음} · 이른 시작 ${EARLY:-없음} · 아침 창 끝 ${MEND} · 판 표식 대기 ${VNOT:-없음} · 판 표식 완료 대기 ${VDONE:-없음} · 마지막 줄 완료 대기 ${VTAIL} · 파일 대기 ${WFILE:-없음} · 지문(뷰 + IC 원장 포함) 10분 안정 · 뷰 마지막 달 ≥ 팩터 DB"; st "대기 — 시작"
+  log "시작 · pid $$ · 체인 앞뒤 · 시드 창(시드 일 남았을 때 · 건너뜀=${IGSEED}) 제외 · 메모리 = 가용 − 정점 ${PEAK}GB ≥ 여유 ${RESV}GB(출발 ${NEEDM} MiB · 정책 ${POL}) · 병렬 ${PAR} · 시작 시한 ${LATEST:-없음} · 이른 시작 ${EARLY:-없음} · 아침 창 끝 ${MEND} · 판 표식 대기 ${VNOT:-없음} · 판 표식 완료 대기 ${VDONE:-없음} · 마지막 줄 완료 대기 ${VTAIL} · 파일 대기 ${WFILE:-없음} · 지문(뷰 + IC 원장 포함) 10분 안정 · 뷰 마지막 달 ≥ 팩터 DB"; st "대기 — 시작"
+  [ -n "${P1R04_MIN_FREE_GB:-}" ] && log "P1R04_MIN_FREE_GB=${P1R04_MIN_FREE_GB} 는 11-15 폐기(메모리 정책 식) — 무시"
   while :; do
     [ $(( $(date +%s) - T0 )) -gt "$MAXW" ] && { log "대기 상한"; st "대기 상한 — 끝"; exit 6; }
     why=""; nowm=$((10#$(date +%H) * 60 + 10#$(date +%M)))
@@ -67,8 +81,7 @@ main() {
     [ -z "$why" ] && running Qvest_MorningBrief && why="아침 체인 실행 중"
     [ -z "$why" ] && { bash 02_Infrastructure/ops/refresh_barrier.sh status 2>/dev/null | grep -q "state=free" || why="리프레시 배리어 held"; }
     [ -z "$why" ] && [ "$IGSEED" != "1" ] && grep -qE "M 측정 중|W\(follow\)|W 대기\(P1S02_E3_RX0\)" "$SEED_ST" 2>/dev/null && why="판 2 시드 측정 중 · E3 직후 대기"
-    if [ -z "$why" ]; then mg=$(timeout 90 powershell.exe -NoProfile -NonInteractive -Command "[math]::Floor((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory/1MB)" 2>/dev/null | tr -d '\r\n ')
-      { [ -n "$mg" ] && [ "$mg" -ge "$MINFREE" ]; } 2>/dev/null || why="가용 메모리 ${mg:-?}GB < ${MINFREE}GB"; fi
+    if [ -z "$why" ]; then mem_ok || why="가용 메모리 ${mg}GB − 정점 ${PEAK}GB < 여유 ${RESV}GB"; fi
     [ -z "$why" ] && { bash "$RS" - fresh-check >> "$LOG" 2>&1 || why="자료 낡음(fresh-check)"; }
     if [ -z "$why" ]; then
       vl=$(grep -o '"last": *"[0-9]\{6\}"' .cache/factor_combinable/fc_meta.json 2>/dev/null | grep -o '[0-9]\{6\}' | head -1)
