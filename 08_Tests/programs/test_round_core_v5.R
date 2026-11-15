@@ -5,7 +5,8 @@
 ##   U 사슬 목적 글(설계 입력 §0) — 가림 = id 안의 8자리 날짜만(변경분 점검 M-1 · 재점검 M-2): id 만 든 목적은 보인다 · 그 밖의 날짜 · 연도 꼴 열은 NULL(등록 거부) ·
 ##     등급 표기 · 시험 창 수치 NULL · 빈 목적 · 실제 P4C01 목적
 ##   S §0 두 줄(.rcp4_section0 · R-1) — 정책 줄도 검사(정규식 안의 τ_D 뒤 연도 = 거부) · 정상 정책 = 두 줄
-##   P 걸음 정책 — 등록 검사(어휘 · 축 · 정규식 · 기저 엔진 · 근거) · 걸음 열기 검사(블록 · 바뀐 축(판단 C-20261115-074) · 부품 엔진 · 판독 불가)
+##   P 걸음 정책 — 등록 검사(어휘 · 축 · 짝 · 정규식 · 기저 엔진 · 근거) · 걸음 열기 검사(블록 · 바뀐 축(판단 C-20261115-074) · 부품 엔진 · 판독 불가)
+##   B 블렌드 규칙(철학 C-20261115-081) — 기저 + 1 통과 · 기저 뺌 · 한 걸음 둘 · 교체 · 판독 불가 거부 · 기저 신호 안 바꾼 걸음 해당 없음
 ##   C 등록 검사 통합 — 실제 P4C01 사슬 판(읽기만)에 v5 rc_p4_chain_check: 그대로 통과 · 정책 붙여 통과 · 잘못된 정책 · 보일 수 없는 목적 ·
 ##     정규식 안 연도 · 기저 칸 사양이 정책 밖(S-1)은 거부
 ##   R 사슬 판 만들기 왕복(R-2 (d)) — tempdir 에 rc_p4_chain_new(step_policy =) → 다시 읽기 → 검사 통과 · 잘못된 정책은 만들지 않는다
@@ -107,10 +108,29 @@ chk("P18 기저 신호 경로를 읽지 못함 = 사유(fail-closed)", any(grepl
 chk("P19 정책 없음 = 사유 없음(어떤 블록 · 축 · 부품이든)", !length(.rcp4_step_policy_why(NULL, "weighting", f_lane, root, changed = "factors")))
 chk("P20 칸 사양 파일 없음 · 축 모름 = 블록 검사만", identical(W("blend", NA_character_), character(0)) && length(W("universe", file.path(SB, "missing.json"))) == 1L)
 
+## ── B 블렌드 규칙(blend_rule = parent_plus_one · 철학 C-20261115-081) ──────────────
+fcn <- "04_Research/strategies/FC_FAM_consensus/engine.R"
+bpol <- c(okpol, list(blend_rule = "parent_plus_one"))
+f_base <- file.path(root, "04_Research/programs/P4_ASSEMBLY/P4C01_fc_blend/base_cell_spec.json")
+f_drop <- mk("drop", c(fg, fcn)); f_two <- mk("two", c(BASE, fg, fcn)); f_eng <- { s <- bcs; s$base_signal <- list(kind = "engine", path = fg); f <- file.path(SB, "eng.json"); rc_json_write(s, f); f }
+WB <- function(child, parent, changed = "base_signal") .rcp4_step_policy_why(bpol, "blend", child, root, changed = changed, parent_csa = parent)
+chk("B1 기저 + 부품 1개 = 사유 없음", !length(WB(f_ok, f_base)))
+chk("B2 기저를 뺀 블렌드 = 사유(부모 칸 엔진을 뺐다)", any(grepl("부모 칸 엔진을 뺐다", WB(f_drop, f_base), fixed = TRUE)))
+chk("B3 한 걸음 부품 둘 = 사유(새 부품 = 2개)", any(grepl("새 부품 = 2개", WB(f_two, f_base), fixed = TRUE)))
+chk("B4 부모 블렌드(기저 + 성장) + 1개 = 사유 없음", !length(WB(f_two, f_ok)))
+chk("B5 기저 신호를 안 바꾼 걸음 = 블렌드 규칙 해당 없음", !length(.rcp4_blend_rule_why("parent_plus_one", f_base, f_two, "factors", root)))
+chk("B6 기저 신호를 engine(교체)로 = 사유(engine_blend 여야)", any(grepl("engine_blend 여야", WB(f_eng, f_base), fixed = TRUE)))
+chk("B7 부모 판독 불가 = 사유(fail-closed)", any(grepl("읽지 못했다", WB(f_ok, file.path(SB, "missing_parent.json")), fixed = TRUE)))
+chk("B8 blend_rule 어휘 밖 = 등록 거부 · 단독 정책 = 통과", errs(.rcp4_step_policy_check(modifyList(bpol, list(blend_rule = "foo")), BASE)) &&
+      !errs(.rcp4_step_policy_check(list(blend_rule = "parent_plus_one", source = "시험"), BASE)))
+s0b <- .rcp4_section0(list(purpose = "블렌드만", step_policy = bpol), tau)
+chk("B9 §0 정책 줄에 블렌드 규칙 문장 · 통과", isTRUE(s0b$ok) && grepl("블렌드 = 부모 칸 엔진 전부 + 새 부품 정확히 1개", s0b$lines[2], fixed = TRUE))
+
 ## ── C 등록 검사 통합(실제 사슬 판 · 읽기만) ───────────────────────────────────
 s1 <- rc_json_read(file.path(C1D, "chain_spec.json"))
 chk("C1 실제 P4C01 사슬 판 = v5 등록 검사 통과(정책 없음)", !errs(rc_p4_chain_check(s1, root)))
 s2 <- s1; s2$step_policy <- okpol; chk("C2 걸음 정책 붙임 = 통과", !errs(rc_p4_chain_check(s2, root)))
+s2b <- s1; s2b$step_policy <- bpol; chk("C2b 블렌드 규칙까지 붙인 정책 = 통과", !errs(rc_p4_chain_check(s2b, root)))
 s3 <- s1; s3$step_policy <- okpol; s3$step_policy$blocks <- list("foo"); chk("C3 잘못된 정책 = 거부", errs(rc_p4_chain_check(s3, root)))
 s4 <- s1; s4$purpose <- paste(s1$purpose, "시험 창 Calmar 1.5 를 넘는 칸만 고른다."); chk("C4 보일 수 없는 목적 = 거부", errs(rc_p4_chain_check(s4, root)))
 s5 <- s1; s5$step_policy <- modifyList(okpol, list(part_engine_rx = RX24)); chk("C5 기저와 맞지만 τ_D 뒤 연도를 품은 정규식 = 거부(R-1)", errs(rc_p4_chain_check(s5, root)))
@@ -133,6 +153,7 @@ chk("R2 잘못된 정책 = 만들지 않는다(사슬 판 없음)", errs(rc_p4_c
 ## ── E 틱 경로(실제 상태 · 실제 기저 풀 · 읽기만 · 다음 판 승계) ───────────────
 di <- tryCatch(suppressMessages(rc_p4_design_input(root, C1D, pool = POOLR)), error = function(e) paste("ERR:", conditionMessage(e)))
 chk("E1 실제 P4C01 설계 입력 = 만들어진다 · 전수 검사 통과", !startsWith(di[1], "ERR:") && clean(di), if (startsWith(di[1], "ERR:")) substr(di, 1, 160) else "")
+chk("E1b §1 풀 표 = 표기 열(label_class · 철학 C-20261115-085)", grepl("| key | 프로그램 | 표기 | 상설 자격 | 자격 | 제외 사유 |", di, fixed = TRUE))
 chk("E2 §0 목적 줄 · 정책 줄(정책 없음)", grepl("## 0. 사슬 목적", di, fixed = TRUE) && grepl(paste0("\n", HEAD), di, fixed = TRUE) &&
       grepl("걸음 정책(기계 검사 — 밖이면 걸음 열기 거부): 없음", di, fixed = TRUE))
 WD <- file.path(SB, "wd")

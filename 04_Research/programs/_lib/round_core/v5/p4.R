@@ -785,9 +785,11 @@ rc_p4_steps_path <- function(chain_dir) file.path(chain_dir, "chain_steps.jsonl"
 RC_P4_POLICY_AXES <- c("base_signal", names(RC_P4_KEY_BLOCKS))
 .rcp4_step_policy_check <- function(pol, base_engine = NA_character_) {
   if (is.null(pol)) return(invisible(TRUE))
-  if (!is.list(pol) || !length(pol) || is.null(names(pol))) .rcp4_err("step_policy 는 이름 있는 목록(blocks · axes · part_engine_rx · source)")
-  extra <- setdiff(names(pol), c("blocks", "axes", "part_engine_rx", "source")); if (length(extra)) .rcp4_err("step_policy 어휘 밖 키: ", paste(extra, collapse = ","))
-  if (is.null(pol[["blocks"]]) && is.null(pol[["axes"]]) && is.null(pol[["part_engine_rx"]])) .rcp4_err("step_policy 에 blocks · axes · part_engine_rx 가 모두 없다")
+  if (!is.list(pol) || !length(pol) || is.null(names(pol))) .rcp4_err("step_policy 는 이름 있는 목록(blocks · axes · part_engine_rx · blend_rule · source)")
+  extra <- setdiff(names(pol), c("blocks", "axes", "part_engine_rx", "blend_rule", "source")); if (length(extra)) .rcp4_err("step_policy 어휘 밖 키: ", paste(extra, collapse = ","))
+  if (all(vapply(c("blocks", "axes", "part_engine_rx", "blend_rule"), function(k) is.null(pol[[k]]), TRUE))) .rcp4_err("step_policy 에 blocks · axes · part_engine_rx · blend_rule 이 모두 없다")
+  ## blend_rule(철학 C-20261115-081) = 'parent_plus_one' 하나뿐 — 기저 신호를 바꾸는 걸음 = engine_blend · 부모 칸 엔진 전부 + 새 엔진 정확히 1개(장치마다 판정 · 헌장 빈칸 23 · S0 엔진 보존)
+  if (!is.null(pol[["blend_rule"]]) && !identical(as.character(unlist(pol[["blend_rule"]])), "parent_plus_one")) .rcp4_err("step_policy.blend_rule 은 'parent_plus_one' 만: ", paste(unlist(pol[["blend_rule"]]), collapse = ","))
   if (!is.null(pol[["blocks"]])) { bl <- as.character(unlist(pol[["blocks"]]))
     if (!length(bl) || !all(bl %in% RC_P4_BLOCK_TYPES)) .rcp4_err("step_policy.blocks 는 블록 어휘(", paste(RC_P4_BLOCK_TYPES, collapse = ","), ") 안 1개 이상: ", paste(bl, collapse = ",")) }
   if (!is.null(pol[["axes"]])) { ax <- as.character(unlist(pol[["axes"]]))
@@ -807,18 +809,38 @@ RC_P4_POLICY_AXES <- c("base_signal", names(RC_P4_KEY_BLOCKS))
 }
 ## 칸 사양의 기저 신호 엔진(블렌드 부품 포함)이 정규식 안인가 — 반환 = 거부 사유(없으면 빈 벡터) · 판독 불가 = 사유(fail-closed)
 ##   읽는 법 = rc_p4_spec_diff 와 같다(.rcp4_norm_spec → path · paths → .rcp4_rel). 등록(기저 칸 사양 · 변경분 점검 S-1)과 걸음 열기가 함께 쓴다
+## 칸 사양의 기저 신호 — list(kind, paths = 저장소 상대 엔진 경로(블렌드 부품 포함 · 중복 없음)) · 판독 불가 = NULL
+.rcp4_signal_engines <- function(csa, root) {
+  if (!(length(csa) == 1L && !is.na(csa) && file.exists(csa))) return(NULL)
+  bs <- tryCatch(.rcp4_norm_spec(rc_json_read(csa), root)[["base_signal"]], error = function(e) NULL)
+  if (!is.list(bs)) return(NULL)
+  ps <- unique(vapply(as.character(unlist(c(bs[["path"]], bs[["paths"]]))), .rcp4_rel, "", root = root))
+  if (!length(ps) || anyNA(ps)) return(NULL)
+  list(kind = as.character(unlist(bs[["kind"]] %||% NA_character_))[1], paths = ps)
+}
 .rcp4_policy_parts_why <- function(rx, csa, root) {
   if (is.null(rx)) return(character(0))
   if (!(length(csa) == 1L && !is.na(csa) && file.exists(csa))) return("사슬 판 걸음 정책(part_engine_rx): 칸 사양 파일이 없다")
-  bs <- tryCatch(.rcp4_norm_spec(rc_json_read(csa), root)[["base_signal"]], error = function(e) NULL)
-  ps <- unique(vapply(as.character(unlist(c(bs[["path"]], bs[["paths"]]))), .rcp4_rel, "", root = root))
-  if (!length(ps) || anyNA(ps)) return("사슬 판 걸음 정책(part_engine_rx): 칸 사양의 기저 신호 엔진 경로를 읽지 못했다")
-  bad <- ps[!grepl(rx, ps, perl = TRUE)]
+  se <- .rcp4_signal_engines(csa, root)
+  if (is.null(se)) return("사슬 판 걸음 정책(part_engine_rx): 칸 사양의 기저 신호 엔진 경로를 읽지 못했다")
+  bad <- se$paths[!grepl(rx, se$paths, perl = TRUE)]
   if (length(bad)) paste0("사슬 판 걸음 정책 밖 엔진(part_engine_rx): ", paste(bad, collapse = ",")) else character(0)
 }
-## 걸음 열기의 정책 검사 — 반환 = 거부 사유(없으면 빈 벡터). changed = 부모 대비 바뀐 칸 사양 축(rc_p4_spec_diff$changed · NULL 이면 축 검사 건너뜀 —
-##   부모 판독 실패 · 칸 사양 없음은 걸음 열기가 따로 거부한다). 칸 사양 파일이 없으면 부품 검사도 건너뛴다(같은 이유)
-.rcp4_step_policy_why <- function(pol, block_type, csa, root, changed = NULL) {
+## blend_rule = parent_plus_one(철학 C-20261115-081) — 기저 신호를 바꾸는 걸음(changed ∋ base_signal)만: 자식 = engine_blend · 부모 엔진 ⊆ 자식 엔진 · 새 엔진 정확히 1개.
+##   부모 · 자식 판독 불가 = 사유(fail-closed). 기저 칸에서 나가는 첫 블렌드 = 기저 + 1
+.rcp4_blend_rule_why <- function(rule, parent_csa, csa, changed, root) {
+  if (is.null(rule) || !("base_signal" %in% as.character(unlist(changed)))) return(character(0))
+  c0 <- .rcp4_signal_engines(parent_csa, root); c1 <- .rcp4_signal_engines(csa, root)
+  if (is.null(c0) || is.null(c1)) return("사슬 판 걸음 정책(blend_rule): 부모 · 자식 칸 사양의 기저 신호 엔진을 읽지 못했다")
+  if (!identical(c1$kind, "engine_blend")) return(sprintf("사슬 판 걸음 정책(blend_rule = parent_plus_one): 기저 신호를 바꾸는 걸음은 engine_blend 여야 한다(받은 kind = %s)", c1$kind))
+  miss <- setdiff(c0$paths, c1$paths); add <- setdiff(c1$paths, c0$paths); why <- character(0)
+  if (length(miss)) why <- c(why, paste0("사슬 판 걸음 정책(blend_rule = parent_plus_one): 부모 칸 엔진을 뺐다 — ", paste(miss, collapse = ",")))
+  if (length(add) != 1L) why <- c(why, sprintf("사슬 판 걸음 정책(blend_rule = parent_plus_one): 새 부품 = %d개(1개여야 한다)%s", length(add), if (length(add)) paste0(" — ", paste(add, collapse = ",")) else ""))
+  why
+}
+## 걸음 열기의 정책 검사 — 반환 = 거부 사유(없으면 빈 벡터). changed = 부모 대비 바뀐 칸 사양 축(rc_p4_spec_diff$changed · NULL 이면 축 · 블렌드 규칙 검사 건너뜀 —
+##   부모 판독 실패 · 칸 사양 없음은 걸음 열기가 따로 거부한다). parent_csa = 부모 칸 사양 경로(블렌드 규칙). 칸 사양 파일이 없으면 부품 검사도 건너뛴다(같은 이유)
+.rcp4_step_policy_why <- function(pol, block_type, csa, root, changed = NULL, parent_csa = NA_character_) {
   if (is.null(pol)) return(character(0)); why <- character(0)
   bl <- as.character(unlist(pol[["blocks"]] %||% list()))
   if (length(bl) && !(is.character(block_type) && length(block_type) == 1L && block_type %in% bl))
@@ -827,6 +849,7 @@ RC_P4_POLICY_AXES <- c("base_signal", names(RC_P4_KEY_BLOCKS))
   if (length(ax) && length(ch)) { bad <- setdiff(ch, ax)
     if (length(bad)) why <- c(why, sprintf("사슬 판 걸음 정책 밖 칸 사양 축: %s(허용 = %s)", paste(bad, collapse = ","), paste(ax, collapse = ","))) }
   if (!is.null(pol[["part_engine_rx"]]) && length(csa) == 1L && !is.na(csa) && file.exists(csa)) why <- c(why, .rcp4_policy_parts_why(pol[["part_engine_rx"]], csa, root))
+  if (!is.null(pol[["blend_rule"]]) && length(csa) == 1L && !is.na(csa) && file.exists(csa)) why <- c(why, .rcp4_blend_rule_why(pol[["blend_rule"]], parent_csa, csa, changed, root))
   why
 }
 rc_p4_chain_check <- function(spec, root = rc_root(), gen_path = NULL, check_files = TRUE) {
@@ -1262,7 +1285,7 @@ rc_p4_step_open <- function(chain_dir, k, hypothesis, mechanism, block_type, cel
   if (!isTRUE(ci$ok)) why <- c(why, paste0("가설 · 기전 글에 처방 입력 금지 정보(τ_D 뒤 날짜 · 등급 표기 · 시험 창 수치): ", ci$why))
   if (length(cell_spec_path) != 1L) why <- c(why, sprintf("칸 사양은 정확히 1개(받은 수 %d)", length(cell_spec_path)))
   csr <- if (length(cell_spec_path) == 1L) .rcp4_rel(cell_spec_path, root) else NA_character_
-  csa <- .rcp4_abs(csr, root); dif <- NULL; cmd5 <- NA_character_
+  csa <- .rcp4_abs(csr, root); dif <- NULL; cmd5 <- NA_character_; pp <- NA_character_   # pp = 부모 칸 사양(아래 · v5 걸음 정책 blend_rule)
   if (is.na(csa) || !file.exists(csa)) why <- c(why, paste0("칸 사양 파일 없음: ", csr))
   else {
     cmd5 <- rc_md5(csa)
@@ -1291,7 +1314,7 @@ rc_p4_step_open <- function(chain_dir, k, hypothesis, mechanism, block_type, cel
     }
   }
   ## v5 사슬 판 걸음 정책(step_policy — 등록 때 고정 · 없으면 제한 없음): 블록 허용 목록 · 기저 신호 엔진(부품 포함) 경로 정규식
-  why <- c(why, .rcp4_step_policy_why(spec[["step_policy"]], block_type, csa, root, changed = dif$changed))
+  why <- c(why, .rcp4_step_policy_why(spec[["step_policy"]], block_type, csa, root, changed = dif$changed, parent_csa = pp))
   if (length(why)) .rcp4_err("걸음 열기 거부(k = ", k, "):\n- ", paste(unique(why), collapse = "\n- "))
   rec <- .rcp4_append(chain_dir, c(list(event = "step_open", k = k, hypothesis = hypothesis, mechanism = mechanism, block_type = block_type,
                                         cell_spec_path = csr, cell_spec_md5 = cmd5, spec_key = nk, parent = parent, generator_version = generator_version,
@@ -1670,7 +1693,8 @@ rc_p4_status <- function(chain_dir, root = rc_root()) {
 .rcp4_policy_line <- function(pol) paste0("- 걸음 정책(기계 검사 — 밖이면 걸음 열기 거부): ", if (is.null(pol)) "없음(블록 어휘 · 기저 풀 자격만 검사)" else paste0(
   "블록 = ", if (is.null(pol[["blocks"]])) "제한 없음" else paste(sprintf("`%s`", unlist(pol[["blocks"]])), collapse = " · "),
   " · 바꿀 수 있는 칸 사양 축 = ", if (is.null(pol[["axes"]])) "제한 없음" else paste(sprintf("`%s`", unlist(pol[["axes"]])), collapse = " · "),
-  " · 기저 신호 엔진(블렌드 부품 포함 · 저장소 상대 경로) = ", if (is.null(pol[["part_engine_rx"]])) "제한 없음" else paste0("정규식 `", pol[["part_engine_rx"]], "` 에 맞는 것만")))
+  " · 기저 신호 엔진(블렌드 부품 포함 · 저장소 상대 경로) = ", if (is.null(pol[["part_engine_rx"]])) "제한 없음" else paste0("정규식 `", pol[["part_engine_rx"]], "` 에 맞는 것만"),
+  if (identical(as.character(unlist(pol[["blend_rule"]])), "parent_plus_one")) " · 블렌드 = 부모 칸 엔진 전부 + 새 부품 정확히 1개(기저를 빼거나 한 걸음에 둘 이상 더하지 않는다)" else ""))
 ## 설계 입력 §0 두 줄(목적 · 걸음 정책) — 등록 검사(rc_p4_chain_check)와 설계 입력이 같은 도우미를 쓴다 · 반환 list(ok, lines, why)
 .rcp4_section0 <- function(spec, tau) {
   pv <- .rcp4_purpose_view(spec[["purpose"]], tau)
@@ -1695,8 +1719,9 @@ rc_p4_design_input <- function(root = rc_root(), chain_dir, pool = NULL, outcome
   for (x in s0$lines) a(x)
   a(""); a("## 1. 기저 풀(자격 · 사유 코드 — 성과 열 없음)"); a("")
   if (!is.null(pool) && nrow(as.data.table(pool))) {
-    P <- as.data.table(pool); a("| key | 프로그램 | 상설 자격 | 자격 | 제외 사유 |"); a("|---|---|---|---|---|")
-    for (i in seq_len(nrow(P))) a("| ", P$key[i], " | ", P$program[i] %||% "", " | ", if (isTRUE(P$standing_qualified[i])) "통과" else "—", " | ",
+    P <- as.data.table(pool); a("| key | 프로그램 | 표기 | 상설 자격 | 자격 | 제외 사유 |"); a("|---|---|---|---|---|---|")   # v5 표기 열 = label_class(가족 겹침 — 성과 무관 · 철학 C-20261115-085)
+    lc <- if ("label_class" %in% names(P)) as.character(P$label_class) else rep(NA_character_, nrow(P))
+    for (i in seq_len(nrow(P))) a("| ", P$key[i], " | ", P$program[i] %||% "", " | ", if (!is.na(lc[i]) && nzchar(lc[i])) lc[i] else "—", " | ", if (isTRUE(P$standing_qualified[i])) "통과" else "—", " | ",
                                   if (isTRUE(P$eligible[i])) "예" else "아니오", " | ", if (nzchar(P$reason[i] %||% "")) P$reason[i] else "—", " |")
     a(""); a(.rcp4_reason_legend(tau))   # v5: 설명마다 처방 입력 검사 — 못 지난 설명은 코드만(.rcp4_reason_legend)
   } else a("- (풀을 넘기지 않았다 — 기저를 바꾸는 걸음(base · blend)은 이번에 낼 수 없다)")
