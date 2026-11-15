@@ -1,0 +1,1044 @@
+{
+ "schema": "factor_direction_blind_review_v1",
+ "generated": "2026-11-16",
+ "scope": "FC_FAM_investor_flow(15) · FC_FAM_technical(12) core.members",
+ "information_boundary": "성과 · 성과 유래 표식 미열람(IC · 수익률 · 등급 · evidence_tier · research_stage · dedup · factor_evidence · s_ic · results · fce_diag). 정의 · 빌더 코드 · 입력 분포(수익 미결합) · 일간/월간 저장값 대응표(정의 점검값) · 문헌만.",
+ "direction_semantics": "registry_direction / proposed_direction 은 저장 Raw_Value 기준(소비자가 곱하는 값 · 월간 빌더 compute_investor.R · compute_technical.R 의 저장값). agree: true=일치 · false=불일치 · null=불명.",
+ "summary": {
+  "by_category": {
+   "investor_flow": {
+    "일치": 3,
+    "불일치": 0,
+    "불명": 12
+   },
+   "technical": {
+    "일치": 3,
+    "불일치": 5,
+    "불명": 4
+   }
+  },
+  "total": {
+   "일치": 6,
+   "불일치": 5,
+   "불명": 16
+  },
+  "disagree_ids": [
+   "T03_BB20",
+   "T05_MFI14",
+   "T06_PMA5",
+   "T07_PMA20",
+   "T13_Gap"
+  ],
+  "unclear_ids": [
+   "INV03_Inst_NetBuy_20d",
+   "INV04_Inst_NetBuy_60d",
+   "INV05_Foreign_Momentum",
+   "INV06_Inst_Momentum",
+   "INV07_Retail_Contrarian",
+   "INV08_Foreign_Inst_Agreement",
+   "INV09_Flow_Persistence",
+   "INV10_Smart_Money_Flow",
+   "INV12_Supply_Demand_Imbalance",
+   "INV13_Foreign_Resid_Individual_126d",
+   "INV13_Foreign_Resid_Individual_21d",
+   "INV13_Foreign_Resid_Individual_63d",
+   "T04_OBV21",
+   "T08_PMA60",
+   "T09_PMA120",
+   "T15_AutoCorr"
+  ]
+ },
+ "members": [
+  {
+   "id": "INV01_Foreign_NetBuy_20d",
+   "category": "investor_flow",
+   "registry_category": "investor_flow",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "Σ20일 외국인 순매수 금액 ÷ 시가총액(t−1) — 클수록 외국인 순매수 강함(원천 열 양수 = 순매수 · 원화)",
+   "basis": "한국: 외국인이 산 종목이 판 종목보다 이후 수익 · 영업이익이 높다(Bae · Min · Jung 2011), 상승장에서 외국인 가격충격을 받은 대형주는 이후 6개월 더 오른다(Kang · Kwon · Park 2014), 등록 외국인은 이상현상 방향으로 거래한다(Kim · Kang · Roh 2025), 조세피난처 외국인 순매수 상위 → 이후 수일 수익 높음(양철원 2015 — 외국인 일부). 국제: 외국인 포트 성과 우위(Grinblatt & Keloharju 2000), 아시아 신흥시장(한국 포함) 외국인 흐름의 가격충격이 크고 영구 압력과 정합(Richards 2005). 반대 쪽 증거는 측정 단위가 다르다 — 체결가 기준 단기 열위(Choe · Kho · Stulz 2005), 22개 대형주 시계열 추종(유진 · 장순재 2012). 구조: 1998-05 주식시장 전면 개방(외국인 한도 대부분 폐지) 뒤 표본(2000~) · 외국인 보유 비중 약 3~4할(유진 · 장순재 2012 의 금감원 자료) · 순매수 집계에는 공매도 매도도 매도로 들어가 공매도 금지 기간(2008~09 · 2011 · 2020~21 · 2023~25)에는 흐름의 구성이 바뀐다 → 중간.",
+   "def_code_note": "일간 DB 같은 이름 = 20일 원화 순매수 평균(시총 미정규화 · 일간 · 월간 대응표 ρ 중앙 0.90)",
+   "refs": [
+    {
+     "ref": "[한국] Bae, Min & Jung (2011) Trading Behavior, Performance, and Stock Preference of Foreigners, Local Institutions, and Individual Investors: Evidence from the Korean Stock Market, Asia-Pacific Journal of Financial Studies 40(2)",
+     "url": "https://doi.org/10.1111/j.2041-6156.2011.01037.x"
+    },
+    {
+     "ref": "[한국] Kang, Kwon & Park (2014) Momentum and Foreign Investors: Evidence from the Korean Stock Market, Emerging Markets Finance and Trade 50(S5) — Crossref 미등록(IDEAS 표기 DOI 10.2753/REE1540-496X5005S509 가 404) · IDEAS 서지로 확인",
+     "url": "https://ideas.repec.org/a/mes/emfitr/v50y2014is5p131-147.html"
+    },
+    {
+     "ref": "[한국] Kim, Kang & Roh (2025) Market participants' trading behavior toward anomalies: Evidence from the Korean market, Pacific-Basin Finance Journal 90",
+     "url": "https://doi.org/10.1016/j.pacfin.2024.102622"
+    },
+    {
+     "ref": "[한국 · 국내 학술지] 양철원 (2015) 조세피난처 외국인 거래의 주가예측력, 한국증권학회지 44(5) 997–1030 — 게재판 DOI 미확인 · 2014 한국증권학회 정기학술대회판 원문으로 확인",
+     "url": "https://smallake.kr/wp-content/uploads/2014/03/Session-4_2_%be%e7%c3%b6%bf%f8_%c1%b6%bc%bc%c7%c7%b3%ad%c3%b3-%bf%dc%b1%b9%c0%ce-%b0%c5%b7%a1%c0%c7-%c1%d6%b0%a1%bf%b9%c3%f8%b7%c2.pdf"
+    },
+    {
+     "ref": "Grinblatt & Keloharju (2000) The investment behavior and performance of various investor types: a study of Finland's unique data set, Journal of Financial Economics 55(1)",
+     "url": "https://doi.org/10.1016/S0304-405X(99)00044-6"
+    },
+    {
+     "ref": "[아시아 6개국 · 한국 포함] Richards (2005) Big Fish in Small Ponds: The Trading Behavior and Price Impact of Foreign Investors in Asian Emerging Equity Markets, JFQA 40(1)",
+     "url": "https://doi.org/10.1017/S0022109000001721"
+    },
+    {
+     "ref": "[한국] Choe, Kho & Stulz (1999) Do foreign investors destabilize stock markets? The Korean experience in 1997, Journal of Financial Economics 54(2)",
+     "url": "https://doi.org/10.1016/S0304-405X(99)00037-9"
+    },
+    {
+     "ref": "[한국] Choe, Kho & Stulz (2005) Do Domestic Investors Have an Edge? The Trading Experience of Foreign Investors in Korea, Review of Financial Studies 18(3)",
+     "url": "https://doi.org/10.1093/rfs/hhi028"
+    },
+    {
+     "ref": "[한국 · 국내 학술지] 유진 · 장순재 (2012) 한국 주식시장의 외국인 및 기관 추종 전략의 성과, 재무관리연구 29(4) 29–60 — Crossref DOI 미확인 · 원문 확인(22개 대형주 시계열 추종 · 선행연구 정리에 공재식 2000 · 이가연 · 이윤구 2004 · 김선호 2001 · 강종만 · 이상제 2005 = 2차 인용)",
+     "url": "https://scholarworks.bwise.kr/hanyang/handle/2021.sw.hanyang/163889"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "INV02_Foreign_NetBuy_60d",
+   "category": "investor_flow",
+   "registry_category": "investor_flow",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "Σ60일 외국인 순매수 ÷ 시총 — 클수록 석 달 외국인 순매수 강함",
+   "basis": "INV01 과 같은 문헌. 60일 창은 외국인 흐름의 지속 성분에 더 가깝다(상승장 외국인 영향 대형주의 6개월 지속 — Kang · Kwon · Park 2014; 국제 흐름의 지속성과 수익 예측 — Froot · O'Connell · Seasholes 2001). 일 단위 반전 증거와는 지평이 다르다 → 중간.",
+   "def_code_note": "일간 DB 같은 이름 = 60일 원화 평균(시총 미정규화 · ρ 중앙 0.94)",
+   "refs": [
+    {
+     "ref": "[한국] Bae, Min & Jung (2011) Trading Behavior, Performance, and Stock Preference of Foreigners, Local Institutions, and Individual Investors: Evidence from the Korean Stock Market, Asia-Pacific Journal of Financial Studies 40(2)",
+     "url": "https://doi.org/10.1111/j.2041-6156.2011.01037.x"
+    },
+    {
+     "ref": "[한국] Kang, Kwon & Park (2014) Momentum and Foreign Investors: Evidence from the Korean Stock Market, Emerging Markets Finance and Trade 50(S5) — Crossref 미등록(IDEAS 표기 DOI 10.2753/REE1540-496X5005S509 가 404) · IDEAS 서지로 확인",
+     "url": "https://ideas.repec.org/a/mes/emfitr/v50y2014is5p131-147.html"
+    },
+    {
+     "ref": "Froot, O'Connell & Seasholes (2001) The portfolio flows of international investors, Journal of Financial Economics 59(2)",
+     "url": "https://doi.org/10.1016/S0304-405X(00)00084-2"
+    },
+    {
+     "ref": "[아시아 6개국 · 한국 포함] Richards (2005) Big Fish in Small Ponds: The Trading Behavior and Price Impact of Foreign Investors in Asian Emerging Equity Markets, JFQA 40(1)",
+     "url": "https://doi.org/10.1017/S0022109000001721"
+    },
+    {
+     "ref": "[한국] Choe, Kho & Stulz (2005) Do Domestic Investors Have an Edge? The Trading Experience of Foreign Investors in Korea, Review of Financial Studies 18(3)",
+     "url": "https://doi.org/10.1093/rfs/hhi028"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "INV03_Inst_NetBuy_20d",
+   "category": "investor_flow",
+   "registry_category": "investor_flow",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "unclear",
+   "agree": null,
+   "verdict": "불명",
+   "stored_meaning": "Σ20일 기관(금융투자 · 보험 · 투신 · 은행 · 연기금 · 기타금융 합) 순매수 ÷ 시총",
+   "basis": "한국 기관 합계 순매수의 이후 수익 부호가 연구마다 갈린다. 양(+): 국내 운용역의 체결가 우위(Choe · Kho · Stulz 2005 — 일중), 기관 거래가 가격 반영 지연을 줄임(Kang · Kwon · Park 2016), 기관 추종이 KOSPI 초과(유진 · 장순재 2012 — 22개 대형주 시계열), 시총 정규화 기관 매수 강도 → 이후 50일 초과수익 양(Kang 2025 — 프리프린트 · 2020~2024), 시장 단위 다음 날 양(Yang 외 2020). 효과 없음: 국내 기관 지분 변화는 수익에 영향 없음(Jeon & Moffett 2010), 이상현상을 이용하는 것은 자산운용 기관 일부뿐(Kim · Kang · Roh 2025), 기관 거래가 이상현상 예측 방향과 다름(Kim · Ok · Park 2020). 국제: 한 분기 군집은 단기 양이나 여러 분기 지속 매수는 장기 음(Dasgupta · Prat · Verardo 2011). 기관 종류가 섞인 합계 흐름이라 부호를 정할 근거가 부족하다.",
+   "def_code_note": "일간 DB 같은 이름 = 20일 원화 평균(시총 미정규화 · ρ 중앙 0.93) · 외국인 순매수와 순위상관 −0.09(입력 확인 — 서로 반대 거래)",
+   "refs": [
+    {
+     "ref": "[한국] Choe, Kho & Stulz (2005) Do Domestic Investors Have an Edge? The Trading Experience of Foreign Investors in Korea, Review of Financial Studies 18(3)",
+     "url": "https://doi.org/10.1093/rfs/hhi028"
+    },
+    {
+     "ref": "[한국] Kang, Kwon & Park (2016) Foreign investors and the delay of information dissemination in the Korean stock market, Pacific-Basin Finance Journal 38",
+     "url": "https://doi.org/10.1016/j.pacfin.2016.03.004"
+    },
+    {
+     "ref": "[한국 · 국내 학술지] 유진 · 장순재 (2012) 한국 주식시장의 외국인 및 기관 추종 전략의 성과, 재무관리연구 29(4) 29–60 — Crossref DOI 미확인 · 원문 확인(22개 대형주 시계열 추종 · 선행연구 정리에 공재식 2000 · 이가연 · 이윤구 2004 · 김선호 2001 · 강종만 · 이상제 2005 = 2차 인용)",
+     "url": "https://scholarworks.bwise.kr/hanyang/handle/2021.sw.hanyang/163889"
+    },
+    {
+     "ref": "[한국 · arXiv 프리프린트] Kang (2025) Sources and Nonlinearity of High Volume Return Premium: An Empirical Study on the Differential Effects of Investor Identity versus Trading Intensity (2020-2024), arXiv:2512.14134 — 심사 전 · Crossref 대상 아님",
+     "url": "https://arxiv.org/abs/2512.14134"
+    },
+    {
+     "ref": "[한국 · SSRN 판] Yang, Samitas & Kampouris (2020) Investor behavior, stock returns and CDS spreads: evidence from foreign and domestic investors in Korea — 시장 단위 · 다음 날",
+     "url": "https://doi.org/10.2139/ssrn.3517222"
+    },
+    {
+     "ref": "[한국] Jeon & Moffett (2010) Herding by foreign investors and emerging market equity returns: Evidence from Korea, International Review of Economics & Finance 19(4)",
+     "url": "https://doi.org/10.1016/j.iref.2010.03.001"
+    },
+    {
+     "ref": "[한국] Kim, Kang & Roh (2025) Market participants' trading behavior toward anomalies: Evidence from the Korean market, Pacific-Basin Finance Journal 90",
+     "url": "https://doi.org/10.1016/j.pacfin.2024.102622"
+    },
+    {
+     "ref": "[한국] Kim, Ok & Park (2020) Institutional Investors' Trading Response to Stock Market Anomalies: Evidence from Korea, Sustainability 12(4)",
+     "url": "https://doi.org/10.3390/su12041420"
+    },
+    {
+     "ref": "Dasgupta, Prat & Verardo (2011) Institutional Trade Persistence and Long-Term Equity Returns, Journal of Finance 66(2)",
+     "url": "https://doi.org/10.1111/j.1540-6261.2010.01644.x"
+    },
+    {
+     "ref": "Sias, Starks & Titman (2006) Changes in Institutional Ownership and Stock Returns: Assessment and Methodology, Journal of Business 79(6)",
+     "url": "https://doi.org/10.1086/508002"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "INV04_Inst_NetBuy_60d",
+   "category": "investor_flow",
+   "registry_category": "investor_flow",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "unclear",
+   "agree": null,
+   "verdict": "불명",
+   "stored_meaning": "Σ60일 기관 순매수 ÷ 시총",
+   "basis": "INV03 과 같은 이유로 불명. 60일 창은 여러 분기 지속 매수의 장기 음(Dasgupta · Prat · Verardo 2011)과 단기 군집의 양(같은 논문 · Sias 2004) 사이에 있어 지평 문제가 더 크다.",
+   "def_code_note": "일간 DB 같은 이름 = 60일 원화 평균(ρ 중앙 0.95)",
+   "refs": [
+    {
+     "ref": "[한국] Jeon & Moffett (2010) Herding by foreign investors and emerging market equity returns: Evidence from Korea, International Review of Economics & Finance 19(4)",
+     "url": "https://doi.org/10.1016/j.iref.2010.03.001"
+    },
+    {
+     "ref": "[한국] Kim, Kang & Roh (2025) Market participants' trading behavior toward anomalies: Evidence from the Korean market, Pacific-Basin Finance Journal 90",
+     "url": "https://doi.org/10.1016/j.pacfin.2024.102622"
+    },
+    {
+     "ref": "[한국 · arXiv 프리프린트] Kang (2025) Sources and Nonlinearity of High Volume Return Premium: An Empirical Study on the Differential Effects of Investor Identity versus Trading Intensity (2020-2024), arXiv:2512.14134 — 심사 전 · Crossref 대상 아님",
+     "url": "https://arxiv.org/abs/2512.14134"
+    },
+    {
+     "ref": "Dasgupta, Prat & Verardo (2011) Institutional Trade Persistence and Long-Term Equity Returns, Journal of Finance 66(2)",
+     "url": "https://doi.org/10.1111/j.1540-6261.2010.01644.x"
+    },
+    {
+     "ref": "Sias (2004) Institutional Herding, Review of Financial Studies 17(1)",
+     "url": "https://doi.org/10.1093/rfs/hhg035"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "INV05_Foreign_Momentum",
+   "category": "investor_flow",
+   "registry_category": "investor_flow",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "unclear",
+   "agree": null,
+   "verdict": "불명",
+   "stored_meaning": "F20/F60 − 1 (|F60| > 1억) — F20 은 F60 창 안의 부분합이라 '최근 20일이 60일 순매수의 몇 배인가'. 분모 부호에 따라 뜻이 뒤집힌다",
+   "basis": "분모(60일 외국인 순매수)가 음수인 종목-월이 유효 표본의 54%이고(입력 분포 확인 · 수익 미결합), 그때 저장값은 최근 20일 순매수와 순위상관 −0.80(분모 양수일 때 +0.74)이다. 저장값이 큰 쪽에 '최근 매수 가속'과 '최근 매도 가속'이 함께 있어 방향 정보가 없다. 흐름 가속 자체의 문헌 부호(외국인 흐름 지속 — Froot 외 2001)를 대입할 수 없다.",
+   "def_code_note": "정의 'acceleration' ≠ 저장값(분모 음수면 부호 반전) · 일간 DB 같은 이름 = f20/|f252|−1(창 252일 · 부호 일관 · ρ 중앙 0.00 = 다른 양)",
+   "refs": [
+    {
+     "ref": "Froot, O'Connell & Seasholes (2001) The portfolio flows of international investors, Journal of Financial Economics 59(2)",
+     "url": "https://doi.org/10.1016/S0304-405X(00)00084-2"
+    },
+    {
+     "ref": "[한국] Bae, Min & Jung (2011) Trading Behavior, Performance, and Stock Preference of Foreigners, Local Institutions, and Individual Investors: Evidence from the Korean Stock Market, Asia-Pacific Journal of Financial Studies 40(2)",
+     "url": "https://doi.org/10.1111/j.2041-6156.2011.01037.x"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "INV06_Inst_Momentum",
+   "category": "investor_flow",
+   "registry_category": "investor_flow",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "unclear",
+   "agree": null,
+   "verdict": "불명",
+   "stored_meaning": "I20/I60 − 1 (|I60| > 1억) — INV05 의 기관판 · 분모 부호에 따라 뜻이 뒤집힌다",
+   "basis": "분모 음수 종목-월 55%, 그때 최근 20일 기관 순매수와 순위상관 −0.82(분모 양수 +0.76 — 입력 확인). INV05 와 같은 이유로 방향 정보가 없고, 기관 흐름 자체의 부호도 불명(INV03).",
+   "def_code_note": "INV05 와 같음 · 일간 DB = i20/|i252|−1(ρ 중앙 0.01)",
+   "refs": [
+    {
+     "ref": "Dasgupta, Prat & Verardo (2011) Institutional Trade Persistence and Long-Term Equity Returns, Journal of Finance 66(2)",
+     "url": "https://doi.org/10.1111/j.1540-6261.2010.01644.x"
+    },
+    {
+     "ref": "[한국] Jeon & Moffett (2010) Herding by foreign investors and emerging market equity returns: Evidence from Korea, International Review of Economics & Finance 19(4)",
+     "url": "https://doi.org/10.1016/j.iref.2010.03.001"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "INV07_Retail_Contrarian",
+   "category": "investor_flow",
+   "registry_category": "investor_flow",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "unclear",
+   "agree": null,
+   "verdict": "불명",
+   "stored_meaning": "−Σ20일 개인 순매수 ÷ 시총 — 클수록 개인 순매도",
+   "basis": "한국 문헌이 지평 · 기간에 따라 갈린다. 개인 매수 → 단기 수익 양(이 저장값에는 음): 역발상 개인이 유동성을 공급하고 단기 초과수익을 받음(Kim & Park 2015), 코로나 이전 개인 매수와 이후 수익의 양의 관계가 2020 년 뒤 약해짐(Kwak 2024), 미국 같은 결과(Kaniel · Saar · Titman 2008 — 집중 매수 다음 달 양). 개인 매수 → 낮은 수익(이 저장값에는 양): 개인이 이상현상을 만드는 비정보 거래자(Kim · Kang · Roh 2025), 개인 보유 비중 상위 종목 저조(Park & Kim 2014 — 수준), 잦은 매매 개인의 매수 종목 저조 · 군집 뒤 반전(Kim & Kim 2022), 개인 순매수가 다음 KOSPI 수익을 음으로 예측(Ko 2024 — 시장 단위), 대만 개인 손실(Barber 외 2009). 정의가 인용한 Barber & Odean(2000)은 매매 비용으로 인한 계좌 성과 열위이고 순매수 → 이후 수익 부호의 근거가 아니다. 구조: 개인 거래 비중 유가 약 6할 · 코스닥 약 9할(공옥례 · 박대근 2013), 2020~21 개인 유입(Kwak 2024)이 기간 차이를 만든다.",
+   "def_code_note": "일간 DB 같은 이름 = 개인 순매수 20일 평균(음수화 없음) — 대응표 ρ 중앙 −0.89 = 월간과 부호 반대(§5 1순위)",
+   "refs": [
+    {
+     "ref": "[한국] Kim & Park (2015) Individual Investor Sentiment and Stock Returns: Evidence from the Korean Stock Market, Emerging Markets Finance and Trade 51(S5)",
+     "url": "https://doi.org/10.1080/1540496X.2015.1062305"
+    },
+    {
+     "ref": "[한국] Kwak (2024) Individual investor trading and stock returns after the Covid-19 pandemic: Evidence from Korea, Finance Research Letters 61",
+     "url": "https://doi.org/10.1016/j.frl.2024.105027"
+    },
+    {
+     "ref": "Kaniel, Saar & Titman (2008) Individual Investor Trading and Stock Returns, Journal of Finance 63(1)",
+     "url": "https://doi.org/10.1111/j.1540-6261.2008.01316.x"
+    },
+    {
+     "ref": "[한국] Kim, Kang & Roh (2025) Market participants' trading behavior toward anomalies: Evidence from the Korean market, Pacific-Basin Finance Journal 90",
+     "url": "https://doi.org/10.1016/j.pacfin.2024.102622"
+    },
+    {
+     "ref": "[한국] Park & Kim (2014) Investment Performance of Individual Investors: Evidence from the Korean Stock Market, Emerging Markets Finance and Trade 50(S1)",
+     "url": "https://doi.org/10.2753/REE1540-496X5001S113"
+    },
+    {
+     "ref": "[한국 · SSRN 판] Kim & Kim (2022) Behavioral Biases and the Trading of Individual Investors in the Korean Stock Markets (자본시장연구원 보고서의 SSRN 판)",
+     "url": "https://doi.org/10.2139/ssrn.4096525"
+    },
+    {
+     "ref": "[한국 · 국내 학술지] Ko (2024) Stock market returns and trading behavior of individual investors, Journal of the Korean Data Analysis Society 26(5) — 시장(KOSPI) 단위",
+     "url": "https://doi.org/10.37727/jkdas.2024.26.5.1443"
+    },
+    {
+     "ref": "Barber, Lee, Liu & Odean (2009) Just How Much Do Individual Investors Lose by Trading?, Review of Financial Studies 22(2) — 대만",
+     "url": "https://doi.org/10.1093/rfs/hhn046"
+    },
+    {
+     "ref": "Barber & Odean (2000) Trading Is Hazardous to Your Wealth: The Common Stock Investment Performance of Individual Investors, Journal of Finance 55(2)",
+     "url": "https://doi.org/10.1111/0022-1082.00226"
+    },
+    {
+     "ref": "[한국 · 국내 학술지] 공옥례 · 박대근 (2013) 한국 주식시장에서 주의효과가 투자자의 매수행태에 미치는 영향, 금융공학연구 12(3) 75–98 — DOI 미확인 · 원문 확인(구조 서술: 2001~2010 거래대금 비중 개인 유가 59.6% · 코스닥 92.5%)",
+     "url": "https://repository.hanyang.ac.kr/handle/20.500.11754/44517"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "INV08_Foreign_Inst_Agreement",
+   "category": "investor_flow",
+   "registry_category": "investor_flow",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "unclear",
+   "agree": null,
+   "verdict": "불명",
+   "stored_meaning": "sign(F20)·sign(I20)·min(|F20|,|I20|) ÷ 시총 — 둘이 함께 사도, 함께 팔아도 양수",
+   "basis": "양수 값의 58%(상위 10%의 51%)가 외국인 · 기관 동반 순매도에서 나온다(입력 분포 확인). 매수 · 매도 방향이 지워지고 '합의의 크기'만 남는다. 이 양의 횡단면 수익 문헌을 찾지 못했다(한국에서 외국인과 기관은 대체로 서로 반대로 거래 — 순매수비율 상관 음 · 유진 · 장순재 2012; 외국인이 국내 기관 매도분을 삼 · Jeon & Moffett 2010).",
+   "def_code_note": "정의 'Agreement' 가 동반 매도를 동반 매수와 같은 부호로 셈 · 일간 DB = 같은 부호 지시자 0/1(역시 부호 소실 · ρ 중앙 0.69)",
+   "refs": [
+    {
+     "ref": "[한국] Jeon & Moffett (2010) Herding by foreign investors and emerging market equity returns: Evidence from Korea, International Review of Economics & Finance 19(4)",
+     "url": "https://doi.org/10.1016/j.iref.2010.03.001"
+    },
+    {
+     "ref": "[한국 · 국내 학술지] 유진 · 장순재 (2012) 한국 주식시장의 외국인 및 기관 추종 전략의 성과, 재무관리연구 29(4) 29–60 — Crossref DOI 미확인 · 원문 확인(22개 대형주 시계열 추종 · 선행연구 정리에 공재식 2000 · 이가연 · 이윤구 2004 · 김선호 2001 · 강종만 · 이상제 2005 = 2차 인용)",
+     "url": "https://scholarworks.bwise.kr/hanyang/handle/2021.sw.hanyang/163889"
+    },
+    {
+     "ref": "Sias (2004) Institutional Herding, Review of Financial Studies 17(1)",
+     "url": "https://doi.org/10.1093/rfs/hhg035"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "INV09_Flow_Persistence",
+   "category": "investor_flow",
+   "registry_category": "investor_flow",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "unclear",
+   "agree": null,
+   "verdict": "불명",
+   "stored_meaning": "최근 20행 중 외국인+기관 순매수 > 0 인 날의 비율(분모 20 고정)",
+   "basis": "일 단위 '스마트머니 연속 매수 비율'의 횡단면 수익 문헌을 찾지 못했다. 가까운 문헌은 지평에 따라 갈린다 — 한 분기 기관 군집은 단기 양, 여러 분기 지속 매수는 장기 음(Dasgupta · Prat · Verardo 2011 — 빌더 주석이 'Yan & Zhang (2009)'에 붙인 제목의 실제 논문), 기관 수요 지속은 정보 연쇄(Sias 2004). 또 수급 항등식(F+I ≈ −개인−기타법인)으로 이 양은 개인 순매도 지속과 같은 쪽이어서(입력에서 INV10 과 순위상관 0.71) INV07 의 갈림을 물려받는다.",
+   "def_code_note": "일간 DB 같은 이름 = 63일 스마트머니 자기상관(다른 양 · ρ 중앙 −0.02) · 빌더 참고문헌 제목 오기(Yan & Zhang 2009 의 실제 제목은 'Are Short-term Institutions Better Informed?')",
+   "refs": [
+    {
+     "ref": "Dasgupta, Prat & Verardo (2011) Institutional Trade Persistence and Long-Term Equity Returns, Journal of Finance 66(2)",
+     "url": "https://doi.org/10.1111/j.1540-6261.2010.01644.x"
+    },
+    {
+     "ref": "Sias (2004) Institutional Herding, Review of Financial Studies 17(1)",
+     "url": "https://doi.org/10.1093/rfs/hhg035"
+    },
+    {
+     "ref": "Yan & Zhang (2009) Institutional Investors and Equity Returns: Are Short-term Institutions Better Informed?, Review of Financial Studies 22(2)",
+     "url": "https://doi.org/10.1093/revfin/hhl046"
+    },
+    {
+     "ref": "[한국] Kim & Park (2015) Individual Investor Sentiment and Stock Returns: Evidence from the Korean Stock Market, Emerging Markets Finance and Trade 51(S5)",
+     "url": "https://doi.org/10.1080/1540496X.2015.1062305"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "INV10_Smart_Money_Flow",
+   "category": "investor_flow",
+   "registry_category": "investor_flow",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "unclear",
+   "agree": null,
+   "verdict": "불명",
+   "stored_meaning": "Σ20(F+I) ÷ Σ20(|F|+|I|+|개인|) — −1~1",
+   "basis": "수급 항등식(행의 84%에서 외국인+개인+기관+기타법인 = 0 — 입력 확인)으로 F+I ≈ −(개인+기타법인)이다. 같은 양을 '외국인 · 기관 순매수'로 읽으면 외국인 문헌(양 — Bae 외 2011)이, '개인 순매도'로 읽으면 개인 유동성 공급 문헌(개인 매수 → 단기 양 → 이 양에는 음 — Kim & Park 2015 · Kwak 2024)이 걸려 부호가 갈린다. 입력에서 INV07 과 순위상관 0.78 · INV12 와 0.92 — 사실상 같은 양. 합성량 자체의 문헌은 없다.",
+   "def_code_note": "일간 DB 같은 이름 = 20일 원화 (F+I) 평균(비율 아님 · ρ 중앙 0.83)",
+   "refs": [
+    {
+     "ref": "[한국] Bae, Min & Jung (2011) Trading Behavior, Performance, and Stock Preference of Foreigners, Local Institutions, and Individual Investors: Evidence from the Korean Stock Market, Asia-Pacific Journal of Financial Studies 40(2)",
+     "url": "https://doi.org/10.1111/j.2041-6156.2011.01037.x"
+    },
+    {
+     "ref": "[한국] Kim & Park (2015) Individual Investor Sentiment and Stock Returns: Evidence from the Korean Stock Market, Emerging Markets Finance and Trade 51(S5)",
+     "url": "https://doi.org/10.1080/1540496X.2015.1062305"
+    },
+    {
+     "ref": "[한국] Kwak (2024) Individual investor trading and stock returns after the Covid-19 pandemic: Evidence from Korea, Finance Research Letters 61",
+     "url": "https://doi.org/10.1016/j.frl.2024.105027"
+    },
+    {
+     "ref": "Kaniel, Saar & Titman (2008) Individual Investor Trading and Stock Returns, Journal of Finance 63(1)",
+     "url": "https://doi.org/10.1111/j.1540-6261.2008.01316.x"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "INV11_Foreign_Concentration",
+   "category": "investor_flow",
+   "registry_category": "investor_flow",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "higher_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "외국인 20일 순매수 '원화 금액'이 횡단면 상위 10% 이면 1 · 나머지 0",
+   "basis": "부호 있는 외국인 순매수 상위 표시이므로 INV01 의 문헌 방향(양)을 따른다. 외국인 가격충격은 대형주에 몰린다(Kang · Kwon · Park 2014). 다만 시총으로 나누지 않아 대형주 쏠림이 크고(표시 종목의 평균 시총 백분위 0.76~0.88 · 입력 확인), 이진값이며 나머지 90%에 대량 순매도와 무거래가 섞인다 → 낮음.",
+   "def_code_note": "이름 'Concentration' = 집중 매수 표시(보유 집중 아님) · 원화 미정규화 · 일간 DB 같은 이름 = 63일 외국인 순매수 표준편차(다른 양 · ρ 중앙 0.44)",
+   "refs": [
+    {
+     "ref": "[한국] Bae, Min & Jung (2011) Trading Behavior, Performance, and Stock Preference of Foreigners, Local Institutions, and Individual Investors: Evidence from the Korean Stock Market, Asia-Pacific Journal of Financial Studies 40(2)",
+     "url": "https://doi.org/10.1111/j.2041-6156.2011.01037.x"
+    },
+    {
+     "ref": "[한국] Kang, Kwon & Park (2014) Momentum and Foreign Investors: Evidence from the Korean Stock Market, Emerging Markets Finance and Trade 50(S5) — Crossref 미등록(IDEAS 표기 DOI 10.2753/REE1540-496X5005S509 가 404) · IDEAS 서지로 확인",
+     "url": "https://ideas.repec.org/a/mes/emfitr/v50y2014is5p131-147.html"
+    },
+    {
+     "ref": "[아시아 6개국 · 한국 포함] Richards (2005) Big Fish in Small Ponds: The Trading Behavior and Price Impact of Foreign Investors in Asian Emerging Equity Markets, JFQA 40(1)",
+     "url": "https://doi.org/10.1017/S0022109000001721"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "INV12_Supply_Demand_Imbalance",
+   "category": "investor_flow",
+   "registry_category": "investor_flow",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "unclear",
+   "agree": null,
+   "verdict": "불명",
+   "stored_meaning": "Σ20(F+I−개인) ÷ Σ20(|F|+|I|+|개인|)",
+   "basis": "항등식으로 F+I−개인 ≈ −2·개인 − 기타법인 → 사실상 개인 순매도 강도(입력에서 INV07 과 순위상관 0.89 · INV10 과 0.92). INV07 과 같은 이유로 문헌이 갈린다.",
+   "def_code_note": "정의 '일별 비율의 20일 평균' ≠ 코드 '20일 합의 비율' · 일간 DB = Σ(F+I)/Σ|F+I|(다른 식 · ρ 중앙 0.88)",
+   "refs": [
+    {
+     "ref": "[한국] Kim & Park (2015) Individual Investor Sentiment and Stock Returns: Evidence from the Korean Stock Market, Emerging Markets Finance and Trade 51(S5)",
+     "url": "https://doi.org/10.1080/1540496X.2015.1062305"
+    },
+    {
+     "ref": "[한국] Kwak (2024) Individual investor trading and stock returns after the Covid-19 pandemic: Evidence from Korea, Finance Research Letters 61",
+     "url": "https://doi.org/10.1016/j.frl.2024.105027"
+    },
+    {
+     "ref": "[한국] Kim, Kang & Roh (2025) Market participants' trading behavior toward anomalies: Evidence from the Korean market, Pacific-Basin Finance Journal 90",
+     "url": "https://doi.org/10.1016/j.pacfin.2024.102622"
+    },
+    {
+     "ref": "Kaniel, Saar & Titman (2008) Individual Investor Trading and Stock Returns, Journal of Finance 63(1)",
+     "url": "https://doi.org/10.1111/j.1540-6261.2008.01316.x"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "INV13_Foreign_Resid_Individual_126d",
+   "category": "investor_flow",
+   "registry_category": "investor_flow",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "unclear",
+   "agree": null,
+   "verdict": "불명",
+   "stored_meaning": "z_F − β·z_I (z = 126일 원화 순매수 합의 횡단면 z · 1~99% 윈저 · β = 지난달까지 월말 21일 합 z 의 무절편 누적 회귀계수 · 증분 60개월 뒤)",
+   "basis": "β 가 음수라(입력에서 전 기간 합동 −0.61) 잔차 = z_F + 0.61·z_I — 외국인 순매수에 개인 순매수를 일부 더한 양이다(외국인이 사는데 개인도 함께 사는 = 기관이 파는 종목이 높다). 외국인 순매수(양)와 개인 순매수(문헌 갈림)의 혼합이고 이 잔차의 횡단면 수익 문헌은 없다. 정의가 인용한 Choe · Kho · Stulz(2005)는 외국인의 체결가 열위를 다룬 연구로 이 잔차의 방향 근거가 아니다.",
+   "def_code_note": "β 는 세 창 모두 21일 합으로 추정(126d 변형에 21일 β) · 원화 미정규화(대형주 쏠림) · 월간 전용(일간 DB 없음)",
+   "refs": [
+    {
+     "ref": "[한국] Choe, Kho & Stulz (2005) Do Domestic Investors Have an Edge? The Trading Experience of Foreign Investors in Korea, Review of Financial Studies 18(3)",
+     "url": "https://doi.org/10.1093/rfs/hhi028"
+    },
+    {
+     "ref": "[한국] Bae, Min & Jung (2011) Trading Behavior, Performance, and Stock Preference of Foreigners, Local Institutions, and Individual Investors: Evidence from the Korean Stock Market, Asia-Pacific Journal of Financial Studies 40(2)",
+     "url": "https://doi.org/10.1111/j.2041-6156.2011.01037.x"
+    },
+    {
+     "ref": "[한국] Kim & Park (2015) Individual Investor Sentiment and Stock Returns: Evidence from the Korean Stock Market, Emerging Markets Finance and Trade 51(S5)",
+     "url": "https://doi.org/10.1080/1540496X.2015.1062305"
+    },
+    {
+     "ref": "[한국] Kwak (2024) Individual investor trading and stock returns after the Covid-19 pandemic: Evidence from Korea, Finance Research Letters 61",
+     "url": "https://doi.org/10.1016/j.frl.2024.105027"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "INV13_Foreign_Resid_Individual_21d",
+   "category": "investor_flow",
+   "registry_category": "investor_flow",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "unclear",
+   "agree": null,
+   "verdict": "불명",
+   "stored_meaning": "z_F − β·z_I (21일 합 · 나머지 126d 와 같음)",
+   "basis": "INV13_126d 와 같다 — 개인 순매수를 일부 더한 외국인 흐름(β ≈ −0.6)이고 문헌이 없다.",
+   "def_code_note": "원화 미정규화 · 월간 전용",
+   "refs": [
+    {
+     "ref": "[한국] Choe, Kho & Stulz (2005) Do Domestic Investors Have an Edge? The Trading Experience of Foreign Investors in Korea, Review of Financial Studies 18(3)",
+     "url": "https://doi.org/10.1093/rfs/hhi028"
+    },
+    {
+     "ref": "[한국] Kim & Park (2015) Individual Investor Sentiment and Stock Returns: Evidence from the Korean Stock Market, Emerging Markets Finance and Trade 51(S5)",
+     "url": "https://doi.org/10.1080/1540496X.2015.1062305"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "INV13_Foreign_Resid_Individual_63d",
+   "category": "investor_flow",
+   "registry_category": "investor_flow",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "unclear",
+   "agree": null,
+   "verdict": "불명",
+   "stored_meaning": "z_F − β·z_I (63일 합 · 나머지 126d 와 같음)",
+   "basis": "INV13_126d 와 같다.",
+   "def_code_note": "63d 변형에 21일 β · 원화 미정규화 · 월간 전용",
+   "refs": [
+    {
+     "ref": "[한국] Choe, Kho & Stulz (2005) Do Domestic Investors Have an Edge? The Trading Experience of Foreign Investors in Korea, Review of Financial Studies 18(3)",
+     "url": "https://doi.org/10.1093/rfs/hhi028"
+    },
+    {
+     "ref": "[한국] Kim & Park (2015) Individual Investor Sentiment and Stock Returns: Evidence from the Korean Stock Market, Emerging Markets Finance and Trade 51(S5)",
+     "url": "https://doi.org/10.1080/1540496X.2015.1062305"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "T01_RSI14",
+   "category": "technical",
+   "registry_category": "technical",
+   "registry_direction": "lower_better",
+   "s_reg": -1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "lower_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "Wilder RSI(14) 0~100(최근 200거래일로 평활) — 클수록 최근 상승일 우세(과매수)",
+   "basis": "RSI14 는 최근 2~4주 가격 위치의 단조 변환이다. 1개월 · 주간 반전(Jegadeesh 1990 · Lehmann 1990)에 따라 낮을수록(과매도) 이후 수익이 높다. 한국: 단기 반전이 거듭 보고됨(Sim & Kim 2021 의 정리 · Kang & Jeong 2018 · Kang · Ryu · Webb 2025 — 개별 종목 반전 우세). 개인 비중이 큰 시장에서 개인의 역발상 매매가 단기 반전과 맞물린다(Kim & Park 2015). 고회전 종목의 단기 모멘텀(Medhat & Schmeling 2022)은 조건부 예외 → 중간.",
+   "def_code_note": "일간 DB = 수익률로 계산한 RSI(가격차 대신 · ρ 중앙 0.86 · 같은 방향)",
+   "refs": [
+    {
+     "ref": "Jegadeesh (1990) Evidence of Predictable Behavior of Security Returns, Journal of Finance 45(3)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1990.tb05110.x"
+    },
+    {
+     "ref": "Lehmann (1990) Fads, Martingales, and Market Efficiency, Quarterly Journal of Economics 105(1)",
+     "url": "https://doi.org/10.2307/2937816"
+    },
+    {
+     "ref": "[한국] Sim & Kim (2021) The effect of short-term return reversals on momentum profits, Journal of Derivatives and Quantitative Studies(선물연구) 29(3) — 서론의 한국 단기 반전 정리(윤 · 조 2006 · 김 · 송 2013 · 강 · 정 2018)는 2차 인용",
+     "url": "https://doi.org/10.1108/JDQS-02-2021-0005"
+    },
+    {
+     "ref": "[한국 · 국내 학술지] Kang & Jeong (2018) Short-Term Reversals Ahead of Earnings Announcement in Korean Stock Market, 재무관리연구 35(3)",
+     "url": "https://doi.org/10.22510/kjofm.2018.35.3.010"
+    },
+    {
+     "ref": "[한국] Kang, Ryu & Webb (2025) Momentum and reversal effects in the Korean stock market, Investment Analysts Journal 54(4) — 1983~2023 · 반전 우세",
+     "url": "https://doi.org/10.1080/10293523.2024.2448054"
+    },
+    {
+     "ref": "[한국] Kim & Park (2015) Individual Investor Sentiment and Stock Returns: Evidence from the Korean Stock Market, Emerging Markets Finance and Trade 51(S5)",
+     "url": "https://doi.org/10.1080/1540496X.2015.1062305"
+    },
+    {
+     "ref": "Medhat & Schmeling (2022) Short-term Momentum, Review of Financial Studies 35(3)",
+     "url": "https://doi.org/10.1093/rfs/hhab055"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "T03_BB20",
+   "category": "technical",
+   "registry_category": "technical",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "lower_better",
+   "agree": false,
+   "verdict": "불일치",
+   "stored_meaning": "(종가 − 20일 평균)/(2 × 20일 표준편차) — 클수록 상단 밴드 쪽(부호는 PMA20 과 항상 같다)",
+   "basis": "변동성으로 나눈 20일 가격 이탈이다. 1개월 반전(Jegadeesh 1990; 한국 — Sim & Kim 2021 정리 · Kang · Ryu · Webb 2025)과 펀더멘털 아닌 가격 이탈일수록 더 반전한다는 결과(Da · Liu · Schaumburg 2014)에 따라 클수록 이후 수익이 낮다. 등록부 근거는 정의 문구 '>1 = upper band breach'(돌파) 서사뿐이고, 볼린저 위치의 횡단면 직접 문헌은 찾지 못했다 → 낮음.",
+   "def_code_note": "일간 DB = %B = (종가−하단)/(4σ)(아핀 변환 · 같은 방향 · ρ = 1.0)",
+   "refs": [
+    {
+     "ref": "Jegadeesh (1990) Evidence of Predictable Behavior of Security Returns, Journal of Finance 45(3)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1990.tb05110.x"
+    },
+    {
+     "ref": "Da, Liu & Schaumburg (2014) A Closer Look at the Short-Term Return Reversal, Management Science 60(3)",
+     "url": "https://doi.org/10.1287/mnsc.2013.1766"
+    },
+    {
+     "ref": "[한국] Sim & Kim (2021) The effect of short-term return reversals on momentum profits, Journal of Derivatives and Quantitative Studies(선물연구) 29(3) — 서론의 한국 단기 반전 정리(윤 · 조 2006 · 김 · 송 2013 · 강 · 정 2018)는 2차 인용",
+     "url": "https://doi.org/10.1108/JDQS-02-2021-0005"
+    },
+    {
+     "ref": "[한국] Kang, Ryu & Webb (2025) Momentum and reversal effects in the Korean stock market, Investment Analysts Journal 54(4) — 1983~2023 · 반전 우세",
+     "url": "https://doi.org/10.1080/10293523.2024.2448054"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "T04_OBV21",
+   "category": "technical",
+   "registry_category": "technical",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "unclear",
+   "agree": null,
+   "verdict": "불명",
+   "stored_meaning": "OBV(= Σ sign(Δ종가)×거래량) 최근 21점의 시간 기울기 — 주식 수 단위(정규화 없음)",
+   "basis": "크기가 거래 주식 수 수준에 비례해 횡단면 순위가 '최근 상승 · 하락일 거래량 우위의 부호 × 거래량 규모'의 혼합이 된다. 부호 성분은 단기 가격 방향(1개월 반전 → 음)과, 규모 성분은 거래량-수익 관계(고거래량 승자의 빠른 반전 — Lee & Swaminathan 2000, 이상 거래량 프리미엄 — Gervais · Kaniel · Mingelgrin 2001)와 겹쳐 부호가 정해지지 않는다. OBV 의 횡단면 수익 문헌을 찾지 못했다.",
+   "def_code_note": "정의 'slope' 의 단위가 주식 수라 종목 간 비교 불가 · 일간 DB = (OBV_t − OBV_t−21)/(|OBV_t−21|+1)(누적 시작점에 기대는 정규화 · 부호 기준 = 수익률 · ρ 중앙 0.73)",
+   "refs": [
+    {
+     "ref": "Lee & Swaminathan (2000) Price Momentum and Trading Volume, Journal of Finance 55(5)",
+     "url": "https://doi.org/10.1111/0022-1082.00280"
+    },
+    {
+     "ref": "Gervais, Kaniel & Mingelgrin (2001) The High-Volume Return Premium, Journal of Finance 56(3)",
+     "url": "https://doi.org/10.1111/0022-1082.00349"
+    },
+    {
+     "ref": "Jegadeesh (1990) Evidence of Predictable Behavior of Security Returns, Journal of Finance 45(3)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1990.tb05110.x"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "T05_MFI14",
+   "category": "technical",
+   "registry_category": "technical",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "lower_better",
+   "agree": false,
+   "verdict": "불일치",
+   "stored_meaning": "14일 MFI 0~100 — 대표가격(H+L+C)/3 상승일 거래대금 비중이 클수록 높음",
+   "basis": "MFI 는 거래대금으로 가중한 RSI 이고 RSI14 와 같은 2~4주 가격 위치를 잰다 → 1개월 반전으로 낮을수록 좋다(Jegadeesh 1990; 한국 — Sim & Kim 2021 정리 · Kang · Ryu · Webb 2025). 등록부는 RSI14 를 lower_better 로 두면서 MFI14 는 higher_better 로 두어 같은 양에 반대 방향이다. 거래대금 가중은 자금흐름이 이후 수익과 양이라는 결과(Bennett & Sias 2001 — 체결 단위)와 겹치는 성분을 넣고, MFI 의 횡단면 직접 문헌은 없다 → 낮음.",
+   "def_code_note": "일간 DB 와 같은 식(분모 +1 · ρ 중앙 0.99)",
+   "refs": [
+    {
+     "ref": "Jegadeesh (1990) Evidence of Predictable Behavior of Security Returns, Journal of Finance 45(3)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1990.tb05110.x"
+    },
+    {
+     "ref": "[한국] Sim & Kim (2021) The effect of short-term return reversals on momentum profits, Journal of Derivatives and Quantitative Studies(선물연구) 29(3) — 서론의 한국 단기 반전 정리(윤 · 조 2006 · 김 · 송 2013 · 강 · 정 2018)는 2차 인용",
+     "url": "https://doi.org/10.1108/JDQS-02-2021-0005"
+    },
+    {
+     "ref": "[한국] Kang, Ryu & Webb (2025) Momentum and reversal effects in the Korean stock market, Investment Analysts Journal 54(4) — 1983~2023 · 반전 우세",
+     "url": "https://doi.org/10.1080/10293523.2024.2448054"
+    },
+    {
+     "ref": "Bennett & Sias (2001) Can Money Flows Predict Stock Returns?, Financial Analysts Journal 57(6) — 앞선 판 CR09 근거 문헌",
+     "url": "https://doi.org/10.2469/faj.v57.n6.2494"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "T06_PMA5",
+   "category": "technical",
+   "registry_category": "technical",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "lower_better",
+   "agree": false,
+   "verdict": "불일치",
+   "stored_meaning": "종가/5일 평균 − 1 — 최근 1주 상승일수록 큼(최근일 가중 큼)",
+   "basis": "최근 1주 수익의 가중합이다. 주간 · 월간 반전(Lehmann 1990 · Jegadeesh 1990)에 따라 클수록 이후 수익이 낮다. 한국은 단기 반전이 거듭 보고되고(Sim & Kim 2021 정리 · Kang & Jeong 2018 · Kang · Ryu · Webb 2025; Kim · Jeon · Kim 2026 — 제목 확인), 극단적 단기 상승 종목은 이후 낮다(MAX — Nartea · Wu · Liu 2014 · 단기 반전 통제 뒤에도). 등록부 근거는 정의 문구 'Short-term momentum' 서사뿐이다. 고회전 · 대형 종목의 단기 모멘텀(Medhat & Schmeling 2022)은 조건부 반례 → 중간.",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Lehmann (1990) Fads, Martingales, and Market Efficiency, Quarterly Journal of Economics 105(1)",
+     "url": "https://doi.org/10.2307/2937816"
+    },
+    {
+     "ref": "Jegadeesh (1990) Evidence of Predictable Behavior of Security Returns, Journal of Finance 45(3)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1990.tb05110.x"
+    },
+    {
+     "ref": "[한국] Sim & Kim (2021) The effect of short-term return reversals on momentum profits, Journal of Derivatives and Quantitative Studies(선물연구) 29(3) — 서론의 한국 단기 반전 정리(윤 · 조 2006 · 김 · 송 2013 · 강 · 정 2018)는 2차 인용",
+     "url": "https://doi.org/10.1108/JDQS-02-2021-0005"
+    },
+    {
+     "ref": "[한국 · 국내 학술지] Kang & Jeong (2018) Short-Term Reversals Ahead of Earnings Announcement in Korean Stock Market, 재무관리연구 35(3)",
+     "url": "https://doi.org/10.22510/kjofm.2018.35.3.010"
+    },
+    {
+     "ref": "[한국] Kang, Ryu & Webb (2025) Momentum and reversal effects in the Korean stock market, Investment Analysts Journal 54(4) — 1983~2023 · 반전 우세",
+     "url": "https://doi.org/10.1080/10293523.2024.2448054"
+    },
+    {
+     "ref": "[한국] Kim, Jeon & Kim (2026) Short-term reversal effect: evidence from the Korean stock market, Applied Economics Letters — 제목 · 서지만 확인(초록 미열람)",
+     "url": "https://doi.org/10.1080/13504851.2026.2740181"
+    },
+    {
+     "ref": "[한국] Nartea, Wu & Liu (2014) Extreme returns in emerging stock markets: evidence of a MAX effect in South Korea, Applied Financial Economics 24(6)",
+     "url": "https://doi.org/10.1080/09603107.2014.884696"
+    },
+    {
+     "ref": "Medhat & Schmeling (2022) Short-term Momentum, Review of Financial Studies 35(3)",
+     "url": "https://doi.org/10.1093/rfs/hhab055"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "T07_PMA20",
+   "category": "technical",
+   "registry_category": "technical",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "lower_better",
+   "agree": false,
+   "verdict": "불일치",
+   "stored_meaning": "종가/20일 평균 − 1 — 최근 1개월 가격 위치(마지막 1주가 가중의 약 45%)",
+   "basis": "1개월 반전(Jegadeesh 1990)의 직접 대응물이다. 한국: 2개월까지 반전(Sim & Kim 2021), 개별 종목 모멘텀 포트는 반전(Kang · Ryu · Webb 2025), 모멘텀 부재 · 음(Chae & Eom 2009), 실적 공시 앞 단기 반전(Kang & Jeong 2018). 등록부의 RSI14 · RSI28 은 lower_better 인데 같은 창의 PMA20 · BB20 은 higher_better 로 서로 맞지 않는다 → 중간.",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Jegadeesh (1990) Evidence of Predictable Behavior of Security Returns, Journal of Finance 45(3)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1990.tb05110.x"
+    },
+    {
+     "ref": "[한국] Sim & Kim (2021) The effect of short-term return reversals on momentum profits, Journal of Derivatives and Quantitative Studies(선물연구) 29(3) — 서론의 한국 단기 반전 정리(윤 · 조 2006 · 김 · 송 2013 · 강 · 정 2018)는 2차 인용",
+     "url": "https://doi.org/10.1108/JDQS-02-2021-0005"
+    },
+    {
+     "ref": "[한국] Kang, Ryu & Webb (2025) Momentum and reversal effects in the Korean stock market, Investment Analysts Journal 54(4) — 1983~2023 · 반전 우세",
+     "url": "https://doi.org/10.1080/10293523.2024.2448054"
+    },
+    {
+     "ref": "[한국] Chae & Eom (2009) Negative Momentum Profit in Korea and its Sources, Asia-Pacific Journal of Financial Studies 38(2)",
+     "url": "https://doi.org/10.1111/j.2041-6156.2009.tb00013.x"
+    },
+    {
+     "ref": "[한국 · 국내 학술지] Kang & Jeong (2018) Short-Term Reversals Ahead of Earnings Announcement in Korean Stock Market, 재무관리연구 35(3)",
+     "url": "https://doi.org/10.22510/kjofm.2018.35.3.010"
+    },
+    {
+     "ref": "Medhat & Schmeling (2022) Short-term Momentum, Review of Financial Studies 35(3)",
+     "url": "https://doi.org/10.1093/rfs/hhab055"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "T08_PMA60",
+   "category": "technical",
+   "registry_category": "technical",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "unclear",
+   "agree": null,
+   "verdict": "불명",
+   "stored_meaning": "종가/60일 평균 − 1 — 최근일 가중이 큰 3개월 가격 위치(마지막 1개월이 가중의 약 6할)",
+   "basis": "미국 문헌은 3~12개월 모멘텀(Jegadeesh & Titman 1993)과 이동평균 거리(Avramov · Kaplanski · Subrahmanyam 2021)로 양이지만, 이 양은 최근 1개월을 건너뛰지 않아 1개월 반전이 크게 섞인다. 한국은 전통 모멘텀이 없거나 음이고(Chae & Eom 2009 · Hameed & Kusnadi 2002 · Sim 외 2022 — 전통 모멘텀 부진 · 장기 반전) 2개월까지 반전한다(Sim & Kim 2021). 시장에 따라 부호가 갈린다(한국 문헌만 보면 lower_better 쪽).",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Jegadeesh & Titman (1993) Returns to Buying Winners and Selling Losers: Implications for Stock Market Efficiency, Journal of Finance 48(1)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1993.tb04702.x"
+    },
+    {
+     "ref": "Avramov, Kaplanski & Subrahmanyam (2021) Moving average distance as a predictor of equity returns, Review of Financial Economics 39(2)",
+     "url": "https://doi.org/10.1002/rfe.1118"
+    },
+    {
+     "ref": "[한국] Chae & Eom (2009) Negative Momentum Profit in Korea and its Sources, Asia-Pacific Journal of Financial Studies 38(2)",
+     "url": "https://doi.org/10.1111/j.2041-6156.2009.tb00013.x"
+    },
+    {
+     "ref": "[아시아 6개국 · 한국 포함] Hameed & Kusnadi (2002) Momentum Strategies: Evidence from Pacific Basin Stock Markets, Journal of Financial Research 25(3)",
+     "url": "https://doi.org/10.1111/1475-6803.00025"
+    },
+    {
+     "ref": "[한국] Sim, Kang, Kim & Lee (2022) The Momentum Strategies and Salience: Evidence from the Korean Stock Market, Emerging Markets Finance and Trade 58(11)",
+     "url": "https://doi.org/10.1080/1540496X.2022.2034615"
+    },
+    {
+     "ref": "[한국] Sim & Kim (2021) The effect of short-term return reversals on momentum profits, Journal of Derivatives and Quantitative Studies(선물연구) 29(3) — 서론의 한국 단기 반전 정리(윤 · 조 2006 · 김 · 송 2013 · 강 · 정 2018)는 2차 인용",
+     "url": "https://doi.org/10.1108/JDQS-02-2021-0005"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "T09_PMA120",
+   "category": "technical",
+   "registry_category": "technical",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "unclear",
+   "agree": null,
+   "verdict": "불명",
+   "stored_meaning": "종가/120일 평균 − 1 — 6개월 가격 위치(마지막 1개월이 가중의 약 3할)",
+   "basis": "미국: 6개월 모멘텀 · 52주 고점 근접(George & Hwang 2004) · 추세 요인(Han · Zhou · Zhu 2016) → 양. 한국: 모멘텀이 '없다고 보고돼 온' 시장에서 외국인 영향 대형주만 상승장 6개월 지속(Kang · Kwon · Park 2014), 전통 모멘텀 부진(Sim 외 2022), 1983~2023 개별 종목 모멘텀은 반전(Kang · Ryu · Webb 2025), 일부 연구는 최근 모멘텀 · 12-7 중기 유의(Sim & Kim 2021 정리). 시장 · 기간에 따라 갈린다.",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Jegadeesh & Titman (1993) Returns to Buying Winners and Selling Losers: Implications for Stock Market Efficiency, Journal of Finance 48(1)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1993.tb04702.x"
+    },
+    {
+     "ref": "George & Hwang (2004) The 52-Week High and Momentum Investing, Journal of Finance 59(5)",
+     "url": "https://doi.org/10.1111/j.1540-6261.2004.00695.x"
+    },
+    {
+     "ref": "Han, Zhou & Zhu (2016) A trend factor: Any economic gains from using information over investment horizons?, Journal of Financial Economics 122(2) — 이동평균 지연별 계수 부호표는 원문 미확인",
+     "url": "https://doi.org/10.1016/j.jfineco.2016.01.029"
+    },
+    {
+     "ref": "[한국] Kang, Kwon & Park (2014) Momentum and Foreign Investors: Evidence from the Korean Stock Market, Emerging Markets Finance and Trade 50(S5) — Crossref 미등록(IDEAS 표기 DOI 10.2753/REE1540-496X5005S509 가 404) · IDEAS 서지로 확인",
+     "url": "https://ideas.repec.org/a/mes/emfitr/v50y2014is5p131-147.html"
+    },
+    {
+     "ref": "[한국] Sim, Kang, Kim & Lee (2022) The Momentum Strategies and Salience: Evidence from the Korean Stock Market, Emerging Markets Finance and Trade 58(11)",
+     "url": "https://doi.org/10.1080/1540496X.2022.2034615"
+    },
+    {
+     "ref": "[한국] Kang, Ryu & Webb (2025) Momentum and reversal effects in the Korean stock market, Investment Analysts Journal 54(4) — 1983~2023 · 반전 우세",
+     "url": "https://doi.org/10.1080/10293523.2024.2448054"
+    },
+    {
+     "ref": "[한국] Sim & Kim (2021) The effect of short-term return reversals on momentum profits, Journal of Derivatives and Quantitative Studies(선물연구) 29(3) — 서론의 한국 단기 반전 정리(윤 · 조 2006 · 김 · 송 2013 · 강 · 정 2018)는 2차 인용",
+     "url": "https://doi.org/10.1108/JDQS-02-2021-0005"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "T10_RSI28",
+   "category": "technical",
+   "registry_category": "technical",
+   "registry_direction": "lower_better",
+   "s_reg": -1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "lower_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "Wilder RSI(28) 0~100 — 최근 4~8주 상승일 우세일수록 큼",
+   "basis": "T01 과 같다 — 1~2개월 가격 위치의 단조 변환이고 한국의 1~2개월 반전(Sim & Kim 2021 · Kang · Ryu · Webb 2025)과 1개월 반전(Jegadeesh 1990)에 따라 낮을수록 좋다. 창이 길어 중기 모멘텀(미국)과 겹치는 부분이 조금 있다 → 중간.",
+   "def_code_note": "일간 DB = 수익률로 계산한 RSI(ρ 중앙 0.85 · 같은 방향)",
+   "refs": [
+    {
+     "ref": "Jegadeesh (1990) Evidence of Predictable Behavior of Security Returns, Journal of Finance 45(3)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1990.tb05110.x"
+    },
+    {
+     "ref": "[한국] Sim & Kim (2021) The effect of short-term return reversals on momentum profits, Journal of Derivatives and Quantitative Studies(선물연구) 29(3) — 서론의 한국 단기 반전 정리(윤 · 조 2006 · 김 · 송 2013 · 강 · 정 2018)는 2차 인용",
+     "url": "https://doi.org/10.1108/JDQS-02-2021-0005"
+    },
+    {
+     "ref": "[한국] Kang, Ryu & Webb (2025) Momentum and reversal effects in the Korean stock market, Investment Analysts Journal 54(4) — 1983~2023 · 반전 우세",
+     "url": "https://doi.org/10.1080/10293523.2024.2448054"
+    },
+    {
+     "ref": "[한국] Chae & Eom (2009) Negative Momentum Profit in Korea and its Sources, Asia-Pacific Journal of Financial Studies 38(2)",
+     "url": "https://doi.org/10.1111/j.2041-6156.2009.tb00013.x"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "T13_Gap",
+   "category": "technical",
+   "registry_category": "technical",
+   "registry_direction": "higher_better",
+   "s_reg": 1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "lower_better",
+   "agree": false,
+   "verdict": "불일치",
+   "stored_meaning": "(신호일 시가 − 전일 종가)/전일 종가 — 신호일 하루의 야간 수익",
+   "basis": "한국: 높은 야간수익 뒤 2~3거래일은 수익 높음, 그 뒤 장기는 낮음(Seok · Cho · Park · Ryu 2019), 지난달 평균 야간수익 상위 분위는 위험조정 수익이 유의하게 음 · 단기 반전 통제 뒤에도(Cheon 2020 · 1998~2018). 미국: 야간수익 = 종목별 심리 — 단기 지속 · 장기 저조(Aboody 외 2018), 주목 종목의 시가 매수 비용(Berkman 외 2012), 야간 · 장중 성분의 줄다리기(Lou · Polk · Skouras 2019). 월 보유 기준이면 클수록 이후 수익이 낮은 쪽이다(공매도 금지 기간에는 고평가 교정이 늦어 이 쪽이 강해질 수 있다 — Da · Liu · Schaumburg 2014 의 공매도 제약 해석). 저장값이 하루치라 문헌의 월평균보다 잡음이 크고, 첫 2~3일의 양(+) 지속이 보유 초반에 겹쳐 낮음.",
+   "def_code_note": "시가 = 전일 종가인 행이 2000년 이후 15~28%(동률 많음 · 입력 확인)",
+   "refs": [
+    {
+     "ref": "[한국] Seok, Cho, Park & Ryu (2019) Do Overnight Returns Truly Measure Firm-Specific Investor Sentiment in the KOSPI Market?, Sustainability 11(13)",
+     "url": "https://doi.org/10.3390/su11133718"
+    },
+    {
+     "ref": "[한국 · 국내 학술지] Cheon (2020) Predictability of Overnight Returns on the Cross-sectional Stock Returns, Asia-Pacific Journal of Business 11(4) — 1998~2018",
+     "url": "https://doi.org/10.32599/apjb.11.4.202012.243"
+    },
+    {
+     "ref": "Aboody, Even-Tov, Lehavy & Trueman (2018) Overnight Returns and Firm-Specific Investor Sentiment, JFQA 53(2)",
+     "url": "https://doi.org/10.1017/S0022109017000989"
+    },
+    {
+     "ref": "Berkman, Koch, Tuttle & Zhang (2012) Paying Attention: Overnight Returns and the Hidden Cost of Buying at the Open, JFQA 47(4)",
+     "url": "https://doi.org/10.1017/S0022109012000270"
+    },
+    {
+     "ref": "Lou, Polk & Skouras (2019) A tug of war: Overnight versus intraday expected returns, Journal of Financial Economics 134(1)",
+     "url": "https://doi.org/10.1016/j.jfineco.2019.03.011"
+    },
+    {
+     "ref": "Da, Liu & Schaumburg (2014) A Closer Look at the Short-Term Return Reversal, Management Science 60(3)",
+     "url": "https://doi.org/10.1287/mnsc.2013.1766"
+    }
+   ],
+   "confidence": "low"
+  },
+  {
+   "id": "T14_HLRange",
+   "category": "technical",
+   "registry_category": "technical",
+   "registry_direction": "lower_better",
+   "s_reg": -1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "lower_better",
+   "agree": true,
+   "verdict": "일치",
+   "stored_meaning": "신호일 하루의 (고가 − 저가)/시가 — 일중 변동 폭",
+   "basis": "고저 범위는 변동성 추정치다(Parkinson 1980). 변동성 · 고유변동성이 높을수록 이후 수익이 낮다(Ang 외 2006; 신흥시장 Blitz · Pang · van Vliet 2013); 한국에서 MAX · 고유변동성 효과 모두 음(Nartea · Wu · Liu 2014), 극단 수익 종목의 반전(Kho & Kim 2017) → 작을수록 좋다. 주의: 하루치 범위에는 호가 스프레드 성분(Corwin & Schultz 2012 — 비유동성 프리미엄은 반대 부호)이 섞이고 가격제한폭(±15% → 2015-06 ±30%)이 범위를 자른다 → 중간.",
+   "def_code_note": "월간 = 하루치 · 분모 시가 / 일간 DB = 21일 평균 · 분모 종가(ρ 중앙 0.62) — 정의에 창 길이 표기 없음",
+   "refs": [
+    {
+     "ref": "Parkinson (1980) The Extreme Value Method for Estimating the Variance of the Rate of Return, Journal of Business 53(1)",
+     "url": "https://doi.org/10.1086/296071"
+    },
+    {
+     "ref": "Ang, Hodrick, Xing & Zhang (2006) The Cross-Section of Volatility and Expected Returns, Journal of Finance 61(1)",
+     "url": "https://doi.org/10.1111/j.1540-6261.2006.00836.x"
+    },
+    {
+     "ref": "[신흥시장] Blitz, Pang & van Vliet (2013) The volatility effect in emerging markets, Emerging Markets Review 16",
+     "url": "https://doi.org/10.1016/j.ememar.2013.02.004"
+    },
+    {
+     "ref": "[한국] Nartea, Wu & Liu (2014) Extreme returns in emerging stock markets: evidence of a MAX effect in South Korea, Applied Financial Economics 24(6)",
+     "url": "https://doi.org/10.1080/09603107.2014.884696"
+    },
+    {
+     "ref": "[한국 · 국내 학술지] Kho & Kim (2017) Who Drives Return Reversals of Lottery Stocks with Extreme Past Returns in Korean Stock Market?, 재무관리연구 34(3)",
+     "url": "https://doi.org/10.22510/kjofm.2017.34.3.003"
+    },
+    {
+     "ref": "Bali, Cakici & Whitelaw (2011) Maxing out: Stocks as lotteries and the cross-section of expected returns, Journal of Financial Economics 99(2)",
+     "url": "https://doi.org/10.1016/j.jfineco.2010.08.014"
+    },
+    {
+     "ref": "Corwin & Schultz (2012) A Simple Way to Estimate Bid-Ask Spreads from Daily High and Low Prices, Journal of Finance 67(2)",
+     "url": "https://doi.org/10.1111/j.1540-6261.2012.01729.x"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "T15_AutoCorr",
+   "category": "technical",
+   "registry_category": "technical",
+   "registry_direction": "lower_better",
+   "s_reg": -1,
+   "registry_basis": "registry_original",
+   "proposed_direction": "unclear",
+   "agree": null,
+   "verdict": "불명",
+   "stored_meaning": "최근 21개 일간수익의 AR(1) 계수 — 클수록 추세 지속(양의 자기상관)",
+   "basis": "음의 일간 자기상관은 호가 반등 · 비유동성의 흔적(Roll 1984)이고 반전은 비유동 종목에 몰린다(Avramov · Chordia · Goyal 2006) — 이 경로로는 '낮을수록 비유동 → 기대수익 높음'이지만 간접이다. 자기상관 자체로 정렬한 횡단면 문헌을 찾지 못했다(앞선 판 CR10_Convergence_Premium = −AR(1) 과 같은 판정 · 두 엔트리의 등록부 방향은 서로 일관).",
+   "def_code_note": "",
+   "refs": [
+    {
+     "ref": "Roll (1984) A Simple Implicit Measure of the Effective Bid-Ask Spread in an Efficient Market, Journal of Finance 39(4)",
+     "url": "https://doi.org/10.1111/j.1540-6261.1984.tb03897.x"
+    },
+    {
+     "ref": "Avramov, Chordia & Goyal (2006) Liquidity and Autocorrelations in Individual Stock Returns, Journal of Finance 61(5)",
+     "url": "https://doi.org/10.1111/j.1540-6261.2006.01060.x"
+    }
+   ],
+   "confidence": "low"
+  }
+ ]
+}
