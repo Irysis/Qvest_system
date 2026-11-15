@@ -1,0 +1,12 @@
+{
+  "schema": "memory_policy_v1",
+  "decided": "MEMORY-USE-90PCT-20261115",
+  "decided_by": "dohoon",
+  "quote": "가용메모리 기준 너무 타이트하다 90퍼센트까진 쓸 수 있게 해",
+  "physical_gb": 31.8,
+  "max_use_frac": 0.90,
+  "reserve_gb": 3.2,
+  "rule": "작업 출발 관문 = 가용 메모리(Available MBytes) − 그 작업의 예상 정점 ≥ reserve_gb(물리의 10%). 고정 'GB 이상' 문턱 대신 이 식을 쓴다. 예상 정점 = 실측(셀 워커 약 7.5 GB · DNN 워커 3개 시드 칸 · 레인 측정 등 각 셸 주석의 실측값).",
+  "core_note": "round_core measure_server.R 은 이미 reserve 3 GB(QVEST_MS_RESERVE_GB) — 그대로. 코어 파일은 등록 라운드 핀이라 고치지 않는다.",
+  "updated_at": "2026-11-15"
+}
