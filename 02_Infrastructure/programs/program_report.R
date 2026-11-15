@@ -296,6 +296,12 @@ prep_send <- function(program, target, status, card = NULL, verdict_line = NULL,
   if (length(extra)) secs <- c(secs, extra)
   if (!is.null(next_step) && nzchar(next_step))
     secs[[length(secs) + 1L]] <- .prep_line("다음", next_step, "➡️", program, target)
+  ## 본문이 발송기 text 최소 길이(TEXT_MIN 30자)보다 짧고 summary 범위(20~100자) 안인 'text' 섹션은 내용 그대로 'summary' 로 싣는다 —
+  ##   짧은 1줄 때문에 1통 전체가 막히지 않게(11-15 P1S04 통과 push 의 OOS 1줄 23~27자가 매번 막혔다 · 그 섹션을 만드는
+  ##   코어 v4 standing.R 은 상설 판 핀이라 고칠 수 없다). 20자 미만은 종전대로 발송기가 막는다(본문을 늘려 채우지 않는다).
+  tmin <- tryCatch(as.integer(.TG_CONFIG$TEXT_MIN), error = function(e) 30L)
+  secs <- lapply(secs, function(s) { n <- nchar(as.character(s$body %||% ""))
+    if (identical(s$type %||% "text", "text") && n < tmin && n >= 20L) s$type <- "summary"; s })
   footer <- if (!is.null(artifact) && nzchar(artifact)) paste0("산출물: ", .prep_rel(artifact)) else NULL
   tg_agent_brief(agent = "AlphaSearch", title = title, sections = secs, footer = footer, charts = charts,
                  relaxed = TRUE, force = TRUE, decode_jargon = FALSE, glossary = FALSE,
