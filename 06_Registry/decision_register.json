@@ -5445,7 +5445,27 @@
       "decided_at": "2026-11-15T17:19:46+0900",
       "note": "'A가 나오면 바로 judge로 가게 배선해줘'",
       "registered_at": "2026-11-15T17:19:45+0900"
+    },
+    {
+      "id": "CHAIN-STEP-OVER-LANE-PRIORITY-20261115",
+      "title": "사슬 걸음 vs 충실구현 레인 우선순위 — 메모리 관문이 레인 검증을 '먼저 뜬 무거운 작업'으로 봐서, 레인이 논문을 이어 잡는 동안 사슬 걸음이 매시 대기(11-15 16:38 · 17:38 · 18:38)",
+      "status": "resolved",
+      "opened_at": "2026-11-15T19:28:54+0900",
+      "options": [
+        "사슬 우선 — 레인 검증이 돌아도 가용 메모리 식만 맞으면 사슬 걸음(약 7~10분)을 띄우고, 레인의 다음 논문 출발은 걸음이 끝날 때까지만 기다린다",
+        "레인 우선 유지 — 레인 큐가 빌 때까지 사슬 걸음이 기다린다(현행)"
+      ],
+      "recommendation": "사슬 우선",
+      "default_until_decided": "레인 우선(현행 — 사슬 걸음 대기)",
+      "blocks": [],
+      "owner": "dohoon",
+      "source": "1계층 세션 11-15 19:2x(도훈 '멈춰있나 싶어' 진행 확인 중 발견)",
+      "decision": "사슬 우선 — 06_Registry/memory_policy.json conflicts.chain_step 에서 rf_replication_verify.R 를 뺀다(사슬 걸음 = 가용 식 + 셀 워커 · DNN · 무인 Judge 표지만). 레인 검증기 키는 셀 워커를 계속 표지로 봐서 사슬 걸음이 도는 동안 레인 다음 논문이 기다린다. 상설 심사(standing_cell)는 그대로 — 범위 = 사슬 걸음만.",
+      "decided_by": "dohoon",
+      "decided_at": "2026-11-15T19:28:55+0900",
+      "note": "'가'",
+      "registered_at": "2026-11-15T19:28:54+0900"
     }
   ],
-  "last_updated": "2026-11-15T17:19:47+0900"
+  "last_updated": "2026-11-15T19:28:56+0900"
 }

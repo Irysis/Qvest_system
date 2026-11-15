@@ -79,7 +79,6 @@
       "judge_run\\.sh"
     ],
     "chain_step": [
-      "rf_replication_verify\\.R",
       "rf_cell_worker\\.R",
       "dnn_rolling\\.py",
       "judge_run\\.sh"
@@ -108,5 +107,14 @@
       "dnn_rolling\\.py"
     ]
   },
-  "conflicts_note": "명령줄 정규식 — 레인 검증기(감사 단계 포함) · 셀 워커(상설 · 사슬 · 라운드 측정) · DNN 학습. 관문은 자기 작업이 뜨기 전에 부르므로 살아 있는 표지는 다른 작업이다. · (11-15) judge_run.sh = 무인 Judge 가 도는 동안 다른 무거운 작업을 막는 표지(재현 측정 보호) — judge_run 키에는 넣지 않는다(Judge 가 제 부모 셸에 걸린다)."
+  "conflicts_note": "명령줄 정규식 — 레인 검증기(감사 단계 포함) · 셀 워커(상설 · 사슬 · 라운드 측정) · DNN 학습. 관문은 자기 작업이 뜨기 전에 부르므로 살아 있는 표지는 다른 작업이다. · (11-15) judge_run.sh = 무인 Judge 가 도는 동안 다른 무거운 작업을 막는 표지(재현 측정 보호) — judge_run 키에는 넣지 않는다(Judge 가 제 부모 셸에 걸린다).",
+  "priority": {
+    "decided": "CHAIN-STEP-OVER-LANE-PRIORITY-20261115",
+    "decided_by": "dohoon",
+    "quote": "가",
+    "asked": "사슬 걸음을 레인보다 먼저 띄울까요? (가) 사슬 우선 — 레인 검증이 돌아도 가용 메모리 식만 맞으면 사슬 걸음(약 7분)을 띄우고, 레인의 다음 논문 출발은 걸음이 끝날 때까지만 기다린다 (나) 레인 우선 유지",
+    "rule": "conflicts.chain_step 에서 레인 검증기(rf_replication_verify.R)를 뺀다 — 사슬 걸음은 가용 식 + 셀 워커 · DNN · 무인 Judge 표지만 본다. 레인 검증기 키(lane_verify_*)는 셀 워커를 계속 표지로 봐서, 사슬 걸음이 도는 동안 레인의 다음 논문이 기다린다.",
+    "why": "11-15 16:38 · 17:38 · 18:38 사슬 걸음이 레인 검증에 밀려 연속 대기 — 레인이 논문을 이어 잡아 큐가 빌 때까지 사슬이 굶었다(걸음 약 7~10분 vs 레인 논문 수 시간). 위험 = 레인이 측정 단계로 넘어가는 순간과 걸음이 겹치면 몇 분 메모리 빠듯(실패 아닌 느려짐 · 가용 식은 그대로).",
+    "scope": "chain_step 만 — standing_cell(상설 심사 측정)은 그대로(같은 굶음 양상 · 별도 결정)"
+  }
 }
