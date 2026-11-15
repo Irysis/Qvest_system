@@ -10,7 +10,13 @@
 #  Login: never clicks a login button. Requires a live session ([[Quantiwise7]] window),
 #    same test as qw_refresh.ps1 QW-Alive. Re-login is the caller's job (qw_refresh.ps1).
 #  Usage: powershell -File qw_peer_refresh.ps1 -Book <xlsx> [-Sheets a,b] [-Log <path>]
-#  Exit: 0 all sheets refreshed + saved | 1 some sheet not refreshed (saved anyway, see log)
+#  Guard (2026-11-15, FUNDV2-TAXTS-FIX-20261115 - the same run's tax step hung 2 h+ on 11-14 when the terminal showed its
+#    'Item Lookup' picker inside the add-in call): qw_follow_guard.ps1 runs beside this Excel (protocol =
+#    qw_follow_guard_client.ps1) - closes terminal picker forms, declines the content-update prompt, kills this Excel when one
+#    sheet's refresh runs longer than -StallSec (default 1800 s; a sheet takes ~80 s). A sheet the guard acted on is refreshed
+#    once more; acted on again = NOT REFRESHED. A kill ends the book with rc 1 instead of hanging. No guard = rc 1 (no
+#    unguarded run).
+#  Exit: 0 all sheets refreshed + saved | 1 some sheet not refreshed (saved anyway, see log) / guard kill / guard missing
 #        | 3 precondition (no session / busy / book locked) | 4 session kicked mid-run
 # ==============================================================================
 param(
@@ -18,7 +24,9 @@ param(
   [string[]]$Sheets = @(),
   [switch]$NoBusyCheck,
   # close guard (11-08): seconds Workbook.Close/Excel.Quit may take before a guard process kills this Excel
-  [int]$CloseGuardSec = 120
+  [int]$CloseGuardSec = 120,
+  # follow guard (11-15): one sheet's refresh longer than this -> the guard kills this Excel (rc 1)
+  [int]$StallSec = 1800
 )
 $ErrorActionPreference = "Continue"
 $Sheets = @($Sheets | ForEach-Object { "$_" -split ',' } | Where-Object { $_ -ne '' })
@@ -77,6 +85,12 @@ function ColNameP([int]$n) { $s = ''; while ($n -gt 0) { $r = ($n - 1) % 26; $s 
 if (-not (Test-Path -LiteralPath $Book)) { Write-Host "[peer-refresh] missing $Book"; exit 3 }
 if (-not (QW-Alive)) { Write-Host "[peer-refresh] no live Quantiwise session ([[Quantiwise7]] window) - log in first"; exit 3 }
 if (-not $NoBusyCheck) { $b = Get-Busy; if ($b.Count -gt 0) { Write-Host "[peer-refresh] BUSY:"; $b | ForEach-Object { Write-Host ("  pid {0} {1}" -f $_.ProcessId, $_.Name) }; exit 3 } }
+# follow guard (header 'Guard'): one pass before Excel starts - a prompt left open is handled first
+$fgClient = Join-Path $PSScriptRoot 'qw_follow_guard_client.ps1'
+if (-not (Test-Path -LiteralPath $fgClient)) { Write-Host "[peer-refresh] ERROR follow guard client missing ($fgClient) - not running unguarded"; exit 1 }
+. $fgClient
+if (-not (Initialize-FollowGuard (Join-Path $env:TEMP 'qvest_qw_peer'))) { Write-Host "[peer-refresh] ERROR follow guard missing ($script:FgScript) - not running unguarded"; exit 1 }
+foreach ($e in @(Invoke-FollowGuardOnce)) { Write-Host "[peer-refresh] start: terminal prompt handled - $($e.kind) '$($e.title)' ($($e.detail))" }
 
 # items that may legitimately come back empty (2026-11-09): same rule as the loader qw_fund_v2_ingest.py G1 -
 #   registry fundamentals_v2.items[].allow_empty or glossary_basis 'gaap' (pre-2007 GAAP lines are empty in recent windows).
@@ -94,6 +108,10 @@ Write-Host ("[peer-refresh] start {0} {1}" -f $t0.ToString('HH:mm:ss'), $Book)
 try {
   $xl = New-Object -ComObject Excel.Application
   $xl.Visible = $true; $xl.DisplayAlerts = $false; $xl.EnableEvents = $true; $xl.AskToUpdateLinks = $false
+  $fgPid = 0; [void][QpWin]::GetWindowThreadProcessId([IntPtr]$xl.Hwnd, [ref]$fgPid)
+  $gp = $null; if ($fgPid -gt 0) { $gp = Start-FollowGuard $fgPid (Get-Process -Id $fgPid).StartTime.Ticks $StallSec }
+  if (-not $gp) { throw "follow guard did not start - not running unguarded" }
+  Write-Host ("[peer-refresh] follow guard pid {0} beside Excel {1} (a sheet over {2}s kills this Excel)" -f $gp.Id, $fgPid, $StallSec)
   $wb = $xl.Workbooks.Open($Book)
   $todo = @(); foreach ($ws in $wb.Worksheets) { if ("$($ws.Range('A3').Value2)" -like 'Peer Analysis*') { if ($Sheets.Count -eq 0 -or $Sheets -contains $ws.Name) { $todo += $ws } } }
   Write-Host ("[peer-refresh] {0} item sheets" -f $todo.Count)
@@ -102,7 +120,9 @@ try {
     $before = "$($ws.Range('B1').Value2)"; $ts = Get-Date
     if (-not (QW-Alive)) { Write-Host "[peer-refresh] session gone before '$($ws.Name)' (kick dialog or no window)"; $kicked = $true; break }
     $ws.Activate()
+    $tsU = FG-Now; Set-FollowBeat "$($ws.Name)"
     $n = 0; foreach ($h in $ws.Hyperlinks) { if ($h.ScreenTip -like "Quantiwise*") { $h.Follow(); $n++ } }
+    Set-FollowBeat ''
     $after = "$($ws.Range('B1').Value2)"
     $sec = [int]((Get-Date) - $ts).TotalSeconds
     # completion = B1 stamp changed AND the data area actually holds values (11-08: a kicked session still
@@ -116,7 +136,9 @@ try {
       $pen = ColNameP ($lastC - 1)
       if ([int]$xl.WorksheetFunction.CountA($ws.Range("$($pen)14:$($pen)5000")) -eq 0) {
         Write-Host ("  [{0}] period {1} empty (cells {2}) -> retry once" -f $ws.Name, "$($ws.Range("$($pen)10").Value2)", $filled)
+        Set-FollowBeat "$($ws.Name)#partial"
         if (QW-Alive) { foreach ($h in $ws.Hyperlinks) { if ($h.ScreenTip -like "Quantiwise*") { $h.Follow() } } }
+        Set-FollowBeat ''
         $after = "$($ws.Range('B1').Value2)"; $sec = [int]((Get-Date) - $ts).TotalSeconds
         $filled = [int]$xl.WorksheetFunction.CountA($ws.Range("D14:$(ColNameP $lastC)5000"))
         $penN = [int]$xl.WorksheetFunction.CountA($ws.Range("$($pen)14:$($pen)5000"))
@@ -125,6 +147,20 @@ try {
     }
     $allowEmpty = $emptyOk.ContainsKey($ws.Name)
     $changed = ($after -ne $before -and $after -like '*Last Update*' -and ($filled -gt 0 -or $allowEmpty))
+    # follow guard (11-15): a picker closed / the update prompt declined during this sheet -> the transfer may be partial
+    #   even when the stamp moved -> refresh it once more; the guard acting again = NOT REFRESHED (never a loop)
+    $acts = @(Get-FollowGuardActs $tsU)
+    if ($acts.Count -gt 0) {
+      Write-Host ("  [{0}] guard acted - {1} -> refresh once more" -f $ws.Name, (Format-FollowGuardActs $acts))
+      $tsR = FG-Now; Set-FollowBeat "$($ws.Name)#prompt"
+      if (QW-Alive) { foreach ($h in $ws.Hyperlinks) { if ($h.ScreenTip -like "Quantiwise*") { $h.Follow() } } }
+      Set-FollowBeat ''
+      $after = "$($ws.Range('B1').Value2)"; $sec = [int]((Get-Date) - $ts).TotalSeconds
+      $filled = [int]$xl.WorksheetFunction.CountA($ws.Range("D14:$(ColNameP $lastC)5000"))
+      $changed = ($after -ne $before -and $after -like '*Last Update*' -and ($filled -gt 0 -or $allowEmpty))
+      $acts2 = @(Get-FollowGuardActs $tsR)
+      if ($acts2.Count -gt 0) { Write-Host ("  [{0}] guard acted again - {1} -> NOT REFRESHED" -f $ws.Name, (Format-FollowGuardActs $acts2)); $changed = $false }
+    }
     Write-Host ("  [{0}] links {1} | {2}s | cells {3} | B1 '{4}' -> '{5}' | {6}" -f $ws.Name, $n, $sec, $filled, $before, $after, $(if (-not $changed) { 'NOT REFRESHED' } elseif ($filled -eq 0) { 'OK (empty allowed by registry)' } else { 'OK' }))
     if ($changed) { $okN++ }
     if (-not (QW-Alive)) { Write-Host "[peer-refresh] session kicked"; $kicked = $true; break }
@@ -133,8 +169,12 @@ try {
   Write-Host ("[peer-refresh] saved | refreshed {0}/{1} | {2:n0}s total" -f $okN, $todo.Count, ((Get-Date) - $t0).TotalSeconds)
   $rc = if ($kicked) { 4 } elseif ($okN -eq $todo.Count -and $todo.Count -gt 0) { 0 } else { 1 }
 } catch {
-  Write-Host "[peer-refresh] ERROR: $($_.Exception.Message)"; $rc = 1
+  $msg = $_.Exception.Message
+  $kill = Get-FollowGuardKill   # 11-15: name the guard kill (the COM error alone reads like a random Excel crash)
+  if ($kill) { $msg = "follow guard killed this Excel ($($kill.detail)) - $msg" }
+  Write-Host "[peer-refresh] ERROR: $msg"; $rc = 1
 } finally {
+  Stop-FollowGuard
   # close guard (11-08 22:01, FundV2_IS): Save() had written the book, then an Office dialog for the OneDrive-synced
   #   file ('cannot merge your changes with the latest changes', class NUIDialog) blocked Workbook.Close for 30 min
   #   and stalled the chain. Close($false) keeps nothing that was not saved, so killing this Excel while it hangs in

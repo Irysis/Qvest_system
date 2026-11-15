@@ -27,7 +27,15 @@
 #     d - 1Q and the add-in starts at the last quarter-end on or before B5 (From 20000101 -> first row 1999-12), so B5 = the
 #     first day of the quarter after the window's first quarter (202412..202609 -> 20250101 -> rows 2024-12 ..) gives the
 #     window plus one earlier row - the ingest drops that row and checks the start and the end.
-# Exit: 0 ok - 1 error - 3 busy / no live session / re-login failed - 4 kicked with -NoRelogin / runaway guard / unknown dialog
+#   Guard (2026-11-15, Dohoon 11-15 'fix it' - FUNDV2-TAXTS-FIX-20261115): 11-14 13:38 sheet 2 (B101400_M) hung 2 h+ - the
+#     terminal showed its 'Item Lookup' picker inside the add-in call, Excel waited on that OLE call, Follow() never returned
+#     and nothing had a limit. Now qw_follow_guard.ps1 (a separate process; protocol = qw_follow_guard_client.ps1) runs beside
+#     this Excel: it closes terminal picker forms, declines the terminal's content-update prompt, and kills this Excel when one
+#     sheet's refresh runs longer than -StallSec (default 1800 s = 3x the ~575 s per sheet seen at 3767 tickers). A sheet the
+#     guard acted on is refreshed again (up to -LookupRetries per sheet - a transfer interrupted by a prompt may look
+#     complete); a kill ends the run with rc 1 instead of hanging. Before Excel starts the guard runs once, so a prompt left
+#     open (11-15 00:11 update prompt) is handled instead of stopping the run as an 'unknown dialog'. No guard = no run (rc 1).
+# Exit: 0 ok - 1 error / guard kill / prompts kept coming / guard missing - 3 busy / no live session / re-login failed - 4 kicked with -NoRelogin / runaway guard / unknown dialog
 param(
   [string]$Template = '',
   [string]$Out = '',
@@ -35,6 +43,8 @@ param(
   [int]$WindowQuarters = 0,
   [switch]$NoRelogin,
   [int]$KickStall = 30,   # 2026-11-13: runaway guard only - stop after N kicks on one sheet (0 = off; observed kicks 0-3 a day)
+  [int]$StallSec = 1800,  # 2026-11-15: one sheet's refresh longer than this -> the follow guard kills this Excel (rc 1)
+  [int]$LookupRetries = 2,  # 2026-11-15: refresh a sheet again at most N times after the guard acted on a terminal prompt
   [string]$Work = '',
   [int]$CloseGuardSec = 120
 )
@@ -116,6 +126,12 @@ Say "start template=$Template out=$Out from=$From window=$WindowQuarters norelog
 if (-not (Test-Path $Template)) { Say "template missing"; exit 1 }
 $busy = Get-Busy
 if ($busy.Count -gt 0) { Say ("BUSY - another Quantiwise job / automation Excel: " + (($busy | ForEach-Object { "$($_.ProcessId) $($_.Name)" }) -join ', ')); exit 3 }
+# 2026-11-15 follow guard (header 'Guard'): one pass before Excel starts - a prompt left open is handled, not reported as unknown
+$fgClient = Join-Path $PSScriptRoot 'qw_follow_guard_client.ps1'
+if (-not (Test-Path -LiteralPath $fgClient)) { Say "ERROR follow guard client missing ($fgClient) - not running unguarded"; exit 1 }
+. $fgClient
+if (-not (Initialize-FollowGuard $Work)) { Say "ERROR follow guard missing ($script:FgScript) - not running unguarded"; exit 1 }
+foreach ($e in @(Invoke-FollowGuardOnce)) { Say "start: terminal prompt handled - $($e.kind) '$($e.title)' ($($e.detail))" }
 if (Kick-Dialog) { Say "duplicate-login dialog at start - not handled here (run qw_refresh.ps1 -LoginOnly first)"; exit 4 }
 if (Other-Dialog) { Say "unknown Quantiwise dialog at start - stop and report"; exit 4 }
 if (-not (QW-Alive)) { Say "no live Quantiwise session"; exit 3 }
@@ -143,6 +159,9 @@ try {
   $xl = New-Object -ComObject Excel.Application
   $xl.Visible = $true; $xl.DisplayAlerts = $false; $xl.EnableEvents = $true; $xl.AskToUpdateLinks = $false
   [void][TW]::GetWindowThreadProcessId([IntPtr]$xl.Hwnd, [ref]$xp); $tk = (Get-Process -Id $xp).StartTime.Ticks
+  $gp = Start-FollowGuard $xp $tk $StallSec
+  if (-not $gp) { throw "follow guard did not start - not running unguarded" }
+  Say "follow guard pid=$($gp.Id) beside Excel $xp - picker forms closed, update prompt declined, a sheet over ${StallSec}s kills this Excel"
   $wb = $xl.Workbooks.Open($local)
   $keep = @($runs | ForEach-Object { $_.sheet }) + 'DATA_Key'
   foreach ($ws in @($wb.Worksheets)) { if ($keep -notcontains $ws.Name) { $ws.Delete() } }
@@ -151,7 +170,7 @@ try {
   $lastC = ColName (1 + $nk)
   Say "tickers=$nk last column=$lastC"
   foreach ($r in $runs) {
-    $script:Kicks = 0
+    $script:Kicks = 0; $script:Prompts = 0
     for ($attempt = 1; ; $attempt++) {
       $ws = $wb.Worksheets.Item($r.sheet); $ws.Activate()
       $ws.Range('B5').Value2 = $From; $ws.Range('B6').Value2 = 'CPD-1TD'; $ws.Range('B10').Value2 = $r.code
@@ -162,7 +181,9 @@ try {
       $ur0 = $ws.UsedRange; $last0 = $ur0.Row + $ur0.Rows.Count - 1
       if ($last0 -ge 15) { $xl.EnableEvents = $false; try { [void]$ws.Range("A15:$($lastC)$last0").ClearContents() } finally { $xl.EnableEvents = $true } }
       $before = "$($ws.Range('B1').Text)"; $t0 = Get-Date
+      $ta = FG-Now; Set-FollowBeat "$($r.sheet)#$attempt"
       foreach ($h in $ws.Hyperlinks) { if ($h.ScreenTip -like 'Quantiwise*') { $h.Follow() } }
+      Set-FollowBeat ''
       $secs = [int]((Get-Date) - $t0).TotalSeconds
       $after = "$($ws.Range('B1').Text)"
       $ur = $ws.UsedRange; $last = [Math]::Max(15, $ur.Row + $ur.Rows.Count - 1)
@@ -170,6 +191,15 @@ try {
       $nrow = [int]$xl.WorksheetFunction.CountA($ws.Range("A15:A$last"))
       $num = [int]$xl.WorksheetFunction.Count($rng); $inv = [int]$xl.WorksheetFunction.CountIf($rng, '#INVALID*')
       Say ("{0} code={1} B12='{2}' date rows={3} (A15:A{4}) numeric={5} invalid={6} B1 '{7}' -> '{8}' | {9}s" -f $r.sheet, $r.code, $ws.Range('B12').Text, $nrow, $last, $num, $inv, $before, $after, $secs)
+      # 2026-11-15 guard: a picker closed / the update prompt declined during this refresh -> the transfer may be partial even
+      #   when the stamp moved -> refresh the sheet again (bounded - the same prompt every time ends the run, never a loop)
+      $acts = @(Get-FollowGuardActs $ta)
+      if ($acts.Count -gt 0) {
+        $what = Format-FollowGuardActs $acts
+        $script:Prompts++
+        if ($script:Prompts -le $LookupRetries) { Say "guard acted during $($r.sheet) - $what -> refresh the sheet again ($($script:Prompts)/$LookupRetries)"; continue }
+        $rc = 1; throw "terminal prompts kept coming on $($r.sheet) ($($script:Prompts) times, -LookupRetries $LookupRetries): $what"
+      }
       $kicked = [bool](Kick-Dialog)
       # refreshed = stamp moved AND dated today (a same-day rerun keeps today's old stamp if the refresh silently did nothing)
       if (-not $kicked -and (QW-Alive) -and $after -ne $before -and $after -like "*$today*" -and $num -gt 0) { break }
@@ -182,8 +212,15 @@ try {
   }
   $wb.Save(); Say "saved local copy $local"
   $rc = 0
-} catch { Say "ERROR: $($_.Exception.Message)"; if ($rc -eq 0) { $rc = 1 } }
+} catch {
+  $msg = $_.Exception.Message
+  # 2026-11-15: name the guard kill (the COM error alone reads like a random Excel crash)
+  $kill = Get-FollowGuardKill
+  if ($kill) { $msg = "follow guard killed this Excel ($($kill.detail)) - $msg" }
+  Say "ERROR: $msg"; if ($rc -eq 0) { $rc = 1 }
+}
 finally {
+  Stop-FollowGuard
   if ($wb) { try { $wb.Close($false) } catch {} }
   if ($xl) { try { $xl.Quit() } catch {}; try { [Runtime.InteropServices.Marshal]::ReleaseComObject($xl) | Out-Null } catch {} }
   [GC]::Collect(); [GC]::WaitForPendingFinalizers()
