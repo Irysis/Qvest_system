@@ -1,0 +1,82 @@
+{
+  "schema": "p4c02_entry_controls_v1",
+  "at": "2026-11-15T09:38:31+0900",
+  "core": "v5",
+  "chain": "P4C02_fc_blend",
+  "spec_md5": "8da28a07430c96bae98bac5c80e891a1",
+  "controls": [
+    {
+      "id": "block_weighting",
+      "block": "weighting",
+      "rejected": true,
+      "expect": "정책 밖 블록",
+      "policy_hit": true,
+      "policy_reasons": [
+        "사슬 판 걸음 정책 밖 블록: weighting(허용 = blend)",
+        "사슬 판 걸음 정책 밖 칸 사양 축: weighting(허용 = base_signal)"
+      ],
+      "other_reasons": []
+    },
+    {
+      "id": "axis_factors",
+      "block": "blend",
+      "rejected": true,
+      "expect": "칸 사양 축: factors",
+      "policy_hit": true,
+      "policy_reasons": [
+        "사슬 판 걸음 정책 밖 칸 사양 축: factors(허용 = base_signal)"
+      ],
+      "other_reasons": []
+    },
+    {
+      "id": "part_icw",
+      "block": "blend",
+      "rejected": true,
+      "expect": "정책 밖 엔진(part_engine_rx)",
+      "policy_hit": true,
+      "policy_reasons": [
+        "사슬 판 걸음 정책 밖 엔진(part_engine_rx): 04_Research/strategies/FC_FAM_consensus_ICW/engine.R"
+      ],
+      "other_reasons": []
+    },
+    {
+      "id": "blend_drop_base",
+      "block": "blend",
+      "rejected": true,
+      "expect": "부모 칸 엔진을 뺐다",
+      "policy_hit": true,
+      "policy_reasons": [
+        "사슬 판 걸음 정책(blend_rule = parent_plus_one): 부모 칸 엔진을 뺐다 — 04_Research/strategies/FC_FAM_value/engine.R",
+        "사슬 판 걸음 정책(blend_rule = parent_plus_one): 새 부품 = 2개(1개여야 한다) — 04_Research/strategies/FC_FAM_growth/engine.R,04_Research/strategies/FC_FAM_consensus/engine.R"
+      ],
+      "other_reasons": []
+    },
+    {
+      "id": "blend_two_parts",
+      "block": "blend",
+      "rejected": true,
+      "expect": "새 부품 = 2개",
+      "policy_hit": true,
+      "policy_reasons": [
+        "사슬 판 걸음 정책(blend_rule = parent_plus_one): 새 부품 = 2개(1개여야 한다) — 04_Research/strategies/FC_FAM_growth/engine.R,04_Research/strategies/FC_FAM_consensus/engine.R"
+      ],
+      "other_reasons": []
+    }
+  ],
+  "positive": {
+    "id": "ok_value_growth",
+    "spec_diff_ok": true,
+    "changed": [
+      "base_signal"
+    ],
+    "policy_reasons": [],
+    "opened": false
+  },
+  "ledger": {
+    "md5_before": "20d949c0b7329b953087dc7a9186df5c",
+    "md5_after": "20d949c0b7329b953087dc7a9186df5c",
+    "lines_before": 2,
+    "lines_after": 2,
+    "untouched": true
+  }
+}
