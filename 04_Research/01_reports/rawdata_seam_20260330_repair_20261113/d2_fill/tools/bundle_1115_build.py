@@ -86,7 +86,16 @@ for r in pins:
 spec = dict(
     schema="ret_fill_bundle_pending_v1", decision=[DEC, "RAWDATA-INTERNAL-BREAK-FILL-D2D3-20261114"], status="pending", built_at=now,
     rerun_before_apply="적용 직전에 이 스크립트를 다시 돌려 값을 새로 잰다(적용 전 저장값 단정이 멈춤 장치)",
-    apply_when="다음 범위 all 팩터 DB 수리에 얹는다(기본) — 지금 적용하면 판 원장 범위에 달 구분이 없어 완료 전 측정이 모두 낡음이 된다 · 오케스트레이터 · 도훈 지시가 있으면 그때",
+    apply_when=("다음 범위 all 팩터 DB 수리에 얹는다 — 11-15 확정(오케스트레이터 회신 · 도훈 '지금 적용' 미선택). 지금 따로 적용하면 판 원장 범위에 달 구분이 없어 "
+                "완료 전 측정이 모두 낡음이 된다. 종가 수리는 없어졌으므로(QW-FILE-IS-REFERENCE-20261115) 싣는 수리는 다른 사유의 범위 all 수리다(C6 수리가 RAWDATA 를 바꾸면 그것도)."),
+    cautions=[
+        "C6(RAWDATA-PRELISTING-C6-20261115 · 도훈 결정 대기)와 맞물린다: 고정 2행(A016560 1996-11-19 · A027840 1997-11-25 — 외감 → 유가증권)과 기존 등록부 13행"
+        "(코넥스 → 코스닥 8 · 장외 → 코스닥 5)은 상장 전 이력 바로 다음 첫날이다. C6 를 RAWDATA 상장 전 행 삭제로 풀면 이 행들이 종목의 첫 행이 되고, "
+        "감사기 등록부 강제(rawdata_seam_audit.R registry_fix — 저장값이 NA 여도 등록부 값을 쓴다)가 상장 첫날에 −52 ~ +11% 가짜 수익을 써 넣는다"
+        "(경보 없음 · 로그 '[SEAM_FILL] 수동 등록부 강제 n행'뿐) → 그 수리에서는 이 15행을 등록부에서 빼고 고정 2행은 싣지 않는다. "
+        "유니버스 거르기(RAWDATA 그대로)로 풀면 바꿀 것 없음. 이 스크립트의 row_pair 는 묶음 8행이 첫 행이면 멈추지만 등록부 13행은 검사 밖이다 "
+        "(11-15 점검 = 등록부 14 + 고정 5 = 19행 모두 앞 이력 94 ~ 2,587행 · 첫 행 0).",
+    ],
     procedure=[
         "① 등록부 06_Registry/ret_fill_registry.json entries 끝에 entries_change 3 + entries_pin 5 추가(ret_before 열은 빼고 · 다른 바이트 보존)",
         "② writer 잠금 아래 seam_repair_locked.sh --apply — 23:30 전 또는 밤 로그 '[lock] 데이터 갱신 완료' 뒤 · 07:10 아침 체인과 겹치지 않게",
