@@ -71,8 +71,17 @@ def _num(v):
         return None
 
 
-def parse_book(xlsx: Path, sheets: list[str]) -> dict:
-    """{sheet: {b6, b10, name14, codes, rows:[(date, [values])]}} — openpyxl read_only, handle closed."""
+def _txt(v):
+    """글자 값 시트(value_kind = text — 예: 시장구분 R100100) — 앞뒤 공백을 지운 문자열 · 빈 칸 = None."""
+    if v is None:
+        return None
+    s = str(v).strip()
+    return s or None
+
+
+def parse_book(xlsx: Path, sheets: list[str], kinds: dict | None = None) -> dict:
+    """{sheet: {b6, b10, name14, codes, rows:[(date, [values])]}} — openpyxl read_only, handle closed.
+    kinds = {sheet: value_kind} — 'text' 시트만 글자로 읽고 나머지는 종전대로 숫자(_num)."""
     import openpyxl
     wb = openpyxl.load_workbook(xlsx, read_only=True, data_only=True)
     out = {}
@@ -82,6 +91,7 @@ def parse_book(xlsx: Path, sheets: list[str]) -> dict:
             if s not in names:
                 raise ValueError(f"sheet '{s}' missing in {xlsx.name}")
             ws = wb[s]
+            conv = _txt if (kinds or {}).get(s) == "text" else _num
             b6 = b10 = None
             codes, name14, rows = [], [], []
             for i, r in enumerate(ws.iter_rows(min_row=1, values_only=True), start=1):
@@ -99,7 +109,7 @@ def parse_book(xlsx: Path, sheets: list[str]) -> dict:
                     d = _to_date(r[0] if r else None)
                     if d is None:
                         break                      # 빈 날짜 = 데이터 끝
-                    rows.append((d, [_num(x) for x in r[1:1 + len(codes)]]))
+                    rows.append((d, [conv(x) for x in r[1:1 + len(codes)]]))
             bad = [c for c in codes if c == ""]
             if bad:
                 raise ValueError(f"{s}: blank code inside row 8")
@@ -149,6 +159,9 @@ def gate_and_window(sheet: str, p: dict, reg_sheet: dict, existing_fill: dict, c
     rows = p["rows"]
     if not rows:
         return [], "no data rows"
+    if reg_sheet.get("fill_gate") is False:
+        # 구조 정보 시트(예: 시장구분) — 날짜별 채움이 상장 종목 수와 함께 자라는 것이 정상이라 미공표 판정에 쓰지 않는다(등록부 fill_gate = false)
+        return rows, "fill gate off (structural series)"
     fills = [(d, sum(1 for v in vals if v is not None)) for d, vals in rows]
     thr, why = _hist_threshold(existing_fill)
     hist = sorted(existing_fill.items())
@@ -188,7 +201,7 @@ def ingest_book(root: Path, book: dict, xlsx: Path | None, force: bool, state: d
         print(f"[ext-ingest] {book['name']}: unchanged since last ingest — nothing new")
         return 2
     sheets = [s["sheet"] for s in book["sheets"]]
-    parsed = parse_book(path, sheets)
+    parsed = parse_book(path, sheets, {s["sheet"]: s.get("value_kind") for s in book["sheets"]})
     # G1 — 모든 시트 B6 해석 · 동일
     b6s = {}
     for s in sheets:
@@ -256,7 +269,8 @@ def ingest_book(root: Path, book: dict, xlsx: Path | None, force: bool, state: d
                     continue
                 keep_d.append(d); keep_t.append(t); keep_v.append(v)
                 keep_f.append(first_seen.get((d, t), now)); keep_l.append(now); n_new += 1
-        tbl = pa.table({"Date": pa.array(keep_d, pa.date32()), "Ticker": pa.array(keep_t, pa.string()), "Value": pa.array(keep_v, pa.float64()),
+        vt = pa.string() if rs.get("value_kind") == "text" else pa.float64()
+        tbl = pa.table({"Date": pa.array(keep_d, pa.date32()), "Ticker": pa.array(keep_t, pa.string()), "Value": pa.array(keep_v, vt),
                         "first_fetched_at": pa.array(keep_f, pa.string()), "last_fetched_at": pa.array(keep_l, pa.string())})
         tbl = tbl.sort_by([("Date", "ascending"), ("Ticker", "ascending")])
         tmp = out.with_suffix(out.suffix + ".tmp")

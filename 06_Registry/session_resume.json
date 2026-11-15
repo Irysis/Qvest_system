@@ -1,6 +1,6 @@
 {
  "schema": "session_resume_v1",
- "updated_at": "2026-11-16T08:26:51+0900",
+ "updated_at": "2026-11-16T08:42:07+0900",
  "operations": [
   {
    "id": "OP-20261015-MSM-A",
@@ -1120,15 +1120,15 @@
    "goal": "재빌드(판 표식 FUNDAMENTAL-AVAIL-LAG-1M-20261116) 완료 → 낡음 표식 측정 재측정(P1S03 30칸 · P1S04 시드 · 레인 산출 · 등급 재채점) → 블렌딩 사슬 새 판 P4C03 · 재빌드 동안 P1R04 탐침 ①(수급 15 · 기술적 12 방향 격리 재판정 · 시행 0)",
    "status": "in_progress",
    "started_at": "2026-11-16T07:32:06+0900",
-   "updated_at": "2026-11-16T08:26:51+0900",
+   "updated_at": "2026-11-16T08:42:07+0900",
    "steps": [
     {
      "id": "S1",
      "title": "재빌드 묶음 감시(팩터 DB 전체 → 결합용 뷰 → FF → 판 표식 완료)",
      "status": "in_progress",
-     "note": "07:21 WMI 시작 · 월간 단계 · 세션 감시 셸(5분 주기 · 프로세스 생존 확인)",
+     "note": "[11-16 08:42] 도훈 '상장전 이력까지 백테스팅에 활용하지마 · C안' → 재빌드 묶음 멈춤(stopped_by_q · 월간 2003-06) · 상장 전 이력 제외(RAWDATA) 뒤 다시 전체 재빌드 · 레인 새 착수 멈춤",
      "artifacts": [],
-     "updated_at": "2026-11-16T07:32:06+0900"
+     "updated_at": "2026-11-16T08:42:06+0900"
     },
     {
      "id": "S2",
@@ -1183,7 +1183,7 @@
      "updated_at": null
     }
    ],
-   "next_action": "[11-16 08:26] (도훈 '검사가 다시 많아지네' 반영 — 새 검사 추가 없음) ① 재빌드 끝(세션 감시 셸 · status.json · 판 표식 completed_at) → 판 표식 증거에 재빌드 입력 등록부 md5(4995af5a · custom a8476286) · 등록부 정의 2건 등급 문구 삭제 커밋 ② P1S03 tick_hold → 30칸 measure-item → judge → tick_hold 삭제(22:48 전 · mem_gate) — 추가 시험 · 리허설 없음 ③ round.sh - p4-pool → 재무 비의존 기저 사슬(J-003 · 거르기 = 등록부 data_source 만 — PIT 메타 검사는 더하지 않는다) · 규약 필수 리뷰(철학 P1 · 판단 T1)만 · 등록 시험은 직전 결과 + 핀 동일로 갈음 · 결론 범위에 장외 상장 전 이력 조건부 줄(도훈 답에 따라) ④ 방향 수정 8건 묶음 + 새 엔진 상설 자격(재측정 뒤) ⑤ 도훈 결정 대기: 원 공시본 A/B/C · 장외(K-OTC · 프리보드) 상장 전 이력 처분 ⑥ 정적 검사기 C4 규칙은 하지 않는다(레인 사전검사 P14 가 측정 직전 관문 · 같은 위반에 관문 둘 금지) ⑦ 세션 끝에만 판단 Superfan T3",
+   "next_action": "[11-16 08:42] (도훈 11-16 상장 전 이력 사용 금지 · C안) ① 시장구분 수급 끝(백그라운드 · 로그 .cache/scheduler_logs/qw_listing_market_20261116.log) → qw_ext_ingest.py 로 .cache/qw_ext/listing_market/market_type.parquet 적재 · 코드 분포 확인 → 이음매 세션(local_89452ce8)에 알림 ② 이음매 세션 = RAWDATA 상장 밖 행 제외 · 등록부 13행 · 묶음(고정 2 제외) · 밤 [3c] · 판 원장 RAWDATA-PRELISTING-EXCLUDE-20261116 → 알림 받으면 ③ 팩터 DB 전체 재빌드 묶음 다시(run_chain.sh 판 — 두 판 표식 완료 · --any-time 이면 00:03 체인과 겹침 확인) ④ 재빌드 끝 → 레인 다시 켬(replication_lane.enabled=true) → P1S03 30칸 재측정 · 판정 → 재무 비의존 기저 사슬(J-003 · 결론 범위 = 재무 정정 덮어쓰기 경계 C) → 방향 수정 8건 묶음 + 새 엔진 ⑤ P1S04 시드 = 엔진 시차 수리 전 보류 ⑥ 새 검사 추가 없음 · 세션 끝 T3",
    "context_files": [
     ".cache/fund_lag_rebuild_20261116/run_chain.sh",
     "04_Research/01_reports/factor_direction_blind_review_20261113/README.md",
@@ -1247,6 +1247,14 @@
     {
      "at": "2026-11-16T08:26:51+0900",
      "text": "다음: [11-16 08:26] (도훈 '검사가 다시 많아지네' 반영 — 새 검사 추가 없음) ① 재빌드 끝(세션 감시 셸 · status.json · 판 표식 completed_at) → 판 표식 증거에 재빌드 입력 등록"
+    },
+    {
+     "at": "2026-11-16T08:42:06+0900",
+     "text": "S1 → in_progress · [11-16 08:42] 도훈 '상장전 이력까지 백테스팅에 활용하지마 · C안' → 재빌드 묶음 멈춤(stopped_by_q · 월간 2003-06) · 상장 전 이력 제외(RAWDATA) 뒤 다시 전체 재빌드 · 레인 새 착수 멈춤"
+    },
+    {
+     "at": "2026-11-16T08:42:07+0900",
+     "text": "다음: [11-16 08:42] (도훈 11-16 상장 전 이력 사용 금지 · C안) ① 시장구분 수급 끝(백그라운드 · 로그 .cache/scheduler_logs/qw_listing_market_20261116.log)"
     }
    ]
   }

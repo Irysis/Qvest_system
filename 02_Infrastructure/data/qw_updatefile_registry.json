@@ -66,6 +66,17 @@
       ]
     },
     {
+      "name": "ListingMarket", "group": "ext", "layout": "ts", "freq": "D", "fill_nonbiz": 0,
+      "path": "03_Universe/Update_File_ext/ListingMarket_update.xlsx",
+      "loader": "02_Infrastructure/data/qw_ext_ingest.py",
+      "_why": "도훈 11-16 RAWDATA-PRELISTING-EXCLUDE-20261116 '상장된 시점 이후 퀀티와이즈에 찍히는 가격데이터부터 · 없는 시점은 유니버스에서 제외' — 종목 · 거래일마다 상장 시장을 받아 유가증권 · 코스닥 상장 밖(상장 전 장외 · 코넥스) RAWDATA 행을 뺀다(data/rawdata_listing_cut.py). RAWDATA Market 열은 전부 KOSPI 라 쓸 수 없다(11-04).",
+      "sheets": [
+        {"sheet": "MARKET_TYPE", "item_code": "R100100", "item_name": "시장구분", "unit": "", "value_kind": "text", "date_meaning": "그 거래일의 상장 시장(KS 유가증권 · KQ 코스닥 · 그 밖 = 상장 밖)",
+         "output": ".cache/qw_ext/listing_market/market_type.parquet", "history_from": "19900103", "fill_gate": false,
+         "avail": {"kr_trading_days_after": 0, "status": "structural", "basis": "상장 시장은 그날 이미 정해진 구조 정보(상장 · 이전상장은 미리 공시) — 신호 입력이 아니라 상장 밖 행 거르기 전용"}}
+      ]
+    },
+    {
       "name": "Fundamental", "group": "fund", "layout": "peer",
       "path": "03_Universe/Fundamental.xlsx",
       "loader": "02_Infrastructure/data/parse_fundamental_xlsx.R",
