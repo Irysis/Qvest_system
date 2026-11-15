@@ -48,8 +48,9 @@ description: 1계층 알파 서칭 (v10.01) — 논문 1편을 완전 충실구�
 
 ### 2. engine 작성
 `FACTORS(Date, Ticker, Score)` 또는 논문 비중 직접 산출 시 `PORTFOLIO(Date, Ticker,
-Weight[, Leg])`. **PIT 필수**: 동일시점 순환참조 금지, 과거 윈도우만, 재무 지연(연간
-익년 3/31·분기 45일+). 위반 시 중단.
+Weight[, Leg])`. **PIT 필수**: 동일시점 순환참조 금지, 과거 윈도우만, 재무 지연 = 재무
+원천 행의 `Factor_Date`(공개일 + 1개월 뒤 첫 거래일 · pit.md C4 소비 규약) ≤ 결정 시점으로만
+거른다 — 엔진 안 고정 시차(익년 3/31 · 분기 45일 등)만 쓰지 않는다(덧대려면 `pmax(고정, Factor_Date)`). 위반 시 중단.
 
 ### 3. 실행 (충실구현)
 **선확인(측정 직전)**: `bash 02_Infrastructure/ops/refresh_barrier.sh status` 가 `state=free` 가 아니면 측정 보류 — 잠금 해제 후 재시도(`daily_refresh` 창에선 RAWDATA K200/KQ150 이 NA 라 에러 없이 틀린 등급 · 러너는 배리어를 안 본다 — 무인 레인만 본다).
