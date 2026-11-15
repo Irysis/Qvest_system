@@ -2,10 +2,11 @@
 # P1R03 15칸 재측정 — 03-30 이음매 정정 뒤(RAWDATA · FF 요인 · 202611 · IC · 결합용 뷰 재빌드 뒤)
 #   정본 셀 워커 그대로(rf_cell_worker.R → run_paper_replication → essence) · 사양 md5 = 사전등록 값 단정(R2) ·
 #   닫힌 라운드의 results/ 는 건드리지 않는다 — 출력 = remeasure_seam_20261113/results/ · 모듈 풀 등재 끔(QVEST_RP_REGISTER=0 — 풀 교체는 따로)
-#   측정 러너 규약: 배리어 held 면 기다린다(최대 30분) · 메모리 10GB 미만이면 기다린다 · 칸은 하나씩(셀 워커 정점 7.45GB).
+#   측정 러너 규약: 배리어 held 면 기다린다(최대 30분) · 가용 메모리 − 셀 워커 예상 정점(7.45GB) ≥ 여유(memory_policy.json::reserve_gb)일 때만 출발한다(공통 관문 tools/p1r03_rm_gate.sh · 도훈 11-15 MEMORY-USE-90PCT-20261115) · 칸은 하나씩.
 set -u
 ROOT="C:/Users/99922/OneDrive/Quant_Module_Moltbot"; cd "$ROOT" || exit 2
 RD=04_Research/programs/P1_RETURN/P1R03_factor_family_composites
+. "$RD/tools/p1r03_rm_gate.sh" || exit 2   # 출발 관문(배리어 free ∧ 가용 − 정점 ≥ 여유)
 OUT=$RD/remeasure_seam_20261113/results; mkdir -p "$OUT"
 ORDER="${P1R03_RM_ORDER:-FGROW FREGI FTECH FLIQU FRISK FCROW FVALU FLEVE FINVE FMOME FQUAL FACCR FCONS FDEFE TOTAL}"
 ts() { date '+%F %T'; }
@@ -15,13 +16,7 @@ for c in $ORDER; do
   want=$(python -c "import json;p=json.load(open('$RD/prereg.json',encoding='utf-8'));print([c['md5'] for c in p['cells'] if c['code']=='$code'][0])")
   have=$(md5sum "$spec" | cut -c1-32)
   if [ "$want" != "$have" ]; then echo "[rm] $code 사양 md5 불일치(사전등록 $want · 지금 $have) — 측정하지 않는다"; exit 3; fi
-  w=0; while :; do
-    bash 02_Infrastructure/ops/refresh_barrier.sh status >/dev/null 2>&1; rb=$?
-    mg=$(powershell.exe -NoProfile -NonInteractive -Command "[math]::Floor((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory/1MB)" 2>/dev/null | tr -d '\r\n ')
-    if [ "$rb" = "0" ] && [ -n "$mg" ] && [ "$mg" -ge 10 ] 2>/dev/null; then break; fi
-    [ "$w" -ge 1800 ] && { echo "[rm] 대기 상한(배리어 rc=$rb · 가용 ${mg:-?}GB) — 중단"; exit 6; }
-    echo "[rm] 대기(배리어 rc=$rb · 가용 ${mg:-?}GB) $(ts)"; sleep 60; w=$((w + 60))
-  done
+  p1r03_rm_gate_wait; gr=$?; [ "$gr" = "0" ] || exit "$gr"
   echo "[rm] $code 측정 시작 $(ts) · 가용 ${mg}GB"
   QVEST_RP_NO_FACTOR_ANALYSIS=1 QVEST_RP_REGISTER=0 QVEST_RP_NO_LCODE=1 \
     Rscript 02_Infrastructure/ops/rf_cell_worker.R "$spec" 1 "$code" "$out" > "$OUT/${code}.log" 2> "$OUT/${code}.err.log"
