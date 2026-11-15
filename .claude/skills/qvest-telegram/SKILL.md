@@ -83,6 +83,10 @@ description: Qvest 텔레그램 발송의 유일한 규칙(SOT · v8 전문 독�
 - 표기: 비교는 **'vs'**('대' 금지) · 차트 글꼴 = 현대하모니 M. 수치는 R 계약 산출만(창 지표 `gv3_window` · 알파 `beta_controlled_alpha` · NAV = 측정 산출물).
 - 도구: `04_Research/programs/_lib/round_visual_report.R`(셀 목록만 바꿔 재사용) · 실례 = `04_Research/01_reports/l1_round1_results_20261015/`(`tg_send.R`).
 
+### §0.8 보고 전담 에이전트 — OOS 는 사람 쪽 보고 (2026-11-15 도훈 지시 "텔레는 별도 텔레그램 발송 전용 에이전트를 만들어서 OOS 기간까지 모두 보낼 수 있게 해줘")
+- 사람 쪽 보고(IS + OOS 전기간 · 권위 등급 · 시각자료)는 보고 전담 에이전트 `.claude/agents/telegram-reporter.md`(τ_D 대상 아님)가 맡는다. τ_D 대상 세션(1계층 처방 Q · 판단 Superfan · 철학 P1 · P2 · P4 · 처방 레인)의 OOS 보고는 이 에이전트 몫이다 — 그 세션은 OOS 를 직접 읽거나 그리지 않고, 돌려받는 것은 상태(보냄 여부 · 바이트 · 파일 · 커밋)뿐이다.
+- 첫 적용 = 강화 사슬 걸음 보고 `02_Infrastructure/programs/l1_chain_step_report.R`(OOS 포함판 · IS 판정 줄은 그대로 · OOS 줄 = '사람 쪽 보고 · 판정 아님' · 전기간 차트 = `NO_VISIBLE_REVIEW.txt` 표식 폴더 · 드라이런 기본 출력 = 상태 1줄).
+
 ---
 
 ## §1 SOT 선언 (중요)
