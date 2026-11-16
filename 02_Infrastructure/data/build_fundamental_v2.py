@@ -11,7 +11,8 @@
   .cache/RAWDATA.parquet(거래일 달력).
 출력(원자적 쓰기 · 기본 .cache/fundamental_v2/):
   fund_v2_quarterly.parquet  Ticker · Period · Period_Date · Item · Value · Avail_Date(그 값이 공개된 날) ·
-                             Factor_Date(Avail_Date + 시차 개월 뒤 첫 거래일 = 쓸 수 있는 첫날 · 시차 = 등록부 avail_lag_months · 11-16 = 1) · Avail_Basis · Check · Db
+                             Factor_Date(쓸 수 있는 첫날 = max(법정 제출기한 + 등록부 deadline_buffer_days 일 뒤 첫 거래일, Avail_Date + avail_lag_months 개월 뒤 첫 거래일)
+                             · 11-16 도훈 = 법정기한 + 45일 · 공개일 + 1개월 규칙 삭제(avail_lag_months = 0 → 공개일 뒤 첫 거래일 = 바닥)) · Avail_Basis · Check · Db
   fund_v2_annual_check.parquet  Ticker · FY · Item · QW_Value · DART_Value · Rel_Diff · DART_Date ·
                              DART_Factor_Date(DART 접수일 + 시차 개월 뒤 첫 거래일) · Same
   fund_v2_build_report.json  행 수 · 검사 결과 · 날짜 근거 분포
@@ -96,6 +97,27 @@ def avail_lag_months(root: Path, override) -> int:
     return v
 
 
+def avail_deadline_rule(root: Path) -> tuple[int, int, int]:
+    """법정 제출기한 + 여유 일수 규칙(도훈 11-16 FUNDAMENTAL-AVAIL-DEADLINE45-20261116 '보수적으로 법정기한 + 45일') —
+    정본 06_Registry/fundamental_source.json::legal_deadline_days{annual, interim} · deadline_buffer_days.
+    반환 (사업보고서 기한 일수, 분기 · 반기 기한 일수, 여유 일수). 키가 없거나 정수가 아니면 멈춘다."""
+    reg = json.loads((root / "06_Registry/fundamental_source.json").read_text(encoding="utf-8"))
+    dd = reg.get("legal_deadline_days") or {}
+    a, i, b = dd.get("annual"), dd.get("interim"), reg.get("deadline_buffer_days")
+    if not all(isinstance(x, int) and x >= 0 for x in (a, i, b)):
+        raise ValueError(f"fundamental_source.json::legal_deadline_days · deadline_buffer_days 판독 불가({dd!r} · {b!r}) — 기한을 정하지 않고는 날짜를 만들지 않는다")
+    return a, i, b
+
+
+def roll_forward(d: np.ndarray, cal: np.ndarray) -> np.ndarray:
+    """첫 거래일 ≥ d(그날이 거래일이면 그날 — 기한 마지막 날이 휴일이면 다음 근무일). 달력 밖은 d 그대로."""
+    idx = np.searchsorted(cal, d, side="left")
+    out = d.copy()
+    ok = (idx < len(cal)) & (d >= cal[0])
+    out[ok] = cal[idx[ok]]
+    return out
+
+
 def add_months(d: np.ndarray, m: int) -> np.ndarray:
     """달력 m 개월 뒤(말일 보정 — 1/31 + 1개월 = 2월 말일) · NaT 는 그대로."""
     if m == 0:
@@ -134,7 +156,9 @@ def build(a) -> int:
     raw_p = Path(a.dart_raw) if a.dart_raw else root / ".cache/dart/dart_raw_financials.parquet"
     cal_p = Path(a.rawdata) if a.rawdata else root / ".cache/RAWDATA.parquet"
     lag = avail_lag_months(root, a.lag_months)
-    print(f"[fund-v2-build] 공시 시차 = {lag}개월(쓸 수 있는 첫날 = 공개일 + {lag}개월 뒤 첫 거래일 · FUNDAMENTAL-AVAIL-LAG-20261115)")
+    dl_ann, dl_int, buf = avail_deadline_rule(root)
+    print(f"[fund-v2-build] 쓸 수 있는 첫날 = max(법정기한(사업보고서 {dl_ann}일 · 분기 · 반기 {dl_int}일 · 휴일이면 다음 거래일) + {buf}일 뒤 첫 거래일, "
+          f"공개일 + {lag}개월 뒤 첫 거래일) · FUNDAMENTAL-AVAIL-DEADLINE45-20261116")
     need = [v2 / f"{d}.parquet" for d in NUM_DBS + ["FundV2_META"]] + [v2 / "fiscal_month.parquet", dart_p, raw_p, cal_p]
     miss = [str(p) for p in need if not p.exists()]
     if miss:
@@ -253,11 +277,24 @@ def build(a) -> int:
     # ---- 4. 다음 거래일 = Factor_Date ------------------------------------------------------------------
     cal = pc.unique(pq.read_table(cal_p, columns=["Date"])["Date"]).to_numpy(zero_copy_only=False).astype("datetime64[D]")
     cal = np.sort(cal)
-    # 쓸 수 있는 첫날 = 공개일 + 시차(개월) 뒤 첫 거래일(도훈 11-16 FUNDAMENTAL-AVAIL-LAG-20261115 'A 1달 일괄' — 공개일 근거 모두 · 정정 의심 연도 포함)
-    keys["Factor_Date"] = next_trading_day(add_months(keys["Avail_Date"].to_numpy("datetime64[D]"), lag), cal)
-    # 연간 대조 표: DART 당시 보고서 값을 쓸 수 있는 첫날(병합 v2 가 다른 칸을 DART 값으로 바꿀 때 쓴다)
+    # 쓸 수 있는 첫날(도훈 11-16 FUNDAMENTAL-AVAIL-DEADLINE45-20261116 '보수적으로 법정기한 + 45일' · '공개일 + 1개월 규칙은 삭제' → avail_lag_months = 0)
+    #   = max(법정 제출기한 + 여유 일수 뒤 첫 거래일, 공개일 뒤 첫 거래일 — 기한보다 늦게 낸 회사의 값을 제출 전에 쓰지 않는 바닥)
+    #   법정 제출기한 = 기간 말 + 사업보고서(결산월 분기) annual 일 · 분기 · 반기 interim 일(자본시장법 제159조 ① · 제160조 · DART 기업공시
+    #   길라잡이 '정기보고서 제출기한' https://dart.fss.or.kr/info/main.do?menu=410) · 마지막 날이 거래일이 아니면 다음 거래일.
+    #   정정 의심 연도는 공개일 = 다음 회계연도 사업보고서 공개일(3단계) 그대로 — 바닥이 그것을 지킨다.
+    pdt = pd.to_datetime(keys["Period_Date"]).to_numpy("datetime64[D]")
+    is_ann = ((keys["Period"] % 100) == keys["FiscalMonth"]).to_numpy()
+    dead = roll_forward(pdt + np.where(is_ann, dl_ann, dl_int).astype("timedelta64[D]"), cal)
+    f_dead = next_trading_day(dead + np.timedelta64(buf, "D"), cal)
+    f_disc = next_trading_day(add_months(keys["Avail_Date"].to_numpy("datetime64[D]"), lag), cal)
+    keys["Factor_Date"] = np.maximum(f_dead, f_disc)
+    fd_basis = {"deadline": int((f_dead >= f_disc).sum()), "disclosure_floor": int((f_disc > f_dead).sum())}
+    # 연간 대조 표: DART 당시 보고서 값을 쓸 수 있는 첫날(병합 v2 가 다른 칸을 DART 값으로 바꿀 때 쓴다) — 같은 규칙(12월 결산 · 기간 말 = FY-12-31)
     dd2 = chk["DART_Date"].to_numpy("datetime64[D]")
-    chk["DART_Factor_Date"] = np.where(np.isnat(dd2), np.datetime64("NaT", "D"), next_trading_day(add_months(dd2, lag), cal))
+    fye = (chk["FY"].astype(int).astype(str) + "-12-31").to_numpy("datetime64[D]")
+    f_dead2 = next_trading_day(roll_forward(fye + np.timedelta64(dl_ann, "D"), cal) + np.timedelta64(buf, "D"), cal)
+    chk["DART_Factor_Date"] = np.where(np.isnat(dd2), np.datetime64("NaT", "D"),
+                                       np.maximum(f_dead2, next_trading_day(add_months(dd2, lag), cal)))
 
     # ---- 5. 붙이기 · 쓰기 ------------------------------------------------------------------------------------
     rows["Ticker"] = rows["Ticker"].astype(str)
@@ -290,6 +327,8 @@ def build(a) -> int:
         "avail_basis_rows": {str(b): int(n) for b, n in res["Avail_Basis"].value_counts().items()},
         "check_rows": {str(b): int(n) for b, n in res["Check"].value_counts().items()},
         "avail_lag_months": int(lag),
+        "legal_deadline_days": {"annual": int(dl_ann), "interim": int(dl_int)}, "deadline_buffer_days": int(buf),
+        "factor_date_basis_rows": fd_basis,
     }
     (out / "fund_v2_build_report.json").write_text(json.dumps(rep, ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"[fund-v2-build] 저장 {out / 'fund_v2_quarterly.parquet'} · 행 {len(res):,}")

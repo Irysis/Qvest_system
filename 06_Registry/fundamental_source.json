@@ -3,8 +3,15 @@
   "_doc": "재무 병합 표(.cache/fundamental_merged.parquet)와 분기 표(.cache/fundamental_xlsx.parquet)를 어느 원천으로 만드는가. 읽는 곳 = 02_Infrastructure/data/build_fundamental_derived.R(active = v2 면 fundamental_produce_v2.R 에 위임 · 월간 [5a2/7] · DART 보충 완료 단계가 부른다) · 02_Infrastructure/data/incremental_cache_update.R(xlsx_base_rebuild = false 면 Fundamental.xlsx 재파싱 경로를 건너뛴다). 바꾸는 사람 = 전환 절차서(SWITCH_RUNBOOK.md)를 따라 Q(도훈 결정 범위 안) · 되돌리기 = active 를 v1 로 + 절차서의 사본 복원.",
   "active": "v2",
   "xlsx_base_rebuild": false,
-  "avail_lag_months": 1,
-  "avail_lag_doc": "쓸 수 있는 첫날 = 공개일(퀀티 공시일 · DART 접수일 중 늦은 날 · 공시일 없으면 법정 마감 규칙 · 정정 의심 연도 = 다음 회계연도 사업보고서 공개일) + avail_lag_months 개월 뒤 첫 거래일 · DART 당시 값(DART_Factor_Date)도 같다. 읽는 곳 = build_fundamental_v2.py(키가 없거나 정수가 아니면 멈춘다). 도훈 11-16 FUNDAMENTAL-AVAIL-LAG-20261115 'A 1달 일괄' — 2014년 이전 · 2015~ 미대조 값의 정정 덮어쓰기는 PIT 경계로 기록(그 값에 기대는 전략은 원 공시본 확보 전 Judge 인증 불가).",
+  "avail_lag_months": 0,
+  "avail_lag_doc": "공개일 + n개월 규칙 — 도훈 11-16 '공개일 + 1개월 규칙은 삭제해'(FUNDAMENTAL-AVAIL-DEADLINE45-20261116) → 0 = 공개일 뒤 첫 거래일(늦게 낸 회사의 값을 제출 전에 쓰지 않는 바닥으로만 남는다). 읽는 곳 = build_fundamental_v2.py(키가 없거나 정수가 아니면 멈춘다). 옛 값 1 = FUNDAMENTAL-AVAIL-LAG-20261115 'A'(11-16 07:07 · 같은 날 대체).",
+  "legal_deadline_days": {
+    "annual": 90,
+    "interim": 45
+  },
+  "legal_deadline_doc": "법정 제출기한 = 기간 말 + 사업보고서(결산월 분기) annual 일 · 분기 · 반기보고서 interim 일 · 마지막 날이 거래일이 아니면 다음 거래일. 근거 = 자본시장법 제159조 ①('각 사업연도 경과 후 90일 이내') · 제160조(반기 · 분기 45일) · DART 기업공시 길라잡이 '정기보고서 제출기한' https://dart.fss.or.kr/info/main.do?menu=410 (2026 12월 결산 = 사업 03/31 · 1분기 05/15 · 반기 08/14 · 3분기 11/16).",
+  "deadline_buffer_days": 45,
+  "deadline_buffer_doc": "쓸 수 있는 첫날 = max(법정 제출기한 + deadline_buffer_days 일 뒤 첫 거래일, 공개일 + avail_lag_months 개월 뒤 첫 거래일) · DART 당시 값(DART_Factor_Date)도 같다 · 정정 의심 연도는 공개일 = 다음 회계연도 사업보고서 공개일 그대로. 도훈 11-16 '보수적으로 법정기한 + 45일 기준 적용하자'(기재정정 미래참조 대응 · DART 공시 목록은 수집하지 않는다).",
   "sources": {
     "v1": "Fundamental.xlsx(분기 · 2015~ 는 ISSD · SBB 만) + DART 연간(2015~ · fundamental_dart.parquet) — build_fundamental_derived.R",
     "v2": "퀀티 재무 DB v2(.cache/qw_fund_v2/FundV2_* · 메인) + DART 정정 검사(서브) + 실제 공시일 · 날짜 순서 계약 — build_fundamental_v2.py → build_fundamental_merged_v2.R(fundamental_produce_v2.R 이 묶는다)"
@@ -13,7 +20,8 @@
   "decisions": [
     "2026-11-08 도훈 '퀀티를 메인으로 하고 다트를 서브로 하면 안돼?' → '위 방식대로 가자'(값 = 퀀티 · DART 와 0.5% 넘게 다르면 DART · 날짜 = 퀀티 보고일과 DART 접수일 중 늦은 날 다음 거래일 · DART 없으면 퀀티 미검증 표시)",
     "2026-11-09 도훈 '보충 끝나면 전체 재빌드해줘'(DART 연간 보충 완료 뒤 v2 전환 + 팩터 DB 전체 재빌드)",
-    "2026-11-16 도훈 'A'(FUNDAMENTAL-AVAIL-LAG-20261115 — 1달 일괄 · 무인 Judge 11-15 L-JG-20261115_200516 이 계기)"
+    "2026-11-16 도훈 'A'(FUNDAMENTAL-AVAIL-LAG-20261115 — 1달 일괄 · 무인 Judge 11-15 L-JG-20261115_200516 이 계기)",
+    "2026-11-16 도훈 '보수적으로 법정기한 + 45일 기준 적용하자' · ''공개일 + 1개월' 규칙은 삭제해'(FUNDAMENTAL-AVAIL-DEADLINE45-20261116 — 기재정정 미래참조 대응 · DART 공시 목록 수집 안 함 · 퀀티와이즈 정본)"
   ],
   "history": [
     {
@@ -34,6 +42,18 @@
       "xlsx_base_rebuild": false,
       "avail_lag_months": 1,
       "why": "공시 시차 1개월 도입 — 무인 Judge(11-15 20:14) PIT 인증 불가(C4: 2014년 이전 정정 덮어쓰기 값 · 퀀티 공시일이 DART 최초 제출보다 1~22일 이른 표본) → 도훈 '1달 일괄'. 후보 → 전환 → 팩터 DB 전체 재빌드 · 결합용 뷰 · FF 요인 · 판 표식 FUNDAMENTAL-AVAIL-LAG-1M-20261116."
+    },
+    {
+      "at": "2026-11-16T09:2x",
+      "active": "v2",
+      "xlsx_base_rebuild": false,
+      "avail_lag_months": 0,
+      "legal_deadline_days": {
+        "annual": 90,
+        "interim": 45
+      },
+      "deadline_buffer_days": 45,
+      "why": "쓸 수 있는 첫날 = 법정 제출기한 + 45일 뒤 첫 거래일(공개일 + 1개월 규칙 삭제 · 공개일은 바닥) — 도훈 11-16. 07:21 재빌드 묶음은 상장 전 이력 제외(RAWDATA-PRELISTING-EXCLUDE-20261116)로 멈췄고, 이 규칙과 RAWDATA 제외를 한 번의 전체 재빌드에 싣는다. 판 표식 FUNDAMENTAL-AVAIL-DEADLINE45-20261116."
     }
   ]
 }

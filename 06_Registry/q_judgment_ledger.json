@@ -1,6 +1,6 @@
 {
  "schema": "q_judgment_ledger_v1",
- "updated_at": "2026-11-16T08:41:46+0900",
+ "updated_at": "2026-11-16T09:19:34+0900",
  "judgments": [
   {
    "id": "J-20261016-001",
@@ -3297,6 +3297,52 @@
    ],
    "expectation": "오늘 밤 00:03 체인 전에 RAWDATA 제외 · 밤 단계 반영 · 재빌드 착수 · 내일 재측정",
    "confidence": 0.7,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261116-010",
+   "at": "2026-11-16T08:52:52+0900",
+   "op": "OP-20261116-L1-REMEASURE",
+   "kind": "ops",
+   "summary": "[11-16 08:52] 정정 — 상장 첫날 수익률 NA 처리 · 수익 채움 등록부 13행 제거 부탁을 거둠(이음매 세션에 정정 전달) · 자르기 = 상장 전 행 삭제만 · 새 검증 · 대조 없음",
+   "rationale": "도훈 '상장 첫날에는 가격변동폭제한이 커져서 가짜수익이 아니라 진짜 수익일 수 있다' · '자꾸 네가 스스로 새롭게 검증하려고 하지마. 퀀티와이즈 데이터가 무조건 맞는거야' — J-20261116-009 의 '가짜 수익' 근거는 Q 의 단정이었다. 지시받은 변경(상장 전 행 삭제)만 기계적으로 하고 나머지 값은 저장된 그대로 둔다.",
+   "framework_refs": [
+    "feedback-qw-file-is-the-reference(11-16 강화) · decision_register RAWDATA-PRELISTING-EXCLUDE-20261116"
+   ],
+   "evidence": [
+    "SendMessage message_id 5fbd01c8(대기열 · 이음매 세션 진행 중)"
+   ],
+   "alternatives": [
+    "첫날 NA 유지 — 도훈 판단과 어긋난다"
+   ],
+   "expectation": "이음매 세션이 상장 전 행만 지우고 첫날 값 · 등록부를 그대로 둔다",
+   "confidence": 0.85,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261116-011",
+   "at": "2026-11-16T09:19:34+0900",
+   "op": "OP-20261116-L1-REMEASURE",
+   "kind": "harness_change",
+   "summary": "[11-16 09:19] 도훈 '보수적으로 법정기한 + 45일' · '공개일 + 1개월 규칙은 삭제' 집행 — build_fundamental_v2.py 쓸 수 있는 첫날 = max(법정기한(사업 90 · 분기 · 반기 45 · 휴일 다음 거래일) + 45일 뒤 첫 거래일, 공개일 뒤 첫 거래일) · 등록부 키 · 정본 교체 09:18 · 판 표식 FUNDAMENTAL-AVAIL-DEADLINE45-20261116 · pit.md C4 '정정 덮어쓰기 = 이 규칙으로 대응 · 늦은 정정만 경계'",
+   "rationale": "원문 그대로 법정기한 + 45일을 쓰고 공개일 + 1개월을 지웠다. Q 가 붙인 것 = 공개일 바닥(기한보다 늦게 낸 회사의 값을 제출 전에 쓰는 명백한 미래참조만 막는다) · 정정 확인 연도의 다음 해 규칙 유지 · DART 당시 값에도 같은 규칙. pit.md 의 'Judge 인증 불가'는 도훈이 이 규칙을 정정 미래참조의 '해결'로 고른 것으로 읽고 '늦은 정정만 경계'로 바꿨다 — 다르면 도훈이 바로잡는다.",
+   "framework_refs": [
+    "decision_register FUNDAMENTAL-AVAIL-DEADLINE45-20261116 · 자본시장법 제159조 · 제160조 · DART 정기보고서 제출기한"
+   ],
+   "evidence": [
+    ".cache/fund_deadline45_20261116/candidate.log · switch.log(순서 감사 0/0) · FY2025 사업보고서 3,147종목 = 2026-05-18 · 2026 1분기 3,573종목 = 2026-06-30 · 비12월 결산 154 = 2026-04-06(2/14 기한 → 설 연휴 → 2/19 + 45)"
+   ],
+   "alternatives": [
+    "(나) 공개일 바닥 없이 법정기한 + 45일만 — 지연 제출 회사(예: 2026-08 제출 13종목)의 값을 제출 전에 쓴다"
+   ],
+   "expectation": "다음 전체 재빌드에 함께 실려 재무 팩터가 이 날짜로 바뀐다",
+   "confidence": 0.8,
    "status": "open",
    "reviews": [],
    "supersedes": null,
