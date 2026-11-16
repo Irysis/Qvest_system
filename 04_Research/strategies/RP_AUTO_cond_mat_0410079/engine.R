@@ -82,6 +82,7 @@
 #        어떤 원천에 대해서도 C4 보다 **늦으면 늦었지 이르지 않다** — xlsx 경로의
 #        Q4 일률 +45d(≈익년 2/14, CLAUDE.md 가 '3/31 대비 공격적'으로 명시한 수리
 #        항목)가 본 엔진으로 새어들어올 수 없다. 인프라보다 보수적으로 간다.
+#        (2026-11-16 재무 캐시 이관) 원천 = 연간 캐시 Factor_Date(법정기한 + 45일 · 공시일 중 늦은 날) — 위 하한은 그대로 pmax.
 #  C5  : 오버레이 없음(S0/S1 오버레이 금지 준수).
 #  C6  : 유니버스 = 각 시그널일의 K200/KQ150 멤버십(PIT 시변). 최종 명부 주입 없음.
 #  C7  : shift(-N)·미래 인덱싱 0건. 유일한 shift 는 +1(과거 방향, 유동성).
@@ -273,29 +274,27 @@ setkey(.q, Ticker, Date)
 # =============================================================================
 # 3. ε_last — 직전 실현 순이익 (as-of, C4 자체 하한)
 # =============================================================================
-# 원천 우선순위: fundamental_merged(장기 커버리지, 인프라 정본) → fundamental_dart(연간).
-# 어느 쪽이든 최종 산출은 data.table(Ticker, Avail, NI) 하나로 정규화한다.
+# (2026-11-16 재무 캐시 이관) 원천 = 연간 캐시 fa_panel(basis = "a") 단일 — 회계연도 실현 순이익(논문 '작년 EPS' = 연간).
+#   구판 우선순위(fundamental_merged → fundamental_dart)는 퇴역: merged 경로는 TTM_Value 열이 없어 2014 이전 XLSX 분기 단독값을
+#   연간 이익처럼 썼다(죽은 TTM 경로) · fundamental_dart 는 삭제됨. 최종 산출은 그대로 data.table(Ticker, Avail, NI).
 .load_realized_ni <- function() {
-  # ---- (A) fundamental_merged.parquet — long: Ticker/Item/Value[/TTM_Value]/Factor_Date[/Period_Date]
-  p_m <- file.path(.cache_dir, "fundamental_merged.parquet")
+  p_m <- file.path(.cache_dir, "fundamental_annual.parquet")   # (2026-11-16 재무 캐시 이관) 연간 캐시(회계연도 행)
   if (file.exists(p_m)) {
-    m <- tryCatch(as.data.table(read_parquet(p_m)), error = function(e) NULL)
+    want <- c("NetIncome", "PretaxIncome", "TaxExpense")
+    source(file.path(dirname(.cache_dir), "02_Infrastructure", "factor_db", "fund_access.R"), local = TRUE)
+    .fa_old_env <- Sys.getenv("QVEST_FUND_A", NA_character_)
+    Sys.setenv(QVEST_FUND_A = p_m)                               # (2026-11-16 재무 캐시 이관) .cache_dir 의 캐시로 고정
+    m <- tryCatch(as.data.table(fa_panel(basis = "a", items = want)), error = function(e) NULL)
+    if (is.na(.fa_old_env)) Sys.unsetenv("QVEST_FUND_A") else Sys.setenv(QVEST_FUND_A = .fa_old_env)
     if (!is.null(m) && nrow(m) > 0L &&
-        all(c("Ticker", "Item", "Value", "Factor_Date") %in% names(m))) {
-      want <- c("NetIncome", "PretaxIncome", "TaxExpense")
+        all(c("Ticker", "Item", "Value", "Factor_Date", "Period_Date") %in% names(m))) {
       # 타입 정규화(위 컨센서스와 같은 이유 — arrow factor/integer64 방어).
       #   Item 이 factor 면 %chin% 이 곧바로 죽으므로 필터 **전에** 내린다.
       m[, `:=`(Ticker = as.character(Ticker), Item = as.character(Item))]
       m <- m[Item %chin% want]
       if (nrow(m) > 0L) {
         m[, Factor_Date := .as_date(Factor_Date)]
-        # P/L 항목은 TTM 우선(인프라 정본 = compute_value.R 의 use_val 규약)
-        if ("TTM_Value" %in% names(m)) {
-          m[, use_val := fifelse(!is.na(as.numeric(TTM_Value)),
-                                 as.numeric(TTM_Value), as.numeric(Value))]
-        } else {
-          m[, use_val := as.numeric(Value)]
-        }
+        m[, use_val := as.numeric(Value)]   # (2026-11-16 재무 캐시 이관) 연간 캐시 = 회계연도 값 그대로(구 TTM_Value 분기 = 죽은 경로 · 제거)
         m <- m[is.finite(use_val) & !is.na(Factor_Date)]
 
         # ★C4 자체 하한: Avail = max(Factor_Date, Period_Date + 90d).
@@ -337,7 +336,7 @@ setkey(.q, Ticker, Date)
         setorderv(w, c("Ticker", "AvailG", "GKEY"))
         out <- w[is.finite(NI), .(Ticker, Avail = AvailG, NI)]
         if (nrow(out) > 0L) {
-          cat(sprintf("[%s] 실현 순이익 원천 = fundamental_merged (%s행 · %d종 · Avail %s ~ %s)\n",
+          cat(sprintf("[%s] 실현 순이익 원천 = fundamental_annual (%s행 · %d종 · Avail %s ~ %s)\n",
                       .TAG, format(nrow(out), big.mark = ","), uniqueN(out$Ticker),
                       as.character(min(out$Avail)), as.character(max(out$Avail))))
           return(out)
@@ -345,26 +344,8 @@ setkey(.q, Ticker, Date)
       }
     }
   }
-  # ---- (B) fundamental_dart.parquet — wide 연간: Ticker/bsns_year/Factor_Date/NetIncome
-  p_d <- file.path(.cache_dir, "fundamental_dart.parquet")
-  if (file.exists(p_d)) {
-    d <- tryCatch(as.data.table(read_parquet(p_d)), error = function(e) NULL)
-    if (!is.null(d) && nrow(d) > 0L &&
-        all(c("Ticker", "Factor_Date", "NetIncome") %in% names(d))) {
-      d[, `:=`(Factor_Date = .as_date(Factor_Date), Ticker = as.character(Ticker),
-               NetIncome = as.numeric(NetIncome))]
-      out <- d[is.finite(NetIncome) & !is.na(Factor_Date),
-               .(Ticker, Avail = Factor_Date, NI = NetIncome)]
-      # DART annual 의 Factor_Date 는 이미 bsns_year+1 의 3/31 = 12월말 + 90d → 하한 자동 충족.
-      if (nrow(out) > 0L) {
-        cat(sprintf("[%s] 실현 순이익 원천 = fundamental_dart (%s행 · %d종 · Avail %s ~ %s)\n",
-                    .TAG, format(nrow(out), big.mark = ","), uniqueN(out$Ticker),
-                    as.character(min(out$Avail)), as.character(max(out$Avail))))
-        return(out)
-      }
-    }
-  }
-  stop(sprintf(paste0("[%s] 실현 순이익 패널을 못 찾았다 (fundamental_merged / fundamental_dart 모두 실패).\n",
+  # (2026-11-16 재무 캐시 이관) 구 (B) fundamental_dart 폴백 제거 — 원천 삭제(FUNDAMENTAL-QW-ONLY-NO-DART-20261116)
+  stop(sprintf(paste0("[%s] 실현 순이익 패널을 못 찾았다 (fundamental_annual 실패).\n",
                       "  → no-change 앵커 ε_last 없이는 이 논문의 기전(K2)이 성립하지 않는다."), .TAG))
 }
 

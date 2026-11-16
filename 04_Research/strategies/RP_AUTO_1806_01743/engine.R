@@ -140,9 +140,10 @@ stopifnot(!anyDuplicated(.FEATS), length(.FEATS) == 112L)
 }
 .ROOT  <- .find_root()
 .CACHE <- if (exists("CACHE_DIR", inherits = TRUE)) as.character(get("CACHE_DIR", inherits = TRUE))[1] else file.path(.ROOT, ".cache")
-.FM_PATH <- file.path(.CACHE, "fundamental_merged.parquet")
+.FQ_PATH <- file.path(.CACHE, "fundamental_quarterly.parquet")   # (2026-11-16 재무 캐시 이관) 옛 fundamental_merged 퇴역 → 분기 캐시(fund_access.R::fa_panel)
 .CONS_DIR <- file.path(.CACHE, "consensus")
-if (!file.exists(.FM_PATH)) stop(sprintf("%s 회계 패널 부재: %s — 부록 회계 특성 원천. data_gap 적재 대상", .TAG, .FM_PATH))
+if (!file.exists(.FQ_PATH)) stop(sprintf("%s 회계 패널 부재: %s — 부록 회계 특성 원천. data_gap 적재 대상", .TAG, .FQ_PATH))
+source(file.path(.ROOT, "02_Infrastructure", "factor_db", "fund_access.R"))   # (2026-11-16 재무 캐시 이관) fa_panel 접근 함수
 .CONS_HAVE <- c(eps_1y = file.exists(file.path(.CONS_DIR, "eps_1y.parquet")),
                 revenue_fy1 = file.exists(file.path(.CONS_DIR, "revenue_fy1.parquet")),
                 sue = file.exists(file.path(.CONS_DIR, "sue.parquet")))
@@ -529,85 +530,30 @@ cat(sprintf("%s 월말 회귀 특성 7종 완료 (창 %d · 하한 %d · 시장 
             .TAG, .W_BETA, .W_BETA_MIN, 100 * .F[MEM == TRUE, mean(is.finite(HBETA))], as.numeric(difftime(Sys.time(), .t0, units = "mins"))))
 
 # =============================================================================
-# 6. 회계 특성 — fundamental_merged 원값(DART 연간 + QuantiWise XLSX 분기) → 분기 TTM · YoY · 5년 평균 → usable(C4) 로 월말 as-of  ★changed(6)
-#    원천 규약: 같은 (Ticker, Period, Item) 은 병합 파일이 DART 우선으로 이미 dedupe → FY≥2015 의 Q4 유량은 DART 연간 합계만 남는다.
-#    → XLSX Q1~Q3 가 있으면 Q4 단일분기 = 연간 − (Q1+Q2+Q3) 로 복원, 없으면 Q4 TTM = 연간(폴백). 순이익(XLSX 부재) = 세전이익 − 법인세비용.
+# 6. 회계 특성 — 분기 캐시 원값(분기 TTM · 분기 말 잔액) → YoY · 5년 평균 → usable(C4) 로 월말 as-of  ★changed(6)
+#    (2026-11-16 재무 캐시 이관) 옛 fundamental_merged(DART 연간 + XLSX 분기 · Q4 복원 · 연간 폴백) → fundamental_quarterly TTM 전 구간.
 # =============================================================================
 .FLOW <- c("Revenue", "COGS", "GrossProfit", "SGAExpense", "OperatingProfit", "PretaxIncome", "TaxExpense", "NetIncome",
            "InterestExp", "OperatingCF", "InvestCF", "FinanceCF")
 .BS   <- c("TotalAssets", "CurrentAssets", "NonCurrentAssets", "CashAndEquiv", "Inventory", "AccountsRecv", "TangibleAssets",
            "IntangibleAssets", "TotalLiab", "CurrentLiab", "NonCurrentLiab", "ShortTermBorr", "LongTermBorr", "AccountsPay", "TotalEquity")
 .FUND_ITEMS <- c(.FLOW, .BS)
-.fm <- as.data.table(dplyr::collect(dplyr::filter(arrow::open_dataset(.FM_PATH), Item %in% .FUND_ITEMS, Source %in% c("DART", "XLSX"))))
-if (!all(c("Ticker", "Period", "Item", "Value", "Source") %in% names(.fm)))
-  stop(sprintf("%s 회계 패널 스키마 불일치: %s", .TAG, paste(names(.fm), collapse = ",")))
-.fm[, Ticker := as.character(Ticker)]
-.fm[, Item := as.character(Item)]                                          # arrow dictionary(factor) 가능 → 문자열로 통일(rbind·join 형 정합)
-.fm[, Source := as.character(Source)]
-.fm[, Value := as.numeric(Value)]
-.fm <- .fm[Ticker %in% .mem_tk & is.finite(Value)]
-if (nrow(.fm) == 0L) stop(sprintf("%s 회계 패널이 적격 종목과 0행 교차 — Ticker 형식 확인", .TAG))
-.fm[, Period := as.character(Period)]
-.fm[, FY := as.integer(substr(Period, 1L, 4L))]
-.fm[, MM := as.integer(substr(Period, 5L, 6L))]
-.fm <- .fm[is.finite(FY) & MM %in% c(3L, 6L, 9L, 12L)]
-.fm[, QI := FY * 4L + MM %/% 3L]
-# (a) XLSX 분기 유량 → 단일분기 (+ 순이익 파생)
-.fx <- unique(.fm[Source == "XLSX" & Item %in% .FLOW, .(Ticker, FY, MM, QI, Item, Value)], by = c("Ticker", "QI", "Item"))
-.pt <- .fx[Item %in% c("PretaxIncome", "TaxExpense")]
-if (nrow(.pt) > 0L) {
-  .ni <- dcast(.pt, Ticker + FY + MM + QI ~ Item, value.var = "Value")
-  for (.cc in c("PretaxIncome", "TaxExpense")) if (!.cc %in% names(.ni)) .ni[, (.cc) := NA_real_]
-  .ni <- .ni[is.finite(PretaxIncome) & is.finite(TaxExpense), .(Ticker, FY, MM, QI, Item = "NetIncome", Value = PretaxIncome - TaxExpense)]
-  .fx <- rbind(.fx[Item != "NetIncome"], .ni)
-  rm(.ni)
-}
-rm(.pt)
-.xq <- .fx[Item == "Revenue", .(n_q = uniqueN(MM), s4 = sum(Value), q4 = sum(Value[MM == 12L]), has12 = any(MM == 12L)), by = .(Ticker, FY)]
-.rr <- .xq[n_q == 4L & has12 == TRUE & q4 > 0 & s4 > 0, s4 / q4]
-.rr_med <- if (length(.rr)) median(.rr) else NA_real_
-.XQ_SINGLE <- is.finite(.rr_med) && .rr_med > 3                              # 단일분기 유량이면 4분기합/Q4 ≈ 4 · 누적이면 ≈ 2.5
-if (!isTRUE(.XQ_SINGLE) && nrow(.fx) > 0L) {                                # 누적 → 단일분기: 같은 FY 의 직전 분기가 있을 때만 차분
-  setorder(.fx, Ticker, Item, FY, MM)
-  .fx[, prevV := shift(Value, 1L), by = .(Ticker, Item, FY)]
-  .fx[, prevMM := shift(MM, 1L), by = .(Ticker, Item, FY)]
-  .fx[, Value := fifelse(MM == 3L, Value, fifelse(is.finite(prevV) & prevMM == MM - 3L, Value - prevV, NA_real_))]
-  .fx <- .fx[is.finite(Value)]
-  .fx[, c("prevV", "prevMM") := NULL]
-}
-# (b) DART 연간 유량(AV12) · Q4 단일분기 복원 · 분기 격자 → TTM(연속 4분기 합) · 연간 폴백
-.da <- unique(.fm[Source == "DART" & Item %in% .FLOW & MM == 12L, .(Ticker, FY, Item, AV12 = Value)], by = c("Ticker", "FY", "Item"))
-if (nrow(.fx) > 0L) {
-  .qw <- dcast(.fx, Ticker + FY + Item ~ MM, value.var = "Value")
-} else {
-  .qw <- data.table(Ticker = character(0), FY = integer(0), Item = character(0))
-}
-for (.cc in c("3", "6", "9", "12")) if (!.cc %in% names(.qw)) .qw[, (.cc) := NA_real_]
-.qw <- merge(.qw, .da, by = c("Ticker", "FY", "Item"), all = TRUE)
-.q4fix <- .qw[, is.na(`12`) & is.finite(AV12) & is.finite(`3`) & is.finite(`6`) & is.finite(`9`)]
-.n_q4rec <- sum(.q4fix)
-if (.n_q4rec > 0L) .qw[.q4fix, `12` := AV12 - `3` - `6` - `9`]
-.ql <- melt(.qw, id.vars = c("Ticker", "FY", "Item", "AV12"), measure.vars = c("3", "6", "9", "12"), variable.name = "MM", value.name = "Value")
-.ql[, MM := as.integer(as.character(MM))]
-.ql[, QI := FY * 4L + MM %/% 3L]
-.ql <- .ql[is.finite(Value) | (MM == 12L & is.finite(AV12))]
-setorder(.ql, Ticker, Item, QI)
-.ql[, ttm := frollsum(Value, 4L), by = .(Ticker, Item)]
-.ql[, ok4 := shift(QI, 3L) == QI - 3L, by = .(Ticker, Item)]
-.ql[!(ok4 %in% TRUE), ttm := NA_real_]
-.av_fb <- .ql[, !is.finite(ttm) & MM == 12L & is.finite(AV12)]
-.n_av_fb <- sum(.av_fb)
-if (.n_av_fb > 0L) .ql[.av_fb, ttm := AV12]
-.ql <- .ql[is.finite(ttm), .(Ticker, QI, FY, MM, Item, ttm)]
-# (c) 시점 항목 — 분기말 값 (DART 우선 · 병합 파일 규약)
-.bs <- .fm[Item %in% .BS, .(Ticker, QI, FY, MM, Item, ttm = Value, pri = fifelse(Source == "DART", 1L, 2L))]
-setorder(.bs, Ticker, QI, Item, pri)
-.bs <- unique(.bs, by = c("Ticker", "QI", "Item"))
-.bs[, pri := NULL]
-.FQ <- dcast(rbind(.ql, .bs), Ticker + QI + FY + MM ~ Item, value.var = "ttm")
+# (2026-11-16 재무 캐시 이관) 원천 = 분기 캐시 fa_panel(basis = "q", value = "ttm") — 유량 = TTM(최근 4분기 합) · 잔액 = 분기 말 · 전 구간 분기 TTM.
+#   옛 판의 DART 연간 + XLSX 분기 혼재 · 누적/단일 판별 · Q4 단일분기 복원(연간 − Q1~Q3) · 연간 폴백은 캐시 TTM 이 대신한다(재현하지 않는다).
+#   옛 이름 → 캐시 항목(FA_LEGACY_ALIAS): TangibleAssets → PPE · IntangibleAssets → Intangibles · ShortTermBorr → ShortTermDebt · LongTermBorr → LongTermDebt.
+#   순이익 = 캐시 NetIncome(옛 판은 XLSX 분기 순이익을 세전이익 − 법인세비용으로 갈아 끼웠다).
+.fp <- fa_panel(basis = "q", items = .FUND_ITEMS, value = "ttm")
+.fp <- .fp[Ticker %in% .mem_tk & is.finite(Value)]
+if (nrow(.fp) == 0L) stop(sprintf("%s 회계 패널이 적격 종목과 0행 교차 — Ticker 형식 확인", .TAG))
+.fp[, FY := as.integer(substr(Period, 1L, 4L))]
+.fp[, MM := as.integer(substr(Period, 5L, 6L))]
+.fp <- .fp[is.finite(FY) & MM %in% c(3L, 6L, 9L, 12L)]
+.fp[, QI := FY * 4L + MM %/% 3L]
+.FDQ <- .fp[, .(FD = max(Factor_Date)), by = .(Ticker, QI)]          # (2026-11-16 재무 캐시 이관) 분기 행의 쓸 수 있는 첫날 = 그 기간 항목 Factor_Date 의 최댓값
+.FQ <- dcast(.fp, Ticker + QI + FY + MM ~ Item, value.var = "Value")
 for (.cc in .FUND_ITEMS) if (!.cc %in% names(.FQ)) .FQ[, (.cc) := NA_real_]
 setkey(.FQ, Ticker, QI)
-rm(.fm, .fx, .xq, .da, .qw, .ql, .bs, .q4fix, .av_fb)
+rm(.fp)
 # 단위 정합 진단 — 인접 분기 자산총계 비율 중앙값(2015~16 · ≈1 이어야 한다 · 교정하지 않는다)
 .unit_chk <- local({
   a <- .FQ[, .(Ticker, QI, TotalAssets)]
@@ -662,6 +608,9 @@ rm(.fm, .fx, .xq, .da, .qw, .ql, .bs, .q4fix, .av_fb)
 .FQ[, IntangibleAssetRatio := .sdiv(IntangibleAssets, TotalAssets)]
 .FQ[, CurrentAssetsRatio := .sdiv(CurrentAssets, TotalAssets)]
 .FQ[, NonCurrentAssetsRatio := .sdiv(NonCurrentAssets, TotalAssets)]
+# (2026-11-16 재무 캐시 이관) 옛 병합 표 규칙 복원 — 차입금 두 줄 중 한 줄만 있으면 없는 줄 = 0(새 캐시는 그 행을 두지 않아 NA)
+.FQ[is.na(LongTermBorr) & is.finite(ShortTermBorr), LongTermBorr := 0]
+.FQ[is.na(ShortTermBorr) & is.finite(LongTermBorr), ShortTermBorr := 0]
 .FQ[, LongDebtToAsset := .sdiv(LongTermBorr, TotalAssets)]
 .FQ[, LongTermDebtToAsset := .sdiv(NonCurrentLiab, TotalAssets)]
 .FQ[, LongDebtToWorkingCapital := .sdiv(NonCurrentLiab, CurrentAssets - CurrentLiab)]
@@ -694,12 +643,9 @@ rm(.fm, .fx, .xq, .da, .qw, .ql, .bs, .q4fix, .av_fb)
 .FQ[, usable := as.Date(fifelse(MM == 12L, sprintf("%d-03-31", FY + 1L),
                           fifelse(MM == 3L, sprintf("%d-05-15", FY), fifelse(MM == 6L, sprintf("%d-08-15", FY), sprintf("%d-11-15", FY)))))]
 # PIT C4 소비 규약(11-16 · pit.md · 도훈 법정기한 + 45일): 쓸 수 있는 첫날 = 재무 원천 행의 Factor_Date — 고정일은 늦추는 쪽(pmax)만 · Factor_Date 없는 기간은 쓰지 않는다
-.FDK <- as.data.table(dplyr::collect(dplyr::select(arrow::open_dataset(.FM_PATH), Ticker, Period, Factor_Date)))
-.FDK <- .FDK[, .(FD = max(as.Date(Factor_Date))), by = .(Ticker = as.character(Ticker), Period = as.integer(as.character(Period)))]
-.FQ[, Period_i := as.integer(FY) * 100L + as.integer(MM)]
-.FQ[.FDK, on = .(Ticker, Period_i = Period), FD := i.FD]
+.FQ[.FDQ, on = .(Ticker, QI), FD := i.FD]                                   # (2026-11-16 재무 캐시 이관) Factor_Date = 분기 캐시 행(.FDQ) — 늦추는 쪽(pmax)만
 .FQ[, usable := fifelse(is.na(FD), as.Date(NA), pmax(usable, FD))]
-.FQ <- .FQ[!is.na(usable)][, c("FD", "Period_i") := NULL]; rm(.FDK)
+.FQ <- .FQ[!is.na(usable)][, FD := NULL]; rm(.FDQ)
 .carry <- c("NetIncome", "TotalEquity", "Revenue", "OperatingCF", "TotalAssets", "TotalLiab", "CashAndEquiv", "NonCurrentLiab", "NI5", "CF5", "QI")
 .fcols <- c(.FUND_FEATS, .carry)
 .n_fq <- nrow(.FQ); .n_fq_tk <- uniqueN(.FQ$Ticker); .fy_rng <- range(.FQ$FY)
@@ -710,9 +656,8 @@ setorder(.FQs, Ticker, usable)
 .F[, (.fcols) := .tmp[, .fcols, with = FALSE]]
 rm(.tmp, .FQ, .FQs)
 .fund_cov <- .F[MEM == TRUE, mean(is.finite(QI))]
-cat(sprintf("%s 회계: 분기 행 %d(%d종 · FY %d~%d) · XLSX 분기값 형식 = %s(매출 4분기합/Q4 중앙 %s · n=%d) · Q4 단일분기 복원 %d · 연간 폴백 %d · 단위 정합(자산총계 인접분기 비 2015~16 중앙) %s · 적격 월말행 회계 커버리지 %.1f%% · ROE %.1f%% · EGRO %.1f%%\n",
-            .TAG, .n_fq, .n_fq_tk, .fy_rng[1], .fy_rng[2], if (isTRUE(.XQ_SINGLE)) "단일분기 유량" else "누적(차분 적용)",
-            if (is.finite(.rr_med)) sprintf("%.2f", .rr_med) else "NA", length(.rr), .n_q4rec, .n_av_fb,
+cat(sprintf("%s 회계: 분기 행 %d(%d종 · FY %d~%d) · 원천 = 분기 캐시 TTM(fa_panel q/ttm) · 단위 정합(자산총계 인접분기 비 2015~16 중앙) %s · 적격 월말행 회계 커버리지 %.1f%% · ROE %.1f%% · EGRO %.1f%%\n",   # (2026-11-16 재무 캐시 이관) 옛 형식 판별 · Q4 복원 · 연간 폴백 표시 삭제
+            .TAG, .n_fq, .n_fq_tk, .fy_rng[1], .fy_rng[2],
             if (is.finite(.unit_chk)) sprintf("%.3g", .unit_chk) else "NA", 100 * .fund_cov,
             100 * .F[MEM == TRUE, mean(is.finite(ROE))], 100 * .F[MEM == TRUE, mean(is.finite(EGRO))]))
 if (.fund_cov <= 0) stop(sprintf("%s 회계 패널 커버리지 0 — Ticker 형식 또는 usable 규약 확인", .TAG))

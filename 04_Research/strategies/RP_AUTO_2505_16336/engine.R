@@ -69,7 +69,7 @@
 #     - 3-digit SIC 산업 → RAWDATA$Sector(WI26 대분류). KR 에 SIC 가 없다. SIC 3자리를
 #       한국 상장 모집단에 그대로 쓰면 산업-연도 셀이 1~3개 기업이 되어 회귀가 성립하지
 #       않는다. 셀이 얇으면(<20) 그 해 전체 풀링 회귀로 폴백한다.
-#     - COMPUSTAT        → fundamental_merged.parquet (DART + QuantiWise)
+#     - COMPUSTAT        → fundamental_annual.parquet (퀀티 회계연도 · 2026-11-16 재무 캐시 이관 · 구 fundamental_merged)
 #   그 외 신호·종목수·비중·리밸 주기는 전부 논문 그대로다.
 #
 # ===== KR 데이터 한계 (스펙 변경이 아니라 커버리지 사실 — 로그로 드러낸다) =====
@@ -134,14 +134,14 @@ if (!all(.RQ %in% names(RAWDATA)))
   cand <- c(Sys.getenv("QM_ROOT", ""), Sys.getenv("CLAUDE_PROJECT_DIR", ""),
             if (exists("PROJECT_ROOT")) as.character(PROJECT_ROOT)[1] else "")
   for (p in cand)
-    if (nzchar(p) && file.exists(file.path(p, ".cache", "fundamental_merged.parquet")))
+    if (nzchar(p) && file.exists(file.path(p, ".cache", "fundamental_annual.parquet")))   # (2026-11-16 재무 캐시 이관)
       return(p)
   ""
 }
 .ROOT <- .PICK_ROOT()
 if (!nzchar(.ROOT))
-  stop("[RP_2505_16336] fundamental_merged.parquet 을 못 찾음 — QM_ROOT 확인")
-.FUND <- file.path(.ROOT, ".cache", "fundamental_merged.parquet")
+  stop("[RP_2505_16336] fundamental_annual.parquet 을 못 찾음 — QM_ROOT 확인")
+.FUND <- file.path(.ROOT, ".cache", "fundamental_annual.parquet")   # (2026-11-16 재무 캐시 이관) 연간 캐시
 
 # =============================================================================
 # 0. 상수 — 논문에서 온 것 / 우리가 정한 것은 무엇인가
@@ -231,56 +231,30 @@ rm(.LW); gc(verbose = FALSE)
 # =============================================================================
 # 3. 회계 패널 -> 회계연도 단위 값
 # =============================================================================
-# ★여기가 이 엔진에서 가장 조용히 틀릴 수 있는 지점이다.
-#   fundamental_merged.parquet 은 두 원천이 섞여 있고 **손익 항목의 시간 단위가 다르다**:
-#     Source = "XLSX" / "xlsx_derived" : 분기 개별값 (Period = YYYY03/06/09/12)
-#     Source = "DART"                  : 1년치 값   (Period = YYYY12)
-#   Period 가 YYYY12 라는 이유로 둘을 같은 축으로 읽으면 2015년 근처에서 매출/판관비가
-#   4배 점프한다 — 에러 없이 신호만 바뀌는 침묵 실패다. 그래서 **항목별로** Source 를
-#   보고 분기합/연간값을 갈라 쓴다. 병합 규약상 YYYY12 는 DART 우선이라 두 갈래는
-#   서로 배타적이다(DART 가 있으면 XLSX 4분기 중 Q4 가 없어 nq==4 가 깨진다).
+# (2026-11-16 재무 캐시 이관) 옛 fundamental_merged(DART 연간 + XLSX 분기 · Source 로 분기합/연간값을 갈라 씀) →
+#   연간 캐시 fa_panel(basis = "a") — 전 구간 회계연도 값(흐름 = 회계연도 합 · 잔액 = 연말 · COMPUSTAT 연간 대응).
+#   분기 4개 합산 · Source 우선순위 갈래는 없어졌다(원천 단일 · 시간 단위 단일).
+#   이름 대응(FA_LEGACY_ALIAS): OrdRandD → ExpOrdRandD(경상연구개발비) — 결과 Item 은 옛 이름 그대로.
 .ITEMS <- c("Revenue", "SGAExpense", "RandD", "OrdRandD",
             "NetIncome", "PretaxIncome", "TaxExpense", "TotalAssets")
-.FLOWI <- setdiff(.ITEMS, "TotalAssets")
 
-.fd <- as.data.table(read_parquet(
-  .FUND, col_select = c("Ticker", "Period", "Factor_Date", "Item", "Value", "Source")))
-if (!"Source" %in% names(.fd))
-  stop("[RP_2505_16336] 패널에 Source 열이 없다 — 손익 항목의 시간 단위를 가릴 수 없어 중단")
-.fd <- .fd[Item %chin% .ITEMS & is.finite(Value)]
-if (!inherits(.fd$Factor_Date, "Date")) .fd[, Factor_Date := as.Date(Factor_Date)]
-.pc <- as.character(.fd$Period)
-.fd[, yv := as.integer(substr(.pc, 1L, 4L))]
-.fd[, mv := as.integer(substr(.pc, 5L, 6L))]
-rm(.pc)
-.fd <- .fd[is.finite(yv) & is.finite(mv) & is.finite(Factor_Date) &
-             yv >= (min(.FORM$yr) - 3L)]
-.fd[, isd := Source %chin% "DART"]
-cat(sprintf("[RP_2505_16336] 회계 패널 %s행 | 원천 %s\n",
-            format(nrow(.fd), big.mark = ","),
-            paste(sprintf("%s:%s", .fd[, .N, by = Source]$Source,
-                          format(.fd[, .N, by = Source]$N, big.mark = ",")),
-                  collapse = " ")))
+source(file.path(.ROOT, "02_Infrastructure", "factor_db", "fund_access.R"))
+.fa_old_env <- Sys.getenv("QVEST_FUND_A", NA_character_)
+Sys.setenv(QVEST_FUND_A = .FUND)                          # (2026-11-16 재무 캐시 이관) .ROOT 의 캐시로 고정
+.fd <- as.data.table(fa_panel(basis = "a", items = .ITEMS))
+if (is.na(.fa_old_env)) Sys.unsetenv("QVEST_FUND_A") else Sys.setenv(QVEST_FUND_A = .fa_old_env)
+rm(.fa_old_env)
+.fd <- .fd[is.finite(Value) & !is.na(Factor_Date) & !is.na(Period_Date)]
+.fd[, yv := as.integer(year(Period_Date))]                # 기수 = 회계연도 말의 연도
+.fd <- .fd[yv >= (min(.FORM$yr) - 3L)]
+cat(sprintf("[RP_2505_16336] 회계 패널 %s행 | 원천 연간 캐시(회계연도)
+",
+            format(nrow(.fd), big.mark = ",")))
 
-# (a) 손익 항목: DART = 1년치 그대로 / 그 외 = 4개 분기 합(4개 다 있어야 채택)
-.a1 <- .fd[isd == TRUE & mv == 12L & Item %chin% .FLOWI,
-           .(V = Value[1], FD = max(Factor_Date), pr = 1L), by = .(Ticker, Item, yv)]
-.a2 <- .fd[isd == FALSE & mv %in% c(3L, 6L, 9L, 12L) & Item %chin% .FLOWI,
-           .(V = sum(Value), nq = .N, FD = max(Factor_Date)), by = .(Ticker, Item, yv)]
-.a2 <- .a2[nq == 4L, .(Ticker, Item, yv, V, FD, pr = 2L)]
-.FLW <- rbind(.a1, .a2, use.names = TRUE)
-
-# (b) 재무상태 항목: 기말 잔액이므로 합산하지 않는다. YYYY12 값을 그대로.
-.st <- .fd[Item %chin% "TotalAssets" & mv == 12L]
-.st[, pr := fifelse(isd, 1L, 2L)]
-setorder(.st, Ticker, yv, pr)
-.st <- unique(.st, by = c("Ticker", "yv"))
-.FLW <- rbind(.FLW, .st[, .(Ticker, Item, yv, V = Value, FD = Factor_Date, pr)],
-              use.names = TRUE)
-
-setorder(.FLW, Ticker, Item, yv, pr)
-.FLW <- unique(.FLW, by = c("Ticker", "Item", "yv"))
-rm(.fd, .a1, .a2, .st); gc(verbose = FALSE)
+# (2026-11-16 재무 캐시 이관) 같은 해 두 결산(결산월 변경)이면 늦은 결산만 — FD = 그 값의 Factor_Date(PIT 관문 FD <= D 그대로)
+setorder(.fd, Ticker, Item, yv, -Period_Date)
+.FLW <- unique(.fd, by = c("Ticker", "Item", "yv"))[, .(Ticker, Item, yv, V = Value, FD = Factor_Date)]
+rm(.fd); gc(verbose = FALSE)
 
 .FYW <- dcast(.FLW, Ticker + yv ~ Item, value.var = "V")
 .FAV <- .FLW[, .(FD = max(FD)), by = .(Ticker, yv)]      # 그 기수가 쓸 수 있게 된 날

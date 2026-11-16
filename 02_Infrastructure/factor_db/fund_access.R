@@ -65,3 +65,37 @@ fa_latest <- function(sig_date, basis = c("q", "a"), items = NULL, same_period =
   if (!is.null(items)) for (it in setdiff(items, names(W))) set(W, j = it, value = NA_real_)
   W
 }
+
+#------------------------------------------------------------------------------
+# fa_panel — 재무 캐시 시계열 패널(long) · 옛 재무 파일을 읽던 논문 엔진의 이관 통로(2026-11-16 도훈 '이관 시작')
+#   basis = "q"(분기 캐시) | "a"(연간 캐시 · 회계연도 행)
+#   value = "quarter"(분기 단독 — 흐름 = <항목>_Q · 잔액 = 분기 말) | "ttm"(흐름 = 최근 4분기 합) · basis = "a" 면 무시(회계연도 값)
+#   items = 엔진이 쓰는 항목 이름. 옛 이름(FA_LEGACY_ALIAS 의 이름)도 받는다 — 결과 Item 은 요청한 이름 그대로.
+#   반환 = data.table(Ticker, Period, Period_Date, Factor_Date, Item, Value) · Factor_Date = 쓸 수 있는 첫날(pit.md C4) — 엔진은 Factor_Date <= 결정일로만 거른다.
+#   ★옛 병합 표(fundamental_merged)의 '<=2014 분기 단독 + 2015~ 회계연도' 혼재는 재현하지 않는다 — 엔진이 basis · value 를 명시해 고른다.
+#------------------------------------------------------------------------------
+FA_LEGACY_ALIAS <- c(DepAmort = "DepAmortSGA", Dividends = "DividendsPaid", ISSD = "SharesCommonAdj",
+                     IntangibleAssets = "Intangibles", OrdRandD = "ExpOrdRandD", SBB = "BuybackShares",
+                     ShortTermBorr = "ShortTermDebt", LongTermBorr = "LongTermDebt", TangibleAssets = "PPE")
+fa_panel <- function(basis = c("q", "a"), items, value = c("quarter", "ttm")) {
+  basis <- match.arg(basis); value <- match.arg(value)
+  p <- .fa_path(basis)
+  if (!file.exists(p)) stop(sprintf("[fund_access] 재무 캐시 없음: %s", p), call. = FALSE)
+  ds <- open_dataset(p)
+  src <- ifelse(items %in% names(FA_LEGACY_ALIAS), FA_LEGACY_ALIAS[items], items)
+  want <- unique(c(src, if (basis == "q" && value == "quarter") paste0(src, "_Q")))
+  X <- as.data.table(ds |> dplyr::filter(Item %in% want) |>
+                       dplyr::select(dplyr::all_of(c("Ticker", "Period", "Period_Date", "Factor_Date", "Item", "Value"))) |> dplyr::collect())
+  X[, `:=`(Period = as.character(Period), Period_Date = as.Date(Period_Date), Factor_Date = as.Date(Factor_Date))]
+  out <- rbindlist(lapply(seq_along(items), function(i) {
+    s <- src[i]
+    pick <- if (basis == "q" && value == "quarter" && any(X$Item == paste0(s, "_Q"))) paste0(s, "_Q") else s
+    d <- X[Item == pick]
+    if (nrow(d)) d[, Item := items[i]]
+    d
+  }), use.names = TRUE)
+  miss <- setdiff(items, unique(out$Item))
+  if (length(miss)) warning(sprintf("[fund_access] fa_panel(%s, %s): 캐시에 없는 항목 %s", basis, value, paste(miss, collapse = ",")), call. = FALSE)
+  setkey(out, Ticker, Item, Period_Date)
+  out[]
+}

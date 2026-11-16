@@ -260,12 +260,10 @@ cat(sprintf("%s 벤치 원천 = %s · 상대수익 유한 %d행(적격 %.1f%%) �
 
 # =============================================================================
 # 5. 회계 관측 패널 — 자본총계 · 부채총계 · TTM 순이익 → P/B · Book Value · P/E · Liability
-#    ★분기 해상도 유지를 위해 두 원천을 합친다 ★changed(7):
-#      (A) .cache/fundamental_merged.parquet 의 **비-DART**(QuantiWise xlsx 분기) 원값
-#      (B) .cache/fundamental_dart_quarterly.parquet (DART 분기 · 유량은 이미 TTM)
-#      (C) .cache/fundamental_merged.parquet 의 **DART 사업연도**(연 1회 · qn=4) — 잔여 보전
-#    우선순위 B > A > C. (A) 만 읽으면 2016년부터 관측이 연 1회가 되어 '연속 관측 간 변화'가
-#    통째로 결측이 된다 — 이 판은 그 침묵 실패를 막는다.
+#    (2026-11-16 재무 캐시 이관) 원천 = 분기 캐시 단일 fa_panel(basis = "q", value = "ttm") ★changed(7):
+#      자본총계 · 부채총계 = 분기 말 · 순이익 = TTM(최근 4분기 합) — 전 구간 분기 해상도.
+#      옛 (A) merged 비-DART xlsx 분기(누적/단일 판별 → YTD → TTM) · (B) dart_quarterly TTM · (C) merged DART 사업연도의
+#      우선순위 합치기(B > A > C)는 캐시가 대신한다(재현하지 않는다 — 원천이 하나라 '같은 원천' 이음매 조건은 늘 참).
 # =============================================================================
 .tkfix <- function(v) {
   ov <- function(x) length(intersect(unique(x), .tk_elig)) / max(1L, length(.tk_elig))
@@ -275,150 +273,35 @@ cat(sprintf("%s 벤치 원천 = %s · 상대수익 유한 %d행(적격 %.1f%%) �
   return(list(v = cands[[pick]], pick = pick, ovs = ovs))
 }
 
-# ── (A)(C) fundamental_merged ────────────────────────────────────────────────
-.fm_path <- file.path(.CACHE, "fundamental_merged.parquet")
-if (!file.exists(.fm_path))
-  stop(sprintf("%s 회계 패널 부재: %s — 입력 4종 중 3종의 원천. data_gap 적재 대상", .TAG, .fm_path))
-.fm <- as.data.table(dplyr::collect(dplyr::filter(arrow::open_dataset(.fm_path, format = "parquet"),
-                                                  Item %in% .ITEMS)))
-if (!all(c("Ticker", "Period", "Item", "Value", "Source") %in% names(.fm)))
-  stop(sprintf("%s 회계 패널 스키마 불일치: %s", .TAG, paste(names(.fm), collapse = ",")))
-.fm <- .fm[, .(Ticker = as.character(Ticker), Period = as.character(Period),
-               Item = as.character(Item), Value = as.numeric(Value), Source = as.character(Source))]
-.fm <- .fm[is.finite(Value)]
-.fm[, fy := as.integer(substr(Period, 1L, 4L))]
-.fm[, mm := as.integer(substr(Period, 5L, 6L))]
-.fm <- .fm[is.finite(fy) & mm %in% c(3L, 6L, 9L, 12L)]
-.fm[, qn := mm %/% 3L]
-.fm[, is_dart := Source == "DART"]
-.tf <- .tkfix(.fm$Ticker)
+# ── (2026-11-16 재무 캐시 이관) 분기 캐시 ───────────────────────────────────
+.fq_path <- file.path(.CACHE, "fundamental_quarterly.parquet")
+if (!file.exists(.fq_path))
+  stop(sprintf("%s 회계 패널 부재: %s — 입력 4종 중 3종의 원천. data_gap 적재 대상", .TAG, .fq_path))
+source(file.path(.ROOT, "02_Infrastructure", "factor_db", "fund_access.R"))
+.fp <- fa_panel(basis = "q", items = c("TotalEquity", "TotalLiab", "NetIncome"), value = "ttm")
+.fp <- .fp[is.finite(Value)]
+.tf <- .tkfix(.fp$Ticker)
 if (max(.tf$ovs) <= 0)
   stop(sprintf("%s 회계 패널이 적격 종목과 0건 교차(raw %.3f · strip %.3f · add %.3f)",
                .TAG, .tf$ovs[["raw"]], .tf$ovs[["strip"]], .tf$ovs[["add"]]))
-.fm[, Ticker := .tf$v]
-cat(sprintf("%s merged 종목코드 형식 = %s (교차율 raw %.3f · strip %.3f · add %.3f)\n",
+.fp[, Ticker := .tf$v]
+cat(sprintf("%s 분기 캐시 종목코드 형식 = %s (교차율 raw %.3f · strip %.3f · add %.3f)\n",
             .TAG, .tf$pick, .tf$ovs[["raw"]], .tf$ovs[["strip"]], .tf$ovs[["add"]]))
-.fm <- .fm[Ticker %in% .tk_elig]
-if (nrow(.fm) == 0L) stop(sprintf("%s 회계 패널 교차 0행", .TAG))
-setorder(.fm, Ticker, Item, fy, qn, is_dart)
-.fm <- unique(.fm, by = c("Ticker", "Item", "fy", "qn", "is_dart"))
-.fx <- .fm[is_dart == FALSE]     # (A) xlsx 분기
-.fd <- .fm[is_dart == TRUE]      # (C) DART 사업연도
-rm(.fm)
-
-# (A-1) 유량 형식 판별: 매출 4기 합 ÷ 4기값 중앙값 > 3 → 단일기 유량, 아니면 누적  ★changed(6)
-if (.fx[Item == "Revenue", .N] == 0L)
-  stop(sprintf("%s xlsx 매출 행 0 — 분기 유량 형식을 판별할 수 없다(추정 금지)", .TAG))
-.rvw <- dcast(.fx[Item == "Revenue"], Ticker + fy ~ qn, value.var = "Value")
-for (.cc in c("1", "2", "3", "4")) if (!.cc %in% names(.rvw)) .rvw[, (.cc) := NA_real_]
-setnames(.rvw, c("1", "2", "3", "4"), c("v1", "v2", "v3", "v4"))
-.rvw <- .rvw[is.finite(v1) & is.finite(v2) & is.finite(v3) & is.finite(v4) & v4 > 0]
-if (nrow(.rvw) < .DET_MIN)
-  stop(sprintf("%s 유량 형식 판별 표본 %d < %d — 판별 불가(추정 금지)", .TAG, nrow(.rvw), .DET_MIN))
-.rat_med <- stats::median((.rvw$v1 + .rvw$v2 + .rvw$v3 + .rvw$v4) / .rvw$v4)
-.SINGLE_Q <- .rat_med > 3
-cat(sprintf("%s xlsx 유량 형식 = %s (매출 4기합/4기값 중앙 %.2f · n=%d)\n",
-            .TAG, if (.SINGLE_Q) "단일기 유량" else "누적(YTD)", .rat_med, nrow(.rvw)))
-rm(.rvw)
-
-# (A-2) 순이익 → 누적(YTD) → TTM
-if (.fx[Item == "NetIncome", .N] == 0L)
-  stop(sprintf("%s xlsx 순이익 행 0 — P/E 입력의 원천. data_gap 적재 대상", .TAG))
-.niw <- dcast(.fx[Item == "NetIncome"], Ticker + fy ~ qn, value.var = "Value")
-for (.cc in c("1", "2", "3", "4")) if (!.cc %in% names(.niw)) .niw[, (.cc) := NA_real_]
-setnames(.niw, c("1", "2", "3", "4"), c("n1", "n2", "n3", "n4"))
-.Y <- .niw
-rm(.niw)
-if (isTRUE(.SINGLE_Q)) {
-  .Y[, u1 := n1]
-  .Y[, u2 := n1 + n2]
-  .Y[, u3 := n1 + n2 + n3]
-  .Y[, u4 := n1 + n2 + n3 + n4]
-} else {
-  .Y[, u1 := n1]; .Y[, u2 := n2]; .Y[, u3 := n3]; .Y[, u4 := n4]
-}
-.Y[, c("n1", "n2", "n3", "n4") := NULL]
-setorder(.Y, Ticker, fy)
-.Y[, fy_l := shift(fy), by = Ticker]
-.Y[, p1 := shift(u1), by = Ticker]
-.Y[, p2 := shift(u2), by = Ticker]
-.Y[, p3 := shift(u3), by = Ticker]
-.Y[, p4 := shift(u4), by = Ticker]
-.Y[!(is.finite(fy_l) & fy_l == fy - 1L), c("p1", "p2", "p3", "p4") := NA_real_]
-.Y[, t1 := u1 + p4 - p1]
-.Y[, t2 := u2 + p4 - p2]
-.Y[, t3 := u3 + p4 - p3]
-.Y[, t4 := u4]
-.TTM <- melt(.Y[, .(Ticker, fy, t1, t2, t3, t4)], id.vars = c("Ticker", "fy"),
-             measure.vars = c("t1", "t2", "t3", "t4"), variable.name = "qv", value.name = "ttm")
-.TTM[, qn := as.integer(sub("^t", "", as.character(qv)))]
-.TTM <- .TTM[is.finite(ttm), .(Ticker, fy, qn, ttm)]
-rm(.Y)
-
-# (A-3) 시점 항목 + TTM → 관측 블록
-if (.fx[Item %in% c("TotalEquity", "TotalLiab"), .N] == 0L)
-  stop(sprintf("%s xlsx 자본총계·부채총계 행 0 — P/B·Book Value·Liability 의 원천", .TAG))
-.bsx <- dcast(.fx[Item %in% c("TotalEquity", "TotalLiab")], Ticker + fy + qn ~ Item, value.var = "Value")
-for (.cc in c("TotalEquity", "TotalLiab")) if (!.cc %in% names(.bsx)) .bsx[, (.cc) := NA_real_]
-.OBS_X <- merge(.bsx, .TTM, by = c("Ticker", "fy", "qn"), all = TRUE)
-.OBS_X[, src := "xlsx_q"]
-rm(.bsx, .TTM, .fx)
-
-# (C) DART 사업연도 — NetIncome = 사업연도 합계 = 4분기 시점의 TTM. qn != 4 행은 TTM 아님 → NA.
-.OBS_D <- NULL; .n_d_nonq4 <- 0L
-if (nrow(.fd) > 0L) {
-  .bsd <- dcast(.fd, Ticker + fy + qn ~ Item, value.var = "Value")
-  for (.cc in c("TotalEquity", "TotalLiab", "NetIncome")) if (!.cc %in% names(.bsd)) .bsd[, (.cc) := NA_real_]
-  .n_d_nonq4 <- .bsd[qn != 4L, .N]
-  .OBS_D <- .bsd[, .(Ticker, fy, qn, TotalEquity, TotalLiab,
-                     ttm = fifelse(qn == 4L, NetIncome, NA_real_), src = "dart_a")]
-  rm(.bsd)
-}
-rm(.fd)
-
-# (B) DART 분기 패널 — 있으면 쓴다(없으면 큰 소리로 알리고 A+C 로 진행) ★changed(7)
-.dq_path <- file.path(.CACHE, "fundamental_dart_quarterly.parquet")
-.OBS_Q <- NULL
-.dq_note <- "미사용"
-if (file.exists(.dq_path)) {
-  .dq_need <- c("Ticker", "bsns_year", "quarter", "TotalEquity", "TotalLiab", "NetIncome")
-  .dsq <- arrow::open_dataset(.dq_path, format = "parquet")
-  if (all(.dq_need %in% names(.dsq))) {
-    .dq <- as.data.table(dplyr::collect(dplyr::select(.dsq, dplyr::all_of(.dq_need))))
-    .dq <- .dq[, .(Ticker = as.character(Ticker), fy = as.integer(bsns_year), qn = as.integer(quarter),
-                   TotalEquity = as.numeric(TotalEquity), TotalLiab = as.numeric(TotalLiab),
-                   ttm = as.numeric(NetIncome))]
-    .dq <- .dq[is.finite(fy) & qn %in% 1:4]
-    .tfq <- .tkfix(.dq$Ticker)
-    .dq[, Ticker := .tfq$v]
-    .dq <- .dq[Ticker %in% .tk_elig]
-    if (nrow(.dq) > 0L) {
-      .dq[, src := "dart_q"]
-      setorder(.dq, Ticker, fy, qn)
-      .OBS_Q <- unique(.dq, by = c("Ticker", "fy", "qn"))
-      .dq_note <- sprintf("%d행 · %d종 · FY%d~%d · 코드형식 %s",
-                          nrow(.OBS_Q), uniqueN(.OBS_Q$Ticker), min(.OBS_Q$fy), max(.OBS_Q$fy), .tfq$pick)
-    } else .dq_note <- "적격 종목 교차 0행"
-    rm(.dq)
-  } else {
-    .dq_note <- sprintf("스키마 불일치(결손 %s)", paste(setdiff(.dq_need, names(.dsq)), collapse = ","))
-  }
-  rm(.dsq)
-} else .dq_note <- "파일 없음"
-if (is.null(.OBS_Q)) {
-  cat(sprintf("%s ⚠ DART 분기 패널 %s — 2016년 이후 회계 관측이 연 1회가 되어 '연속 관측 간 변화'가 그 구간에서 결측이 된다(아래 연도별 커버리지 확인)\n",
-              .TAG, .dq_note))
-} else {
-  cat(sprintf("%s DART 분기 패널 = %s\n", .TAG, .dq_note))
-}
-
-# ── 세 블록 합치기 (우선순위 dart_q > xlsx_q > dart_a) ───────────────────────
-.OBS <- rbindlist(list(.OBS_Q, .OBS_X, .OBS_D), use.names = TRUE, fill = TRUE)
-rm(.OBS_Q, .OBS_X, .OBS_D)
+.fp <- .fp[Ticker %in% .tk_elig]
+if (nrow(.fp) == 0L) stop(sprintf("%s 회계 패널 교차 0행", .TAG))
+.fp[, fy := as.integer(substr(Period, 1L, 4L))]
+.fp[, mm := as.integer(substr(Period, 5L, 6L))]
+.fp <- .fp[is.finite(fy) & mm %in% c(3L, 6L, 9L, 12L)]
+.fp[, qn := mm %/% 3L]
+if (.fp[Item == "NetIncome", .N] == 0L)
+  stop(sprintf("%s 순이익 행 0 — P/E 입력의 원천. data_gap 적재 대상", .TAG))
+.OBS <- dcast(.fp, Ticker + fy + qn ~ Item, value.var = "Value")
+for (.cc in c("TotalEquity", "TotalLiab", "NetIncome")) if (!.cc %in% names(.OBS)) .OBS[, (.cc) := NA_real_]
+.OBS <- .OBS[, .(Ticker, fy, qn, TotalEquity, TotalLiab, ttm = NetIncome, src = "cache_q", prio = 1L)]
+.OBS[.fp[, .(FD = max(Factor_Date)), by = .(Ticker, fy, qn)], on = .(Ticker, fy, qn), FD := i.FD]   # (2026-11-16 재무 캐시 이관) 쓸 수 있는 첫날 = 그 기간 세 항목 Factor_Date 최댓값
+rm(.fp)
 .OBS <- .OBS[is.finite(fy) & qn %in% 1:4]
-.OBS[, prio := fifelse(src == "dart_q", 1L, fifelse(src == "xlsx_q", 2L, 3L))]
-setorder(.OBS, Ticker, fy, qn, prio)
-.OBS <- unique(.OBS, by = c("Ticker", "fy", "qn"))
+setorder(.OBS, Ticker, fy, qn)
 
 # ── 기간말 시가총액 → P/B · P/E (비율은 회계기간 말 가격 기준 · 소비는 공시 가용일) ──
 .OBS[, pend := as.Date(sprintf("%04d-%02d-01", fifelse(qn == 4L, fy + 1L, fy),
@@ -453,19 +336,15 @@ setorder(.OBS, Ticker, fy, qn)
 .OBS[, d_bv   := .pch(bv, bv_l)]
 .OBS[, d_liab := .pch(liab, lb_l)]
 .OBS[, usable := .usable_of(fy, qn)]
-# PIT C4 소비 규약(11-16 · pit.md · 도훈 법정기한 + 45일): 쓸 수 있는 첫날 = 재무 원천 행의 Factor_Date(같은 종목 · 기간 · 원천 무관) — 고정일은 늦추는 쪽(pmax)만 · Factor_Date 없는 기간은 쓰지 않는다
-.FDK <- as.data.table(dplyr::collect(dplyr::select(arrow::open_dataset(.fm_path, format = "parquet"), Ticker, Period, Factor_Date)))
-.FDK <- .FDK[, .(FD = max(as.Date(Factor_Date))), by = .(Ticker = as.character(Ticker), Period = as.integer(as.character(Period)))]
-.OBS[, Period_i := as.integer(fy) * 100L + as.integer(qn) * 3L]
-.OBS[.FDK, on = .(Ticker, Period_i = Period), FD := i.FD]
+# PIT C4 소비 규약(11-16 · pit.md · 도훈 법정기한 + 45일): 쓸 수 있는 첫날 = 재무 원천 행의 Factor_Date
+# (2026-11-16 재무 캐시 이관) Factor_Date = 분기 캐시 행(FD · 위 5절) — 고정일은 늦추는 쪽(pmax)만 · Factor_Date 없는 기간은 쓰지 않는다
 .OBS[, usable := fifelse(is.na(FD), as.Date(NA), pmax(usable, FD))]
-.OBS <- .OBS[!is.na(usable)][, c("FD", "Period_i") := NULL]; rm(.FDK)
+.OBS <- .OBS[!is.na(usable)][, FD := NULL]
 setorder(.OBS, Ticker, usable, prio)
 .OBS <- unique(.OBS, by = c("Ticker", "usable"))
-cat(sprintf("%s 회계 관측 %d행(%d종 · FY%d~%d · 원천 dart_q %d / xlsx_q %d / dart_a %d · DART 비-Q4 %d · 원천 이음매 결측화 %d) · 기간말 시총 %.1f%% · 자본총계 %.1f%% · TTM 순이익 %.1f%% · 연속분기 직전값 %.1f%%\n",
+cat(sprintf("%s 회계 관측 %d행(%d종 · FY%d~%d · 원천 분기 캐시 %d · 원천 이음매 결측화 %d) · 기간말 시총 %.1f%% · 자본총계 %.1f%% · TTM 순이익 %.1f%% · 연속분기 직전값 %.1f%%\n",   # (2026-11-16 재무 캐시 이관) 원천 3분할 표시 → 분기 캐시 하나
             .TAG, nrow(.OBS), uniqueN(.OBS$Ticker), min(.OBS$fy), max(.OBS$fy),
-            .OBS[src == "dart_q", .N], .OBS[src == "xlsx_q", .N], .OBS[src == "dart_a", .N],
-            .n_d_nonq4, .n_seam,
+            .OBS[src == "cache_q", .N], .n_seam,
             100 * .OBS[, mean(is.finite(mc))], 100 * .OBS[, mean(is.finite(TotalEquity))],
             100 * .OBS[, mean(is.finite(ttm))], 100 * .OBS[, mean(lag_ok %in% TRUE)]))
 

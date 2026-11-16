@@ -9,6 +9,10 @@
 cat("═══ Phase 9b: D29/V21/RE04 수정 ═══\n")
 cat("시각:", format(Sys.time(), "%Y-%m-%d %H:%M:%S"), "\n\n")
 
+# (2026-11-16 재무 팩터 재정의) 이 단계는 퇴역 — 옛 병합 재무 표(fundamental_merged)를 읽어 D29 를 만들었다. D29 는 이제 단계 F
+#   (factor_db_daily_phaseF_fundamental.R)가 새 재무 캐시로 만든다. 재빌드 · 증분 루프는 이 단계를 부르지 않는다. 손으로 돌리면 단계 F 값을 덮어쓰므로 멈춘다.
+stop("[phase9 계열] 퇴역 단계 — D29 = factor_db_daily_phaseF_fundamental.R (2026-11-16)")
+
 suppressPackageStartupMessages({
   library(data.table); library(arrow); library(jsonlite); library(Rcpp)
 })

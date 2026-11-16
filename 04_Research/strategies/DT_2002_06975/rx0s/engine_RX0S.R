@@ -294,8 +294,8 @@ cat(sprintf("%s 스케줄 %d개월(%s ~ %s · 학습창 미달로 제외 %d) · 
 # =============================================================================
 # 7. 회계 특성 (Table 1 No.19~31) ★3판 — 식 = 논문 §3.1 인쇄 정의 · 산출 = 월말(논문 규정) · 그 달 안 캐리  ★changed(8)(9)
 #    논문: 'No. 19-33 are calculated on a monthly basis (at the end of month).' → 월말 me 에서 (usable ≤ me 인 최신 FY, 시총_me) 로
-#    한 번 계산하고, 거래일 t 는 me(t) = t 이하 마지막 월말(월말 당일 포함)의 값을 쓴다. 원천 = fundamental_merged.parquet 원값
-#    (DART 연간 + XLSX 분기 → 연간) → usable FY+1 3/31. 월말 패널 .ME 는 격자 전 종목에서 뽑고, 학습·예측 패널 .P 는 적격(MEM) ∧
+#    한 번 계산하고, 거래일 t 는 me(t) = t 이하 마지막 월말(월말 당일 포함)의 값을 쓴다. 원천 = 연간 캐시 fundamental_annual.parquet(2026-11-16 재무 캐시 이관)
+#    (회계연도 값 · 12월 결산) → usable = max(FY+1 3/31, Factor_Date). 월말 패널 .ME 는 격자 전 종목에서 뽑고, 학습·예측 패널 .P 는 적격(MEM) ∧
 #    di ≥ 첫 학습창 시작 행으로 좁힌다.
 # =============================================================================
 .ME_CAL <- .CAL[MI < max(MI), .(me_di = max(di)), by = MI]                                    # 완결 달력월의 마지막 거래일 = 월말 산출점
@@ -313,39 +313,22 @@ rm(.G); gc(verbose = FALSE)
 .FLOW_ITEMS <- c("Revenue", "OperatingProfit", "PretaxIncome", "TaxExpense", "NetIncome", "OperatingCF", "Dividends", "DepAmort")
 .BS_ITEMS   <- c("TotalAssets", "CurrentAssets", "CurrentLiab", "TotalEquity", "ShortTermBorr", "LongTermBorr")
 .FUND_ITEMS <- c(.FLOW_ITEMS, .BS_ITEMS)
-.fm_path <- file.path(.CACHE, "fundamental_merged.parquet")
-if (!file.exists(.fm_path)) stop(sprintf("%s 회계 패널 부재: %s — Table 1 No.19~31 원천. data_gap 적재 대상", .TAG, .fm_path))
-.fm <- as.data.table(dplyr::collect(dplyr::filter(arrow::open_dataset(.fm_path),
-                                                  Item %in% .FUND_ITEMS, Source %in% c("DART", "XLSX"))))
-if (!all(c("Ticker", "Period", "Item", "Value", "Source") %in% names(.fm)))
-  stop(sprintf("%s 회계 패널 스키마 불일치: %s", .TAG, paste(names(.fm), collapse = ",")))
+# (2026-11-16 재무 캐시 이관) 원천 = 연간 캐시 fundamental_annual.parquet(fa_panel basis = "a" · 흐름 = 회계연도 합 · 잔액 = 연말) — 원계정만 읽고 식(No.19~31)은 아래에서 엔진이 계산
+#   옛 fundamental_merged(DART 연간 + XLSX 분기 → 연간화 · 형식 판별 · 2014 이전 분기 단독 혼재) 대체 · 옛 이름 별칭(fund_access.R FA_LEGACY_ALIAS · 결과 열 = 옛 이름):
+#   Dividends→DividendsPaid · DepAmort→DepAmortSGA · ShortTermBorr→ShortTermDebt(유동 차입금 + 유동 사채) · LongTermBorr→LongTermDebt(장기차입금 + 사채)
+source(file.path(.ROOT, "02_Infrastructure", "factor_db", "fund_access.R"))
+.fm <- fa_panel(basis = "a", items = .FUND_ITEMS)
 .fm[, Ticker := as.character(Ticker)]
 .fm <- .fm[Ticker %in% .mem_tk & is.finite(Value)]
-if (nrow(.fm) == 0L) stop(sprintf("%s 회계 패널이 적격 종목과 0행 교차 — Ticker 형식 확인", .TAG))
-.fm[, Period := as.character(Period)]
+if (nrow(.fm) == 0L) stop(sprintf("%s 회계 패널(연간 캐시)이 적격 종목과 0행 교차 — Ticker 형식 확인", .TAG))
 .fm[, FY := as.integer(substr(Period, 1L, 4L))]
 .fm[, MM := as.integer(substr(Period, 5L, 6L))]
-.fm <- .fm[is.finite(FY) & MM %in% c(3L, 6L, 9L, 12L)]
-# (a) 유량 항목 — DART 행 = 사업연도 합계 그대로 · XLSX 행 = 분기 관측 → 연간화. XLSX 분기값이 단일분기 유량인지
-#     누적(YTD)인지는 패널 문서가 못 박지 않아 데이터 형식으로 판별한다: 매출 4분기 합 ÷ 12월 분기값 중앙값이 3 을 넘으면
-#     단일분기(합산), 아니면 누적(12월 값 채택). 성과와 무관한 형식 판별이며 로그에 남긴다(changed(8)).
-.fx <- .fm[Item %in% .FLOW_ITEMS]
-.xq <- .fx[Source == "XLSX", .(n_q = uniqueN(MM), s4 = sum(Value), q4 = sum(Value[MM == 12L]), has12 = any(MM == 12L)),
-           by = .(Ticker, FY, Item)]
-.rr <- .xq[Item == "Revenue" & n_q == 4L & q4 > 0 & s4 > 0, s4 / q4]
-.rr_med <- if (length(.rr)) median(.rr) else NA_real_
-.XFLOW_QTR <- is.finite(.rr_med) && .rr_med > 3
-.xa <- if (isTRUE(.XFLOW_QTR)) .xq[n_q == 4L, .(Ticker, FY, Item, Value = s4)] else .xq[has12 == TRUE, .(Ticker, FY, Item, Value = q4)]
-.da <- .fx[Source == "DART" & MM == 12L, .(Ticker, FY, Item, Value)]
-.fl <- rbind(.da[, pri := 1L], .xa[, pri := 2L])
-setorder(.fl, Ticker, FY, Item, pri)
-.fl <- unique(.fl, by = c("Ticker", "FY", "Item"))[, pri := NULL]
-# (b) 시점 항목 — 12월 말 값 (분기 3/6/9 는 쓰지 않는다 · 결산월 12 기준 = changed(8))
-.bs <- .fm[Item %in% .BS_ITEMS & MM == 12L, .(Ticker, FY, Item, Value)]
-.FA <- dcast(rbind(.fl, .bs), Ticker + FY ~ Item, value.var = "Value")
+.fm <- .fm[is.finite(FY) & MM == 12L]                                                    # (2026-11-16 재무 캐시 이관) 결산월 12 기준(changed(8)) 유지 — 12월 결산 회계연도 행만
+.FDK <- .fm[, .(FD = max(Factor_Date)), by = .(Ticker, FY)]                               # (2026-11-16 재무 캐시 이관) 그 회계연도 항목들의 쓸 수 있는 첫날 중 가장 늦은 날(pit.md C4)
+.FA <- dcast(.fm[, .(Ticker, FY, Item, Value)], Ticker + FY ~ Item, value.var = "Value")
 for (it in .FUND_ITEMS) if (!it %in% names(.FA)) .FA[, (it) := NA_real_]
 .n_ni_x <- .FA[!is.finite(NetIncome) & is.finite(PretaxIncome) & is.finite(TaxExpense), .N]
-.FA[!is.finite(NetIncome) & is.finite(PretaxIncome) & is.finite(TaxExpense), NetIncome := PretaxIncome - TaxExpense]   # XLSX 에 순이익 항목 없음 (changed(8))
+.FA[!is.finite(NetIncome) & is.finite(PretaxIncome) & is.finite(TaxExpense), NetIncome := PretaxIncome - TaxExpense]   # 순이익 결측 행만 대치(옛 로직 유지 · 연간 캐시에는 NetIncome 항목이 있다)
 setorder(.FA, Ticker, FY)
 .FA[, FY_prev := shift(FY), by = Ticker]
 .FA[, TA_prev := shift(TotalAssets), by = Ticker]
@@ -365,6 +348,10 @@ setorder(.FA, Ticker, FY)
 .FA[, f_ag   := fifelse(is.finite(TotalAssets) & is.finite(TA_prev) & TA_prev > 0, TotalAssets / TA_prev - 1, NA_real_)]   # No.31 Change Rate of Total Assets
 .FA[, f_div  := fifelse(is.finite(Dividends), abs(Dividends), NA_real_)]                                     # No.21 분자 'Dividends' = 배당금지급액(CF · 유출 부호 제거)
 .FA[, usable := as.Date(sprintf("%d-03-31", FY + 1L))]                                                       # C4: 사업연도 익년 3/31 (changed(8))
+# (2026-11-16 재무 캐시 이관) PIT C4 소비 규약 — 고정일은 늦추는 쪽(pmax)만: usable = max(익년 3/31, 그 회계연도 Factor_Date) · Factor_Date 없는 기간은 쓰지 않는다
+.FA[.FDK, on = .(Ticker, FY), FD := i.FD]
+.FA[, usable := fifelse(is.na(FD), as.Date(NA), pmax(usable, FD))]
+.FA <- .FA[!is.na(usable)][, FD := NULL]; rm(.FDK)
 .fcols <- c("FY", "TotalEquity", "NetIncome", "f_div", "Revenue", "OperatingCF",
             "f_roe", "f_roa", "f_roic", "f_acc", "f_at", "f_cr", "f_er", "f_ag")
 .n_fa <- nrow(.FA); .n_fa_tk <- uniqueN(.FA$Ticker); .fy_rng <- range(.FA$FY)
@@ -374,7 +361,7 @@ setorder(.FA, Ticker, usable)
 # 월말 me 에서: usable ≤ me 인 최신 FY(캐리 ≤ 456일) × 시총_me → No.19~31 (논문 'monthly basis (at the end of month)')
 .tmp <- .FA[.ME[, .(Ticker, Date)], on = .(Ticker, usable = Date), roll = .FUND_ROLL]
 .ME[, (.fcols) := .tmp[, .fcols, with = FALSE]]
-rm(.tmp, .fx, .xq, .xa, .da, .fl, .bs, .fm, .FA)
+rm(.tmp, .fm, .FA)                                                                           # (2026-11-16 재무 캐시 이관) 옛 연간화 중간표 제거
 .ME[, x19 := .sdiv(TotalEquity, Size)]                                                                       # No.19 Net Assets/Market Value
 .ME[, x20 := .sdiv(NetIncome, Size)]                                                                         # No.20 Net Profits/Market Value
 .ME[, x21 := .sdiv(f_div, Size)]                                                                             # No.21 Dividends/Market Value
@@ -392,10 +379,9 @@ rm(.tmp, .fx, .xq, .xa, .da, .fl, .bs, .fm, .FA)
                           100 * c(.P[, mean(is.finite(x19))], .P[, mean(is.finite(x25))], .P[, mean(is.finite(x26))], .P[, mean(is.finite(x27))])),
                   collapse = " · ")
 .P[, c("me_di", "FYm") := NULL]
-cat(sprintf("%s 회계(월말 산출): FY 행 %d(%d종 · FY %d~%d) · XLSX 분기값 형식 = %s(매출 4분기합/12월값 중앙 %s · n=%d) · XLSX 순이익 = 세전−법인세 대치 %d행 · 감가상각 항목 보유 FY 행 %.1f%% · 월말 산출점 %d개 · 첫 월말 이전 패널행 %d · 패널 커버리지 FY %.1f%% · %s\n",
+cat(sprintf("%s 회계(월말 산출): FY 행 %d(%d종 · FY %d~%d) · 원천 = 연간 캐시(회계연도 · 12월 결산) · 순이익 결측 = 세전−법인세 대치 %d행 · 감가상각 항목 보유 FY 행 %.1f%% · 월말 산출점 %d개 · 첫 월말 이전 패널행 %d · 패널 커버리지 FY %.1f%% · %s\n",
             .TAG, .n_fa, .n_fa_tk, .fy_rng[1], .fy_rng[2],
-            if (isTRUE(.XFLOW_QTR)) "단일분기 유량(4분기 합산)" else "누적(12월 값 채택)",
-            if (is.finite(.rr_med)) sprintf("%.2f", .rr_med) else "NA", length(.rr), .n_ni_x, 100 * .dep_cov,
+            .n_ni_x, 100 * .dep_cov,                                                                 # (2026-11-16 재무 캐시 이관) 옛 XLSX 형식 판별 출력 제거
             nrow(.ME_CAL), .n_no_me, 100 * .fund_cov, .cov_txt))
 if (.fund_cov <= 0) stop(sprintf("%s 회계 패널 커버리지 0 — Ticker 형식 또는 usable 규약 확인", .TAG))
 rm(.ME)

@@ -263,6 +263,7 @@ rm(.pxa, .nxp)
 # 4. 회계 원값 패널
 #    주 원천 = .cache/fundamental_xlsx.parquet (QuantiWise 분기 원값, 전 구간)
 #    보조     = .cache/fundamental_merged.parquet 의 Source="DART" 행 (사업연도)
+#    (2026-11-16 재무 캐시 이관) 위 두 원천은 퇴역 — 주 = 분기 캐시(fundamental_quarterly · 분기 단독) · 보조 = 연간 캐시(fundamental_annual · 회계연도) · fa_panel 경유
 #    ★1판은 merged 의 XLSX 행만 읽었는데, merged 는 (Ticker,Period,Item) 에서
 #      DART 를 우선해 2016+ 구간의 XLSX 분기행이 대부분 제거돼 있다 — 그래서 최근
 #      구간의 회계가 사실상 연간값 하나로 줄어든다. 원파일을 직접 읽어 닫는다.
@@ -271,9 +272,10 @@ rm(.pxa, .nxp)
 # =============================================================================
 .ROOT  <- Sys.getenv("QM_ROOT", Sys.getenv("CLAUDE_PROJECT_DIR", ""))
 .CACHE <- file.path(.ROOT, ".cache")
-.P_XLS <- file.path(.CACHE, "fundamental_xlsx.parquet")
-.P_MRG <- file.path(.CACHE, "fundamental_merged.parquet")
-if (!file.exists(.P_XLS)) stop(sprintf("%s 회계 패널 부재: %s", .TAG, .P_XLS))
+# (2026-11-16 재무 캐시 이관) 옛 fundamental_xlsx · fundamental_merged(Source="DART") 퇴역 → 재무 캐시 두 개를 fund_access.R::fa_panel 로 읽는다
+.FA <- new.env(parent = globalenv())
+assign("CACHE_DIR", .CACHE, envir = .FA)              # (2026-11-16 재무 캐시 이관) 이 엔진과 같은 캐시 디렉터리 고정
+sys.source(file.path(.ROOT, "02_Infrastructure", "factor_db", "fund_access.R"), envir = .FA)
 
 .rd_pq <- function(path, cols) {
   d <- tryCatch(as.data.table(read_parquet(path, col_select = cols)),
@@ -304,7 +306,8 @@ if (!file.exists(.P_XLS)) stop(sprintf("%s 회계 패널 부재: %s", .TAG, .P_X
 }
 
 # ---- 4a. XLSX 분기 원값 (단일분기 유량 전제 — 저장소 compute_ttm 규약) --------
-.qx <- .rd_pq(.P_XLS, c("Ticker", "Period_Date", "Factor_Date", "Item", "Value"))
+# (2026-11-16 재무 캐시 이관) 분기 캐시 basis="q", value="quarter"(흐름 = <항목>_Q 분기 단독 · 잔액 = 분기 말) · DepAmort = 옛 이름 별칭(→ DepAmortSGA)
+.qx <- .FA$fa_panel(basis = "q", items = .ITEMS, value = "quarter")[, .(Ticker, Period_Date, Factor_Date, Item, Value)]
 .qx <- .qx[Item %in% .ITEMS & is.finite(Value)]
 .qx[, Ticker := as.character(Ticker)]
 .qx[, PD  := as.Date(Period_Date)]
@@ -338,9 +341,9 @@ for (cc in .FLOWT) set(.wq, .bad, cc, NA_real_)
 
 # ---- 4b. DART 사업연도 원값 — 유량이 이미 1년치 ------------------------------
 .wa <- NULL
-if (file.exists(.P_MRG)) {
-  .mx <- .rd_pq(.P_MRG, c("Ticker", "Period_Date", "Factor_Date", "Item", "Value", "Source"))
-  if ("Source" %in% names(.mx)) .mx <- .mx[Source %in% "DART"] else .mx <- .mx[0L]
+{
+  # (2026-11-16 재무 캐시 이관) 옛 merged Source="DART"(사업연도) → 연간 캐시 basis="a"(회계연도 행 · 흐름 = 회계연도 합 · 잔액 = 연말 · 퀀티 단독 · 전 구간)
+  .mx <- .FA$fa_panel(basis = "a", items = .ITEMS)[, .(Ticker, Period_Date, Factor_Date, Item, Value)]
   .mx <- .mx[Item %in% .ITEMS & is.finite(Value)]
   if (nrow(.mx)) {
     .mx[, Ticker := as.character(Ticker)]

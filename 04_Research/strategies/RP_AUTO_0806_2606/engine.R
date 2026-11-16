@@ -81,9 +81,18 @@ if (!all(.REQ %in% names(RAWDATA)))
 .m_end   <- function(y, m) as.Date(sprintf("%d-%02d-01", y + as.integer(m == 12L), m %% 12L + 1L)) - 1L
 .q_of    <- function(y, m) y * 4L + m %/% 3L - 1L                 # 달 m 까지 종료된 가장 최근 분기
 .q_end   <- function(q) .m_end(q %/% 4L, 3L * (q %% 4L + 1L))
-.q_sched <- function(q) {                                         # parse_fundamental_xlsx.R:205 규약 재도출
+# (2026-11-16 재무 캐시 이관) 옛 규약(Q1~Q3 +45일 · Q4 익년 3/31)은 pit.md C4 현행보다 이르다 → 법정기한 + 버퍼(등록부 06_Registry/fundamental_source.json) 달력 근사로 교체.
+#   쓰임 = 최종 이익 열의 사이클 포함 여부(진단 · 열 선택)뿐 — 값 단위 PIT 는 캐시 Factor_Date(AVn)가 정한다.
+.FSRC <- local({
+  root <- Sys.getenv("QM_ROOT", Sys.getenv("CLAUDE_PROJECT_DIR", ""))
+  if (!nzchar(root) && exists("PROJECT_ROOT", inherits = TRUE)) root <- as.character(get("PROJECT_ROOT", inherits = TRUE))[1L]
+  if (!nzchar(root) && exists("CACHE_DIR", inherits = TRUE)) root <- dirname(as.character(get("CACHE_DIR", inherits = TRUE))[1L])
+  jsonlite::fromJSON(file.path(root, "06_Registry", "fundamental_source.json"))
+})
+.q_sched <- function(q) {                                         # 법정 제출기한(결산 분기 = annual · 그 밖 = interim) + deadline_buffer_days
   mo <- 3L * (q %% 4L + 1L)
-  fifelse(mo == 12L, as.Date(sprintf("%d-03-31", q %/% 4L + 1L)), .q_end(q) + 45L)
+  .q_end(q) + fifelse(mo == 12L, as.integer(.FSRC$legal_deadline_days$annual), as.integer(.FSRC$legal_deadline_days$interim)) +
+    as.integer(.FSRC$deadline_buffer_days)
 }
 
 # =============================================================================
@@ -167,16 +176,17 @@ cat(sprintf("[RP_AUTO_0806_2606] 월말 종가 패널 %d개월 (%s ~ %s) × %d�
 })
 if (!nzchar(.cache_dir) || !dir.exists(.cache_dir))
   stop("[RP_AUTO_0806_2606] 캐시 디렉터리를 찾지 못함 (CACHE_DIR / QM_ROOT / CLAUDE_PROJECT_DIR) — 이익 패널 접근 불가라 중단")
-.fx_path <- file.path(.cache_dir, "fundamental_xlsx.parquet")
-if (!file.exists(.fx_path))
-  stop(sprintf("[RP_AUTO_0806_2606] 분기 이익 패널 부재: %s — 논문 입력(이익 변화율)을 지킬 수 없어 중단", .fx_path))
-.fx <- as.data.table(arrow::read_parquet(.fx_path,
-                                         col_select = c("Ticker", "Item", "Value", "Period_Date", "Factor_Date")))
-.fx <- .fx[Item %in% c("PretaxIncome", "TaxExpense", "ISSD") & is.finite(Value)]
+# (2026-11-16 재무 캐시 이관) 옛 fundamental_xlsx(분기 단독) → 분기 캐시 fa_panel(basis="q", value="quarter") — 흐름 = <항목>_Q(분기 단독) · ISSD = 옛 이름 별칭(→ SharesCommonAdj · 분기 말 잔액)
+.FA <- new.env(parent = globalenv())
+assign("CACHE_DIR", .cache_dir, envir = .FA)            # (2026-11-16 재무 캐시 이관) fund_access 가 이 엔진과 같은 캐시 디렉터리를 읽게 고정
+sys.source(file.path(dirname(.cache_dir), "02_Infrastructure", "factor_db", "fund_access.R"), envir = .FA)
+.fx <- .FA$fa_panel(basis = "q", items = c("PretaxIncome", "TaxExpense", "ISSD"), value = "quarter")
+.fx <- .fx[is.finite(Value), .(Ticker, Item, Value, Period_Date, Factor_Date)]
 if (nrow(.fx) == 0L) stop("[RP_AUTO_0806_2606] 이익 패널에 PretaxIncome/TaxExpense/ISSD 0행")
 .fx[, Ticker := as.character(Ticker)]
 if (!inherits(.fx$Period_Date, "Date")) .fx[, Period_Date := as.Date(Period_Date, tz = "Asia/Seoul")]
 if (!inherits(.fx$Factor_Date, "Date")) .fx[, Factor_Date := as.Date(Factor_Date, tz = "Asia/Seoul")]
+.fx[, Factor_Date := max(Factor_Date), by = .(Ticker, Period_Date)]   # (2026-11-16 재무 캐시 이관) 한 분기 행의 항목별 가용일이 다르면 늦은 쪽(보수) — dcast 행 분열 방지
 .fw <- dcast(.fx, Ticker + Period_Date + Factor_Date ~ Item, value.var = "Value",
              fun.aggregate = function(x) x[1L])
 for (.cc in c("PretaxIncome", "TaxExpense", "ISSD")) if (!.cc %in% names(.fw)) .fw[, (.cc) := NA_real_]
@@ -234,7 +244,7 @@ rm(.fx, .fw, .EQ, .eidx); gc(verbose = FALSE)
 }
 
 # 논문 §3.2 '최종 이익 열은 그 사이클에서 가용 불가면 입력에서 통째로 제외' — 사이클 = 월간 시작점(월 %% 3).
-#   C4 가용일 규약(Q1~Q3 +45일 · Q4 익년 3/31)에서 파생: 달 m 의 월말에 직전 종료 분기 q0(m)의 이익이 규약상 가용한가.
+#   C4 가용일 규약(.q_sched — 2026-11-16 재무 캐시 이관: 법정기한 + 45일 · Q1~Q3 +90일 · Q4 +135일)에서 파생: 달 m 의 월말에 직전 종료 분기 q0(m)의 이익이 규약상 가용한가.
 #   사이클의 네 달 중 하나라도 가용하면 그 사이클은 열을 쓴다(가용하지 않은 달의 값은 행 단위 PIT 로 NA→0).
 .ref_y <- year(.me$MEnd[1L]) + 1L
 .U1_MONTH <- vapply(1:12, function(m) {

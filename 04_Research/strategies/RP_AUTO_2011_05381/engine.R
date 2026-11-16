@@ -79,12 +79,12 @@ if (!all(.REQ %in% names(RAWDATA)))
   cand <- c(if (exists("PROJECT_ROOT")) as.character(PROJECT_ROOT)[1] else "",
             Sys.getenv("QM_ROOT", ""), Sys.getenv("CLAUDE_PROJECT_DIR", ""))
   for (p in cand)
-    if (nzchar(p) && file.exists(file.path(p, ".cache", "fundamental_merged.parquet"))) return(p)
+    if (nzchar(p) && file.exists(file.path(p, ".cache", "fundamental_annual.parquet"))) return(p)   # (2026-11-16 재무 캐시 이관) 옛 fundamental_merged → 연간 캐시
   ""
 }
 .ROOT <- .PICK_ROOT()
-if (!nzchar(.ROOT)) stop(sprintf("%s .cache/fundamental_merged.parquet 을 못 찾음 — PROJECT_ROOT/QM_ROOT 확인", .TAG))
-.ACCT_PATH <- file.path(.ROOT, ".cache", "fundamental_merged.parquet")
+if (!nzchar(.ROOT)) stop(sprintf("%s .cache/fundamental_annual.parquet 을 못 찾음 — PROJECT_ROOT/QM_ROOT 확인", .TAG))
+.ACCT_PATH <- file.path(.ROOT, ".cache", "fundamental_annual.parquet")   # (2026-11-16 재무 캐시 이관) 회계연도 행 캐시(흐름 = 회계연도 합 · 잔액 = 연말)
 
 # =============================================================================
 # 1. 일간 패널 → 종목별 일간 특성(vol · rsi) · 월간 종가 패널 · 시장 월말 · 월말 당일 행
@@ -160,13 +160,19 @@ cat(sprintf("%s 일간 행 %d → 월간 패널 %d개월 (%s ~ %s) × %d종 · �
             .TAG, .n_rd, length(.MIs), .ym(min(.MIs)), .ym(max(.MIs)), length(.TK), nrow(.me), .ym(.MI_LAST)))
 
 # =============================================================================
-# 2. 회계 패널 → 회계연도 값 (DART 연간 2015~ + QuantiWise XLSX 분기 1998~ 병합 · 손익 항목의 시간 단위가 원천마다 다르다)
-#    손익 = DART 는 1년치 · XLSX 는 분기 개별값(4개 다 있어야 합산) · 상태 항목 = YYYY12 잔액(DART 우선)         ★changed(7)
+# 2. 회계 패널 → 회계연도 값 (2026-11-16 재무 캐시 이관: 연간 캐시 단일 원천 · 전 구간 회계연도 값 · 구판 = DART 연간 + XLSX 분기합 병합)
 # =============================================================================
-.ac <- as.data.table(read_parquet(.ACCT_PATH,
-  col_select = c("Ticker", "Period", "Factor_Date", "Item", "Value", "Source")))
+# (2026-11-16 재무 캐시 이관) 옛 병합 표(DART 연간 + XLSX 분기합 · Source 로 갈라 씀) → 연간 캐시 fa_panel(basis = "a") 전 구간 회계연도 값.
+#   이름 대응(FA_LEGACY_ALIAS): ShortTermBorr → ShortTermDebt · LongTermBorr → LongTermDebt · Dividends → DividendsPaid(현금흐름표 · 아래 abs) — 결과 Item 은 옛 이름 그대로.
+source(file.path(.ROOT, "02_Infrastructure", "factor_db", "fund_access.R"))
+.fa_old_env <- Sys.getenv("QVEST_FUND_A", NA_character_)
+Sys.setenv(QVEST_FUND_A = .ACCT_PATH)                                        # (2026-11-16 재무 캐시 이관) .ROOT 의 캐시로 고정
+.ac <- fa_panel(basis = "a", items = .ACCT_ITEMS)
+if (is.na(.fa_old_env)) Sys.unsetenv("QVEST_FUND_A") else Sys.setenv(QVEST_FUND_A = .fa_old_env)
+rm(.fa_old_env)
+.ac <- as.data.table(.ac)
 .ac[, Item := as.character(Item)]
-.ac[, Source := as.character(Source)]
+.ac[, Source := "annual_cache"]                                              # (2026-11-16 재무 캐시 이관) 원천 단일 — 아래 cat 용
 .ac[, Value := as.numeric(Value)]
 .ac <- .ac[Item %chin% .ACCT_ITEMS & is.finite(Value)]
 .ac[, Ticker := as.character(Ticker)]
@@ -179,28 +185,14 @@ rm(.ac_strip)
 if (max(.ov_raw, .ov_strip) == 0L)
   stop(sprintf("%s 회계 패널과 구성종목의 티커 교집합 0 — 표기 불일치", .TAG))
 if (!inherits(.ac$Factor_Date, "Date")) .ac[, Factor_Date := as.Date(Factor_Date)]
-.pc <- as.character(.ac$Period)
-.ac[, yv := as.integer(substr(.pc, 1L, 4L))]
-.ac[, mv := as.integer(substr(.pc, 5L, 6L))]
-rm(.pc)
-.ac <- .ac[is.finite(yv) & is.finite(mv) & !is.na(Factor_Date)]
-.ac[, isd := Source %chin% "DART"]
-.FLOWI  <- c("Revenue", "NetIncome", "PretaxIncome", "TaxExpense", "Dividends")
-.STOCKI <- c("TotalAssets", "TotalEquity", "ShortTermBorr", "LongTermBorr")
-.a1 <- .ac[isd == TRUE & mv == 12L & Item %chin% .FLOWI,
-           .(V = Value[1], FD = max(Factor_Date), pr = 1L), by = .(Ticker, Item, yv)]
-.a2 <- .ac[isd == FALSE & mv %in% c(3L, 6L, 9L, 12L) & Item %chin% .FLOWI,
-           .(V = sum(Value), nq = .N, FD = max(Factor_Date)), by = .(Ticker, Item, yv)]
-.a2 <- .a2[nq == 4L, .(Ticker, Item, yv, V, FD, pr = 2L)]
-.st <- .ac[mv == 12L & Item %chin% .STOCKI]
-.st[, pr := fifelse(isd, 1L, 2L)]
-setorder(.st, Ticker, Item, yv, pr)
-.st <- unique(.st, by = c("Ticker", "Item", "yv"))
-.FL <- rbind(.a1, .a2, .st[, .(Ticker, Item, yv, V = Value, FD = Factor_Date, pr)], use.names = TRUE)
-setorder(.FL, Ticker, Item, yv, pr)
-.FL <- unique(.FL, by = c("Ticker", "Item", "yv"))
+# (2026-11-16 재무 캐시 이관) 연간 캐시 = 회계연도 값 그대로(흐름 = 회계연도 합 · 잔액 = 연말) — 옛 DART/XLSX 갈래 · 분기 4개 합산 · Source 우선순위 제거.
+#   기수 yv = 회계연도 말의 연도(Period_Date). 같은 해 두 결산(결산월 변경)이면 늦은 결산만.
+.ac <- .ac[!is.na(Factor_Date) & !is.na(Period_Date)]
+.ac[, yv := as.integer(year(Period_Date))]
+setorder(.ac, Ticker, Item, yv, -Period_Date)
+.FL <- unique(.ac, by = c("Ticker", "Item", "yv"))[, .(Ticker, Item, yv, V = Value, FD = Factor_Date)]
 .n_ac_src <- .ac[, .N, by = Source]
-rm(.ac, .a1, .a2, .st); gc(verbose = FALSE)
+rm(.ac); gc(verbose = FALSE)
 .FY  <- dcast(.FL, Ticker + yv ~ Item, value.var = "V")
 .FAV <- .FL[, .(FD = max(FD)), by = .(Ticker, yv)]                           # 그 기수 값들이 모두 쓸 수 있게 된 날
 .FY  <- merge(.FY, .FAV, by = c("Ticker", "yv"))
