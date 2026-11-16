@@ -875,9 +875,17 @@ dr_stage_end; fi   # ── 단계 krf 끝 ──
 #           QVEST_FDB_DAILY_AUTOREBUILD=1 명시 시에만 실행 (기본 0 = stale WARN만).
 # ──────────────────────────────────────────────────────────────────────────────
 if dr_want fdb; then dr_stage_begin fdb   # ── 단계 fdb ──
+# ── 전체 재빌드 중 팩터 DB 쓰기 건너뛰기 (2026-11-16 도훈 '네, 막아 둬') ──────────────────────
+#   팩터 DB 전체 재빌드(run_factor_db_full_rebuild.sh — 월 파일을 제자리에서 차례로 다시 쓴다 · 약 11시간)나 그것을 부르는
+#   1회성 체인(qw_login_chain.sh --run · 재빌드 → 결합용 뷰 → FF)이 살아 있으면 [6a] 당월 빌드 · [6d] 백필 · [6e] 결합용 뷰 증분을
+#   건너뛴다 — 같은 월 파일에 두 프로세스가 쓰거나 반쯤 바뀐 DB 로 뷰를 짓지 않게. 재빌드가 당월까지 다시 짓고 체인이 뷰를 지으므로
+#   그날 밤 건너뛴 몫은 남지 않는다(백필은 다음 밤이 잇는다). 판정 = MSYS 프로세스 표의 명령줄.
+fdb_rebuild_busy() { ps -ef 2>/dev/null | grep -v grep | grep -q -E "run_factor_db_full_rebuild\.sh|qw_login_chain\.sh --run"; }
+FDB_REBUILD_BUSY=0; fdb_rebuild_busy && FDB_REBUILD_BUSY=1
+[ "$FDB_REBUILD_BUSY" = "1" ] && echo "[guard] 팩터 DB 전체 재빌드 진행 중 — [6a] · [6d] · [6e] 건너뜀(재빌드 · 체인이 당월 · 뷰를 짓는다)"
 echo "[6a/7] Factor DB update (monthly DB, current-month build)..."
 cd "$INFRA"
-run_r '
+[ "$FDB_REBUILD_BUSY" = "1" ] || run_r '
   source("config.R")
   source("factor_db/factor_db_builder.R")
   tryCatch({
@@ -965,7 +973,9 @@ echo "[6d/7] 신규 팩터 이력 백필 (예산제 scoped backfill)..."
 export QVEST_FDB_BACKFILL_BUDGET_MIN="${QVEST_FDB_BACKFILL_BUDGET_MIN:-60}"
 echo "[guard] QVEST_FDB_BACKFILL_BUDGET_MIN=$QVEST_FDB_BACKFILL_BUDGET_MIN (0=예산없음) · 정지=QVEST_FDB_NO_BACKFILL=1"
 cd "$BASE"
-if ! QM_ROOT="$BASE" Rscript "$BASE/02_Infrastructure/ops/rf_factor_backfill_tick.R"; then
+if [ "$FDB_REBUILD_BUSY" = "1" ]; then
+  echo "[6d] 전체 재빌드 진행 중 — 백필 건너뜀(다음 밤)"
+elif ! QM_ROOT="$BASE" Rscript "$BASE/02_Infrastructure/ops/rf_factor_backfill_tick.R"; then
   echo "[6d] 백필 tick 비정상 종료 — .cache/reinforce_auto_log.jsonl 참조(다음 밤이 이어받는다)"
 fi
 
@@ -998,7 +1008,9 @@ fi
 #   [6a] 당월 빌드 · [6d] 백필 · [6f] 등록부 동기화 뒤 — 바뀐 달 + 가장 최근 달 + 부호표 전부(등록부 방향 바뀜도 부호표가 흡수).
 #   첫 전체 빌드는 별도(--build --full)이며 그 전에는 건너뛴다(fc_meta.json 없음). 다른 빌드가 잠금을 쥐면 건너뛴다(rc 5).
 # ──────────────────────────────────────────────────────────────────────────────
-if [ -f "$BASE/.cache/factor_combinable/fc_meta.json" ]; then
+if [ "$FDB_REBUILD_BUSY" = "1" ]; then
+  echo "[6e/7] 결합용 팩터 뷰 — 전체 재빌드 진행 중 · 건너뜀(체인이 --full 로 짓는다)"
+elif [ -f "$BASE/.cache/factor_combinable/fc_meta.json" ]; then
   echo "[6e/7] 결합용 팩터 뷰 증분 갱신..."
   ( cd "$BASE" && QM_ROOT="$BASE" "$RSCRIPT" --no-save "$INFRA/factor_db/factor_combinable.R" --build ); _fc_rc=$?
   case "$_fc_rc" in
