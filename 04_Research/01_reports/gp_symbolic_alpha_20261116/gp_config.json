@@ -1,5 +1,5 @@
 {
-  "version": "gpa_v1",
+  "version": "gpa_v2",
   "frozen_at": "2026-11-16",
   "note": "모든 수치는 측정 전 고정. 근거 = README.md 각 절. 2023~ 성과로 이 파일의 어떤 값도 고르지 않는다(tau_D).",
   "data": {
@@ -11,13 +11,97 @@
     "rf_series": "KR_CD91",
     "history_buffer_start": "1998-01-01",
     "fitness_start": "2000-01-01",
-    "fund_items_ttm": ["NetIncomeParent", "OperatingProfit", "Revenue", "GrossProfit", "OperatingCF"],
-    "fund_items_bal": ["BookEquity", "TotalAssets", "TotalLiab"],
-    "fund_max_age_months": 15
+    "fund_max_age_months": 15,
+    "rawdata_log": ".cache/rawdata_log.parquet",
+    "fund_ratios": {
+      "ep": {
+        "num": [
+          "NetIncomeParent"
+        ],
+        "den": "cap"
+      },
+      "bm": {
+        "num": [
+          "BookEquity"
+        ],
+        "den": "cap"
+      },
+      "sp": {
+        "num": [
+          "Revenue"
+        ],
+        "den": "cap"
+      },
+      "cfp": {
+        "num": [
+          "OperatingCF"
+        ],
+        "den": "cap"
+      },
+      "opp": {
+        "num": [
+          "OperatingProfit"
+        ],
+        "den": "cap"
+      },
+      "levm": {
+        "num": [
+          "TotalLiab"
+        ],
+        "den": "cap"
+      },
+      "gpa": {
+        "num": [
+          "GrossProfit"
+        ],
+        "den": "TotalAssets"
+      },
+      "opa": {
+        "num": [
+          "OperatingProfit"
+        ],
+        "den": "TotalAssets"
+      },
+      "roa": {
+        "num": [
+          "NetIncomeParent"
+        ],
+        "den": "TotalAssets"
+      },
+      "cfoa": {
+        "num": [
+          "OperatingCF"
+        ],
+        "den": "TotalAssets"
+      },
+      "acc": {
+        "num": [
+          "NetIncomeParent",
+          "OperatingCF"
+        ],
+        "den": "TotalAssets"
+      },
+      "leva": {
+        "num": [
+          "TotalLiab"
+        ],
+        "den": "TotalAssets"
+      },
+      "ag": {
+        "num": [
+          "AssetGrowth"
+        ],
+        "den": "none"
+      }
+    }
   },
   "universe": {
-    "excluded_flags": ["AdminStock", "TradingHalt", "UnfaithfulDisc"],
-    "liq_min_krw": 2e8,
+    "excluded_flags": [
+      "AdminStock",
+      "TradingHalt",
+      "UnfaithfulDisc"
+    ],
+    "liq_min_krw": 200000000.0,
     "adv_window": 20,
     "price_floor_krw": 1000,
     "lag_days": 1
@@ -31,20 +115,92 @@
     "rebalance": "monthly_last_trading_day"
   },
   "grammar": {
-    "terminals_price": ["open", "high", "low", "close", "volume", "amount", "ret", "cap"],
-    "windows": [5, 10, 20, 60, 120, 250],
-    "unary": ["neg", "abs", "slog", "ssqrt", "cs_rank", "cs_zscore"],
-    "binary": ["add", "sub", "mul", "div"],
-    "ts_unary": ["ts_mean", "ts_std", "ts_rank", "ts_min", "ts_max", "ts_delta", "ts_delay", "ts_decay_linear"],
-    "ts_binary": ["ts_corr", "ts_cov"],
+    "windows": [
+      5,
+      10,
+      20,
+      60,
+      120,
+      250
+    ],
+    "unary": [
+      "neg",
+      "abs",
+      "slog",
+      "ssqrt",
+      "cs_rank",
+      "cs_zscore"
+    ],
+    "binary": [
+      "add",
+      "sub",
+      "mul",
+      "div"
+    ],
+    "ts_unary": [
+      "ts_mean",
+      "ts_std",
+      "ts_rank",
+      "ts_min",
+      "ts_max",
+      "ts_delta",
+      "ts_delay",
+      "ts_decay_linear"
+    ],
+    "ts_binary": [
+      "ts_corr",
+      "ts_cov"
+    ],
     "max_depth": 5,
     "max_nodes": 20,
-    "init_depth": [1, 3],
+    "init_depth": [
+      1,
+      3
+    ],
     "ts_min_count_frac": 0.75,
     "div_eps": 1e-10,
-    "winsor_q": [0.01, 0.99],
-    "winsor_after": ["mul", "div", "ts_delta"],
-    "winsor_inputs": ["ret", "fund_*"]
+    "winsor_q": [
+      0.01,
+      0.99
+    ],
+    "winsor_after": [
+      "mul",
+      "div",
+      "ts_delta"
+    ],
+    "winsor_inputs": [
+      "LogRet",
+      "LogHL",
+      "LogCO",
+      "LogGap",
+      "fr_*"
+    ],
+    "terminals_log": [
+      "LogRet",
+      "LogBMRet",
+      "LogSize",
+      "LogFloatCap",
+      "LogAmount",
+      "LogHL",
+      "LogCO",
+      "LogGap"
+    ],
+    "excluded_terminals": {
+      "open/high/low/close": "수정주가 수준 — 그 뒤 분할 · 증자 수정 계수(미래)",
+      "LogVol": "수정 거래량 수준 — 같은 문제(거래대금 LogAmount 는 상쇄)",
+      "fund 원 단위 수준 · 주당 값": "크기 대리 · 주당 = 수정 주식 수 문제"
+    },
+    "degenerate": {
+      "slog_on_log_terminal": "all",
+      "ssqrt_on_log_level": [
+        "LogSize",
+        "LogFloatCap",
+        "LogAmount"
+      ],
+      "row_constant_terminal": [
+        "LogBMRet"
+      ]
+    }
   },
   "fitness": {
     "objective": "alpha_ir",
@@ -54,7 +210,14 @@
     "std_factor_corr_penalty": 1.0,
     "coverage_min": 0.6,
     "invalid_fitness": -10.0,
-    "diag_only": ["excess_ir", "beta", "rank_ic_mean", "rank_ic_t", "turnover", "max_single_contrib"]
+    "diag_only": [
+      "excess_ir",
+      "beta",
+      "rank_ic_mean",
+      "rank_ic_t",
+      "turnover",
+      "max_single_contrib"
+    ]
   },
   "selection": {
     "rule": "val_alpha_ir_rank_greedy_decorrelated",
@@ -73,8 +236,13 @@
     "first_evolution_year_end": 2007,
     "last_evolution_year_end": 2025,
     "variants": {
-      "EXP": {"window": "expanding"},
-      "ROLL8": {"window": "rolling", "years": 8}
+      "EXP": {
+        "window": "expanding"
+      },
+      "ROLL8": {
+        "window": "rolling",
+        "years": 8
+      }
     },
     "inherit_frac": 0.2
   },
@@ -90,8 +258,9 @@
   "resources": {
     "max_workers": 4,
     "max_rss_gb": 4.0,
-    "subtree_cache_mb": 900,
-    "dtype": "float32"
+    "subtree_cache_mb": 600,
+    "dtype": "float32",
+    "store": "memmap_npy"
   },
   "smoke": {
     "history_buffer_start": "2003-01-01",

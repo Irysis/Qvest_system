@@ -71,7 +71,7 @@
         ".cache/RAWDATA.parquet"
       ],
       "tier": 2,
-      "_note": "2026-11-16 도훈 '로그 캐시 파일 하나 더 · 다른 전략에도' — 로그 수익률 · 로그 시총 · 로그 거래량/대금 · 장중 비율(가격 수준 로그 없음 · PIT)"
+      "_note": "2026-11-16 도훈 '로그 캐시 파일 하나 더 · 다른 전략에도' — 로그 수익률 · 로그 시총 · 로그 거래대금 · 장중 비율(가격 · 거래량 수준 로그 없음 · 수정 계수 PIT)"
     },
     {
       "path": ".cache/benchmark.parquet",
@@ -215,7 +215,7 @@
         ".cache/ktri_indices.parquet"
       ],
       "tier": 1
-    },
+    },
     {
       "path": ".cache/fundamental_merged.parquet",
       "producer": "02_Infrastructure/data/build_fundamental_derived.R",
@@ -223,7 +223,7 @@
       "schedule": "monthly",
       "date_col": null,
       "max_lag_days": 35,
-      "depends_on": [
+      "depends_on": [
         ".cache/fundamental_xlsx.parquet"
       ],
       "tier": 2,
@@ -393,7 +393,7 @@
       ],
       "tier": 3,
       "_note": "2026-07-17 orphan 등재. AX-003(value) 부활신호 substrate — morning_briefing.sh 배선으로 매일 재산출. 2026-07-26 P2-03: 구 노트('월간 시계열이므로 date_col 대신 mtime')는 date_semantics=period_end 도입으로 해소 — 월말 라벨이 today 를 앞서는 것만 clamp 되고 **정체는 그대로 lag 으로 잡힌다**. 실측 2026-07-26: max Date 2026-07-31 → raw lag −5 → clamp 0 → FRESH(정상). 2026-05-31 에 얼면 lag 56 > 7 → STALE. 즉 mtime 은 '재산출이 돌았나', 이 축은 '결과가 이번 달까지 왔나'로 서로 다른 실패를 잡는다."
-    },
+    },
     {
       "path": ".cache/indices.parquet",
       "producer": "02_Infrastructure/data/build_index_cache.py",
@@ -477,7 +477,7 @@
       ],
       "tier": 2,
       "_note": "2026-11-16 재무 연간 캐시(퀀티 단독 · 회계연도 · 파생지표 전부) — 옛 fundamental_xlsx.parquet 를 대신한다"
-    },
+    },
     {
       "path": ".cache/ml_momentum_pred.parquet",
       "producer": "02_Infrastructure/ml_pipeline/ml_momentum_ensemble.py",

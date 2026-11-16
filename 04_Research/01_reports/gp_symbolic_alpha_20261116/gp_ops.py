@@ -1,4 +1,4 @@
-"""gp_ops.py — 연산자 집합 · 수식 정규화 · 평가기 (gpa_v1 · 2026-11-16)
+"""gp_ops.py — 연산자 집합 · 수식 정규화 · 평가기 (gpa_v2 · 2026-11-16)
 
 수식 표현 = 중첩 튜플: 단말 = 문자열(필드 이름) · 창 = int · 노드 = (연산자, 자식...).
   예) ("ts_corr", ("cs_rank","volume"), "close", 10)  ==  ts_corr(cs_rank(volume), close, 10)
@@ -34,7 +34,8 @@ COMMUTATIVE = {"add", "mul", "ts_corr", "ts_cov"}
 ROOT_MONOTONE = {"cs_rank", "cs_zscore", "slog", "ssqrt"}
 ODD = {"slog", "ssqrt"}  # f(−x) = −f(x)
 
-_CFG = {"min_frac": 0.75, "eps": 1e-10, "q": (0.01, 0.99), "winsor_after": {"mul", "div", "ts_delta"}}
+_CFG = {"min_frac": 0.75, "eps": 1e-10, "q": (0.01, 0.99), "winsor_after": {"mul", "div", "ts_delta"},
+        "log_terms": set(), "log_levels": {"LogSize", "LogFloatCap", "LogAmount"}, "row_const": {"LogBMRet"}}
 
 
 def configure(grammar: dict) -> None:
@@ -42,6 +43,10 @@ def configure(grammar: dict) -> None:
     _CFG["eps"] = float(grammar["div_eps"])
     _CFG["q"] = tuple(grammar["winsor_q"])
     _CFG["winsor_after"] = set(grammar["winsor_after"])
+    _CFG["log_terms"] = set(grammar.get("terminals_log", []))
+    dg = grammar.get("degenerate", {})
+    _CFG["log_levels"] = set(dg.get("ssqrt_on_log_level", _CFG["log_levels"]))
+    _CFG["row_const"] = set(dg.get("row_constant_terminal", _CFG["row_const"]))
 
 
 def _mc(d: int) -> int:
@@ -162,7 +167,26 @@ def op_ts_corr(x, y, d):
     return np.clip(r, -1, 1).astype(F32)
 
 
-OPS = {k: globals()["op_" + k] for k in UNARY + BINARY + TS_UNARY + TS_BINARY}
+COL_BLOCK = 1024   # 시계열 연산은 종목(열)마다 독립 → 열 묶음으로 나눠 float64 임시 배열의 메모리 정점을 줄인다(값은 같다)
+
+
+def _colchunk(fn, n_series):
+    def run(*args):
+        xs, rest = args[:n_series], args[n_series:]
+        N = xs[0].shape[1]
+        if N <= COL_BLOCK:
+            return np.asarray(fn(*xs, *rest), dtype=F32)
+        out = np.empty(xs[0].shape, dtype=F32)
+        for j in range(0, N, COL_BLOCK):
+            out[:, j:j + COL_BLOCK] = fn(*[np.asarray(x[:, j:j + COL_BLOCK]) for x in xs], *rest)
+        return out
+    run.__name__ = fn.__name__
+    return run
+
+
+OPS = {k: globals()["op_" + k] for k in UNARY + BINARY}
+OPS.update({k: _colchunk(globals()["op_" + k], 1) for k in TS_UNARY})
+OPS.update({k: _colchunk(globals()["op_" + k], 2) for k in TS_BINARY})
 ARITY = {**{k: 1 for k in UNARY}, **{k: 2 for k in BINARY}, **{k: 2 for k in TS_UNARY}, **{k: 3 for k in TS_BINARY}}
 
 
@@ -197,6 +221,15 @@ def canon(e, root: bool = True):
         # 엄격 증가 변환 아래의 순위 · 최솟값 위치는 같다: rank(slog x) = rank(x) · ts_rank(ssqrt x, d) = ts_rank(x, d)
         if op in ("ts_rank", "cs_rank"):
             return canon((op, ch[0][1], *ch[1:]), root)
+    # 로그 단말 위 이중 변환(gpa_v2 · README §2): slog(Log*) = 로그의 로그 · 수익률형은 log1p|x| ≈ |x|(작은 x) → 거의 항등
+    #   ssqrt(로그 수준 LogSize · LogFloatCap · LogAmount) = 좁은 범위(≈ 20~35)에서 거의 선형 → 둘 다 무효(시행으로 세지 않음)
+    if op == "slog" and not isinstance(ch[0], tuple) and ch[0] in _CFG["log_terms"]:
+        raise Degenerate("slog(log terminal)")
+    if op == "ssqrt" and not isinstance(ch[0], tuple) and ch[0] in _CFG["log_levels"]:
+        raise Degenerate("ssqrt(log level)")
+    # 날마다 모든 종목이 같은 값인 단말(LogBMRet)에 단면 연산 = 상수
+    if op in ("cs_rank", "cs_zscore") and _terms(ch[0]) <= _CFG["row_const"]:
+        raise Degenerate("cs op on row-constant")
     if op in ("sub", "div") and to_str(ch[0]) == to_str(ch[1]):
         raise Degenerate(op + "(x,x)")
     if op in ("ts_corr", "ts_cov") and to_str(ch[0]) == to_str(ch[1]):
@@ -216,7 +249,18 @@ def canon(e, root: bool = True):
             out = out[1][1]
         if not isinstance(out, tuple) and isinstance(out, int):
             raise Degenerate("window-only")
+        if _terms(out) <= _CFG["row_const"]:
+            raise Degenerate("row-constant signal")   # 단면 순위가 전부 동률 — 신호가 아니다
     return out
+
+
+def _terms(e) -> set:
+    if isinstance(e, tuple):
+        out = set()
+        for c in e[1:]:
+            out |= _terms(c)
+        return out
+    return set() if isinstance(e, int) else {e}
 
 
 def h(e) -> str:
@@ -240,7 +284,7 @@ def skeleton(e) -> str:
         return e[0] + "(" + ",".join(skeleton(c) for c in e[1:]) + ")"
     if isinstance(e, int):
         return "W"
-    return "F" if str(e).startswith("fund_") else "P"
+    return "F" if str(e).startswith("fr_") else "P"
 
 
 # ---------------------------------------------------------------- 평가기(부분식 캐시)

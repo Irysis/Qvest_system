@@ -39,7 +39,7 @@ def build_pset(cfg):
         ps.addPrimitive(lambda *a: None, [P, W], P, name=k)
     for k in G["ts_binary"]:
         ps.addPrimitive(lambda *a: None, [P, P, W], P, name=k)
-    terms = list(G["terminals_price"]) + ["fund_" + i for i in D["fund_items_ttm"] + D["fund_items_bal"]]
+    terms = list(G["terminals_log"]) + ["fr_" + k for k in D["fund_ratios"]]
     for t in terms:
         ps.addTerminal(t, P, name=t)
     for w in G["windows"]:
@@ -76,6 +76,25 @@ def gen_grow(pset, min_, max_, type_=None):
 
 def gen_half(pset, min_, max_, type_=None):
     return (gen_grow if random.random() < 0.5 else gen_full)(pset, min_, max_, type_)
+
+
+def cx_one_point(ind1, ind2):
+    """DEAP gp.cxOnePoint 와 같되 공통 형 집합을 이름순 목록으로 — 원판은 set(형 클래스)에서 random.choice 라
+    프로세스마다(해시 씨앗 · 클래스 주소) 결과가 달라진다(재현 실패 실측: 같은 씨앗 133 vs 140 고유 수식)."""
+    if len(ind1) < 2 or len(ind2) < 2:
+        return ind1, ind2
+    t1, t2 = {}, {}
+    for i, n in enumerate(ind1[1:], 1):
+        t1.setdefault(n.ret, []).append(i)
+    for i, n in enumerate(ind2[1:], 1):
+        t2.setdefault(n.ret, []).append(i)
+    common = sorted(set(t1) & set(t2), key=lambda t: t.__name__)
+    if common:
+        ty = random.choice(common)
+        i1, i2 = random.choice(t1[ty]), random.choice(t2[ty])
+        s1, s2 = ind1.searchSubtree(i1), ind2.searchSubtree(i2)
+        ind1[s1], ind2[s2] = ind2[s2], ind1[s1]
+    return ind1, ind2
 
 
 def to_tuple(ind):
@@ -128,6 +147,8 @@ class Evolution:
         self.memo = {}           # 해시 → (적합도, 레코드)
         self.signals = {}        # 해시 → 월말 신호(M,N) — 선택 단계 상관 계산용(상위만 남김)
         self.n_seen = 0
+        self.n_degenerate = 0
+        self.n_over_limit = 0
         G = cfg["grammar"]
         self.max_depth, self.max_nodes = G["max_depth"], G["max_nodes"]
         tb = base.Toolbox()
@@ -135,7 +156,7 @@ class Evolution:
         tb.register("individual", tools.initIterate, creator.Individual, tb.expr)
         tb.register("population", tools.initRepeat, list, tb.individual)
         tb.register("select", tools.selTournament, tournsize=evo_cfg["tournament"])
-        tb.register("mate", gp.cxOnePoint)
+        tb.register("mate", cx_one_point)
         tb.register("expr_mut", gen_full, min_=0, max_=2)
         tb.register("mut_sub", gp.mutUniform, expr=tb.expr_mut, pset=self.pset)
         tb.register("mut_node", gp.mutNodeReplacement, pset=self.pset)
@@ -152,8 +173,10 @@ class Evolution:
         try:
             c = O.canon(raw)
         except O.Degenerate as ex:
+            self.n_degenerate += 1          # 퇴화 수식 = 시행 아님(원장 행 없음 · 세대 요약에 개수만)
             return F["invalid_fitness"], None
         if not self._limits_ok(raw):
+            self.n_over_limit += 1
             return F["invalid_fitness"], None
         hh = O.h(c)
         if hh in self.memo:
@@ -235,6 +258,7 @@ class Evolution:
         fits = [i.fitness.values[0] for i in pop]
         rec = {"type": "gen_summary", **self.tag, "gen": g, "pop": len(pop), "n_new_unique": n_new,
                "n_unique_total": len(self.memo), "n_seen_total": self.n_seen,
+               "n_degenerate_total": self.n_degenerate, "n_over_limit_total": self.n_over_limit,
                "fit_max": float(np.max(fits)), "fit_median": float(np.median(fits)),
                "cache_mb": round(self.ev.cache_bytes / 2**20), "elapsed_s": round(time.perf_counter() - t0, 1)}
         self.led.write(json.dumps(clean(rec), ensure_ascii=False) + "\n")

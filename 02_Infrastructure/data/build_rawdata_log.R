@@ -9,12 +9,12 @@
 #   LogBMRet   = log1p(BM_Ret)                   벤치 일 로그 수익률
 #   LogSize    = log(Size)                       로그 시가총액(원 · Size ≤ 0 → NA)
 #   LogFloatCap= log(Size × Float / 100)         로그 유동 시가총액(Float = 유동비율 % · 없으면 NA)
-#   LogVol     = log1p(Vol)                      로그 거래량(수정 거래량 · 0 = 거래 없음 → 0)
 #   LogAmount  = log1p(Close × Vol)              로그 거래대금(수정 종가 × 수정 거래량 = 실제 대금 — 수정 계수 상쇄)
 #   LogHL      = log(High / Low)                 장중 범위
 #   LogCO      = log(Close / Open)               시가 대비 종가
 #   LogGap     = log(Open / 전 거래일 Close)       갭(같은 종목 직전 행 · 첫 행 NA)
-# ★넣지 않는 것: 로그 주가 수준 log(Open/High/Low/Close) — 수정주가 수준에는 그 뒤 분할 · 증자의 수정 계수가 거꾸로 들어 있다
+# ★넣지 않는 것: 로그 거래량 log(Vol) — 수정 거래량 수준도 나중 분할 비율이 과거에 곱해져 있다(GP 설계 점검 11-16 적발 · 거래 활동은 LogAmount)
+#   · 로그 주가 수준 log(Open/High/Low/Close) — 수정주가 수준에는 그 뒤 분할 · 증자의 수정 계수가 거꾸로 들어 있다
 #   (측정 축 동전주 바닥과 같은 PIT 경계 · pit.md). 수준이 필요하면 원 RAWDATA 를 쓰고 경계를 기록한다.
 # 위생 열(AdminStock · TradingHalt · UnfaithfulDisc · K200 · KQ150)은 싣지 않는다 — 소비자가 RAWDATA 와 Date · Ticker 로 붙인다.
 # 사용: Rscript build_rawdata_log.R [--root <QM_ROOT>] [--out <경로>]
@@ -37,7 +37,6 @@ L <- R[, .(Date, Ticker,
            LogBMRet = fifelse(is.finite(BM_Ret) & BM_Ret > -1, log1p(BM_Ret), NA_real_),
            LogSize = log(pos(Size)),
            LogFloatCap = log(pos(Size * Float / 100)),
-           LogVol = fifelse(is.finite(Vol) & Vol >= 0, log1p(Vol), NA_real_),
            LogAmount = fifelse(is.finite(Vol) & Vol >= 0 & is.finite(Close) & Close > 0, log1p(Close * Vol), NA_real_),
            LogHL = log(pos(High) / pos(Low)),
            LogCO = log(pos(Close) / pos(Open)),

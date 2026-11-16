@@ -24,7 +24,7 @@ import psutil
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import gp_ops as O                                     # noqa: E402
-from gp_data import ROOT, build_panel, load_cfg         # noqa: E402
+from gp_data import ROOT, build_panel, build_panel_subprocess, load_cfg   # noqa: E402
 from gp_engine import Evolution, clean                  # noqa: E402
 from gp_fitness import month_sets, spearman_rows        # noqa: E402
 
@@ -33,6 +33,11 @@ OUT_CACHE = os.path.join(ROOT, ".cache", "gp_alpha_factors")
 
 def rss_gb():
     return psutil.Process().memory_info().rss / 2**30
+
+
+def priv_gb():
+    mi = psutil.Process().memory_info()
+    return getattr(mi, "private", mi.rss) / 2**30
 
 
 def pick_smoke_tickers(cfg):
@@ -104,7 +109,7 @@ def describe(e) -> str:
             if op in U:
                 return f"{U[op]}({r(x[1])})"
             return f"({r(x[1])} {B[op]} {r(x[2])})"
-        return str(x).replace("fund_", "재무:")
+        return str(x).replace("fr_", "재무비율:")
     return r(e)
 
 
@@ -188,7 +193,7 @@ def walk_forward(cfg, full, variant: str, vcfg: dict, evo_cfg: dict, wf: dict, r
                                 "describe": describe(parse(r["expr"])), "std_corr_max": r["std_corr_max"]} for r in chosen]}
             sf.write(json.dumps(clean(srec), ensure_ascii=False) + "\n"); sf.flush()
             log(f"[{variant} Y={Y}] 고유 {len(evo.memo)} · 본 개체 {evo.n_seen} · 후보 {n_cand} · 선정 {len(chosen)} · "
-                f"{t_evo:.0f}s · RSS {rss_gb():.2f}GB")
+                f"{t_evo:.0f}s · RSS {rss_gb():.2f}GB · 사유 {priv_gb():.2f}GB")
             # 다음 해 초기 개체(이어 받기) = 선정 수식 + 명예의 전당(과거 선택물 — PIT 안전)
             inherited = [parse(r["expr"]) for r in chosen] + [_t(h_) for h_ in hof]
             inherited = [e for e in inherited if isinstance(e, tuple)]
@@ -241,7 +246,7 @@ def main():
     t0 = time.perf_counter()
     tick, pick_day = pick_smoke_tickers(cfg)
     log(f"[smoke] 종목 {len(tick)} (pick {pick_day} 위생 멤버 무작위) · RSS {rss_gb():.2f}GB")
-    full = build_panel(cfg, S["history_buffer_start"], S["data_end"], tickers=tick)
+    full = build_panel_subprocess(None, S["history_buffer_start"], S["data_end"], tick, os.path.join(run_dir, "panel"))
     log(f"[smoke] 패널 적재 {time.perf_counter()-t0:.0f}s · RSS {rss_gb():.2f}GB")
     evo_cfg = dict(cfg["evolution"]); evo_cfg.update(population=S["population"], generations=S["generations"],
                                                     hall_of_fame=S["hall_of_fame"])
@@ -259,10 +264,17 @@ def main():
         summary["variants"][v] = {"seconds": round(time.perf_counter() - tv, 1), "stability": stability(run_dir, v),
                                   "factor_files": sorted({f for f in os.listdir(run_dir) if f.startswith(f"GPA_{v}")})}
     summary["total_seconds"] = round(time.perf_counter() - t0, 1)
-    summary["peak_rss_gb"] = round(psutil.Process().memory_info().peak_wset / 2**30, 2) if hasattr(psutil.Process().memory_info(), "peak_wset") else None
+    mi = psutil.Process().memory_info()
+    summary["peak_rss_gb"] = round(getattr(mi, "peak_wset", mi.rss) / 2**30, 2)          # 작업 집합 최대(memmap 페이지 포함)
+    summary["private_gb_end"] = round(getattr(mi, "private", mi.rss) / 2**30, 2)       # 사유 메모리(memmap 제외)
+    summary["peak_private_gb"] = round(getattr(mi, "peak_pagefile", mi.rss) / 2**30, 2)
     with open(os.path.join(run_dir, "summary.json"), "w", encoding="utf-8") as f:
         json.dump(clean(summary), f, ensure_ascii=False, indent=1)
     log(json.dumps(clean(summary), ensure_ascii=False))
+    del full
+    import gc, shutil
+    gc.collect()
+    shutil.rmtree(os.path.join(run_dir, "panel"), ignore_errors=True)   # 패널 사본(.npy) — 실행 뒤 지운다(재현 = 원천에서 다시 적재)
 
 
 if __name__ == "__main__":
