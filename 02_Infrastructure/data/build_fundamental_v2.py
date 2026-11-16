@@ -1,4 +1,7 @@
-"""build_fundamental_v2.py — 퀀티 메인 · DART 정정 검사 · 실제 공시일 → 재무 v2 분기 표.
+"""build_fundamental_v2.py — 퀀티 단독 · 실제 공시일 → 재무 v2 분기 표.
+
+★(2026-11-16 도훈 FUNDAMENTAL-QW-ONLY-NO-DART-20261116 = B '퀀티로만 바꿔주고, DART API 관련 데이터들은 완전히 삭제') 아래 '왜' 의
+  DART 정정 검사 · DART 접수일 · DART 대조 표는 삭제됐다(사료). Check = qw_only · Avail_Basis = qw_report | rule.
 
 왜(2026-11-08 도훈 결정 '위 방식대로 가자' · 04_Research/01_reports/quantiwise_data_expansion_20261106/fundamentals_v2/README.md §6):
   퀀티 재무 값은 정정 뒤 값으로 덮여 있다(정정 기업-연도는 다음 해 보고서로 알게 되는 숫자). DART 연간 원장은 그해
@@ -152,14 +155,12 @@ def build(a) -> int:
     root = Path(a.root)
     v2 = Path(a.v2_dir) if a.v2_dir else root / ".cache/qw_fund_v2"
     out = Path(a.out_dir) if a.out_dir else root / ".cache/fundamental_v2"
-    dart_p = Path(a.dart) if a.dart else root / ".cache/fundamental_dart.parquet"
-    raw_p = Path(a.dart_raw) if a.dart_raw else root / ".cache/dart/dart_raw_financials.parquet"
     cal_p = Path(a.rawdata) if a.rawdata else root / ".cache/RAWDATA.parquet"
     lag = avail_lag_months(root, a.lag_months)
     dl_ann, dl_int, buf = avail_deadline_rule(root)
     print(f"[fund-v2-build] 쓸 수 있는 첫날 = max(법정기한(사업보고서 {dl_ann}일 · 분기 · 반기 {dl_int}일 · 휴일이면 다음 거래일) + {buf}일 뒤 첫 거래일, "
           f"공개일 + {lag}개월 뒤 첫 거래일) · FUNDAMENTAL-AVAIL-DEADLINE45-20261116")
-    need = [v2 / f"{d}.parquet" for d in NUM_DBS + ["FundV2_META"]] + [v2 / "fiscal_month.parquet", dart_p, raw_p, cal_p]
+    need = [v2 / f"{d}.parquet" for d in NUM_DBS + ["FundV2_META"]] + [v2 / "fiscal_month.parquet", cal_p]
     miss = [str(p) for p in need if not p.exists()]
     if miss:
         print("[fund-v2-build] 입력 없음: " + " | ".join(miss))
@@ -201,25 +202,11 @@ def build(a) -> int:
     # 공시일이 분기말 이전이면(자료 오류) 쓰지 않는다
     bad = keys["QW_Date"].notna() & (keys["QW_Date"] <= keys["Period_Date"])
     keys.loc[bad, "QW_Date"] = pd.NaT
-    raw = pq.read_table(raw_p, columns=["Ticker", "bsns_year", "rcept_no"]).to_pandas().dropna()
-    raw = raw[raw["rcept_no"].astype(str).str.match(r"\d{8}")]
-    raw["DART_Date"] = pd.to_datetime(raw["rcept_no"].astype(str).str[:8], format="%Y%m%d", errors="coerce")
-    raw = raw.groupby(["Ticker", "bsns_year"], as_index=False)["DART_Date"].max()
-    raw["Period"] = (raw["bsns_year"] * 100 + 12).astype(np.int32)
-    # DART 사업연도 ↔ 기간 대응: 접수일이 그 회계연도 말 이전이면 같은 기간의 보고서가 아니다(결산월 변경 등 ·
-    #   11-09 실측 A000760 'FY2015' 접수 2015-06-29). 날짜에도 대조에도 쓰지 않는다.
-    raw = raw[raw["DART_Date"] > pd.to_datetime(raw["bsns_year"].astype(str) + "-12-31")]
-    keys = keys.merge(raw[["Ticker", "Period", "DART_Date"]], on=["Ticker", "Period"], how="left")
-    dec = keys["FiscalMonth"] == 12
-    keys.loc[~dec, "DART_Date"] = pd.NaT  # 12월 결산만 DART 연도와 대응시킨다
+    # (11-16 도훈 FUNDAMENTAL-QW-ONLY-NO-DART-20261116 = B) 공개일 = 퀀티 공시일만(DART 접수일 바닥 삭제) · 없으면 고정 규칙
     qd = keys["QW_Date"].to_numpy("datetime64[D]")
     rd = keys["Rule_Date"].to_numpy("datetime64[D]")
-    dd = keys["DART_Date"].to_numpy("datetime64[D]")
     base = np.where(np.isnat(qd), rd, qd)
     basis = np.where(np.isnat(qd), "rule", "qw_report").astype(object)
-    later = ~np.isnat(dd) & (dd > base)
-    base = np.where(later, dd, base)
-    basis[later] = "dart_rcept"
     keys["Avail_Date"] = base
     keys["Avail_Basis"] = basis
     # 침묵 실패 방지: 공시일 해석이 통째로 깨지면 모든 행이 조용히 고정 규칙으로 간다(11-09 실측 qw_report 82%)
@@ -227,52 +214,9 @@ def build(a) -> int:
     if share_qw < 0.5:
         print(f"[fund-v2-build] ⚠ 공시일 근거 비율 {share_qw:.1%} — ReportDate(M123955) 해석 확인 필요(고정 규칙으로 대체된 행이 과반)")
 
-    # ---- 3. DART 정정 검사(12월 결산 · 2015~ · 연간) --------------------------------------------------
-    dec_t = set(fm.loc[fm["FiscalMonth"] == 12, "Ticker"])
-    st = rows[rows["Item"].isin(list(CHECK_STOCK)) & (rows["Period"] % 100 == 12) & (rows["Period"] // 100 >= 2015)]
-    st = st.assign(FY=st["Period"] // 100)[["Ticker", "FY", "Item", "Value"]]
-    fl = rows[rows["Item"].isin(list(CHECK_FLOW)) & (rows["Period"] // 100 >= 2015)]
-    fl = fl.assign(FY=fl["Period"] // 100).groupby(["Ticker", "Item", "FY"], observed=True)["Value"].agg(["sum", "count"]).reset_index()
-    fl = fl[fl["count"] == 4].rename(columns={"sum": "Value"})[["Ticker", "FY", "Item", "Value"]]
-    qa = pd.concat([st, fl], ignore_index=True)
-    qa["Ticker"] = qa["Ticker"].astype(str)
-    qa["Item"] = qa["Item"].astype(str)
-    qa = qa[qa["Ticker"].isin(dec_t)]
-    dmap = {**CHECK_STOCK, **CHECK_FLOW}
-    have = set(pq.ParquetFile(dart_p).schema_arrow.names)
-    dart = pd.read_parquet(dart_p, columns=["Ticker", "bsns_year"] + sorted(set(dmap.values()) & have))
-    dl = dart.melt(id_vars=["Ticker", "bsns_year"], var_name="DItem", value_name="DART_Value").dropna()
-    inv = {v: k for k, v in dmap.items()}
-    dl["Item"] = dl["DItem"].map(inv)
-    dl = dl.rename(columns={"bsns_year": "FY"})[["Ticker", "FY", "Item", "DART_Value"]]
-    chk = qa.merge(dl, on=["Ticker", "FY", "Item"], how="inner").rename(columns={"Value": "QW_Value"})
-    chk["Rel_Diff"] = np.abs(chk["QW_Value"] - chk["DART_Value"]) / np.maximum(np.abs(chk["DART_Value"]), 1.0)
-    chk["Same"] = chk["Rel_Diff"] <= tol
-    # 접수일이 확인된(회계연도 말 뒤) DART 행만 대조한다 — 대응이 안 맞는 비교는 정정 의심을 잘못 만든다
-    chk = chk.merge(raw.rename(columns={"bsns_year": "FY"})[["Ticker", "FY", "DART_Date"]], on=["Ticker", "FY"], how="inner")
-    cy = chk.groupby(["Ticker", "FY"], as_index=False).agg(n_items=("Same", "size"), n_diff=("Same", lambda s: int((~s).sum())))
-    restated = set(map(tuple, cy.loc[cy["n_diff"] > 0, ["Ticker", "FY"]].to_numpy()))
-    checked = set(map(tuple, cy[["Ticker", "FY"]].to_numpy()))
-    print(f"[fund-v2-build] 정정 검사 기업-연도 {len(checked):,} · 정정 의심 {len(restated):,} ({len(restated) / max(len(checked), 1):.1%})")
-
-    # 정정 의심 → 그 회계연도 모든 분기의 공개일 = 다음 회계연도 사업보고서 공개일
-    keys["FY"] = (keys["Period"] // 100).astype(np.int32)
-    fye = keys[(keys["Period"] % 100) == keys["FiscalMonth"]][["Ticker", "FY", "Avail_Date"]].rename(columns={"Avail_Date": "FYE_Avail"})
-    nxt = fye.assign(FY=fye["FY"] - 1).rename(columns={"FYE_Avail": "Next_FYE_Avail"})
-    keys = keys.merge(nxt, on=["Ticker", "FY"], how="left")
-    # 다음 해 보고서 행이 아직 없으면(가장 최근 연도) 고정 규칙으로 다음 회계연도 말 + 3개월
-    miss_n = keys["Next_FYE_Avail"].isna()
-    if miss_n.any():
-        fyp = ((keys.loc[miss_n, "FY"] + 1) * 100 + keys.loc[miss_n, "FiscalMonth"]).to_numpy(np.int64)
-        keys.loc[miss_n, "Next_FYE_Avail"] = rule_date(fyp, keys.loc[miss_n, "FiscalMonth"].to_numpy(np.int64))
-    is_rs = pd.Series([(t, f) in restated for t, f in zip(keys["Ticker"], keys["FY"])], index=keys.index)
-    keys.loc[is_rs, "Avail_Date"] = np.maximum(keys.loc[is_rs, "Avail_Date"].to_numpy("datetime64[D]"),
-                                                keys.loc[is_rs, "Next_FYE_Avail"].to_numpy("datetime64[D]"))
-    keys.loc[is_rs, "Avail_Basis"] = "restated_next_fy"
-    is_ck = pd.Series([(t, f) in checked for t, f in zip(keys["Ticker"], keys["FY"])], index=keys.index)
-    keys["Check"] = np.select(
-        [is_rs, is_ck, keys["FiscalMonth"] != 12, keys["FY"] < 2015],
-        ["restated", "agree", "non_dec_fy", "pre2015"], default="no_dart")
+    # ---- 3. (삭제 11-16) DART 정정 검사 — 도훈 FUNDAMENTAL-QW-ONLY-NO-DART-20261116 = B '퀀티로만 · DART 완전 삭제'.
+    #   정정 덮어쓰기 대응 = 법정기한 + 45일 규칙(4단계)뿐이다 — 그 뒤에 나온 정정은 PIT 경계(pit.md C4 기록).
+    keys["Check"] = "qw_only"
 
     # ---- 4. 다음 거래일 = Factor_Date ------------------------------------------------------------------
     cal = pc.unique(pq.read_table(cal_p, columns=["Date"])["Date"]).to_numpy(zero_copy_only=False).astype("datetime64[D]")
@@ -289,12 +233,6 @@ def build(a) -> int:
     f_disc = next_trading_day(add_months(keys["Avail_Date"].to_numpy("datetime64[D]"), lag), cal)
     keys["Factor_Date"] = np.maximum(f_dead, f_disc)
     fd_basis = {"deadline": int((f_dead >= f_disc).sum()), "disclosure_floor": int((f_disc > f_dead).sum())}
-    # 연간 대조 표: DART 당시 보고서 값을 쓸 수 있는 첫날(병합 v2 가 다른 칸을 DART 값으로 바꿀 때 쓴다) — 같은 규칙(12월 결산 · 기간 말 = FY-12-31)
-    dd2 = chk["DART_Date"].to_numpy("datetime64[D]")
-    fye = (chk["FY"].astype(int).astype(str) + "-12-31").to_numpy("datetime64[D]")
-    f_dead2 = next_trading_day(roll_forward(fye + np.timedelta64(dl_ann, "D"), cal) + np.timedelta64(buf, "D"), cal)
-    chk["DART_Factor_Date"] = np.where(np.isnat(dd2), np.datetime64("NaT", "D"),
-                                       np.maximum(f_dead2, next_trading_day(add_months(dd2, lag), cal)))
 
     # ---- 5. 붙이기 · 쓰기 ------------------------------------------------------------------------------------
     rows["Ticker"] = rows["Ticker"].astype(str)
@@ -311,19 +249,13 @@ def build(a) -> int:
                               ("Factor_Date", pa.date32()), ("Avail_Basis", pa.string()), ("Check", pa.string()),
                               ("Db", pa.string())]))
     atomic_write_table(tbl, out / "fund_v2_quarterly.parquet")
-    ck = pa.Table.from_pandas(chk[["Ticker", "FY", "Item", "QW_Value", "DART_Value", "Rel_Diff", "DART_Date",
-                                   "DART_Factor_Date", "Same"]], preserve_index=False)
-    ck = ck.cast(pa.schema([("Ticker", pa.string()), ("FY", pa.int32()), ("Item", pa.string()), ("QW_Value", pa.float64()),
-                            ("DART_Value", pa.float64()), ("Rel_Diff", pa.float64()), ("DART_Date", pa.date32()),
-                            ("DART_Factor_Date", pa.date32()), ("Same", pa.bool_())]))
-    atomic_write_table(ck, out / "fund_v2_annual_check.parquet")
+    old_ck = out / "fund_v2_annual_check.parquet"   # DART 대조 표 — 퀀티 단일화로 없앤다
+    if old_ck.exists():
+        old_ck.unlink()
     rep = {
         "schema": "fund_v2_build_report/v1", "built_at": dt.datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
         "tol": tol, "rows": int(len(res)), "tickers": int(res["Ticker"].nunique()), "items": int(res["Item"].nunique()),
-        "check_items": sorted(dmap), "company_years_checked": len(checked), "company_years_restated": len(restated),
-        "restated_by_fy": {int(f): int(n) for f, n in pd.Series([f for _, f in restated]).value_counts().sort_index().items()},
-        "checked_by_fy": {int(f): int(n) for f, n in pd.Series([f for _, f in checked]).value_counts().sort_index().items()},
-        "item_diff_rate": {i: round(float(1 - g["Same"].mean()), 4) for i, g in chk.groupby("Item")},
+        "source": "quantiwise_only(FUNDAMENTAL-QW-ONLY-NO-DART-20261116)",
         "avail_basis_rows": {str(b): int(n) for b, n in res["Avail_Basis"].value_counts().items()},
         "check_rows": {str(b): int(n) for b, n in res["Check"].value_counts().items()},
         "avail_lag_months": int(lag),
@@ -341,8 +273,6 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--root", default=os.environ.get("QM_ROOT") or str(Path(__file__).resolve().parents[2]))
     ap.add_argument("--v2-dir", default="")
-    ap.add_argument("--dart", default="")
-    ap.add_argument("--dart-raw", default="")
     ap.add_argument("--rawdata", default="")
     ap.add_argument("--out-dir", default="")
     ap.add_argument("--tol", type=float, default=TOL)

@@ -9,7 +9,7 @@
 #   ★(2026-10-17 도훈 · 결정 RAWDATA-QW-ONLY-20261017) RAWDATA 주가 원천 = 퀀티 단일 — 구 [1] Naver T+0 · [2] KRX gap-fill 퇴역(호출 0)
 #   [3] Universe 갱신 (RAWDATA 월말 활성) + RAWDATA 메타 매핑
 #   [4] Arrow/FRED/KTRI/Regime
-#   [5] DART (월 1회)
+#   [5] 재무 정본 월간 재생산(퀀티 단독 · DART 퇴역 11-16)
 #   [6] Factor DB 갱신
 #   [7] Telegram + NAV
 #==============================================================================
@@ -793,53 +793,25 @@ run_r '
 dr_stage_end; fi   # ── 단계 macro 끝 ──
 
 # ──────────────────────────────────────────────────────────────────────────────
-# [5] DART 재무제표 + Quarterly + Insider
-#     (a) Annual 재무제표: 월 1회 — 이번 달에 아직 안 돌았으면(스탬프 .cache/dart/.annual_last_run_ym).
-#         ★2026-10-08 수리: 구판은 '매월 1일만'이라 1일 실행을 놓치면 그 달 전체를 건너뛰었다
-#           (10-01 미실행 → dart_raw_financials·fundamental_merged mtime 74일·38일 → 매일 CRITICAL).
-#     (b) Quarterly 재무제표: 매일 (resume=TRUE incremental, 공시되는대로 즉시 반영)
-#     (c) Insider 거래: 매일 (merge wrapper로 history 보존)
+# [5] 재무 정본 월간 재생산 — 퀀티 단독 (2026-11-16 도훈 FUNDAMENTAL-QW-ONLY-NO-DART-20261116 '퀀티로만 바꿔주고, DART API 관련
+#     데이터들은 완전히 삭제해줘') — 구 [5a] DART Annual · [5b] DART Quarterly + Insider 수집은 퇴역(호출 0 · 자료 삭제).
+#     남는 것 = [5a2] 월 1회 재무 정본 재생산(build_fundamental_derived.R → active v2 = fundamental_produce_v2.R · 퀀티 재무 v2 단독).
+#     스탬프 = .cache/.fund_monthly_last_run_ym(성공한 달만 찍는다 · 실패면 다음 날 재시도). 단계 이름 dart 는 선택 플래그 호환으로 남긴다.
 # ──────────────────────────────────────────────────────────────────────────────
 DAY_OF_MONTH=$(date +%d)
-if dr_want dart; then dr_stage_begin dart   # ── 단계 dart ──
-
-# (a) Annual financials — monthly (첫 실행일 · 스탬프 기준)
-DART_ANNUAL_STAMP="$BASE/.cache/dart/.annual_last_run_ym"
-_DART_YM=$(date +%Y%m)
-if [ "$(tr -d '\r\n ' < "$DART_ANNUAL_STAMP" 2>/dev/null)" != "$_DART_YM" ]; then
-  echo "[5a/7] DART Annual Financials (monthly)..."
-  cd "$INFRA"
-  run_r '
-    source("config.R")
-    source("data/data_collector_dart.R")
-    # years 미지정 = 제출창+커버리지 기반 후보집합 (2026-07-26 P2-01 수리).
-    # 구 코드는 years = format(Sys.Date(), "%Y") 로 달력 현재연도 1개만 요청해
-    # FY2025 사업보고서(2026-03 제출)를 영구 미수집 상태로 남겼다.
-    # max_calls: 일 10,000콜 한도 중 이 스텝 예산 (fail-closed halt)
-    tryCatch(dart_run_pipeline(max_calls = 3000),
-      error = function(e) cat(sprintf("DART Annual skipped: %s\n", e$message)))
-  '
-  # fundamental_merged 월간 full rebuild (2026-07-17 배선 — registry는 monthly/35d SLA인데
-  # 어느 스케줄에도 연결돼 있지 않아 매월 STALE_WARN 재발(반복 알림의 한 축)하던 gap 봉합)
-  echo "[5a2/7] fundamental_merged monthly rebuild..."
+if dr_want dart; then dr_stage_begin dart   # ── 단계 dart(= 재무 정본 월간 · 이름만 남음) ──
+FUND_MONTHLY_STAMP="$BASE/.cache/.fund_monthly_last_run_ym"
+_FUND_YM=$(date +%Y%m)
+if [ "$(tr -d '\r\n ' < "$FUND_MONTHLY_STAMP" 2>/dev/null)" != "$_FUND_YM" ]; then
+  echo "[5a2/7] fundamental_merged monthly rebuild(퀀티 단독)..."
   if "$RSCRIPT" --no-save "$INFRA/data/build_fundamental_derived.R"; then
-    echo "$_DART_YM" > "$DART_ANNUAL_STAMP"   # 성공한 달만 찍는다 — 실패면 다음 날 재시도
+    echo "$_FUND_YM" > "$FUND_MONTHLY_STAMP"
   else
-    echo "  [warn] build_fundamental_derived failed (fail-soft — 기존 cache 유지 · 스탬프 보류 → 내일 재시도)"
+    echo "  [warn] build_fundamental_derived failed (fail-soft — 기존 정본 유지 · 스탬프 보류 → 내일 재시도)"
   fi
 else
-  echo "[5a/7] DART Annual + fundamental_merged skipped (이번 달 $_DART_YM 이미 실행)"
+  echo "[5a2/7] fundamental_merged skipped (이번 달 $_FUND_YM 이미 실행)"
 fi
-
-# (b) + (c) Quarterly + Insider — daily incremental (도훈 mandate 2026-05-15)
-echo "[5b/7] DART Quarterly + Insider Daily Incremental..."
-cd "$INFRA"
-run_r '
-  source("config.R")
-  source("data/dart_daily_incremental.R")
-  tryCatch(dart_daily_incremental(),
-    error = function(e) cat(sprintf("DART daily incremental skipped: %s\n", e$message)))
-'
 dr_stage_end; fi   # ── 단계 dart 끝 ──
 
 # ──────────────────────────────────────────────────────────────────────────────

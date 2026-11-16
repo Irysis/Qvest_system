@@ -14,14 +14,19 @@
   "deadline_buffer_doc": "쓸 수 있는 첫날 = max(법정 제출기한 + deadline_buffer_days 일 뒤 첫 거래일, 공개일 + avail_lag_months 개월 뒤 첫 거래일) · DART 당시 값(DART_Factor_Date)도 같다 · 정정 의심 연도는 공개일 = 다음 회계연도 사업보고서 공개일 그대로. 도훈 11-16 '보수적으로 법정기한 + 45일 기준 적용하자'(기재정정 미래참조 대응 · DART 공시 목록은 수집하지 않는다).",
   "sources": {
     "v1": "Fundamental.xlsx(분기 · 2015~ 는 ISSD · SBB 만) + DART 연간(2015~ · fundamental_dart.parquet) — build_fundamental_derived.R",
-    "v2": "퀀티 재무 DB v2(.cache/qw_fund_v2/FundV2_* · 메인) + DART 정정 검사(서브) + 실제 공시일 · 날짜 순서 계약 — build_fundamental_v2.py → build_fundamental_merged_v2.R(fundamental_produce_v2.R 이 묶는다)"
+    "v2": "퀀티 재무 DB v2(.cache/qw_fund_v2/FundV2_*) 단독 + 실제 공시일(퀀티 M123955) · 날짜 순서 계약 — build_fundamental_v2.py → build_fundamental_merged_v2.R(fundamental_produce_v2.R 이 묶는다) · ★11-16 FUNDAMENTAL-QW-ONLY-NO-DART-20261116: DART 정정 검사 · DART 당시 값 · DART 접수일 삭제"
   },
   "switch_runbook": "04_Research/01_reports/quantiwise_data_expansion_20261106/fundamentals_v2/SWITCH_RUNBOOK.md",
   "decisions": [
     "2026-11-08 도훈 '퀀티를 메인으로 하고 다트를 서브로 하면 안돼?' → '위 방식대로 가자'(값 = 퀀티 · DART 와 0.5% 넘게 다르면 DART · 날짜 = 퀀티 보고일과 DART 접수일 중 늦은 날 다음 거래일 · DART 없으면 퀀티 미검증 표시)",
     "2026-11-09 도훈 '보충 끝나면 전체 재빌드해줘'(DART 연간 보충 완료 뒤 v2 전환 + 팩터 DB 전체 재빌드)",
     "2026-11-16 도훈 'A'(FUNDAMENTAL-AVAIL-LAG-20261115 — 1달 일괄 · 무인 Judge 11-15 L-JG-20261115_200516 이 계기)",
-    "2026-11-16 도훈 '보수적으로 법정기한 + 45일 기준 적용하자' · ''공개일 + 1개월' 규칙은 삭제해'(FUNDAMENTAL-AVAIL-DEADLINE45-20261116 — 기재정정 미래참조 대응 · DART 공시 목록 수집 안 함 · 퀀티와이즈 정본)"
+    "2026-11-16 도훈 '보수적으로 법정기한 + 45일 기준 적용하자' · ''공개일 + 1개월' 규칙은 삭제해'(FUNDAMENTAL-AVAIL-DEADLINE45-20261116 — 기재정정 미래참조 대응 · DART 공시 목록 수집 안 함 · 퀀티와이즈 정본)",
+    {
+      "id": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116",
+      "at": "2026-11-16",
+      "decision": "B — 퀀티 단독 · DART 자료 · 수집 · 소비 경로 삭제"
+    }
   ],
   "history": [
     {

@@ -1,6 +1,6 @@
 {
  "schema": "q_judgment_ledger_v1",
- "updated_at": "2026-11-16T12:04:59+0900",
+ "updated_at": "2026-11-16T13:20:01+0900",
  "judgments": [
   {
    "id": "J-20261016-001",
@@ -3458,6 +3458,29 @@
    ],
    "expectation": "큐 약 72편 채점 · low 일부 제외 · 다음 cpu 슬롯은 high/mid 부터",
    "confidence": 0.7,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261116-017",
+   "at": "2026-11-16T13:20:01+0900",
+   "op": "OP-20261116-L1-REMEASURE",
+   "kind": "harness_change",
+   "summary": "[11-16 13:20] 도훈 FUNDAMENTAL-QW-ONLY-NO-DART-20261116 = B 집행 — 재무 생산에서 DART(정정 검사 · 당시 값 62만 행 · 접수일 바닥) 제거 · 정본 퀀티 단독 재생산 13:14(904만 행) · 밤 [5a] DART Annual · [5b] Quarterly + Insider 퇴역([5a2] 월간 정본 재생산은 유지) · .cache/dart(598MB) · fundamental_dart*.parquet · 고정 사본 6 삭제 · 캐시 등록부 5항목 제거 · 판 표식 FUNDAMENTAL-QW-ONLY-20261116 · 진행 중 재빌드 중단(10:39~ 옛 정본) → 13:19 재시작(--any-time --skip-backup)",
+   "rationale": "Q 는 A(정정 검사 서브 유지)를 권했으나 도훈 B. 재빌드는 옛 정본(DART 행 포함)을 메모리에 올린 채라 끝까지 돌려도 다시 해야 했다. 예약 작업 Qvest_InsiderBackfill 끄기는 권한 거부 → 실행 배치를 무동작판으로. 레인 엔진 2202.05702 는 DART 분기 패널 부재를 경고하고 퀀티로 진행(2016~ 분기 해상도 손실 · 엔진 재구현 대상).",
+   "framework_refs": [
+    "decision_register FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · pit.md C4"
+   ],
+   "evidence": [
+    ".cache/fund_qwonly_20261116/produce.log · fundamental_merged Origin QW_V2 5,405,036 · QW_V2_derived 3,635,512"
+   ],
+   "alternatives": [
+    "A 유지(권고) · 재빌드 끝까지 돌린 뒤 재재빌드"
+   ],
+   "expectation": "재빌드 약 11시간 뒤 판 표식 4줄 완료 · 레인 측정 보류 해제",
+   "confidence": 0.8,
    "status": "open",
    "reviews": [],
    "supersedes": null,

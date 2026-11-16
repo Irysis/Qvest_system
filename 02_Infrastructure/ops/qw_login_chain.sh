@@ -45,7 +45,7 @@ case "${1:---tick}" in
   --reset)  rm -f "$ST"; echo "reset"; exit 0 ;;
   --tick)
     s="$(st_get state)"
-    { [ "$s" = "done" ] || [ "$s" = "failed" ]; } && exit 0
+    { [ "$s" = "done" ] || [ "$s" = "failed" ] || [ "$s" = "held" ]; } && exit 0   # held = 세션이 잠시 세움(재개 = --run 또는 state 를 지움)
     lock_live && exit 0
     nohup bash "$SELF" --run >> "$LOG" 2>&1 < /dev/null &
     disown $! 2>/dev/null || true
@@ -97,7 +97,7 @@ fi
 
 ## ③ ④ ⑤ 재빌드 · 결합용 뷰 · FF
 say "③ 팩터 DB 전체 재빌드"; st rebuild running
-bash 02_Infrastructure/factor_db/run_factor_db_full_rebuild.sh --tag qw_login_chain >> "$LOG" 2>&1; r=$?
+bash 02_Infrastructure/factor_db/run_factor_db_full_rebuild.sh --tag qw_login_chain ${QLC_REBUILD_ARGS:---any-time --skip-backup} >> "$LOG" 2>&1; r=$?
 say "③ rc=$r"; [ "$r" = "0" ] || fail rebuild "run_factor_db_full_rebuild.sh rc=$r"
 say "④ 결합용 뷰 전체"; st view running
 Rscript 02_Infrastructure/factor_db/factor_combinable.R --build --full >> "$LOG" 2>&1; r=$?
@@ -111,7 +111,7 @@ say "⑤ rc=$r"; [ "$r" = "0" ] || fail ff "build_kr_factor_returns.R rc=$r"
 import json, os, datetime
 now = datetime.datetime.now().astimezone().isoformat(timespec="seconds")
 p = "06_Registry/factor_db_vintage.json"; d = json.load(open(p, encoding="utf-8"))
-ids = ("FUNDAMENTAL-AVAIL-LAG-1M-20261116", "FUNDAMENTAL-AVAIL-DEADLINE45-20261116", "RAWDATA-PRELISTING-EXCLUDE-20261116")
+ids = ("FUNDAMENTAL-AVAIL-LAG-1M-20261116", "FUNDAMENTAL-AVAIL-DEADLINE45-20261116", "RAWDATA-PRELISTING-EXCLUDE-20261116", "FUNDAMENTAL-QW-ONLY-20261116")
 for x in d["entries"]:
     if x.get("id") in ids and not str(x.get("completed_at") or "").strip():
         x["completed_at"] = now; print("vintage completed", x["id"])

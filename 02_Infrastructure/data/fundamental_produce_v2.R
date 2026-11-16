@@ -43,8 +43,7 @@ CANON_X <- file.path(CACHE, "fundamental_xlsx.parquet")
 
 # ---- 0. 입력 ---------------------------------------------------------------------------------------
 need <- c(file.path(CACHE, "qw_fund_v2", paste0("FundV2_", c("BS", "IS", "CF", "META"), ".parquet")),
-          file.path(CACHE, "qw_fund_v2", "fiscal_month.parquet"), file.path(CACHE, "fundamental_dart.parquet"),
-          file.path(CACHE, "dart", "dart_raw_financials.parquet"), file.path(CACHE, "RAWDATA.parquet"))
+          file.path(CACHE, "qw_fund_v2", "fiscal_month.parquet"), file.path(CACHE, "RAWDATA.parquet"))   # 11-16 퀀티 단독(DART 입력 삭제)
 miss <- need[!file.exists(need)]
 if (length(miss)) { .say("입력 없음: %s", paste(miss, collapse = " · ")); quit(save = "no", status = 3) }
 

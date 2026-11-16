@@ -202,95 +202,7 @@
         ".cache/ktri_indices.parquet"
       ],
       "tier": 1
-    },
-    {
-      "path": ".cache/dart/dart_raw_financials.parquet",
-      "producer": "02_Infrastructure/data/data_collector_dart.R",
-      "entry_fn": "dart_run_pipeline",
-      "schedule": "monthly",
-      "date_col": null,
-      "max_lag_days": null,
-      "_max_lag_note": "2026-10-08 도훈 지시(Cache Freshness Alert 해소): 35 → null. 연간 사업보고서 원시본은 새 보고서가 없으면 파일을 다시 쓰지 않는다(dart_run_pipeline '제출창 기준 수집 대상 연도 없음') — mtime 35일 문턱은 매년 6월~이듬해 3월 상시 CRITICAL 이었다(10-08 lag 74일 · 실제 커버리지 PASS). 내용 도달 = 아래 coverage_check(제출창·grace 45d) 단독 판정. 월간 실행 생존 = 매 실행 재저장되는 .cache/fundamental_dart.parquet(35일)이 감시.",
-      "depends_on": [],
-      "tier": 2,
-      "coverage_check": {
-        "label_col": "bsns_year",
-        "entity_col": "corp_code",
-        "group_col": "reprt_code",
-        "due_rule": {
-          "by": "reprt_code",
-          "map": {
-            "11011": { "years": 1, "md": "03-31" }
-          }
-        },
-        "grace_days": 45,
-        "min_ratio_vs_prior": 0.8
-      },
-      "_coverage_note": "2026-07-26 P2-03. 이 파일엔 **시간축 컬럼이 아예 없다**(rcept_no/bsns_year/corp_code/…) — 그래서 종전엔 mtime 만으로 판정했고, mtime 26일 → FRESH 인 채로 FY2025 사업보고서 결손(corps 50 vs FY2024 714 = 7.0%)이 4개월간 무보고였다(P2-01). due_rule 은 11011(사업보고서) 제출기한 = 익년 3/31 (C4 정합). ★실측 검증(2026-07-26): rcept_no 앞 8자리(접수일) median 이 bsns_year+1 의 3월 중순 — 달력이 아니라 접수일로 확인함. grace 45d = 3/31 + 지각제출 여유(파이프라인 재시도 시즌 종료 4/15 포함)."
-    },
-    {
-      "path": ".cache/dart/dart_raw_quarterly.parquet",
-      "producer": "02_Infrastructure/data/dart_daily_incremental.R",
-      "entry_fn": "dart_daily_incremental",
-      "schedule": "daily",
-      "date_col": null,
-      "max_lag_days": 100,
-      "depends_on": [
-        ".cache/dart/corpcode_map.parquet"
-      ],
-      "tier": 2,
-      "_note": "2026-07-14: max_lag 3→100. 분기공시 = 이벤트성(Q1 5월·반기 8월·Q3 11월·연간 3~4월) — daily 수집은 유지하되 소강기(7월 등)에 새 행 부재는 정상. 3일 문턱은 계절성 무시로 CRITICAL 오탐. 100d = 분기 간격 여유(시즌 미갱신은 여전히 감지)",
-      "coverage_check": {
-        "label_col": "bsns_year",
-        "entity_col": "corp_code",
-        "group_col": "reprt_code",
-        "due_rule": {
-          "by": "reprt_code",
-          "map": {
-            "11013": { "years": 0, "md": "05-15" },
-            "11012": { "years": 0, "md": "08-14" },
-            "11014": { "years": 0, "md": "11-14" },
-            "11011": { "years": 1, "md": "03-31" }
-          }
-        },
-        "grace_days": 45,
-        "min_ratio_vs_prior": 0.8
-      },
-      "_coverage_note": "2026-07-26 P2-03. mtime-only 판정이던 것을 라벨-코호트 도달로 보강. ★due_rule 은 코드가 아니라 **접수일 실측**에서 왔다: rcept_no 앞 8자리 median 이 11013=05-15 · 11012=08-14 · 11014=11-14 · 11011=익년 03월 중순 (2026-07-26 measured, bsns_year 2023~2025). 이는 DART 공식 코드 의미(11013=1분기 / 11014=3분기)와 일치하지만 **같은 저장소의 `data_collector_dart_quarterly.R::.dart_season_bounds()` 및 `REPRT_MAP` 은 11013↔11014 를 뒤바꿔 갖고 있다**(11014→1Q, 11013→3Q). 그 불일치는 본 registry 소관 밖의 별건 결함이므로 여기서는 **실측 기준**을 정본으로 쓴다 — 코드를 참조했다면 분기 마감을 6개월 어긋나게 선언해 오탐/누락을 동시에 만들었을 것."
-    },
-    {
-      "path": ".cache/dart/insider_trades.parquet",
-      "producer": "02_Infrastructure/data/dart_daily_incremental.R",
-      "entry_fn": "dart_daily_incremental",
-      "schedule": "daily",
-      "date_col": "Date",
-      "max_lag_days": 90,
-      "depends_on": [
-        ".cache/dart/corpcode_map.parquet"
-      ],
-      "tier": 2,
-      "_note": "DART insider 공시는 비정기 filing (분기 또는 그 이상 gap 가능). 2026-05-24 audit: max_lag 4 → 90 정정 (data refresh OK but upstream filing 빈도 의존). daily_refresh.sh가 매일 fetch 시도하나 새 filing 없으면 max Date 정체"
-    },
-    {
-      "path": ".cache/fundamental_dart.parquet",
-      "producer": "02_Infrastructure/data/data_collector_dart.R",
-      "entry_fn": "dart_compute_factors",
-      "schedule": "monthly",
-      "date_col": null,
-      "max_lag_days": 35,
-      "depends_on": [
-        ".cache/dart/dart_raw_financials.parquet"
-      ],
-      "tier": 2,
-      "coverage_check": {
-        "label_col": "bsns_year",
-        "entity_col": "Ticker",
-        "due_rule": { "years": 1, "md": "03-31" },
-        "grace_days": 45,
-        "min_ratio_vs_prior": 0.8
-      },
-      "_coverage_note": "2026-07-26 P2-03 — **P2-01 이 4개월 침묵한 바로 그 지점**. 이 파일에 Factor_Date(date32)가 있지만 그것은 PIT usable date 라 max 가 2027-03-31(미래)이다 → date_col 로 선언하면 lag 이 음수가 되어 역시 영구 FRESH 다(가짜 수리). 도달 축은 회계 라벨 bsns_year 이어야 한다. 실측 2026-07-26: FY2025 Ticker 50 vs FY2024 714 = 7.0% → COVERAGE_FAIL 대상. 상류(dart_raw_financials)와 같은 due_rule(11011 = 익년 3/31, C4 정합) — 파생 캐시라 결손이 그대로 전파되므로 두 지점 모두에서 재는 것이 맞다."
-    },
+    },
     {
       "path": ".cache/fundamental_merged.parquet",
       "producer": "02_Infrastructure/data/build_fundamental_derived.R",
@@ -298,8 +210,7 @@
       "schedule": "monthly",
       "date_col": null,
       "max_lag_days": 35,
-      "depends_on": [
-        ".cache/fundamental_dart.parquet",
+      "depends_on": [
         ".cache/fundamental_xlsx.parquet"
       ],
       "tier": 2,
@@ -469,23 +380,7 @@
       ],
       "tier": 3,
       "_note": "2026-07-17 orphan 등재. AX-003(value) 부활신호 substrate — morning_briefing.sh 배선으로 매일 재산출. 2026-07-26 P2-03: 구 노트('월간 시계열이므로 date_col 대신 mtime')는 date_semantics=period_end 도입으로 해소 — 월말 라벨이 today 를 앞서는 것만 clamp 되고 **정체는 그대로 lag 으로 잡힌다**. 실측 2026-07-26: max Date 2026-07-31 → raw lag −5 → clamp 0 → FRESH(정상). 2026-05-31 에 얼면 lag 56 > 7 → STALE. 즉 mtime 은 '재산출이 돌았나', 이 축은 '결과가 이번 달까지 왔나'로 서로 다른 실패를 잡는다."
-    },
-    {
-      "path": ".cache/fundamental_dart_quarterly.parquet",
-      "producer": "02_Infrastructure/data/data_collector_dart_quarterly.R",
-      "entry_fn": "dart_compute_ttm",
-      "schedule": "daily",
-      "date_col": null,
-      "max_lag_days": 14,
-      "depends_on": [
-        ".cache/dart/dart_raw_quarterly.parquet"
-      ],
-      "tier": 2,
-      "_note": "2026-07-17 orphan 등재. DART_TTM_CACHE — dart_daily_incremental [1/2] 말미에 재산출. quarterly fetch(~41분)가 중단되면 TTM 미산출될 수 있어 여유 14d",
-      "no_content_check": {
-        "reason": "2026-07-26 P2-03 — 도달 축을 **현재 선언할 수 없음**(면제 아님, 가시화). 이 캐시의 코호트 축은 (bsns_year, quarter)인데 quarter 라벨 자체가 신뢰 불가다: data_collector_dart_quarterly.R 의 REPRT_MAP 이 11014→quarter 1, 11013→quarter 3 으로 매핑하는데, 접수일 실측(rcept_no 앞 8자리 median)은 11013=05-15(=1분기) · 11014=11-14(=3분기)로 **정반대**다. 그 결과 실측 2026-07-26 기준 bsns_year 2026 은 quarter3=614 / quarter1·2=부재 — 7월에 3분기가 차 있는 모순 형태다. 여기에 due_rule 을 붙이면 (a) 코드 매핑을 따르면 6개월 어긋난 기한으로 오탐/누락, (b) 실측 매핑을 따르면 **알려진 버그를 registry 에 박아 넣어** 나중에 코드가 고쳐지면 조용히 틀린 선언이 된다. quarter 라벨 결함이 해소되면 상류 dart_raw_quarterly 와 같은 due_rule 을 quarter 축으로 옮겨 선언할 것. 그때까지 결손 감지는 상류 두 캐시(dart_raw_quarterly::coverage / dart_raw_financials::coverage)가 담당한다."
-      }
-    },
+    },
     {
       "path": ".cache/indices.parquet",
       "producer": "02_Infrastructure/data/build_index_cache.py",
