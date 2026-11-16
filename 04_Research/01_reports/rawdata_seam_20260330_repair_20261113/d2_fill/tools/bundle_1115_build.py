@@ -92,8 +92,10 @@ for r in pins:
 spec = dict(
     schema="ret_fill_bundle_pending_v1", decision=[DEC, "RAWDATA-INTERNAL-BREAK-FILL-D2D3-20261114"], status="pending", built_at=now,
     rerun_before_apply="적용 직전에 이 스크립트를 다시 돌려 값을 새로 잰다(적용 전 저장값 단정이 멈춤 장치)",
-    apply_when=("범위 all 수리에 싣는다 — 11-15 기본안 · 1계층 세션 요청 11-16(RAWDATA-PRELISTING-EXCLUDE-20261116). "
-                "상장 전 행 삭제(11-16 10:39 · qw_login_chain)로 첫 행이 된 외감 → 유가증권 2행은 값 판정 없이 뺐다(SKIP_PINS · not_registered)."),
+    apply_when=("다음 범위 all 팩터 DB 수리에 싣는다 — 11-16 1계층 세션 결정(선택지 2): 상장 전 행 삭제(RAWDATA-PRELISTING-EXCLUDE-20261116) 뒤 10:39 부터 도는 "
+                "팩터 DB 전체 재빌드(qw_login_chain)는 그대로 두고, 그 재빌드 도중에는 RAWDATA 를 쓰지 않는다(.cache/qw_login_chain/status.json state = done 전 쓰기 금지). "
+                "그 재빌드가 끝난 뒤 따로 쓰면 판 원장 줄이 하나 더 필요해 다음 범위 all 수리에 얹는다(적용 = 04_Research/01_reports/rawdata_prelisting_exclude_20261116/tools/run_1116_locked.sh). "
+                "상장 전 행 삭제로 첫 행이 된 외감 → 유가증권 2행은 값 판정 없이 뺐다(SKIP_PINS · not_registered)."),
     cautions=[
         "11-16 도훈 정정('상장 첫날에는 가격변동폭제한이 커져서 가짜수익이 아니라 진짜 수익일 수 있다' · '자꾸 네가 스스로 새롭게 검증하려고 하지마. "
         "퀀티와이즈 데이터가 무조건 맞는거야'): 상장 첫날 Ret 은 저장값 그대로다 — 상장 전 행을 지워 첫 행이 돼도 NA 로 바꾸지 않는다. "
