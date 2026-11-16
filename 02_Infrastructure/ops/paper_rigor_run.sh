@@ -13,12 +13,13 @@ ROOT="${QM_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")/../.." && pwd)}"
 cd "$ROOT" || exit 2
 PY="${QVENV_PY:-.venv_qvest_ml/Scripts/python.exe}"
 LIMIT="$("$PY" -X utf8 -c "import json;print(json.load(open('06_Registry/paper_rigor.json',encoding='utf-8')).get('daily_limit',20))" 2>/dev/null | tr -d '\r')"
-[ "${1:-}" = "--limit" ] && LIMIT="${2:-$LIMIT}"
+REGRADE=()
+while [ $# -gt 0 ]; do case "$1" in --limit) LIMIT="${2:-$LIMIT}"; shift 2 ;; --regrade) REGRADE=(--regrade); shift ;; *) shift ;; esac; done   # --regrade = 채점기 v2 전 기록 · low 건너뛰기까지 다시
 LOG=".cache/scheduler_logs/paper_rigor_$(date +%Y%m%d).log"; mkdir -p .cache/scheduler_logs .cache/paper_rigor
 . 02_Infrastructure/ops/rf_llm_env.sh
 rf_llm_resolve paper_rigor "${QVEST_PR_MODEL:-}" "${QVEST_PR_EFFORT:-}"
 LLM_FALLBACK_MODEL=""   # 이관 레인 규약(폴백 없음)
-TODO="$("$PY" -X utf8 02_Infrastructure/ops/paper_rigor.py todo --limit "${LIMIT:-20}" 2>>"$LOG")"
+TODO="$("$PY" -X utf8 02_Infrastructure/ops/paper_rigor.py todo --limit "${LIMIT:-20}" ${REGRADE[@]+"${REGRADE[@]}"} 2>>"$LOG")"
 [ -n "$TODO" ] || { echo "[paper_rigor] 채점할 논문 없음" | tee -a "$LOG"; exit 0; }
 n=0; nlow=0
 while IFS=$'\t' read -r KEY URL TITLE; do

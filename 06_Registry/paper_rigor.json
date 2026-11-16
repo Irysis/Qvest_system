@@ -3,9 +3,38 @@
   "decision_id": "PAPER-ORDER-RIGOR-FILTER-20261116",
   "registered_at": "2026-11-16",
   "description": "충실구현 큐 논문 방법론 수준 채점 설정 — 채점기 02_Infrastructure/ops/paper_rigor.py(등급 = 기준 여섯 중 참 개수) · 실행 02_Infrastructure/ops/paper_rigor_run.sh(아침 체인 [0.515] · 레인 llm.lanes.paper_rigor) · 기록 06_Registry/paper_rigor.jsonl · low = replication_skiplist.json verdict low_rigor(도훈 B — 큐에서 제외 · 재료로도 소비 안 함 · 되살리기 = status revoked)",
-  "criteria": ["long_evaluation", "benchmark", "costs", "stat_test", "nontrivial_method", "peer_reviewed"],
-  "bands": {"high_min": 5, "mid_min": 3},
+  "criteria": {
+    "empirical": [
+      "long_evaluation",
+      "benchmark",
+      "costs",
+      "stat_test",
+      "nontrivial_method",
+      "peer_reviewed"
+    ],
+    "theory": [
+      "rigorous_derivation",
+      "simulation_validation",
+      "real_data_illustration",
+      "comparison_to_existing",
+      "nontrivial_method",
+      "peer_reviewed"
+    ]
+  },
+  "bands": {
+    "high_min": 5,
+    "mid_min": 3
+  },
   "bands_basis": "기준 여섯은 백테스트 보고 규율의 표준 항목 — 표본 밖 · 긴 평가(Bailey, Borwein, López de Prado & Zhu 2014 'Pseudo-Mathematics and Financial Charlatanism' https://www.ams.org/notices/201405/rnoti-p458.pdf) · 벤치 대비 · 거래비용(Novy-Marx & Velikov 2016 'A Taxonomy of Anomalies and Their Trading Costs' https://doi.org/10.1093/rfs/hhv063) · 통계 검정과 다중검정(Harvey, Liu & Zhu 2016 '... and the Cross-Section of Expected Returns' https://doi.org/10.1093/rfs/hhv059). 띠 경계(≥5 high · ≥3 mid · ≤2 low)는 '여섯 중 과반 미달 = low' 로 정한 Q 의 설정이다(도훈 B 결정의 집행 값 · 재보정 = 이 파일 새 판).",
   "full_text_only_low": "전문(5,000자 이상)을 못 받은 논문은 low 로 빼지 않고 unknown 으로 남긴다",
-  "daily_limit": 20
+  "daily_limit": 20,
+  "rubric": "v2",
+  "history": [
+    {
+      "rubric": "v1",
+      "at": "2026-11-16",
+      "note": "실증 전략 기준 하나로 모든 논문을 쟀다 — 이론 · 방법론 논문 9편을 잘못 low 로 뺐다(도훈 '1번' · Q 검토) · 기성 기법 적용에도 nontrivial_method 참을 줬다"
+    }
+  ],
+  "v2_note": "논문 유형(empirical · theory)을 먼저 판정하고 유형별 기준 여섯으로 잰다 · nontrivial_method 정의에 기성 기법 목록(HRP · 표준 평균분산 · 표준 PCA · 무작위 비중 · 블랙-리터만 · LSTM · 랜덤포레스트 · 퍼지 규칙) 단순 적용 = false 를 명시 · 사람이 되살린 논문(revoked · revoked_by ≠ 재채점)은 다시 빼지 않는다 · 재채점에서 low 가 아니게 되면 자동 low_rigor 항목을 revoked"
 }
