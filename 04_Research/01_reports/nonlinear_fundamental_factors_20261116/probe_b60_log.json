@@ -1,0 +1,167 @@
+{
+  "args": {
+    "start": "2012-01",
+    "end": "2012-01",
+    "workers": 4,
+    "budget": 60,
+    "targets": "earn,val",
+    "smoke": true,
+    "history": "2006-01",
+    "no_linear": false
+  },
+  "start": "2012-01",
+  "end": "2012-01",
+  "history_start": "2006-01",
+  "budget_max_iter": 60,
+  "epoch": "all_hyg_px1000_2000_v1",
+  "flaml_version": "2.8.0",
+  "refits": [
+    {
+      "target": "earn",
+      "refit_date": "2011-12-29",
+      "cut": "2011-11-29",
+      "predict_months": [
+        "2012-01-31"
+      ],
+      "best_estimator": "xgb_limitdepth",
+      "n_trials": 60,
+      "best_loss_per_estimator": {
+        "lgbm": 0.8744943637048482,
+        "rf": 0.9339868357782012,
+        "xgboost": 0.8703136134595673,
+        "extra_tree": 0.9217025195572143,
+        "xgb_limitdepth": 0.8655587879247174,
+        "sgd": 0.899621298623639
+      },
+      "ensemble_weights": {
+        "lgbm": 0.14,
+        "sgd": 0.32,
+        "xgb_limitdepth": 0.54
+      },
+      "best_configs": {
+        "lgbm": {
+          "n_estimators": 49,
+          "num_leaves": 5,
+          "min_child_samples": 57,
+          "learning_rate": 0.15376803884227344,
+          "log_max_bin": 7,
+          "colsample_bytree": 0.9830575359271303,
+          "reg_alpha": 0.0068984262496696175,
+          "reg_lambda": 2.245925123071191
+        },
+        "sgd": {
+          "penalty": "None",
+          "alpha": 0.00011301775804482397,
+          "l1_ratio": 0.9999999999999999,
+          "epsilon": 0.031887268564260995,
+          "learning_rate": "invscaling",
+          "eta0": 0.045884070675250924,
+          "power_t": 0.3644734468169772,
+          "average": false,
+          "loss": "epsilon_insensitive"
+        },
+        "xgb_limitdepth": {
+          "n_estimators": 201,
+          "max_depth": 3,
+          "min_child_weight": 0.08822416517080992,
+          "learning_rate": 0.0708137751203055,
+          "subsample": 0.9625793151375469,
+          "colsample_bylevel": 0.8084428199453177,
+          "colsample_bytree": 0.730787662839189,
+          "reg_alpha": 0.0029365254788973794,
+          "reg_lambda": 11.50886342309371
+        }
+      },
+      "n_train": 12139,
+      "n_val": 3682,
+      "n_refit_full": 18715,
+      "n_sample_months": 20,
+      "n_inputs": 202,
+      "n_pred": 1138,
+      "seconds": 25.8,
+      "peak_rss_gb": 3.26,
+      "linear": {
+        "alpha": 316.22776601683796
+      }
+    },
+    {
+      "target": "val",
+      "refit_date": "2011-12-29",
+      "cut": "2011-11-29",
+      "predict_months": [
+        "2012-01-31"
+      ],
+      "best_estimator": "xgb_limitdepth",
+      "n_trials": 60,
+      "best_loss_per_estimator": {
+        "lgbm": 0.10309697982440558,
+        "rf": 0.1915209493783543,
+        "xgboost": 0.09500105014084459,
+        "extra_tree": 0.21946717395323279,
+        "xgb_limitdepth": 0.05153145882995558,
+        "sgd": 0.24472519701486517
+      },
+      "ensemble_weights": {
+        "xgb_limitdepth": 0.9,
+        "xgboost": 0.1
+      },
+      "best_configs": {
+        "xgb_limitdepth": {
+          "n_estimators": 673,
+          "max_depth": 6,
+          "min_child_weight": 0.9760880121041585,
+          "learning_rate": 0.2722043503077,
+          "subsample": 0.9443341385328434,
+          "colsample_bylevel": 0.9907270883066793,
+          "colsample_bytree": 0.4977729966788394,
+          "reg_alpha": 0.0023111258229570825,
+          "reg_lambda": 623.8485314351377
+        },
+        "xgboost": {
+          "n_estimators": 145,
+          "max_leaves": 7,
+          "min_child_weight": 0.72456799862887,
+          "learning_rate": 1.0,
+          "subsample": 0.8967557998704447,
+          "colsample_bylevel": 0.8585886857301208,
+          "colsample_bytree": 0.9210224626251128,
+          "reg_alpha": 0.005324220870623748,
+          "reg_lambda": 30.15693821958919
+        }
+      },
+      "n_train": 10406,
+      "n_val": 1993,
+      "n_refit_full": 12399,
+      "n_sample_months": 12,
+      "n_inputs": 203,
+      "n_pred": 1138,
+      "seconds": 198.6,
+      "peak_rss_gb": 3.26,
+      "linear": {
+        "alpha": 0.1
+      }
+    }
+  ],
+  "timing": {
+    "features_s": 24.5,
+    "price_panel_s": 5.3,
+    "total_s": 257.4
+  },
+  "pit_selftest_features": {
+    "months": [
+      "2008-01-31",
+      "2012-01-31"
+    ],
+    "rows_checked": 279,
+    "pass": true
+  },
+  "n_rows_panel": 74169,
+  "n_features": 204,
+  "output_rows": {
+    "NLFF_EARN": 1138,
+    "NLFF_EARN_LIN": 1138,
+    "NLFF_VAL": 1138,
+    "NLFF_VAL_LIN": 1138
+  },
+  "peak_rss_gb": 3.26
+}

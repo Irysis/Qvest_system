@@ -1,0 +1,197 @@
+{
+  "schema": "nlff_config/v2",
+  "_doc": "비선형 재무 팩터(NLFF) 설정 정본 — 모델은 사람이 고정하지 않고 AutoML(FLAML)이 정한다(모델 패밀리 선택 + 하이퍼파라미터 탐색 + 앙상블). 모든 수치는 여기서만 온다. 각 값 옆 _src = 근거 문헌 · 라이브러리 기본값. 설정은 측정 전에 고정했고 τ_D(2022-12-31) 이후 성과를 보지 않았다(성과 지표 계산 자체를 하지 않는다 — README §7).",
+  "tau_D": "2022-12-31",
+  "paths": {
+    "fund_q": ".cache/fundamental_quarterly.parquet",
+    "fund_a": ".cache/fundamental_annual.parquet",
+    "rawdata": ".cache/RAWDATA.parquet",
+    "constraint_defaults": "02_Infrastructure/worktask/constraint_defaults.json",
+    "out_dir": ".cache/nl_fundamental_factors"
+  },
+  "universe": {
+    "_src": "측정 축 epoch 은 constraint_defaults.json::measurement_axis 에서 읽는다(liq_min · price_floor · 표식) — 이 파일에는 값을 두지 않는다",
+    "adv_window_days": 20,
+    "_adv_src": "measurement_axis.R::ma_adv20_l1 과 같은 정의(20거래일 · t−1)"
+  },
+  "staleness_months": {
+    "q": 15,
+    "a": 24,
+    "_src": "fund_access.R::FA_MAX_AGE_M(분기 15 · 연간 24 — Fama & French 1993 https://doi.org/10.1016/0304-405X(93)90023-5)"
+  },
+  "features": {
+    "_rule": "분기 캐시 Kind=derived 중 규모 없는(비율 · 성장 · 변화 · 점수) 항목 전부 + 원화 변화량 d_X 를 1년 전 총자산으로 나눈 dA_X(Richardson, Sloan, Soliman & Tuna 2005 https://doi.org/10.1016/j.jacceco.2005.04.005) + 규모 원계정의 부호 보존 로그(평가 표적용 · Geertsema & Lu 2023 https://doi.org/10.1111/1475-679x.12464) + 연간 캐시 AccountingBeta(Beaver, Kettler & Scholes 1970 The Accounting Review 45(4) · 정의 = build_fundamental_caches.R). 가격 · 수익 입력 없음(순수 재무).",
+    "exclude_level_items": [
+      "AvgAssets",
+      "AvgEquity",
+      "AvgInventory",
+      "AvgInvestedCapital",
+      "AvgPay",
+      "AvgPPE",
+      "AvgRecv",
+      "BookEquity",
+      "TangibleEquity",
+      "FCF",
+      "TotalDebt",
+      "ShortTermDebt",
+      "LongTermDebt",
+      "NetDebtCalc",
+      "WorkingCapital",
+      "NWC_NonCash",
+      "NOPAT",
+      "NOA_Level",
+      "NCO_Level",
+      "Lag_NOA_Level",
+      "Lag_TotalAssets",
+      "BPS",
+      "EPS",
+      "SPS",
+      "CFPS",
+      "DPS"
+    ],
+    "exclude_duplicates": {
+      "O_SIZE": "LogAssets 와 같음",
+      "TaxRate": "EffectiveTaxRate 와 같음",
+      "InvestmentFF": "AssetGrowth 와 같음"
+    },
+    "signed_log_raw": [
+      "Revenue",
+      "BookEquity",
+      "NetIncome",
+      "OperatingCF",
+      "EBITDA",
+      "TotalLiab",
+      "CashAndEquiv",
+      "Employees"
+    ],
+    "annual_items": [
+      "AccountingBeta"
+    ],
+    "min_coverage_asof": 0.2,
+    "_min_coverage_src": "학습 창(결정 시점 이전) 표본에서 결측 아닌 비율 < 20% 인 입력은 그 재학습에서 뺀다 — 시점별(as-of) 규칙. 문턱 20% 근거 = Gu, Kelly & Xiu 2020 은 결측을 단면 중앙값으로 채웠다(https://doi.org/10.1093/rfs/hhaa009) — 채움 값이 80% 넘는 입력은 정보가 상수에 가깝다는 보수 판단(진단 아님 · 성과 무관)"
+  },
+  "label_rank_scale": {
+    "_src": "단면 순위 → [−1, 1](Gu, Kelly & Xiu 2020 · Kelly, Pruitt & Su 2019 https://doi.org/10.1016/j.jfineco.2019.05.001) — 입력 · 표적 모두 월별 단면 안에서만"
+  },
+  "targets": {
+    "earn": {
+      "desc": "1년 뒤 TTM 지배주주 순이익 변화 / 현재 총자산 — Chen, Cho, Dou & Lev 2022 https://doi.org/10.1111/1475-679x.12429 · Cao & You 2024 https://doi.org/10.1080/0015198x.2024.2313692 · 규모 조정 = Hou, van Dijk & Zhang 2012 https://doi.org/10.1016/j.jacceco.2011.12.001",
+      "kind": "rank_reg",
+      "horizon_months": 12,
+      "refit_every_months": 12,
+      "refit_month": 12,
+      "window": "expanding",
+      "sample_every_months": 3,
+      "min_train_months": 12,
+      "direction": "higher_better"
+    },
+    "val": {
+      "desc": "같은 달 단면 로그 시가총액(단면 평균 차감) — 적정가치 추정 · 팩터 = 추정 − 실제(저평가 +) — Bartram & Grinblatt 2018 https://doi.org/10.1016/j.jfineco.2017.11.006 · Geertsema & Lu 2023 https://doi.org/10.1111/1475-679x.12464",
+      "kind": "demean_reg",
+      "horizon_months": 0,
+      "refit_every_months": 3,
+      "refit_month": 3,
+      "window": "rolling",
+      "window_months": 12,
+      "sample_every_months": 1,
+      "min_train_months": 6,
+      "group_folds": 5,
+      "direction": "higher_better",
+      "_folds_src": "종목 묶음 K-겹 교차 적합(자기 시가총액 기억 차단) — Geertsema & Lu 2023 표본 밖 평가 설계 · K=5 = Hastie, Tibshirani & Friedman 2009 ESL §7.10 권고(https://hastie.su.domains/ElemStatLearn/)"
+    },
+    "dist": {
+      "desc": "향후 12개월 안 관리종목 지정(AdminStock 0→1) 여부 — 한국 시장 부실 사건 · Campbell, Hilscher & Szilagyi 2008 https://doi.org/10.1111/j.1540-6261.2008.01416.x · ML 부도 예측 = Barboza, Kimura & Altman 2017 https://doi.org/10.1016/j.eswa.2017.04.006",
+      "kind": "binary",
+      "horizon_months": 12,
+      "refit_every_months": 12,
+      "refit_month": 12,
+      "window": "expanding",
+      "sample_every_months": 3,
+      "min_train_months": 12,
+      "direction": "lower_better"
+    },
+    "ret": {
+      "desc": "향후 12개월 누적 로그 수익 단면 순위 — 재무 입력만의 수익 예측(Gu, Kelly & Xiu 2020) · 12개월 = 재무 정보 갱신 주기와 맞춤 · ★주의 Avramov, Cheng & Metzker 2023 https://doi.org/10.1287/mnsc.2022.4449",
+      "kind": "rank_reg",
+      "horizon_months": 12,
+      "refit_every_months": 12,
+      "refit_month": 12,
+      "window": "expanding",
+      "sample_every_months": 3,
+      "min_train_months": 12,
+      "direction": "higher_better"
+    }
+  },
+  "_min_train_months_src": "표본월 수 하한: 분기 표본(3개월 간격) 12개 = 3년 · 평가 표적(월간) 6개월 — Gu, Kelly & Xiu 2020 의 확장 창(첫 학습 18년)을 한국 자료 길이(2000~)에 맞춰 줄인 보수 하한. 그 전 달은 팩터를 내지 않는다(README §8)",
+  "validation": {
+    "frac": 0.2,
+    "purge_by_horizon": true,
+    "_src": "AutoML 검증(패밀리 · 하이퍼파라미터 · 앙상블 가중 고르기) = 재학습 창 안 시간순 마지막 20% 표본월(Gu, Kelly & Xiu 2020 학습/검증 분할) · 학습 부분은 실현일 < 검증 첫 달인 표본만(정화 purge — López de Prado 2018 ch.7) · 모든 표적(지평 0 포함) 같은 규칙 · nlff_automl.time_split 이 단정"
+  },
+  "smoke": {
+    "start": "2012-01",
+    "end": "2012-03",
+    "history_months": 36,
+    "min_train_months_cap": 4,
+    "max_iter": 8,
+    "tickers_limit": 0,
+    "pit_selftest_tickers": 150,
+    "_src": "스모크 = 끝까지 도는지 · 시간 · 메모리만 본다(성과 계산 없음). 2012 = τ_D 이전"
+  },
+  "automl": {
+    "library": "flaml",
+    "version": "2.8.0",
+    "_src": "FLAML — Wang, Wu, Weimer & Zhu 2021 MLSys 'FLAML: A Fast and Lightweight AutoML Library' https://proceedings.mlsys.org/paper_files/paper/2021/file/1ccc3bfa05cb37b917068778f3c4523a-Paper.pdf · 탐색기 = 비용 절약 CFO(Wu, Wang & Huang 2021 AAAI https://arxiv.org/abs/2005.01571) + 학습기 선택 ECI · 문제 정식화 CASH(Thornton, Hutter, Hoos & Leyton-Brown 2013 KDD https://arxiv.org/abs/1208.3719)",
+    "estimator_list": "auto",
+    "_estimator_list_src": "라이브러리 기본 목록(flaml.automl.task.generic_task.default_estimator_list — CPU 판: lgbm · rf · xgboost · extra_tree · xgb_limitdepth · sgd · catboost 는 미설치라 빠짐) — 사람이 패밀리를 고르지 않는다",
+    "search_space": "flaml_default",
+    "_search_space_src": "각 학습기의 FLAML 기본 탐색 공간(search_space() 클래스 메서드) 그대로 — 사람이 범위를 바꾸지 않는다",
+    "metric": {
+      "regression": "r2",
+      "binary": "roc_auc"
+    },
+    "_metric_src": "FLAML 기본 지표(회귀 = r2 · 이진 = roc_auc — AutoML.fit metric='auto')",
+    "max_iter": 60,
+    "_max_iter_src": "시행 예산 60 = Bergstra & Bengio 2012 JMLR 13 'Random Search for Hyper-Parameter Optimization' §2.1 https://www.jmlr.org/papers/v13/bergstra12a.html — 무작위 탐색 60회면 상위 5% 구간 하나 이상을 95% 확률로 맞힌다(1 − 0.95^60 ≈ 0.954). 시간 예산 대신 시행 수로 고정 = 기계 부하에 따라 결과가 달라지지 않게(time_budget = −1)",
+    "time_budget": -1,
+    "sample": true,
+    "_sample_src": "FLAML 기본(표본 크기를 키워 가며 탐색)",
+    "eval_method": "holdout",
+    "_eval_src": "검증 = 학습 창 안 시간순 마지막 구간(아래 validation) 을 X_val 로 직접 준다 — FLAML 은 그 구간을 그대로 쓴다(뒤섞기 · 교차검증 없음)",
+    "retrain_full": false,
+    "_retrain_src": "FLAML 의 재적합 · 스태킹은 쓰지 않는다(스태킹의 sklearn 기본 KFold 가 시간 순서를 지키지 않음). 앙상블과 최종 재적합은 nlff_automl.py 가 시간 순서로 한다",
+    "seed": 20261116,
+    "ensemble": {
+      "method": "caruana_greedy",
+      "size": 50,
+      "_src": "Caruana, Niculescu-Mizil, Crew & Ksikes 2004 ICML 'Ensemble Selection from Libraries of Models' https://www.cs.cornell.edu/~caruana/ctp/ct.papers/caruana.icml04.icdm06long.pdf — 시간순 검증 구간 예측으로 탐욕적 선택(복원 추출) · 크기 50 = auto-sklearn 기본 ensemble_size(Feurer et al. 2015 NeurIPS https://papers.nips.cc/paper/5872-efficient-and-robust-automated-machine-learning) · 라이브러리 = 패밀리별 최선 설정(AutoGluon 의 가중 앙상블과 같은 구조 — Erickson et al. 2020 https://arxiv.org/abs/2003.06505)"
+    },
+    "refit_full": true,
+    "_refit_full_src": "고른 설정을 학습 + 검증 구간 전체(재학습일 −1개월까지 실현된 표본)로 다시 적합 — AutoGluon refit_full · FLAML retrain_full 과 같은 뜻",
+    "missing_fill": 0.0,
+    "_missing_src": "결측 = 0 = 그 달 단면 중앙 순위(Gu, Kelly & Xiu 2020 https://doi.org/10.1093/rfs/hhaa009) · 행 결측 비율 열 1개를 더한다(같은 행 안 계산 · 단면 통계 아님) — sgd 가 결측을 못 받는다",
+    "max_workers": 4,
+    "_workers_src": "도훈 11-16 지시(같은 PC 팩터 DB 재빌드 중 · 워커 4 이하)"
+  },
+  "linear_control": {
+    "enabled": true,
+    "ridge_alphas_log10": [
+      -2,
+      4,
+      13
+    ],
+    "logit_C": 1.0,
+    "_src": "선형 대조(나중에 측정 계약이 비선형 증분을 잴 짝 · AutoML 결과와 섞지 않음) — 능형(벌점 = 학습 창 안 시간순 검증으로 고름) · 이진 = L2 로지스틱 sklearn 기본 C=1(Campbell, Hilscher & Szilagyi 2008)"
+  },
+  "output": {
+    "factor_names": {
+      "earn": "NLFF_EARN",
+      "val": "NLFF_VAL",
+      "dist": "NLFF_DIST",
+      "ret": "NLFF_RET"
+    },
+    "lin_suffix": "_LIN",
+    "embargo_months": 1,
+    "_embargo_src": "도훈 11-16 지시 '표적 끝과 예측일 사이 1개월 이상 간격' — 학습 표본의 실현일 <= 재학습일 − 1개월 · 엠바고 = López de Prado 2018 ch.7"
+  }
+}
