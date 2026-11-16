@@ -1,6 +1,6 @@
 {
  "schema": "session_resume_v1",
- "updated_at": "2026-11-16T09:19:58+0900",
+ "updated_at": "2026-11-16T09:37:56+0900",
  "operations": [
   {
    "id": "OP-20261015-MSM-A",
@@ -1120,7 +1120,7 @@
    "goal": "재빌드(판 표식 FUNDAMENTAL-AVAIL-LAG-1M-20261116) 완료 → 낡음 표식 측정 재측정(P1S03 30칸 · P1S04 시드 · 레인 산출 · 등급 재채점) → 블렌딩 사슬 새 판 P4C03 · 재빌드 동안 P1R04 탐침 ①(수급 15 · 기술적 12 방향 격리 재판정 · 시행 0)",
    "status": "in_progress",
    "started_at": "2026-11-16T07:32:06+0900",
-   "updated_at": "2026-11-16T09:19:58+0900",
+   "updated_at": "2026-11-16T09:37:56+0900",
    "steps": [
     {
      "id": "S1",
@@ -1183,7 +1183,7 @@
      "updated_at": null
     }
    ],
-   "next_action": "[11-16 09:19] ① 도훈 퀀티 1회 로그인('비밀번호 저장' 켬) 대기 — 09:08 시장구분 수급이 다른 기기 로그인으로 끊김(SAVEUSERPW=0 · 무인 재로그인 불가 · 오늘 밤 00:03 갱신도 같은 조건) → 로그인 뒤 powershell -File 02_Infrastructure/ops/qw_refresh.ps1 -Group ext -Only ListingMarket(멱등 · 로그 .cache/scheduler_logs/qw_listing_market_20261116.log) → .venv_qvest_ml/Scripts/python.exe -X utf8 02_Infrastructure/data/qw_ext_ingest.py → .cache/qw_ext/listing_market/market_type.parquet · 코드 종류 → 이음매 세션(local_89452ce8) 알림 ② 이음매 세션 = RAWDATA 상장 전 행만 삭제(첫날 Ret · 등록부 13행 그대로 · 새 검증 없음) · 묶음 · 밤 [3c] · 판 원장 RAWDATA-PRELISTING-EXCLUDE-20261116 → 알림 ③ 팩터 DB 전체 재빌드 묶음(새 run_chain — 완료 시 판 표식 FUNDAMENTAL-AVAIL-LAG-1M-20261116 · FUNDAMENTAL-AVAIL-DEADLINE45-20261116 · RAWDATA-PRELISTING-EXCLUDE-20261116 함께 채움) ④ 끝 → 레인 다시 켬 → P1S03 30칸 재측정 · 판정 → 재무 비의존 기저 사슬(J-003) → 방향 수정 8건 + 새 엔진 ⑤ 재무 정본은 09:18 법정기한 + 45일로 교체 끝(d43df838e) ⑥ 새 검사 추가 없음 · 퀀티 값 스스로 판정 안 함 · 세션 끝 T3",
+   "next_action": "① 도훈 퀀티 로그인(비밀번호 저장 체크) 대기 → qw_refresh.ps1 -Group ext -Only ListingMarket → qw_ext_ingest.py → 이음매 세션(local_89452ce8)에 market_type.parquet 알림 ② 이음매 세션 RAWDATA 상장 전 행 삭제 끝 → 팩터 DB 전체 재빌드 → 결합용 뷰 --full → FF(판 표식 3줄 completed_at) ③ 레인 재가동 · P1S03 30칸 재측정 → p4-pool → P4C03 init(설계 초안 d5176d2a4 · 철학 P1 · 판단 T1 의견 반영) → 등록 ④ 방향 수정 8 새 엔진 · 등록부 정의 2건 등급 문구 제거 ⑤ 세션 마감 T3",
    "context_files": [
     ".cache/fund_lag_rebuild_20261116/run_chain.sh",
     "04_Research/01_reports/factor_direction_blind_review_20261113/README.md",
@@ -1259,6 +1259,10 @@
     {
      "at": "2026-11-16T09:19:58+0900",
      "text": "다음: [11-16 09:19] ① 도훈 퀀티 1회 로그인('비밀번호 저장' 켬) 대기 — 09:08 시장구분 수급이 다른 기기 로그인으로 끊김(SAVEUSERPW=0 · 무인 재로그인 불가 · 오늘 밤 00:03 갱신도 "
+    },
+    {
+     "at": "2026-11-16T09:37:56+0900",
+     "text": "다음: ① 도훈 퀀티 로그인(비밀번호 저장 체크) 대기 → qw_refresh.ps1 -Group ext -Only ListingMarket → qw_ext_ingest.py → 이음매 세션(local_89452ce8)에 "
     }
    ]
   }
