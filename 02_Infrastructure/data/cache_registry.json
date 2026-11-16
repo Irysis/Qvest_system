@@ -462,33 +462,7 @@
       "depends_on": [],
       "tier": 2,
       "_note": "2026-07-17 orphan 등재. QuantiWise Fundamental xlsx 파싱(41 raw items) — 도훈 수동 refresh 의존(automation 보류, project-quantiwise-refresh-automation). SLA 미설정: 수동 소스라 stale 알림이 액션 불가 소음이 됨"
-    },
-    {
-      "path": ".cache/shares_issued.parquet",
-      "producer": "02_Infrastructure/data/parse_fundamental_xlsx.R",
-      "entry_fn": "(source)",
-      "schedule": "on_demand",
-      "date_col": null,
-      "max_lag_days": null,
-      "depends_on": [
-        ".cache/fundamental_xlsx.parquet"
-      ],
-      "tier": 3,
-      "_note": "2026-07-17 orphan 등재. ISSD 발행주식수 — QuantiWise 수동 소스 의존"
-    },
-    {
-      "path": ".cache/stock_buyback.parquet",
-      "producer": "02_Infrastructure/data/parse_fundamental_xlsx.R",
-      "entry_fn": "(source)",
-      "schedule": "on_demand",
-      "date_col": null,
-      "max_lag_days": null,
-      "depends_on": [
-        ".cache/fundamental_xlsx.parquet"
-      ],
-      "tier": 3,
-      "_note": "2026-07-17 orphan 등재. SBB 자사주 취득 — QuantiWise 수동 소스 의존. DART 보완 패널은 data_collector_dart_buyback.R 별도"
-    },
+    },
     {
       "path": ".cache/ml_momentum_pred.parquet",
       "producer": "02_Infrastructure/ml_pipeline/ml_momentum_ensemble.py",
