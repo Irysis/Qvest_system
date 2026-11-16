@@ -1,6 +1,6 @@
 {
  "schema": "q_judgment_ledger_v1",
- "updated_at": "2026-11-16T11:58:07+0900",
+ "updated_at": "2026-11-16T12:04:59+0900",
  "judgments": [
   {
    "id": "J-20261016-001",
@@ -3434,6 +3434,29 @@
     "B 제외 · C 메타데이터 · D 그대로"
    ],
    "expectation": "도훈 결정 뒤 라우터 · 순서 규칙 수정",
+   "confidence": 0.7,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261116-016",
+   "at": "2026-11-16T12:04:59+0900",
+   "op": "OP-20261116-L1-REMEASURE",
+   "kind": "harness_change",
+   "summary": "[11-16 12:04] 도훈 PAPER-ORDER-RIGOR-FILTER-20261116 = B 집행 — paper_rigor.py · paper_rigor_run.sh(레인 paper_rigor sonnet/medium · 단일 진입) · 아침 체인 [0.515] · 순서 규칙 v2(rigor 단계 · high 앞) · low = 건너뛰기 low_rigor · 2107.11371 = low(0/6) → 슬롯에서 측정 없이 거둠 · 2611.16540 = high(5/6) · 큐 소급 채점 진행 중",
+   "rationale": "등급은 LLM 이 아니라 기준 여섯 참 개수로 기계가 정한다(띠 ≥5 · ≥3 · ≤2 = 설정 paper_rigor.json · 근거 논문 3편). 전문 없이 low 로 빼지 않는다. 기존 순서 시험 39/39(판 번호 문자열만 v1 → v 로).",
+   "framework_refs": [
+    "decision_register PAPER-ORDER-RIGOR-FILTER-20261116 · next_paper_order v2"
+   ],
+   "evidence": [
+    "06_Registry/paper_rigor.jsonl · replication_skiplist.json · 08_Tests/scenarios/test_scn_paper_order.py 39/0"
+   ],
+   "alternatives": [
+    "LLM 이 등급을 직접 — 띠 경계가 흔들린다"
+   ],
+   "expectation": "큐 약 72편 채점 · low 일부 제외 · 다음 cpu 슬롯은 high/mid 부터",
    "confidence": 0.7,
    "status": "open",
    "reviews": [],

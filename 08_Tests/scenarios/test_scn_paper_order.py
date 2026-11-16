@@ -312,7 +312,7 @@ def main():
         o14, _ = pick(r1, "--list", "2")
         w0 = (o14[0].get("order_why") if o14 else "") or ""
         check("O14 order_why = 순서 키 값(engine · 소비 · long_leg · crisis · fifo#) · order_key 동봉",
-              w0.startswith("next_paper_order v1") and "fifo#2/2" in w0
+              w0.startswith("next_paper_order v") and "fifo#2/2" in w0
               and "engine=defense(소비 0" in w0 and isinstance(o14[0].get("order_key"), list), (w0, o14[:1]))
 
         # O15 공급기 E2E(next_replication.R)
@@ -336,8 +336,8 @@ def main():
                 return rq, [x for x in lg if x.get("event") == "replication_requested"]
             rq, lg = run15()
             check("O15a 공급기 요청 = 규칙 상단 · paper.order_why · 로그 replication_requested.order_why",
-                  rq.get("paper", {}).get("paper_key") == "2699.10002" and "next_paper_order v1" in (rq["paper"].get("order_why") or "")
-                  and lg and "next_paper_order v1" in (lg[-1].get("order_why") or ""), (rq.get("paper"), lg[-1:]))
+                  rq.get("paper", {}).get("paper_key") == "2699.10002" and "next_paper_order v" in (rq["paper"].get("order_why") or "")
+                  and lg and "next_paper_order v" in (lg[-1].get("order_why") or ""), (rq.get("paper"), lg[-1:]))
             os.remove(os.path.join(r15, "06_Registry", "replication_request.json"))
             os.remove(os.path.join(r15, "06_Registry", "next_paper_order.json"))
             rq2, lg2 = run15()

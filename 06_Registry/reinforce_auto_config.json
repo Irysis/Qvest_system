@@ -316,6 +316,11 @@
         "model": "sonnet",
         "effort": "medium",
         "note": "★v10.01 D12 — 보고 작성(정형 데이터 → 문장). 판정에 닿지 않는다."
+      },
+      "paper_rigor": {
+        "model": "sonnet",
+        "effort": "medium",
+        "note": "도훈 11-16 PAPER-ORDER-RIGOR-FILTER-20261116 B — 큐 논문 방법론 수준 기준 여섯 참/거짓 판독(등급은 paper_rigor.py 가 기계로) · 루브릭 판독이라 Sonnet(라우터와 같은 급) · 11-16 노력 수준 테스트 = medium"
       }
     },
     "policy_20261111": "★도훈 지시 2026-11-11 \"1계층 리서치에서 LLM 호출 파트에서 고품질 추론이 필요해서 최신 페이블 적용하면 리서치 퀄리티가 향상될 영역 있는지 확인해보고 적용시켜줘\"(decision_register LLM-LANE-FABLE-GENERATION-20261111). 적용(범위는 Q 해석) = 만드는 쪽 두 레인만 Fable — replication(논문 판독 + 엔진 구현) · chain_generator(강화 사슬 다음 걸음 설계). 모델은 별칭 fable(항상 최신 — 11-11 20:53 무인 인증 실호출에서 CLI 2.1.322 가 claude-fable-5-2 로 풀었다). 검증 쪽(fidelity_audit 6축 · overlay_audit · reviewer · steward · Judge · Superfan)은 Opus 유지 — ① 만든 모델과 다른 계열이 감사한다(policy_20260923 이 적어 둔 '다른 계열로 감사' 원칙) ② 감사는 축 병렬 호출이라 Fable 한도를 가장 빨리 먹는다(11-10 실사고: Fable 병렬 17개 → 한도 소진). 사양 실행(paper_router · cleaner_distill · coder · report_writer)은 Sonnet 유지. 처방 루프 역할 키(analyst · prescriber …)는 v10.2 에서 사슬 생성기가 대신해 쉬고 있어 그대로 둔다. policy_20261013 의 'Fable 미사용'은 이 두 레인에 한해 이 줄이 대체한다. 검사 = 08_Tests/ops/test_rf_llm_fallback.sh E3(편성표) · E3b(Fable 은 지정 레인만 · Fable 레인은 폴백 필수) · test_llm_lane_wiring.sh C6c · 08_Tests/scenarios/test_scn_chain_gen_guard.sh F 절(생성기 한도 폴백 거동). 되돌리기 = lanes.replication.model 을 opus 로 + lanes.chain_generator 삭제 + 위 검사의 편성표. ★같은 날 21:1x 도훈 \"검증도 올려\"(decision_register LLM-LANE-FABLE-VERIFICATION-20261111): 검증 쪽 가운데 충실도 감사 판독형 3축(06_Registry/rf_fidelity_axes.json — signal · portfolio · undeclared = fable/xhigh)과 Judge(.claude/agents/judge.md model fable)도 Fable 로 올린다. 위 '검증 쪽 Opus 유지'는 이 둘에 한해 이 문장이 대체한다(도훈이 한도 소모 증가를 듣고 고른 것). 그대로인 것 = 대조형 3축(sonnet) · overlay_audit · Superfan 3종 · 단일 감사자 폴백(lanes.fidelity_audit = opus/xhigh). 감사 팬아웃의 Fable 축은 한도에 닿으면 그 축만 opus/max 로 처음부터 다시 돈다(필수 축이 죽으면 감사가 unverifiable 이 되므로).",

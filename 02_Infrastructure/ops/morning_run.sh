@@ -230,6 +230,14 @@ stage_result() {   # $1=표시명 $2=exit코드 $3=경보 컴포넌트명
   else
     echo "      program_paper_sync skip (missing)"
   fi
+  # (2026-11-16 도훈 PAPER-ORDER-RIGOR-FILTER-20261116 = B) 큐 논문 방법론 수준 채점 — low 는 건너뛰기 목록(큐 제외) · high 는 순서 앞
+  echo "[0.515/3] paper_rigor_run.sh (논문 방법론 수준 채점 · low = 큐 제외)"
+  if [ -f "$BASE/02_Infrastructure/ops/paper_rigor_run.sh" ]; then
+    QM_ROOT="$BASE" bash "$BASE/02_Infrastructure/ops/paper_rigor_run.sh" >> "$STAGE_LOG_DIR"/qm_paper_rigor.log 2>&1
+    stage_result "paper_rigor" "$?" ""
+  else
+    echo "      paper_rigor skip (missing)"
+  fi
   echo "[0.52/3] paper_atlas_run.sh (v10.01 — 메커니즘 지도 추출 · 게이트 QVEST_PAPER_ATLAS_ENABLE=1)"
   if [ -f "$BASE/02_Infrastructure/ops/paper_atlas_run.sh" ]; then
     bash "$BASE/02_Infrastructure/ops/paper_atlas_run.sh" >> "$STAGE_LOG_DIR"/qm_paper_atlas.log 2>&1

@@ -369,8 +369,9 @@ def alpha_pending(stage):
 #     (시험 08_Tests/scenarios/test_scn_paper_order.py O12 가 그 필드를 바꿔도 순서 불변 + 이 절 소스 토큰을 정적 단정한다.)
 #   설정 부재 · 판독 실패 · schema 불일치 · disabled · 모르는 step · L1 판독 불가 → FIFO(종전 동작) + stderr 1줄.
 ORDER_SCHEMA = "next_paper_order_v1"
-ORDER_FIELDS = ("engine", "long_leg", "long_only", "crisis_evidence", "strategy_reported")
-ORDER_STEPS = ("construction_needs_base", "engine_gap", "long_leg", "crisis_evidence")
+ORDER_FIELDS = ("engine", "long_leg", "long_only", "crisis_evidence", "strategy_reported", "rigor")
+ORDER_STEPS = ("construction_needs_base", "engine_gap", "rigor", "long_leg", "crisis_evidence")
+RIGOR_FILE = "paper_rigor.jsonl"   # (2026-11-16 PAPER-ORDER-RIGOR-FILTER-20261116) 논문 방법론 수준 — paper_rigor.py 가 쓴다 · 논문별 마지막 줄
 ORDER_ENGINES = ("return", "defense", "construction")
 ORDER_FILE = "next_paper_order.json"
 L1_FILE = "reinforce_ledger_l1.json"
@@ -498,6 +499,9 @@ def order_pending(pairs, meta, counts, rule):
                 key_t.append(1 if (eng == "construction" and base_n < need) else 0)
             elif name == "engine_gap":
                 key_t.append((0, counts.get(eng, 0)) if eng else (1, 0))
+            elif name == "rigor":
+                rg_rank = s.get("rank") or {"high": 0, "mid": 1}
+                key_t.append(rg_rank.get(str(view.get("rigor") or "").strip().lower(), s.get("default", 2)))
             elif name == "long_leg":
                 if any(_norm_yn(view.get(f)) == "yes" for f in (s.get("long_only_fields") or ("long_only",))):
                     ll = "yes"
@@ -509,9 +513,9 @@ def order_pending(pairs, meta, counts, rule):
                 ce_default = s.get("default", 1)
                 key_t.append(ce_rank.get(ce, ce_default))
         key_t.append(idx)
-        why = "next_paper_order %s · engine=%s(소비 %d · 기저 %d) · long_leg=%s · crisis=%s · fifo#%d/%d" % (
+        why = "next_paper_order %s · engine=%s(소비 %d · 기저 %d) · rigor=%s · long_leg=%s · crisis=%s · fifo#%d/%d" % (
             ver, eng or "unknown", counts.get(eng, 0) if eng else 0,
-            sum(counts.get(b, 0) for b in ("return", "defense")), ll, ce or "unknown", idx + 1, n_all)
+            sum(counts.get(b, 0) for b in ("return", "defense")), str(view.get("rigor") or "unknown"), ll, ce or "unknown", idx + 1, n_all)
         rows.append((tuple(key_t), key, rec, why))
     rows.sort(key=lambda t: t[0])
     return [(k, r, {"order_key": [list(x) if isinstance(x, tuple) else x for x in kt], "why": w}) for kt, k, r, w in rows]
@@ -522,6 +526,24 @@ def _fifo_pairs(pairs, reason):
     n = len(pairs)
     return [(k, r, {"order_key": [i], "why": "fifo (next_paper_order %s) · fifo#%d/%d" % (reason, i + 1, n)})
             for i, (k, r) in enumerate(pairs)]
+
+
+def _rigor_meta(registry_dir):
+    """논문별 마지막 rigor 값(paper_rigor.jsonl). 파일이 없거나 줄이 깨지면 그 줄만 건너뛴다(순서 = 미상 취급)."""
+    out = {}
+    p = os.path.join(registry_dir, RIGOR_FILE)
+    if not os.path.exists(p):
+        return out
+    with open(p, encoding="utf-8") as fh:
+        for ln in fh:
+            try:
+                r = json.loads(ln)
+            except Exception:
+                continue
+            k = _order_key_id(r.get("paper_key"))
+            if k and r.get("rigor"):
+                out[k] = str(r["rigor"])
+    return out
 
 
 def alpha_pending_ordered(stage, registry_dir):
@@ -536,6 +558,8 @@ def alpha_pending_ordered(stage, registry_dir):
     #   load_order_rule 이 거르지 않는다 — 평가 예외가 선택을 멈추지 않도록 FIFO(안전한 쪽)로 떨어진다.
     try:
         meta = route_order_meta(stage)
+        for _k, _rg in _rigor_meta(registry_dir).items():   # 방법론 수준(논문 원문 판독 · 성과 무관)
+            meta.setdefault(_k, {})["rigor"] = _rg
         excl = ("combo:",)
         for s in rule.get("steps") or []:
             if s.get("name") == "engine_gap" and isinstance(s.get("exclude_key_prefixes"), list):
