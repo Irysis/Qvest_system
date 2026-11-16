@@ -505,6 +505,16 @@ else
     DR_FAILED+=("listing_cut(rc=$_lc_rc)")
   fi
 fi
+# ── [1y2] RAWDATA 로그 변환 캐시 (2026-11-16 · 도훈 '로그 캐시 파일 하나 더 · 다른 전략에도 쓰게') ─────────
+#   .cache/rawdata_log.parquet = 상장 전 행 삭제 뒤 RAWDATA 의 로그 수익률 · 로그 시총 · 로그 거래량/대금 · 장중 비율(가격 수준 로그는 넣지 않는다 — PIT)
+#   build_rawdata_log.R(약 15초 · 원자 교체). 실패 = 경고만(옛 캐시 유지 · 다음 밤 재시도).
+_rl_out="$(QM_ROOT="$BASE" "$RSCRIPT" --no-save "$INFRA/data/build_rawdata_log.R" --root "$BASE" 2>&1)"; _rl_rc=$?
+if [ "$_rl_rc" -eq 0 ]; then
+  echo "[1y2] 로그 캐시 — $(printf '%s\n' "$_rl_out" | grep '^RAWDATA_LOG ' | tail -1)"
+else
+  printf '%s\n' "$_rl_out" | tail -5
+  echo "!! [1y2] 로그 캐시 rc=$_rl_rc — 옛 rawdata_log.parquet 유지"; DR_FAILED+=("rawdata_log(rc=$_rl_rc)")
+fi
 # ── [1z] RAWDATA 최근일 Size 채움률 경보 (2026-09-23 W-02 · 도훈 승인 처방 §3) ─────────
 #   사고: Naver 시총 스냅샷이 09-12 부터 매 실행 디코드 예외로 죽어 RAWDATA.Size 가
 #   09-10~22 100% 결측이었는데, 이 스텝은 "RAWDATA 전진" 만 봐서 매일 성공으로 끝났다.

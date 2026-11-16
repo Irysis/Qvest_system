@@ -61,6 +61,19 @@
       "_value_note": "★2026-10-08 도훈 지시: 벤치 값 검사(abs_ret_max |BM_Ret|>0.15 · RAWDATA↔benchmark parity) 삭제 — 벤치는 최신화(lag·최근일 채움률)만 본다. 계기: 2026-07-31 BM_Ret +19.98%(실제 시장 사건)가 매일 CRITICAL. 아래는 구판 사료. 2026-07-03 감사 DATA-P0-1: BM_Ret +581% 손상값이 신선도-단일축에서 FRESH 판정 → 7월 factor DB 60팩터(M08_Residual_Mom 포함) 결손. threshold 0.15 근거 = 1990~2026 실측 max |BM_Ret| 0.1223 (지수 일수익). required_cols = Layer2 strip 사고(rawdata_sanitize core_cols) 재발 방지"
     },
     {
+      "path": ".cache/rawdata_log.parquet",
+      "producer": "02_Infrastructure/data/build_rawdata_log.R (daily_refresh [1y2])",
+      "entry_fn": "(source)",
+      "schedule": "daily",
+      "date_col": "Date",
+      "max_lag_days": 1,
+      "depends_on": [
+        ".cache/RAWDATA.parquet"
+      ],
+      "tier": 2,
+      "_note": "2026-11-16 도훈 '로그 캐시 파일 하나 더 · 다른 전략에도' — 로그 수익률 · 로그 시총 · 로그 거래량/대금 · 장중 비율(가격 수준 로그 없음 · PIT)"
+    },
+    {
       "path": ".cache/benchmark.parquet",
       "producer": "02_Infrastructure/data/krx_data_collector.R",
       "entry_fn": "(orchestrated)",
