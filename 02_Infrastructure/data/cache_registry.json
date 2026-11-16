@@ -567,33 +567,7 @@
       "depends_on": [],
       "tier": 2,
       "_note": "2026-07-17 orphan 등재. QuantiWise Fundamental xlsx 파싱(41 raw items) — 도훈 수동 refresh 의존(automation 보류, project-quantiwise-refresh-automation). SLA 미설정: 수동 소스라 stale 알림이 액션 불가 소음이 됨"
-    },
-    {
-      "path": ".cache/fundamental_xlsx_derived.parquet",
-      "producer": "02_Infrastructure/data/parse_fundamental_xlsx.R",
-      "entry_fn": "(source)",
-      "schedule": "on_demand",
-      "date_col": null,
-      "max_lag_days": null,
-      "depends_on": [
-        ".cache/fundamental_xlsx.parquet"
-      ],
-      "tier": 2,
-      "_note": "2026-07-17 orphan 등재. xlsx 파생 140 items. 수동 소스 의존 — SLA 미설정 (fundamental_xlsx와 동일 사유)"
-    },
-    {
-      "path": ".cache/fundamental_xlsx_ttm.parquet",
-      "producer": "02_Infrastructure/data/parse_fundamental_xlsx.R",
-      "entry_fn": "(source)",
-      "schedule": "on_demand",
-      "date_col": null,
-      "max_lag_days": null,
-      "depends_on": [
-        ".cache/fundamental_xlsx.parquet"
-      ],
-      "tier": 2,
-      "_note": "2026-07-17 orphan 등재. xlsx TTM 파생. 수동 소스 의존 — SLA 미설정"
-    },
+    },
     {
       "path": ".cache/shares_issued.parquet",
       "producer": "02_Infrastructure/data/parse_fundamental_xlsx.R",
