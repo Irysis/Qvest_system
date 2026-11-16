@@ -372,6 +372,12 @@ setorder(.FA, Ticker, FY)
 .FA[, f_ag   := fifelse(is.finite(TotalAssets) & is.finite(TA_prev) & TA_prev > 0, TotalAssets / TA_prev - 1, NA_real_)]   # No.31 Change Rate of Total Assets
 .FA[, f_div  := fifelse(is.finite(Dividends), abs(Dividends), NA_real_)]                                     # No.21 분자 'Dividends' = 배당금지급액(CF · 유출 부호 제거)
 .FA[, usable := as.Date(sprintf("%d-03-31", FY + 1L))]                                                       # C4: 사업연도 익년 3/31 (changed(8))
+# PIT C4 소비 규약(11-16 · pit.md · 도훈 법정기한 + 45일): 쓸 수 있는 첫날 = 재무 원천 행의 Factor_Date — 고정일은 늦추는 쪽(pmax)만 · Factor_Date 없는 기간은 쓰지 않는다
+.FDK <- as.data.table(dplyr::collect(dplyr::select(arrow::open_dataset(.fm_path), Ticker, Period, Factor_Date)))
+.FDK <- .FDK[, .(FD = max(as.Date(Factor_Date))), by = .(Ticker = as.character(Ticker), Period = as.integer(as.character(Period)))]
+.FA[.FDK[Period %% 100L == 12L, .(Ticker, FY = Period %/% 100L, FD)], on = .(Ticker, FY), FD := i.FD]
+.FA[, usable := fifelse(is.na(FD), as.Date(NA), pmax(usable, FD))]
+.FA <- .FA[!is.na(usable)][, FD := NULL]; rm(.FDK)
 .fcols <- c("FY", "TotalEquity", "NetIncome", "f_div", "Revenue", "OperatingCF",
             "f_roe", "f_roa", "f_roic", "f_acc", "f_at", "f_cr", "f_er", "f_ag")
 .n_fa <- nrow(.FA); .n_fa_tk <- uniqueN(.FA$Ticker); .fy_rng <- range(.FA$FY)

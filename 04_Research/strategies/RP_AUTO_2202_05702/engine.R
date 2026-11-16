@@ -453,6 +453,13 @@ setorder(.OBS, Ticker, fy, qn)
 .OBS[, d_bv   := .pch(bv, bv_l)]
 .OBS[, d_liab := .pch(liab, lb_l)]
 .OBS[, usable := .usable_of(fy, qn)]
+# PIT C4 소비 규약(11-16 · pit.md · 도훈 법정기한 + 45일): 쓸 수 있는 첫날 = 재무 원천 행의 Factor_Date(같은 종목 · 기간 · 원천 무관) — 고정일은 늦추는 쪽(pmax)만 · Factor_Date 없는 기간은 쓰지 않는다
+.FDK <- as.data.table(dplyr::collect(dplyr::select(arrow::open_dataset(.fm_path, format = "parquet"), Ticker, Period, Factor_Date)))
+.FDK <- .FDK[, .(FD = max(as.Date(Factor_Date))), by = .(Ticker = as.character(Ticker), Period = as.integer(as.character(Period)))]
+.OBS[, Period_i := as.integer(fy) * 100L + as.integer(qn) * 3L]
+.OBS[.FDK, on = .(Ticker, Period_i = Period), FD := i.FD]
+.OBS[, usable := fifelse(is.na(FD), as.Date(NA), pmax(usable, FD))]
+.OBS <- .OBS[!is.na(usable)][, c("FD", "Period_i") := NULL]; rm(.FDK)
 setorder(.OBS, Ticker, usable, prio)
 .OBS <- unique(.OBS, by = c("Ticker", "usable"))
 cat(sprintf("%s 회계 관측 %d행(%d종 · FY%d~%d · 원천 dart_q %d / xlsx_q %d / dart_a %d · DART 비-Q4 %d · 원천 이음매 결측화 %d) · 기간말 시총 %.1f%% · 자본총계 %.1f%% · TTM 순이익 %.1f%% · 연속분기 직전값 %.1f%%\n",

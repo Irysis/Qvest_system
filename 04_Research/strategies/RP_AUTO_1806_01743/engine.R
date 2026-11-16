@@ -693,6 +693,13 @@ rm(.fm, .fx, .xq, .da, .qw, .ql, .bs, .q4fix, .av_fb)
 # (f) usable(C4): 3월 분기 → 5/15 · 6월 → 8/15 · 9월 → 11/15 · 12월(연간) → 익년 3/31 → 월말 as-of (캐리 ≤ 400일 · 시차 = 공시 규약)
 .FQ[, usable := as.Date(fifelse(MM == 12L, sprintf("%d-03-31", FY + 1L),
                           fifelse(MM == 3L, sprintf("%d-05-15", FY), fifelse(MM == 6L, sprintf("%d-08-15", FY), sprintf("%d-11-15", FY)))))]
+# PIT C4 소비 규약(11-16 · pit.md · 도훈 법정기한 + 45일): 쓸 수 있는 첫날 = 재무 원천 행의 Factor_Date — 고정일은 늦추는 쪽(pmax)만 · Factor_Date 없는 기간은 쓰지 않는다
+.FDK <- as.data.table(dplyr::collect(dplyr::select(arrow::open_dataset(.FM_PATH), Ticker, Period, Factor_Date)))
+.FDK <- .FDK[, .(FD = max(as.Date(Factor_Date))), by = .(Ticker = as.character(Ticker), Period = as.integer(as.character(Period)))]
+.FQ[, Period_i := as.integer(FY) * 100L + as.integer(MM)]
+.FQ[.FDK, on = .(Ticker, Period_i = Period), FD := i.FD]
+.FQ[, usable := fifelse(is.na(FD), as.Date(NA), pmax(usable, FD))]
+.FQ <- .FQ[!is.na(usable)][, c("FD", "Period_i") := NULL]; rm(.FDK)
 .carry <- c("NetIncome", "TotalEquity", "Revenue", "OperatingCF", "TotalAssets", "TotalLiab", "CashAndEquiv", "NonCurrentLiab", "NI5", "CF5", "QI")
 .fcols <- c(.FUND_FEATS, .carry)
 .n_fq <- nrow(.FQ); .n_fq_tk <- uniqueN(.FQ$Ticker); .fy_rng <- range(.FQ$FY)
