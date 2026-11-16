@@ -1,0 +1,341 @@
+{
+  "args": {
+    "start": null,
+    "end": null,
+    "workers": 4,
+    "budget": null,
+    "targets": "earn,val,dist,ret",
+    "smoke": true,
+    "history": null,
+    "no_linear": true,
+    "engine": "tpot"
+  },
+  "start": "2012-01",
+  "end": "2012-03",
+  "history_start": "2009-01",
+  "budget_max_iter_flaml": 8,
+  "engines": [
+    "tpot"
+  ],
+  "engine_cfg": {
+    "tpot": {
+      "library": "TPOT",
+      "version": "1.1.0",
+      "_src": "Olson, Bartley, Urbanowicz & Moore 2016 GECCO 'Evaluation of a Tree-based Pipeline Optimization Tool for Automating Data Science' https://doi.org/10.1145/2908812.2908918 · TPOT 1.x(EpistasisLab · dask 기반 · 2025) — 유전 프로그래밍 파이프라인 탐색",
+      "python": ".venv_nlff_tpot/Scripts/python.exe",
+      "search_space": "linear",
+      "max_eval_time_mins": 10,
+      "_defaults_src": "search_space 'linear' · max_eval_time_mins 10 · validation_strategy 'none' = TPOT 1.1.0 기본값. 바꾼 것 = cv(PredefinedSplit 시간순 — 기본 cv=10 은 뒤섞은 KFold) · scorers(r2 / roc_auc — FLAML 과 같은 지표) · population_size × generations(평가 수 예산)",
+      "budget": {
+        "population_size": 10,
+        "generations": 6,
+        "time_left_s": 3600
+      },
+      "budget_smoke": {
+        "population_size": 4,
+        "generations": 2,
+        "time_left_s": 600
+      },
+      "_budget_src": "평가 수 ≈ 60 = 개체 10 × 세대 6(Bergstra & Bengio 2012 · 기본 개체 50 으로는 세대 1 = 무작위 탐색이 되므로 진화가 일어나도록 개체를 줄여 세대를 늘렸다 — 측정 전 고정) · 시간 상한 = 라이브러리 기본 max_time_mins 60"
+    }
+  },
+  "epoch": "all_hyg_px1000_2000_v1",
+  "flaml_version": "2.8.0",
+  "python": "3.12.10",
+  "refits": [
+    {
+      "target": "earn",
+      "refit_date": "2011-12-29",
+      "cut": "2011-11-29",
+      "predict_months": [
+        "2012-01-31",
+        "2012-02-29",
+        "2012-03-30"
+      ],
+      "engines": {
+        "tpot": {
+          "engine": "tpot",
+          "tag": "tpot_earn_2011-12-29",
+          "python": "3.12.10",
+          "platform": "win32",
+          "n_train": 1732,
+          "n_val": 1807,
+          "n_window": 7363,
+          "n_pred": 3695,
+          "score_columns": [
+            "ic_mean"
+          ],
+          "library": "tpot",
+          "version": "1.1.0",
+          "n_trials": 8,
+          "n_trials_scored": 7,
+          "selection_metric": "monthly_spearman_ic",
+          "best_pipeline": "Pipeline(steps=[('passthrough', Passthrough()),\n                ('rfe',\n                 RFE(estimator=ExtraTreesRegressor(bootstrap=np.True_,\n                                                   max_features=0.4378882154865,\n                                                   min_samples_leaf=20,\n                                                   min_samples_split=10,\n                                                   n_jobs=1,\n                                                   random_state=20261116),\n                     step=0.9049092031994)),\n                ('featureunion-1',\n                 FeatureUnion(transformer_list=[('skiptransformer',\n                                                 SkipTransformer()),\n                                                ('passthrough',\n                                                 Passthrough())]))...\n                                                                                                                                    min_samples_leaf=2,\n                                                                                                                                    min_samples_split=8,\n                                                                                                                                    n_jobs=1,\n                                                                                                                                    random_state=20261116)))])),\n                                                ('passthrough',\n                                                 Passthrough())])),\n                ('histgradientboostingregressor',\n                 HistGradientBoostingRegressor(early_stopping=False,\n                                               l2_regularization=0.0006519125592,\n                                               learning_rate=0.0087849842933,\n                                               max_features=0.8758928233555,\n                                               m",
+          "best_estimator": "HistGradientBoostingRegressor",
+          "ensemble_members": [
+            {
+              "weight": 1.0,
+              "model": "HistGradientBoostingRegressor"
+            }
+          ],
+          "search_s": 268.2,
+          "seconds": 513.0,
+          "peak_rss_tree_gb": 1.37,
+          "wall_s": 512.9
+        }
+      },
+      "n_train": 1732,
+      "n_val": 1807,
+      "n_refit_full": 7363,
+      "n_sample_months": 8,
+      "n_inputs": 202,
+      "n_pred": 3695,
+      "seconds": 523.7,
+      "peak_rss_gb_driver": 1.84
+    },
+    {
+      "target": "val",
+      "refit_date": "2011-12-29",
+      "cut": "2011-11-29",
+      "predict_months": [
+        "2012-01-31",
+        "2012-02-29"
+      ],
+      "engines": {
+        "tpot": {
+          "engine": "tpot",
+          "tag": "tpot_val_2011-12-29",
+          "python": "3.12.10",
+          "platform": "win32",
+          "n_train": 10406,
+          "n_val": 1993,
+          "n_window": 12399,
+          "n_pred": 2436,
+          "score_columns": [
+            "ic_mean"
+          ],
+          "library": "tpot",
+          "version": "1.1.0",
+          "n_trials": 8,
+          "n_trials_scored": 7,
+          "selection_metric": "monthly_spearman_ic",
+          "best_pipeline": "Pipeline(steps=[('passthrough', Passthrough()),\n                ('rfe',\n                 RFE(estimator=ExtraTreesRegressor(bootstrap=np.True_,\n                                                   max_features=0.4378882154865,\n                                                   min_samples_leaf=20,\n                                                   min_samples_split=10,\n                                                   n_jobs=1,\n                                                   random_state=20261116),\n                     step=0.9049092031994)),\n                ('featureunion-1',\n                 FeatureUnion(transformer_list=[('skiptransformer',\n                                                 SkipTransformer()),\n                                                ('passthrough',\n                                                 Passthrough())])),\n                ('featureunion-2',\n                 FeatureUnion(transformer_list=[('skiptransformer',\n                                                 SkipTransformer()),\n                                                ('passthrough',\n                                                 Passthrough())])),\n                ('randomforestregressor',\n                 RandomForestRegressor(bootstrap=np.False_,\n                                       max_features=0.3701873746157,\n                                       min_samples_leaf=21,\n                                       min_samples_split=20, n_jobs=1,\n                                       random_state=20261116))])",
+          "best_estimator": "RandomForestRegressor",
+          "ensemble_members": [
+            {
+              "weight": 1.0,
+              "model": "RandomForestRegressor"
+            }
+          ],
+          "search_s": 770.7,
+          "seconds": 816.0,
+          "peak_rss_tree_gb": 1.55,
+          "wall_s": 816.0
+        }
+      },
+      "n_train": 10406,
+      "n_val": 1993,
+      "n_refit_full": 12399,
+      "n_sample_months": 12,
+      "n_inputs": 203,
+      "n_pred": 2436,
+      "seconds": 816.1,
+      "peak_rss_gb_driver": 1.84
+    },
+    {
+      "target": "val",
+      "refit_date": "2012-03-30",
+      "cut": "2012-02-29",
+      "predict_months": [
+        "2012-03-30"
+      ],
+      "engines": {
+        "tpot": {
+          "engine": "tpot",
+          "tag": "tpot_val_2012-03-30",
+          "python": "3.12.10",
+          "platform": "win32",
+          "n_train": 10330,
+          "n_val": 2436,
+          "n_window": 12766,
+          "n_pred": 1259,
+          "score_columns": [
+            "ic_mean"
+          ],
+          "library": "tpot",
+          "version": "1.1.0",
+          "n_trials": 8,
+          "n_trials_scored": 7,
+          "selection_metric": "monthly_spearman_ic",
+          "best_pipeline": "Pipeline(steps=[('passthrough', Passthrough()),\n                ('rfe',\n                 RFE(estimator=ExtraTreesRegressor(bootstrap=np.True_,\n                                                   max_features=0.4378882154865,\n                                                   min_samples_leaf=20,\n                                                   min_samples_split=10,\n                                                   n_jobs=1,\n                                                   random_state=20261116),\n                     step=0.9049092031994)),\n                ('featureunion-1',\n                 FeatureUnion(transformer_list=[('skiptransformer',\n                                                 SkipTransformer()),\n                                                ('passthrough',\n                                                 Passthrough())])),\n                ('featureunion-2',\n                 FeatureUnion(transformer_list=[('skiptransformer',\n                                                 SkipTransformer()),\n                                                ('passthrough',\n                                                 Passthrough())])),\n                ('randomforestregressor',\n                 RandomForestRegressor(bootstrap=np.False_,\n                                       max_features=0.3701873746157,\n                                       min_samples_leaf=21,\n                                       min_samples_split=20, n_jobs=1,\n                                       random_state=20261116))])",
+          "best_estimator": "RandomForestRegressor",
+          "ensemble_members": [
+            {
+              "weight": 1.0,
+              "model": "RandomForestRegressor"
+            }
+          ],
+          "search_s": 769.5,
+          "seconds": 819.1,
+          "peak_rss_tree_gb": 1.5,
+          "wall_s": 819.1
+        }
+      },
+      "n_train": 10330,
+      "n_val": 2436,
+      "n_refit_full": 12766,
+      "n_sample_months": 12,
+      "n_inputs": 203,
+      "n_pred": 1259,
+      "seconds": 819.2,
+      "peak_rss_gb_driver": 1.84
+    },
+    {
+      "target": "dist",
+      "refit_date": "2011-12-29",
+      "cut": "2011-11-29",
+      "predict_months": [
+        "2012-01-31",
+        "2012-02-29",
+        "2012-03-30"
+      ],
+      "engines": {
+        "tpot": {
+          "engine": "tpot",
+          "tag": "tpot_dist_2011-12-29",
+          "python": "3.12.10",
+          "platform": "win32",
+          "n_train": 1830,
+          "n_val": 967,
+          "n_window": 6892,
+          "n_pred": 3695,
+          "score_columns": [
+            "roc_auc_score"
+          ],
+          "library": "tpot",
+          "version": "1.1.0",
+          "n_trials": 8,
+          "n_trials_scored": 5,
+          "selection_metric": "roc_auc",
+          "best_pipeline": "Pipeline(steps=[('passthrough', Passthrough()),\n                ('rfe',\n                 RFE(estimator=ExtraTreesClassifier(bootstrap=np.True_,\n                                                    criterion=np.str_('entropy'),\n                                                    max_features=0.0973930644137,\n                                                    min_samples_leaf=14,\n                                                    min_samples_split=17,\n                                                    n_jobs=1,\n                                                    random_state=20261116),\n                     step=0.9049092031994)),\n                ('featureunion-1',\n                 FeatureUnion(transformer_list=[('skiptransformer',\n                                                 SkipTransformer()),\n                                                ('...\n                 FeatureUnion(transformer_list=[('skiptransformer',\n                                                 SkipTransformer()),\n                                                ('passthrough',\n                                                 Passthrough())])),\n                ('histgradientboostingclassifier',\n                 HistGradientBoostingClassifier(early_stopping=False,\n                                                l2_regularization=0.0006519125592,\n                                                learning_rate=0.0087849842933,\n                                                max_features=0.598628554962,\n                                                max_leaf_nodes=1804,\n                                                min_samples_leaf=84,\n                                                random_state=20261116,\n                                                tol=0.0001,\n                                                validation_fraction=None))])",
+          "best_estimator": "HistGradientBoostingClassifier",
+          "ensemble_members": [
+            {
+              "weight": 1.0,
+              "model": "HistGradientBoostingClassifier"
+            }
+          ],
+          "search_s": 40.4,
+          "seconds": 54.0,
+          "peak_rss_tree_gb": 1.34,
+          "wall_s": 53.9
+        }
+      },
+      "n_train": 1830,
+      "n_val": 967,
+      "n_refit_full": 6892,
+      "n_sample_months": 7,
+      "n_inputs": 202,
+      "n_pred": 3695,
+      "seconds": 54.0,
+      "peak_rss_gb_driver": 1.84
+    },
+    {
+      "target": "ret",
+      "refit_date": "2011-12-29",
+      "cut": "2011-11-29",
+      "predict_months": [
+        "2012-01-31",
+        "2012-02-29",
+        "2012-03-30"
+      ],
+      "engines": {
+        "tpot": {
+          "engine": "tpot",
+          "tag": "tpot_ret_2011-12-29",
+          "python": "3.12.10",
+          "platform": "win32",
+          "n_train": 1830,
+          "n_val": 967,
+          "n_window": 6892,
+          "n_pred": 3695,
+          "score_columns": [
+            "ic_mean"
+          ],
+          "library": "tpot",
+          "version": "1.1.0",
+          "n_trials": 8,
+          "n_trials_scored": 7,
+          "selection_metric": "monthly_spearman_ic",
+          "best_pipeline": "Pipeline(steps=[('passthrough', Passthrough()),\n                ('rfe',\n                 RFE(estimator=ExtraTreesRegressor(bootstrap=np.True_,\n                                                   max_features=0.4378882154865,\n                                                   min_samples_leaf=20,\n                                                   min_samples_split=10,\n                                                   n_jobs=1,\n                                                   random_state=20261116),\n                     step=0.9049092031994)),\n                ('featureunion-1',\n                 FeatureUnion(transformer_list=[('skiptransformer',\n                                                 SkipTransformer()),\n                                                ('passthrough',\n                                                 Passthrough())]))...\n                 FeatureUnion(transformer_list=[('skiptransformer',\n                                                 SkipTransformer()),\n                                                ('passthrough',\n                                                 Passthrough())])),\n                ('histgradientboostingregressor',\n                 HistGradientBoostingRegressor(early_stopping=False,\n                                               l2_regularization=0.0006519125592,\n                                               learning_rate=0.0087849842933,\n                                               max_features=0.8758928233555,\n                                               max_leaf_nodes=1366,\n                                               min_samples_leaf=126,\n                                               random_state=20261116,\n                                               tol=0.0001))])",
+          "best_estimator": "HistGradientBoostingRegressor",
+          "ensemble_members": [
+            {
+              "weight": 1.0,
+              "model": "HistGradientBoostingRegressor"
+            }
+          ],
+          "search_s": 159.1,
+          "seconds": 173.0,
+          "peak_rss_tree_gb": 1.36,
+          "wall_s": 172.9
+        }
+      },
+      "n_train": 1830,
+      "n_val": 967,
+      "n_refit_full": 6892,
+      "n_sample_months": 7,
+      "n_inputs": 202,
+      "n_pred": 3695,
+      "seconds": 173.0,
+      "peak_rss_gb_driver": 1.84
+    }
+  ],
+  "timing": {
+    "features_s": 31.3,
+    "price_panel_s": 7.8,
+    "total_s": 2428.7
+  },
+  "pit_selftest_features": {
+    "months": [
+      "2010-02-26",
+      "2012-03-30"
+    ],
+    "rows_checked": 279,
+    "pass": true
+  },
+  "n_rows_panel": 40144,
+  "n_features": 204,
+  "outlier_selftest": {
+    "ticker": "A000070",
+    "factor": 1000000.0,
+    "n_rows_injected": 37,
+    "target": "earn",
+    "refit_date": "2011-12-29",
+    "control_on_spearman_min_mean": [
+      0.976458,
+      0.977216
+    ],
+    "control_off_spearman_min_mean": [
+      0.003498,
+      0.023865
+    ],
+    "diag_drop_ticker_spearman_min_mean": [
+      0.985698,
+      0.986235
+    ],
+    "rebuild_equals_main_design": true,
+    "threshold_min": 0.99,
+    "pass": false
+  },
+  "failed_engines": {},
+  "output_rows": {
+    "tpot": {
+      "NLFF_DIST": 3695,
+      "NLFF_EARN": 3695,
+      "NLFF_RET": 3695,
+      "NLFF_VAL": 3695
+    }
+  },
+  "peak_rss_gb": 1.84
+}

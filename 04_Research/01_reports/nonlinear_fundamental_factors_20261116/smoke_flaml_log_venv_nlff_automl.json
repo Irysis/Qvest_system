@@ -1,0 +1,367 @@
+{
+  "args": {
+    "start": null,
+    "end": null,
+    "workers": 4,
+    "budget": null,
+    "targets": "earn,val,dist,ret",
+    "smoke": true,
+    "history": null,
+    "no_linear": false,
+    "engine": "flaml"
+  },
+  "start": "2012-01",
+  "end": "2012-03",
+  "history_start": "2009-01",
+  "budget_max_iter_flaml": 8,
+  "engines": [
+    "flaml"
+  ],
+  "engine_cfg": {
+    "flaml": {
+      "python": "(드라이버 프로세스)",
+      "_budget_src": "automl.max_iter(60) · smoke.max_iter(8)"
+    }
+  },
+  "epoch": "all_hyg_px1000_2000_v1",
+  "flaml_version": "2.8.0",
+  "python": "3.12.10",
+  "refits": [
+    {
+      "target": "earn",
+      "refit_date": "2011-12-29",
+      "cut": "2011-11-29",
+      "predict_months": [
+        "2012-01-31",
+        "2012-02-29",
+        "2012-03-30"
+      ],
+      "engines": {
+        "flaml": {
+          "selection_metric": "monthly_spearman_ic(loss = 1 − IC)",
+          "best_estimator": "lgbm",
+          "n_trials": 8,
+          "best_loss_per_estimator": {
+            "lgbm": 0.7313673611835707,
+            "rf": 0.7809570877933596
+          },
+          "ensemble_weights": {
+            "lgbm": 0.96,
+            "rf": 0.04
+          },
+          "best_configs": {
+            "lgbm": {
+              "n_estimators": 9,
+              "num_leaves": 8,
+              "min_child_samples": 29,
+              "learning_rate": 0.02263705397970757,
+              "log_max_bin": 10,
+              "colsample_bytree": 1.0,
+              "reg_alpha": 0.0030958187465645187,
+              "reg_lambda": 0.3912325591685006,
+              "deterministic": true,
+              "force_row_wise": true,
+              "random_state": 20261116
+            },
+            "rf": {
+              "n_estimators": 4,
+              "max_features": 1.0,
+              "max_leaves": 4,
+              "random_state": 20261116
+            }
+          },
+          "seconds": 1.1
+        }
+      },
+      "linear": {
+        "alpha": 316.22776601683796,
+        "val_ic": 0.29094678316206624
+      },
+      "n_train": 1732,
+      "n_val": 1807,
+      "n_refit_full": 7363,
+      "n_sample_months": 8,
+      "n_inputs": 202,
+      "n_pred": 3695,
+      "seconds": 11.0,
+      "peak_rss_gb_driver": 1.83
+    },
+    {
+      "target": "val",
+      "refit_date": "2011-12-29",
+      "cut": "2011-11-29",
+      "predict_months": [
+        "2012-01-31",
+        "2012-02-29"
+      ],
+      "engines": {
+        "flaml": {
+          "selection_metric": "monthly_spearman_ic(loss = 1 − IC)",
+          "best_estimator": "lgbm",
+          "n_trials": 8,
+          "best_loss_per_estimator": {
+            "lgbm": 0.09992289573572466,
+            "rf": 0.2173694158320253,
+            "xgboost": 0.187671938976542
+          },
+          "ensemble_weights": {
+            "lgbm": 1.0
+          },
+          "best_configs": {
+            "lgbm": {
+              "n_estimators": 13,
+              "num_leaves": 14,
+              "min_child_samples": 14,
+              "learning_rate": 0.6744524761636062,
+              "log_max_bin": 9,
+              "colsample_bytree": 1.0,
+              "reg_alpha": 0.009895824814947243,
+              "reg_lambda": 22.913516420399564,
+              "deterministic": true,
+              "force_row_wise": true,
+              "random_state": 20261116
+            }
+          },
+          "seconds": 3.7
+        }
+      },
+      "linear": {
+        "alpha": 1.0,
+        "val_ic": 0.8671503322495555
+      },
+      "n_train": 10406,
+      "n_val": 1993,
+      "n_refit_full": 12399,
+      "n_sample_months": 12,
+      "n_inputs": 203,
+      "n_pred": 2436,
+      "seconds": 4.0,
+      "peak_rss_gb_driver": 1.83
+    },
+    {
+      "target": "val",
+      "refit_date": "2012-03-30",
+      "cut": "2012-02-29",
+      "predict_months": [
+        "2012-03-30"
+      ],
+      "engines": {
+        "flaml": {
+          "selection_metric": "monthly_spearman_ic(loss = 1 − IC)",
+          "best_estimator": "lgbm",
+          "n_trials": 8,
+          "best_loss_per_estimator": {
+            "lgbm": 0.11768987294817534,
+            "rf": 0.24125033705394205,
+            "xgboost": 0.20547836700488753
+          },
+          "ensemble_weights": {
+            "lgbm": 0.84,
+            "xgboost": 0.16
+          },
+          "best_configs": {
+            "lgbm": {
+              "n_estimators": 13,
+              "num_leaves": 14,
+              "min_child_samples": 14,
+              "learning_rate": 0.6744524761636062,
+              "log_max_bin": 9,
+              "colsample_bytree": 1.0,
+              "reg_alpha": 0.009895824814947243,
+              "reg_lambda": 22.913516420399564,
+              "deterministic": true,
+              "force_row_wise": true,
+              "random_state": 20261116
+            },
+            "xgboost": {
+              "n_estimators": 4,
+              "max_leaves": 4,
+              "min_child_weight": 0.9999999999999993,
+              "learning_rate": 0.09999999999999995,
+              "subsample": 1.0,
+              "colsample_bylevel": 1.0,
+              "colsample_bytree": 1.0,
+              "reg_alpha": 0.0009765625,
+              "reg_lambda": 1.0
+            }
+          },
+          "seconds": 4.0
+        }
+      },
+      "linear": {
+        "alpha": 316.22776601683796,
+        "val_ic": 0.8659226042057666
+      },
+      "n_train": 10330,
+      "n_val": 2436,
+      "n_refit_full": 12766,
+      "n_sample_months": 12,
+      "n_inputs": 203,
+      "n_pred": 1259,
+      "seconds": 4.3,
+      "peak_rss_gb_driver": 1.83
+    },
+    {
+      "target": "dist",
+      "refit_date": "2011-12-29",
+      "cut": "2011-11-29",
+      "predict_months": [
+        "2012-01-31",
+        "2012-02-29",
+        "2012-03-30"
+      ],
+      "engines": {
+        "flaml": {
+          "selection_metric": "roc_auc",
+          "best_estimator": "lgbm",
+          "n_trials": 8,
+          "best_loss_per_estimator": {
+            "lgbm": 0.15145945151091822,
+            "rf": 0.16294757738401577
+          },
+          "ensemble_weights": {
+            "lgbm": 0.02,
+            "rf": 0.98
+          },
+          "best_configs": {
+            "lgbm": {
+              "n_estimators": 9,
+              "num_leaves": 6,
+              "min_child_samples": 32,
+              "learning_rate": 0.32534803524470984,
+              "log_max_bin": 8,
+              "colsample_bytree": 1.0,
+              "reg_alpha": 0.013503188696078458,
+              "reg_lambda": 8.32631662231553,
+              "deterministic": true,
+              "force_row_wise": true,
+              "random_state": 20261116
+            },
+            "rf": {
+              "n_estimators": 4,
+              "max_features": 0.07035975447302918,
+              "max_leaves": 4,
+              "criterion": "entropy",
+              "random_state": 20261116
+            }
+          },
+          "seconds": 0.6
+        }
+      },
+      "linear": {},
+      "n_train": 1830,
+      "n_val": 967,
+      "n_refit_full": 6892,
+      "n_sample_months": 7,
+      "n_inputs": 202,
+      "n_pred": 3695,
+      "seconds": 0.7,
+      "peak_rss_gb_driver": 1.83
+    },
+    {
+      "target": "ret",
+      "refit_date": "2011-12-29",
+      "cut": "2011-11-29",
+      "predict_months": [
+        "2012-01-31",
+        "2012-02-29",
+        "2012-03-30"
+      ],
+      "engines": {
+        "flaml": {
+          "selection_metric": "monthly_spearman_ic(loss = 1 − IC)",
+          "best_estimator": "lgbm",
+          "n_trials": 8,
+          "best_loss_per_estimator": {
+            "lgbm": 0.7339488819987986,
+            "rf": 0.7820184822534717
+          },
+          "ensemble_weights": {
+            "lgbm": 1.0
+          },
+          "best_configs": {
+            "lgbm": {
+              "n_estimators": 9,
+              "num_leaves": 4,
+              "min_child_samples": 71,
+              "learning_rate": 0.15694411063577432,
+              "log_max_bin": 7,
+              "colsample_bytree": 0.9115943693212912,
+              "reg_alpha": 0.01842555909907478,
+              "reg_lambda": 3.025618033612973,
+              "deterministic": true,
+              "force_row_wise": true,
+              "random_state": 20261116
+            }
+          },
+          "seconds": 0.6
+        }
+      },
+      "linear": {
+        "alpha": 3162.2776601683795,
+        "val_ic": 0.29587516502686184
+      },
+      "n_train": 1830,
+      "n_val": 967,
+      "n_refit_full": 6892,
+      "n_sample_months": 7,
+      "n_inputs": 202,
+      "n_pred": 3695,
+      "seconds": 0.7,
+      "peak_rss_gb_driver": 1.83
+    }
+  ],
+  "timing": {
+    "features_s": 29.1,
+    "price_panel_s": 7.2,
+    "total_s": 60.0
+  },
+  "pit_selftest_features": {
+    "months": [
+      "2010-02-26",
+      "2012-03-30"
+    ],
+    "rows_checked": 279,
+    "pass": true
+  },
+  "n_rows_panel": 40144,
+  "n_features": 204,
+  "outlier_selftest": {
+    "ticker": "A000070",
+    "factor": 1000000.0,
+    "n_rows_injected": 37,
+    "target": "earn",
+    "refit_date": "2011-12-29",
+    "control_on_spearman_min_mean": [
+      0.976458,
+      0.977216
+    ],
+    "control_off_spearman_min_mean": [
+      0.003498,
+      0.023865
+    ],
+    "diag_drop_ticker_spearman_min_mean": [
+      0.985698,
+      0.986235
+    ],
+    "rebuild_equals_main_design": true,
+    "threshold_min": 0.99,
+    "pass": false
+  },
+  "failed_engines": {},
+  "output_rows": {
+    "flaml": {
+      "NLFF_DIST": 3695,
+      "NLFF_EARN": 3695,
+      "NLFF_RET": 3695,
+      "NLFF_VAL": 3695
+    },
+    "linear": {
+      "NLFF_DIST_LIN": 3695,
+      "NLFF_EARN_LIN": 3695,
+      "NLFF_RET_LIN": 3695,
+      "NLFF_VAL_LIN": 3695
+    }
+  },
+  "peak_rss_gb": 1.83
+}

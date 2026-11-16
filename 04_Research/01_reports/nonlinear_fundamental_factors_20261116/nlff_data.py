@@ -252,24 +252,47 @@ def pit_selftest_features(cfg: dict, spec: dict, tickers: list[str], me: np.ndar
 
 # ---------------------------------------------------------------------------------------------- 가격 쪽: 위생 · 표적
 def price_panel(cfg: dict, me: np.ndarray, ax: dict, horizon: int = 12, chunk: int = 600) -> pd.DataFrame:
-    """월말 행마다 위생 멤버 여부 · 로그 시가총액 · 향후 12개월 누적 로그 수익 · 관리종목 지정 사건(+ 실현일).
+    """월말 행마다 위생 멤버 여부 · 로그 시가총액 · 향후 12개월 KOSPI200 대비 초과 수익 · 관리종목 지정 사건(+ 실현일).
     메모리 절약: 종목 묶음(chunk)마다 따로 읽고 계산한다(모든 계산이 종목 안 시계열이라 묶음과 무관)."""
     start = pd.Timestamp(me[0]) - pd.Timedelta(days=60)
     dset = ds.dataset(str(p(cfg["paths"]["rawdata"])), format="parquet")
     dflt = ds.field("Date") >= pa.scalar(start.date(), pa.date32())
     tks = sorted(pc.unique(dset.to_table(columns=["Ticker"], filter=dflt).column(0)).to_pylist())
     all_me = month_ends(cfg, "1990-01", "2099-12").astype("datetime64[s]")   # 지평 끝 계산용 달력(표적용 · 성과 계산 아님)
+    bench = bench_logcum(cfg)
     out = []
     for i in range(0, len(tks), chunk):
         part = tks[i:i + chunk]
         t = dset.to_table(columns=["Date", "Ticker", "Close", "Vol", "Size", "Ret", "AdminStock", "TradingHalt", "UnfaithfulDisc"],
                           filter=dflt & ds.field("Ticker").isin(part))
-        out.append(_price_chunk(cfg, t.to_pandas(), me, ax, horizon, all_me))
+        out.append(_price_chunk(cfg, t.to_pandas(), me, ax, horizon, all_me, bench))
         del t
     return pd.concat(out, ignore_index=True)
 
 
-def _price_chunk(cfg: dict, D: pd.DataFrame, me: np.ndarray, ax: dict, horizon: int, all_me: np.ndarray) -> pd.DataFrame:
+def bench_logcum(cfg: dict) -> pd.DataFrame:
+    """공표 KOSPI200(등급 벤치와 같은 지수 · .cache/benchmark.parquet::BM_Ret) 누적 로그 수익 — 표적(초과 수익) 계산용.
+    같은 구간 복리 = exp(bcl(끝) − bcl(시작)) − 1 (시작일 다음 거래일부터 끝일까지의 일별 수익 곱)."""
+    b = pd.read_parquet(p(cfg["paths"]["benchmark"]), columns=["Date", "BM_Ret"])
+    b["Date"] = pd.to_datetime(b["Date"]).astype("datetime64[s]")
+    b = b.sort_values("Date").drop_duplicates("Date", keep="last").reset_index(drop=True)
+    b["bcl"] = np.log1p(b["BM_Ret"].fillna(0.0)).cumsum()
+    return b[["Date", "bcl"]]
+
+
+def _bench_at(bench: pd.DataFrame, d: np.ndarray, max_gap_days: int = 7) -> np.ndarray:
+    """날짜 d 의 벤치 누적 로그 수익(그날 또는 직전 벤치 거래일). 직전 값이 max_gap_days 보다 오래되면 NaN(벤치 결측 = 표적 없음)."""
+    bd = bench["Date"].to_numpy().astype("datetime64[s]")
+    d = np.asarray(d).astype("datetime64[s]")
+    i = np.searchsorted(bd, d, side="right") - 1
+    ok = (i >= 0) & ~np.isnat(d)
+    i0 = np.where(ok, i, 0)
+    gap = (d - bd[i0]).astype("timedelta64[D]").astype(np.int64)
+    return np.where(ok & (gap <= max_gap_days), bench["bcl"].to_numpy()[i0], np.nan)
+
+
+def _price_chunk(cfg: dict, D: pd.DataFrame, me: np.ndarray, ax: dict, horizon: int, all_me: np.ndarray,
+                 bench: pd.DataFrame) -> pd.DataFrame:
     D["Date"] = D["Date"].astype("datetime64[s]")
     D.sort_values(["Ticker", "Date"], inplace=True, kind="mergesort")
     D.reset_index(drop=True, inplace=True)
@@ -298,7 +321,10 @@ def _price_chunk(cfg: dict, D: pd.DataFrame, me: np.ndarray, ax: dict, horizon: 
     Q = E[has_end].sort_values("t_end")
     Q = pd.merge_asof(Q, R.sort_values("d_end"), left_on="t_end", right_on="d_end", by="Ticker", direction="backward")
     live = Q["d_end"] > Q["Date"]                       # 결정일 뒤 거래가 하나라도 있어야 표적이 있다
-    Q["y_ret"] = np.where(live, Q["cl_end"] - Q["cl"], np.nan)
+    # ret 표적 = 시장 대비 초과 수익(도훈 11-16): 종목 12개월 앞 단순 수익 − 같은 구간 KOSPI200 단순 수익.
+    # 구간 = 결정일 다음 거래일 ~ 종목 끝일(d_end · 상장폐지면 마지막 거래일) — 벤치도 같은 시작 · 끝일로 복리.
+    b0 = _bench_at(bench, Q["Date"].to_numpy()); b1 = _bench_at(bench, Q["d_end"].to_numpy())
+    Q["y_ret"] = np.where(live, np.expm1(Q["cl_end"] - Q["cl"]) - np.expm1(b1 - b0), np.nan)
     Q["y_dist"] = np.where(live, (Q["ca_end"] - Q["ca"] > 0).astype(np.float32), np.nan)
     E = E.merge(Q[["Date", "Ticker", "y_ret", "y_dist"]], on=["Date", "Ticker"], how="left")
     E["avail_h"] = E["t_end"]

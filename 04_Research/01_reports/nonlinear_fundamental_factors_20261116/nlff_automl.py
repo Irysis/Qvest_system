@@ -74,17 +74,53 @@ def _pred(est, X, task):
     return np.asarray(est.predict(X), np.float64)
 
 
-def _score(y, p, task):
-    """크게 = 좋게. 회귀 = −MSE(고정 검증 구간에서 r2 와 순서가 같다) · 이진 = AUC(FLAML 기본 지표와 같음)."""
+IC_MIN_N = 30   # nlff_run 이 설정 automl.selection_metric.min_names_per_month 로 덮는다
+
+
+def ic_mean(y, p, dates, min_n: int = None) -> float:
+    """모델 선택 지표(회귀 표적 earn · val · ret): 시간순 검증 구간의 월별 단면 Spearman 순위 IC 평균.
+    같은 날짜(검증 행의 Date) 안에서 표적 순위와 예측 순위의 피어슨 상관 → 종목 수 < min_n 인 달은 뺀다 → 달 평균(동일 가중).
+    모든 달이 빠지거나 예측이 상수면 NaN. 학습 창(재학습일 − 엠바고 이전) 안의 값만 들어온다 — 성과 보고용이 아니다."""
+    from scipy.stats import rankdata
+    min_n = IC_MIN_N if min_n is None else min_n
+    y = np.asarray(y, np.float64).ravel(); p = np.asarray(p, np.float64).ravel(); dates = np.asarray(dates)
+    if not (len(y) == len(p) == len(dates)):
+        raise AssertionError(f"[nlff IC] 길이 불일치 y {len(y)} · p {len(p)} · 날짜 {len(dates)}")
+    out = []
+    for d in np.unique(dates):
+        m = (dates == d) & np.isfinite(y) & np.isfinite(p)
+        if m.sum() < min_n:
+            continue
+        ry, rp = rankdata(y[m]), rankdata(p[m])
+        if ry.std() == 0 or rp.std() == 0:
+            out.append(0.0); continue
+        out.append(float(np.corrcoef(ry, rp)[0, 1]))
+    return float(np.mean(out)) if out else float("nan")
+
+
+def _score(y, p, task, dates=None):
+    """크게 = 좋게. 회귀 = 월별 단면 Spearman IC 평균(ic_mean · 도훈 11-16) · 이진 = AUC(FLAML 기본 지표와 같음)."""
     if task == "classification":
         from sklearn.metrics import roc_auc_score
         if len(np.unique(y)) < 2:
             return 0.0
         return float(roc_auc_score(y, p))
-    return -float(np.mean((y - p) ** 2))
+    v = ic_mean(y, p, dates)
+    return v if np.isfinite(v) else -1.0
 
 
-def caruana(preds: dict, y: np.ndarray, task: str, size: int) -> dict:
+def flaml_ic_metric(dates):
+    """FLAML 사용자 지표 — 검증 행 날짜를 클로저로 묶는다(FLAML 은 X_val · y_val 을 받은 그대로 넘긴다 · 길이 단정).
+    반환 손실 = 1 − IC(작을수록 좋음 · IC 를 못 재면 2)."""
+    dates = np.asarray(dates)
+
+    def metric(X_val, y_val, estimator, labels, X_train, y_train, weight_val=None, weight_train=None, *args, **kw):
+        ic = ic_mean(np.asarray(y_val), estimator.predict(X_val), dates)
+        return (1.0 - ic) if np.isfinite(ic) else 2.0, {"val_ic": ic}
+    return metric
+
+
+def caruana(preds: dict, y: np.ndarray, task: str, size: int, dates=None) -> dict:
     """Caruana et al. 2004 탐욕 선택(복원 추출). 시작 = 빈 앙상블 · 매 단계 점수를 가장 올리는 모델 하나를 더한다."""
     names = sorted(preds)
     cnt = {k: 0 for k in names}
@@ -92,7 +128,7 @@ def caruana(preds: dict, y: np.ndarray, task: str, size: int) -> dict:
     for i in range(size):
         best, best_s = None, -np.inf
         for k in names:
-            s = _score(y, (cur * i + preds[k]) / (i + 1), task)
+            s = _score(y, (cur * i + preds[k]) / (i + 1), task, dates)
             if s > best_s + 1e-15:
                 best, best_s = k, s
         cnt[best] += 1
@@ -101,10 +137,16 @@ def caruana(preds: dict, y: np.ndarray, task: str, size: int) -> dict:
 
 
 # ---------------------------------------------------------------------------------------------- 재학습 1회
-def fit_refit(task: str, Xtr, ytr, Xva, yva, acfg: dict, max_iter: int, n_jobs: int, seed: int, log: dict):
-    """FLAML 탐색 → Caruana 가중. 반환 = [(이름, 설정, 가중)] — 최종 적합은 refit_models 가 한다."""
+def fit_refit(task: str, Xtr, ytr, Xva, yva, acfg: dict, max_iter: int, n_jobs: int, seed: int, log: dict, dates_va=None):
+    """FLAML 탐색 → Caruana 가중. 반환 = [(이름, 설정, 가중)] — 최종 적합은 refit_models 가 한다.
+    선택 지표: 회귀 = 월별 단면 IC(dates_va 필요) · 이진 = AUC. 적합 손실은 각 학습기 기본(제곱 오차 등) 그대로."""
     from flaml import AutoML
-    metric = acfg["metric"]["binary" if task == "classification" else "regression"]
+    if task == "classification":
+        metric = acfg["metric"]["binary"]
+    else:
+        if dates_va is None or len(dates_va) != len(yva):
+            raise AssertionError("[nlff IC] 회귀 선택 지표에 검증 행 날짜가 필요하다")
+        metric = flaml_ic_metric(dates_va)
     am = AutoML()
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
@@ -123,8 +165,9 @@ def fit_refit(task: str, Xtr, ytr, Xva, yva, acfg: dict, max_iter: int, n_jobs: 
             est = _make(task, k, cfgs[k], n_jobs)
             est.fit(Xtr, ytr)
             vp[k] = _pred(est, Xva, task)
-    w = caruana(vp, yva, task, int(acfg["ensemble"]["size"]))
-    log.update({"best_estimator": am.best_estimator, "n_trials": int(sum(s.total_iter for s in am._search_states.values())),
+    w = caruana(vp, yva, task, int(acfg["ensemble"]["size"]), dates_va)
+    log.update({"selection_metric": "roc_auc" if task == "classification" else "monthly_spearman_ic(loss = 1 − IC)",
+                "best_estimator": am.best_estimator, "n_trials": int(sum(s.total_iter for s in am._search_states.values())),
                 "best_loss_per_estimator": losses, "ensemble_weights": w,
                 "best_configs": {k: {a: (float(b) if isinstance(b, (np.floating,)) else b) for a, b in cfgs[k].items()} for k in w}})
     return [(k, cfgs[k], wt) for k, wt in w.items()]
@@ -146,8 +189,8 @@ def predict_ens(models, X, task):
 
 
 # ---------------------------------------------------------------------------------------------- 선형 대조
-def fit_linear(task, Xtr, ytr, Xva, yva, lc: dict):
-    """능형 벌점 = 시간순 검증 구간 MSE 최소(학습 창 안) → 학습 + 검증 전체 재적합. 이진 = L2 로지스틱(C 고정)."""
+def fit_linear(task, Xtr, ytr, Xva, yva, lc: dict, dates_va=None):
+    """능형 벌점 = 시간순 검증 구간 월별 IC 최대(학습 창 안 · AutoML 과 같은 선택 지표) → 학습 + 검증 전체 재적합. 이진 = L2 로지스틱(C 고정)."""
     X = np.vstack([Xtr, Xva]); yy = np.concatenate([ytr, yva])
     if task == "classification":
         from sklearn.linear_model import LogisticRegression
@@ -157,11 +200,75 @@ def fit_linear(task, Xtr, ytr, Xva, yva, lc: dict):
     a = lc["ridge_alphas_log10"]
     best = None
     for al in np.logspace(a[0], a[1], int(a[2])):
-        mse = float(np.mean((Ridge(alpha=al).fit(Xtr, ytr).predict(Xva) - yva) ** 2))
-        if best is None or mse < best[1]:
-            best = (al, mse)
-    return Ridge(alpha=best[0]).fit(X, yy), {"alpha": float(best[0])}
+        sc = _score(yva, Ridge(alpha=al).fit(Xtr, ytr).predict(Xva), task, dates_va)
+        if best is None or sc > best[1] + 1e-12:
+            best = (al, sc)
+    return Ridge(alpha=best[0]).fit(X, yy), {"alpha": float(best[0]), "val_ic": float(best[1])}
 
 
 def predict_linear(m, X, task):
     return (m.decision_function(X) if task == "classification" else m.predict(X)).astype(np.float64)
+
+
+# ---------------------------------------------------------------------------------------------- 외부 엔진(auto-sklearn · TPOT)
+# 엔진 선택 손잡이 = nlff_run.py --engine flaml|autosklearn|tpot|all. FLAML 은 이 프로세스 안(위 fit_refit) ·
+# 나머지는 전용 환경의 nlff_engine_worker.py 를 하위 프로세스로 부른다. 행렬 · 분할 · 표적은 모두 이 드라이버가 만든 것 그대로다
+# (엔진마다 같은 데이터 · 같은 표적 · 같은 시간순 분할 — 엔진은 분할을 다시 하지 않는다).
+ENGINES = ("flaml", "autosklearn", "tpot")
+
+
+def win_to_wsl(path) -> str:
+    """G:\a\b → /mnt/g/a/b (WSL 에서 같은 파일을 읽는다)."""
+    s = str(path).replace("\\", "/")
+    if len(s) > 1 and s[1] == ":":
+        return "/mnt/" + s[0].lower() + s[2:]
+    return s
+
+
+def fit_external(engine: str, task: str, Xtr, ytr, Xva, yva, Xwin, ywin, win_fold, Xpred, pred_fold,
+                 ecfg: dict, smoke: bool, n_jobs: int, seed: int, job_dir, here, root, log: dict, dates_va=None, dates_tr=None):
+    """외부 엔진 재학습 1회: 행렬을 job_dir 에 쓰고 작업기를 부른 뒤 예측을 읽는다. 실패하면 예외(그 엔진 결과 없음)."""
+    import json
+    import os
+    import shutil
+    import subprocess
+    import time
+    from pathlib import Path
+    job_dir = Path(job_dir)
+    if job_dir.exists():
+        shutil.rmtree(job_dir, ignore_errors=True)
+    job_dir.mkdir(parents=True, exist_ok=True)
+    for nm, a in (("Xtr", Xtr), ("ytr", ytr), ("Xva", Xva), ("yva", yva), ("Xwin", Xwin), ("ywin", ywin),
+                  ("win_fold", np.asarray(win_fold, np.int64)), ("Xpred", Xpred), ("pred_fold", np.asarray(pred_fold, np.int64)),
+                  ("val_dates", np.asarray(dates_va).astype("datetime64[D]").astype(np.int64)),
+                  ("train_dates", np.asarray(dates_tr).astype("datetime64[D]").astype(np.int64))):
+        np.save(job_dir / f"{nm}.npy", np.ascontiguousarray(a))
+    ec = ecfg[engine]
+    b = ec["budget_smoke" if smoke else "budget"]
+    job = {"engine": engine, "task": task, "tag": job_dir.name, "seed": int(seed), "n_jobs": int(n_jobs),
+           "engine_cfg": ec, "ic_min_n": int(IC_MIN_N), **b}
+    with open(job_dir / "job.json", "w", encoding="utf-8") as f:
+        json.dump(job, f, ensure_ascii=False, indent=2)
+    env = dict(os.environ)
+    for v in ("OMP_NUM_THREADS", "MKL_NUM_THREADS", "OPENBLAS_NUM_THREADS", "LOKY_MAX_CPU_COUNT"):
+        env[v] = str(n_jobs)
+    worker = Path(here) / "nlff_engine_worker.py"
+    if engine == "autosklearn":
+        th = " ".join(f"{v}={n_jobs}" for v in ("OMP_NUM_THREADS", "MKL_NUM_THREADS", "OPENBLAS_NUM_THREADS"))
+        cmd = ["wsl.exe", "-d", ec["wsl_distro"], "--", "bash", "-lc",
+               f"cd /tmp && {th} {ec['python']} -W ignore {win_to_wsl(worker)} {win_to_wsl(job_dir)}"]
+    else:
+        cmd = [str(Path(root) / ec["python"]), "-W", "ignore", str(worker), str(job_dir)]
+    t0 = time.time()
+    # 작업기는 job_dir 밖(임시 폴더)에서 돈다 — tpot 패키지 안 selectors 모듈이 현재 폴더 이름을 가리지 않게
+    pr = subprocess.run(cmd, env=env, cwd=os.environ.get("TEMP", None) if engine != "autosklearn" else None,
+                        capture_output=True, text=True, encoding="utf-8", errors="replace")
+    if pr.returncode != 0 or not (job_dir / "result.json").exists():
+        raise RuntimeError(f"[nlff {engine}] 작업기 실패 rc={pr.returncode}\n{pr.stdout[-3000:]}\n{pr.stderr[-3000:]}")
+    res = json.load(open(job_dir / "result.json", encoding="utf-8"))
+    pred = np.load(job_dir / "pred.npy")
+    res["wall_s"] = round(time.time() - t0, 1)
+    log.update(res)
+    if not ec.get("keep_xfer", False):
+        shutil.rmtree(job_dir, ignore_errors=True)
+    return pred

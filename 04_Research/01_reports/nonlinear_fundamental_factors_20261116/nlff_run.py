@@ -21,6 +21,8 @@ _ap.add_argument("--targets", default="earn,val,dist,ret")
 _ap.add_argument("--smoke", action="store_true")
 _ap.add_argument("--history", default=None, help="학습 이력 시작 YYYY-MM(기본 = 측정 축 시작 · 스모크 = start − smoke.history_months)")
 _ap.add_argument("--no-linear", action="store_true")
+_ap.add_argument("--engine", default="flaml",
+                 help="flaml | autosklearn | tpot | all | 쉼표 목록 — 엔진마다 같은 행렬 · 표적 · 시간순 분할(설정 engines 절)")
 ARGS = _ap.parse_args()
 if ARGS.workers < 1 or ARGS.workers > 4:
     sys.exit("[nlff] --workers 는 1~4(같은 PC 재빌드 보호 · 설정 automl.max_workers)")
@@ -68,12 +70,61 @@ def shift_months(ymstr: str, k: int) -> str:
     return f"{t.year:04d}-{t.month:02d}"
 
 
+def outlier_selftest(prepare, ri, months, Xraw, feats, X, yraw, task, ac, budget, P_base, factor=1e6):
+    """극단치 자가 시험(양성 대조 1건 · 스모크 · FLAML): 한 종목의 원 입력 · 원 표적을 factor 배로 키운 뒤 같은 절차로 다시 만든 예측에서
+    다른 종목들의 예측 순위가 얼마나 바뀌는지 잰다(날짜별 단면 Spearman — 예측끼리의 일치도이지 성과 지표가 아니다).
+    모델 설정은 원 자료 탐색 결과로 고정(자료 효과만 분리). 대조 팔 = 극단치 제어를 끈 판(원값 입력 + 원값 표적)."""
+    from scipy.stats import spearmanr
+    dts = X["Date"].to_numpy().astype("datetime64[D]")
+    tick = X["Ticker"].to_numpy()
+    idx, pidx = P_base["idx"], P_base["pidx"]
+    cand = pd.Series(tick[idx]).value_counts()
+    cand = [t for t in cand.index if t in set(tick[pidx])]
+    k = cand[0]
+    mask = tick == k
+    Xi = Xraw.copy(); Xi[mask] *= np.float32(factor)
+    yi = yraw.copy(); yi[mask] *= factor
+
+    def ranked(M):
+        R = D.rank_centered(pd.DataFrame(M, columns=feats).assign(Date=X["Date"].to_numpy()), feats)
+        return R.to_numpy(np.float32), R.isna().mean(axis=1).astype(np.float32).to_numpy()
+    Xm0, ms0 = ranked(Xraw); Xm1, ms1 = ranked(Xi)
+    msr = np.isnan(Xraw).mean(axis=1).astype(np.float32)
+    members = A.fit_refit(task, P_base["Xtr"], P_base["ytr"], P_base["Xva"], P_base["yva"], ac, budget, 1, int(ac["seed"]), {},
+                          dates_va=P_base["dva"])
+
+    def pred(P):
+        return A.predict_ens(A.refit_models(task, members, P["Xwin"], P["yall"], 1), P["Xp"], task)
+
+    def agree(pa, pb):
+        other = tick[pidx] != k
+        out = []
+        for d in np.unique(dts[pidx]):
+            m = other & (dts[pidx] == d)
+            out.append(float(spearmanr(pa[m], pb[m]).correlation))
+        return round(min(out), 6), round(float(np.mean(out)), 6)
+    P0 = prepare(ri, months, Xm0, ms0, yraw)
+    rk = bool(np.array_equal(P0["Xwin"], P_base["Xwin"]) and np.array_equal(P0["Xp"], P_base["Xp"]))   # 재구성 = 본 실행 설계 행렬(같음 단정)
+    on0 = pred(P0); on1 = pred(prepare(ri, months, Xm1, ms1, yi))
+    off0 = pred(prepare(ri, months, Xraw, msr, yraw, rank_target=False)); off1 = pred(prepare(ri, months, Xi, msr, yi, rank_target=False))
+    on_min, on_mean = agree(on0, on1); off_min, off_mean = agree(off0, off1)
+    # 진단 팔(11-16 첫 스모크 뒤 추가 · 판정 문턱은 바꾸지 않음): 그 종목을 표본에서 아예 뺐을 때의 일치도 = 종목 하나가 바뀔 때의 기본 민감도
+    Xd = Xraw.copy(); Xd[mask] = np.nan; yd = yraw.copy(); yd[mask] = np.nan
+    Xmd, msd = ranked(Xd)
+    del_min, del_mean = agree(on0, pred(prepare(ri, months, Xmd, msd, yd)))
+    return {"ticker": str(k), "factor": factor, "n_rows_injected": int(mask.sum()), "target": "earn", "refit_date": str(P_base["Rd"]),
+            "control_on_spearman_min_mean": [on_min, on_mean], "control_off_spearman_min_mean": [off_min, off_mean],
+            "diag_drop_ticker_spearman_min_mean": [del_min, del_mean],
+            "rebuild_equals_main_design": rk, "threshold_min": 0.99, "pass": bool(on_min >= 0.99 and rk)}
+
+
 def main():
     t0 = time.time()
     cfg = D.load_cfg()
     ax = D.axis_params(cfg)
     sm = cfg["smoke"]; ac = cfg["automl"]; oc = cfg["output"]
     A.SEED = int(ac["seed"]); A.FIXED_HP = A.fixed_hp()
+    A.IC_MIN_N = int(ac["selection_metric"]["min_names_per_month"])
     start = ARGS.start or (sm["start"] if ARGS.smoke else ax["start"][:7])
     end = ARGS.end or (sm["end"] if ARGS.smoke else None)
     if end is None:
@@ -83,11 +134,26 @@ def main():
         hist = max(ARGS.history, ax["start"][:7])
     budget = ARGS.budget or (sm["max_iter"] if ARGS.smoke else ac["max_iter"])
     targets = [t for t in ARGS.targets.split(",") if t]
-    out_dir = D.p(cfg["paths"]["out_dir"]) / ("smoke" if ARGS.smoke else "")
-    out_dir.mkdir(parents=True, exist_ok=True)
-    log = {"args": vars(ARGS), "start": start, "end": end, "history_start": hist, "budget_max_iter": budget,
-           "epoch": ax["epoch"], "flaml_version": __import__("flaml").__version__, "refits": [], "timing": {}}
-    print(f"[nlff] {start}~{end} · 학습 이력 {hist}~ · 시행 {budget} · 워커 {ARGS.workers} · 표적 {targets}", flush=True)
+    engines = list(A.ENGINES) if ARGS.engine == "all" else [e for e in ARGS.engine.split(",") if e]
+    bad = [e for e in engines if e not in A.ENGINES]
+    if bad:
+        sys.exit(f"[nlff] 모르는 엔진 {bad} — {A.ENGINES}")
+    out_root = D.p(cfg["paths"]["out_dir"]) / ("smoke" if ARGS.smoke else "")
+    out_dirs = {e: out_root / e for e in engines}
+    out_dirs["linear"] = out_root / "linear"            # 선형 대조 = 엔진 무관 · 한 번만
+    for d in out_dirs.values():
+        d.mkdir(parents=True, exist_ok=True)
+    xfer_root = D.p(cfg["paths"]["out_dir"]) / "_xfer"
+    try:
+        fl_ver = __import__("flaml").__version__
+    except Exception:
+        fl_ver = None
+        if "flaml" in engines:
+            sys.exit("[nlff] 이 파이썬에 flaml 이 없다 — .venv_nlff_automl 또는 .venv_qvest_ml 로 실행")
+    log = {"args": vars(ARGS), "start": start, "end": end, "history_start": hist, "budget_max_iter_flaml": budget,
+           "engines": engines, "engine_cfg": {e: cfg["engines"][e] for e in engines},
+           "epoch": ax["epoch"], "flaml_version": fl_ver, "python": sys.version.split()[0], "refits": [], "timing": {}}
+    print(f"[nlff] {start}~{end} · 학습 이력 {hist}~ · 엔진 {engines} · FLAML 시행 {budget} · 워커 {ARGS.workers} · 표적 {targets}", flush=True)
 
     # ---------------------------------------------------------------- 입력 패널
     me = D.month_ends(cfg, hist, end)
@@ -113,7 +179,8 @@ def main():
     log["timing"]["price_panel_s"] = round(time.time() - t1, 1)
     X = PP.merge(F, on=["Date", "Ticker"], how="left"); del F, PP     # 위생 멤버 행만
     feats = [c for c in spec["features"] if c in X.columns]
-    R = D.rank_centered(X, feats)                                       # 월별 단면 안에서만
+    Xraw = X[feats].to_numpy(np.float32) if ARGS.smoke else None       # 극단치 자가 시험용 원값(스모크만)
+    R = D.rank_centered(X, feats)                                       # 월별 단면 안에서만 · 순위 = 극단치 제어(README §14)
     miss = R.isna().mean(axis=1).astype(np.float32).to_numpy()
     Xmat = R.to_numpy(np.float32); del R
     for c in feats:
@@ -136,7 +203,11 @@ def main():
         Y["dist"] = X["y_dist"].to_numpy(np.float64)
         AV["dist"] = X["avail_h"].to_numpy().astype("datetime64[D]")
     if "val" in targets:
-        Y["val"] = (X["logsize"] - X.groupby("Date")["logsize"].transform("mean")).to_numpy(np.float64)
+        # 극단치 제어(README §14): 같은 날짜 단면 1% / 99% 윈저 → 단면 평균 차감(전 표본 분위 없음)
+        wl, wh = cfg["targets"]["val"]["winsor_q"]
+        ls = X["logsize"]; gq = ls.groupby(X["Date"])
+        lsw = ls.clip(gq.transform(lambda v: v.quantile(wl)), gq.transform(lambda v: v.quantile(wh)))
+        Y["val"] = (lsw - lsw.groupby(X["Date"]).transform("mean")).to_numpy(np.float64)
         AV["val"] = dts.copy()                                          # 지평 0: 시가총액은 그날 안다
     # 표적 방향 단정: 지평 > 0 표적의 실현일은 결정일보다 뒤
     for k in ("earn", "ret", "dist"):
@@ -148,7 +219,9 @@ def main():
     ymx = ym(dts)
     out_mask_all = (dts >= np.datetime64(pd.Timestamp(start).date())) & (ymx <= ym([pd.Timestamp(end) + pd.offsets.MonthEnd(0)])[0])
     folds = D.ticker_fold(X["Ticker"], int(cfg["targets"]["val"]["group_folds"]), salt="nlff") if "val" in targets else None
-    rows_out = []
+    rows_out = {e: [] for e in engines}; rows_out["linear"] = []
+    failed = {}                                                        # 엔진 실패 = 그 엔진 결과 전부 버림(부분 산출 없음)
+    use_lin = cfg["linear_control"]["enabled"] and not ARGS.no_linear
 
     # ---------------------------------------------------------------- 표적별 걸어가는 학습
     for T in targets:
@@ -167,12 +240,12 @@ def main():
         if ARGS.smoke:
             min_tr = min(min_tr, int(sm["min_train_months_cap"]))
         av = AV[T]
-        for ri, months in sorted(assign.items()):
-            y = Y[T]
-            tR = time.time()
+
+        def prepare(ri, months, Xm, ms, yraw, rank_target=True):
+            """재학습 1회의 설계 행렬(엔진 · 선형 대조 · 자가 시험 공통). 반환 = dict 또는 건너뜀 사유 문자열."""
+            y = yraw
             Rd = me[ri]
             cut = np.datetime64((pd.Timestamp(Rd) - pd.DateOffset(months=int(oc["embargo_months"]))).date())
-            rec = {"target": T, "refit_date": str(Rd), "cut": str(cut), "predict_months": [str(m) for m in months]}
             base = np.isfinite(y) & ~np.isnat(av) & (av <= cut) & (dts <= cut)
             if tc["window"] == "rolling":
                 lo = np.datetime64((pd.Timestamp(cut) - pd.DateOffset(months=int(tc["window_months"]))).date())
@@ -181,85 +254,132 @@ def main():
             idx = np.flatnonzero(base)
             nd = len(np.unique(dts[idx]))
             if nd < min_tr:
-                rec["skipped"] = f"표본월 {nd} < 하한 {min_tr}"; log["refits"].append(rec)
-                print(f"[nlff] {T} {Rd} 건너뜀 — {rec['skipped']}", flush=True)
-                continue
-            if tc["kind"] == "rank_reg":
+                return f"표본월 {nd} < 하한 {min_tr}"
+            if tc["kind"] == "rank_reg" and rank_target:
                 # 표적 단면 순위 → (−1, 1): 같은 표본월 안에서, 재학습일 − 엠바고까지 실현된 표본끼리만(아직 실현 안 된 동료 값이 순위에 안 섞인다)
+                # = 극단치 제어(README §14 — earn · ret 는 순위 표적)
                 yr = D.rank_centered(pd.DataFrame({"Date": dts[idx], "_y": y[idx]}), ["_y"])["_y"].to_numpy(np.float64)
-                y = np.full(len(Y[T]), np.nan); y[idx] = yr
+                y = np.full(len(yraw), np.nan); y[idx] = yr
             # 입력 범위(as-of): 학습 창 표본의 결측 아닌 비율 >= 문턱
-            cov = 1.0 - np.isnan(Xmat[idx]).mean(axis=0)
+            cov = 1.0 - np.isnan(Xm[idx]).mean(axis=0)
             cols = np.flatnonzero(cov >= float(cfg["features"]["min_coverage_asof"]))
 
             def mk(ii):
-                Z = np.nan_to_num(Xmat[np.ix_(ii, cols)], nan=float(ac["missing_fill"]))
-                return np.hstack([Z, miss[ii, None]]).astype(np.float32)
+                Z = np.nan_to_num(Xm[np.ix_(ii, cols)], nan=float(ac["missing_fill"]))
+                return np.hstack([Z, ms[ii, None]]).astype(np.float32)
 
             tr_m, va_m = A.time_split(dts[idx], av[idx], float(cfg["validation"]["frac"]), cut)
             if tr_m is None or tr_m.sum() == 0 or (task == "classification" and len(np.unique(y[idx][tr_m])) < 2):
-                rec["skipped"] = "정화 뒤 학습 부분이 비거나 한 범주"; log["refits"].append(rec)
-                print(f"[nlff] {T} {Rd} 건너뜀 — {rec['skipped']}", flush=True)
-                continue
+                return "정화 뒤 학습 부분이 비거나 한 범주"
             itr, iva = idx[tr_m], idx[va_m]
             ytr, yva = y[itr], y[iva]
             if task == "classification":
                 ytr, yva = ytr.astype(int), yva.astype(int)
-            members = A.fit_refit(task, mk(itr), ytr, mk(iva), yva, ac, budget, ARGS.workers, int(ac["seed"]), rec)
-            if cfg["linear_control"]["enabled"] and not ARGS.no_linear:
-                lin, linfo = A.fit_linear(task, mk(itr), ytr, mk(iva), yva, cfg["linear_control"])
-            # 예측 대상 행: 이 재학습이 맡은 달 · 단정 = 모든 학습 표적은 예측일 − 엠바고 이전에 실현
-            pmask = np.isin(dts, np.array(months, dtype="datetime64[D]"))
-            pidx = np.flatnonzero(pmask)
+            pidx = np.flatnonzero(np.isin(dts, np.array(months, dtype="datetime64[D]")))
             assert av[idx].max() <= cut and cut < min(months), "[nlff PIT] 학습 표적 실현일이 예측일 − 엠바고 뒤"
             yall = y[idx].astype(int) if task == "classification" else y[idx]
-            name = oc["factor_names"][T]
-            if T == "val":   # 종목 묶음 교차 적합(자기 시가총액 기억 차단) — 설정은 같은 탐색 결과 · 적합만 묶음마다
-                pred = np.full(len(pidx), np.nan); predl = np.full(len(pidx), np.nan)
-                for k in np.unique(folds):
-                    keep = folds[idx] != k
-                    mods = A.refit_models(task, members, mk(idx[keep]), yall[keep], ARGS.workers)
-                    sel = folds[pidx] == k
-                    if sel.any():
-                        pred[sel] = A.predict_ens(mods, mk(pidx[sel]), task)
-                    if cfg["linear_control"]["enabled"] and not ARGS.no_linear:
-                        from sklearn.linear_model import Ridge
-                        lk = Ridge(alpha=linfo["alpha"]).fit(mk(idx[keep]), yall[keep])
-                        if sel.any():
-                            predl[sel] = lk.predict(mk(pidx[sel]))
-                actual = y[pidx]
-                raw = pred - actual; rawl = predl - actual                    # 적정가치 추정 − 실제(저평가 +)
+            return {"Rd": Rd, "cut": cut, "y": y, "idx": idx, "nd": nd, "cols": cols, "itr": itr, "iva": iva, "ytr": ytr, "yva": yva,
+                    "pidx": pidx, "yall": yall, "Xtr": mk(itr), "Xva": mk(iva), "Xwin": mk(idx), "Xp": mk(pidx),
+                    "dva": dts[iva]}
+
+        for ri, months in sorted(assign.items()):
+            tR = time.time()
+            Rd = me[ri]
+            cut = np.datetime64((pd.Timestamp(Rd) - pd.DateOffset(months=int(oc["embargo_months"]))).date())
+            rec = {"target": T, "refit_date": str(Rd), "cut": str(cut), "predict_months": [str(m) for m in months]}
+            P_ = prepare(ri, months, Xmat, miss, Y[T])
+            if isinstance(P_, str):
+                rec["skipped"] = P_; log["refits"].append(rec)
+                print(f"[nlff] {T} {Rd} 건너뜀 — {rec['skipped']}", flush=True)
+                continue
+            y, idx, nd, cols, itr, iva = P_["y"], P_["idx"], P_["nd"], P_["cols"], P_["itr"], P_["iva"]
+            ytr, yva, pidx, yall, dva = P_["ytr"], P_["yva"], P_["pidx"], P_["yall"], P_["dva"]
+            Xtr_m, Xva_m, Xwin_m, Xp_m = P_["Xtr"], P_["Xva"], P_["Xwin"], P_["Xp"]
+            if ARGS.smoke and T in ("earn",) and "outlier_selftest" not in log and fl_ver is not None:
+                log["outlier_selftest"] = outlier_selftest(prepare, ri, months, Xraw, feats, X, Y[T], task, ac, budget, P_)
+                print(f"[nlff] 극단치 자가 시험 {log['outlier_selftest']}", flush=True)
+            if T == "val":
+                wfold, pfold = folds[idx].astype(np.int64), folds[pidx].astype(np.int64)
             else:
-                mods = A.refit_models(task, members, mk(idx), yall, ARGS.workers)
-                raw = A.predict_ens(mods, mk(pidx), task)
-                rawl = A.predict_linear(lin, mk(pidx), task) if (cfg["linear_control"]["enabled"] and not ARGS.no_linear) else None
-            fr = pd.DataFrame({"Date": dts[pidx].astype("datetime64[s]"), "Ticker": X["Ticker"].to_numpy()[pidx],
-                               "Factor_Name": name, "Raw_Value": raw})
-            rows_out.append(fr[np.isfinite(fr["Raw_Value"])])
-            if rawl is not None:
-                fl = fr.assign(Factor_Name=name + oc["lin_suffix"], Raw_Value=rawl)
-                rows_out.append(fl[np.isfinite(fl["Raw_Value"])])
+                wfold, pfold = np.full(len(idx), -1, np.int64), np.full(len(pidx), -1, np.int64)
+            name = oc["factor_names"][T]
+            actual = y[pidx]
+            rec["engines"] = {}
+
+            def emit(key, raw, fname):
+                fr = pd.DataFrame({"Date": dts[pidx].astype("datetime64[s]"), "Ticker": X["Ticker"].to_numpy()[pidx],
+                                   "Factor_Name": fname, "Raw_Value": raw})
+                rows_out[key].append(fr[np.isfinite(fr["Raw_Value"])])
+
+            for E in engines:
+                if E in failed:
+                    continue
+                er = {}; tE = time.time()
+                try:
+                    if E == "flaml":
+                        members = A.fit_refit(task, Xtr_m, ytr, Xva_m, yva, ac, budget, ARGS.workers, int(ac["seed"]), er, dates_va=dva)
+                        if T == "val":   # 종목 묶음 교차 적합(자기 시가총액 기억 차단) — 설정은 같은 탐색 결과 · 적합만 묶음마다
+                            pred = np.full(len(pidx), np.nan)
+                            for k in np.unique(pfold):
+                                keep = wfold != k
+                                mods = A.refit_models(task, members, Xwin_m[keep], yall[keep], ARGS.workers)
+                                sel = pfold == k
+                                pred[sel] = A.predict_ens(mods, Xp_m[sel], task)
+                        else:
+                            pred = A.predict_ens(A.refit_models(task, members, Xwin_m, yall, ARGS.workers), Xp_m, task)
+                    else:
+                        pred = A.fit_external(E, task, Xtr_m, ytr, Xva_m, yva, Xwin_m, yall, wfold, Xp_m, pfold,
+                                              cfg["engines"], ARGS.smoke, ARGS.workers, int(ac["seed"]),
+                                              xfer_root / f"{E}_{T}_{str(Rd)[:10]}", D.HERE, D.ROOT, er, dates_va=dva,
+                                              dates_tr=dts[itr])
+                    assert len(pred) == len(pidx)
+                except Exception as ex:
+                    failed[E] = f"{T} {Rd}: {type(ex).__name__}: {str(ex)[:1500]}"
+                    er["error"] = failed[E]
+                    rec["engines"][E] = er
+                    print(f"[nlff] ★{E} 실패 — 이 엔진 결과는 쓰지 않는다: {failed[E][:400]}", flush=True)
+                    continue
+                emit(E, (pred - actual) if T == "val" else pred, name)     # val = 적정가치 추정 − 실제(저평가 +)
+                er["seconds"] = round(time.time() - tE, 1)
+                rec["engines"][E] = er
+                print(f"[nlff] {T} {Rd} · {E} · 학습 {len(itr):,} 검증 {len(iva):,} · 고른 모델 {er.get('best_estimator')} · "
+                      f"앙상블 {er.get('ensemble_weights', er.get('ensemble_members'))} · 시행 {er.get('n_trials')} · {er['seconds']}s"
+                      + (f" · 작업기 메모리 {er.get('peak_rss_tree_gb')} GB" if E != "flaml" else ""), flush=True)
+            if use_lin:
+                lin, linfo = A.fit_linear(task, Xtr_m, ytr, Xva_m, yva, cfg["linear_control"], dates_va=dva)
+                if T == "val":
+                    from sklearn.linear_model import Ridge
+                    predl = np.full(len(pidx), np.nan)
+                    for k in np.unique(pfold):
+                        keep = wfold != k; sel = pfold == k
+                        predl[sel] = Ridge(alpha=linfo["alpha"]).fit(Xwin_m[keep], yall[keep]).predict(Xp_m[sel])
+                    rawl = predl - actual
+                else:
+                    rawl = A.predict_linear(lin, Xp_m, task)
+                emit("linear", rawl, name + oc["lin_suffix"])
+                rec["linear"] = linfo
             rec.update({"n_train": int(len(itr)), "n_val": int(len(iva)), "n_refit_full": int(len(idx)), "n_sample_months": nd,
                         "n_inputs": int(len(cols) + 1), "n_pred": int(len(pidx)), "seconds": round(time.time() - tR, 1),
-                        "peak_rss_gb": round(peak_rss_gb(), 2)})
-            if cfg["linear_control"]["enabled"] and not ARGS.no_linear:
-                rec["linear"] = linfo
+                        "peak_rss_gb_driver": round(peak_rss_gb(), 2)})
             log["refits"].append(rec)
-            print(f"[nlff] {T} {Rd} · 학습 {len(itr):,} 검증 {len(iva):,} · 고른 모델 {rec['best_estimator']} · 앙상블 {rec['ensemble_weights']} · "
-                  f"{rec['seconds']}s · 최대 메모리 {rec['peak_rss_gb']} GB", flush=True)
 
     # ---------------------------------------------------------------- 쓰기
-    if rows_out:
-        O = pd.concat(rows_out, ignore_index=True)
+    log["failed_engines"] = failed
+    log["output_rows"] = {}
+    for key, parts in rows_out.items():
+        if key in failed or not parts:
+            continue
+        O = pd.concat(parts, ignore_index=True)
         for fname, g in O.groupby("Factor_Name"):
-            g.sort_values(["Date", "Ticker"]).to_parquet(out_dir / f"{fname}.parquet", index=False)
-        log["output_rows"] = O.groupby("Factor_Name").size().to_dict()
+            g.sort_values(["Date", "Ticker"]).to_parquet(out_dirs[key] / f"{fname}.parquet", index=False)
+        log["output_rows"][key] = O.groupby("Factor_Name").size().to_dict()
     log["timing"]["total_s"] = round(time.time() - t0, 1)
     log["peak_rss_gb"] = round(peak_rss_gb(), 2)
-    tag = "smoke" if ARGS.smoke else f"run_{start}_{end}"
+    etag = "all" if ARGS.engine == "all" else "-".join(engines)
+    tag = f"smoke_{etag}" if ARGS.smoke else f"run_{etag}_{start}_{end}"
     with open(D.HERE / f"{tag}_log.json", "w", encoding="utf-8") as f:
         json.dump(log, f, ensure_ascii=False, indent=2, default=str)
-    print(f"[nlff] 끝 · {log['timing']['total_s']}s · 최대 메모리 {log['peak_rss_gb']} GB · 출력 {log.get('output_rows')}", flush=True)
+    print(f"[nlff] 끝 · {log['timing']['total_s']}s · 드라이버 최대 메모리 {log['peak_rss_gb']} GB · 실패 {failed or '없음'} · 출력 {log['output_rows']}", flush=True)
 
 
 if __name__ == "__main__":

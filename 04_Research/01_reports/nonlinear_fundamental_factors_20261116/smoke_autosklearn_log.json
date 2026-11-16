@@ -1,0 +1,631 @@
+{
+  "args": {
+    "start": null,
+    "end": null,
+    "workers": 4,
+    "budget": null,
+    "targets": "earn,val,dist,ret",
+    "smoke": true,
+    "history": null,
+    "no_linear": true,
+    "engine": "autosklearn"
+  },
+  "start": "2012-01",
+  "end": "2012-03",
+  "history_start": "2009-01",
+  "budget_max_iter_flaml": 8,
+  "engines": [
+    "autosklearn"
+  ],
+  "engine_cfg": {
+    "autosklearn": {
+      "library": "auto-sklearn",
+      "version": "0.15.0",
+      "_src": "Feurer, Klein, Eggensperger, Springenberg, Blum & Hutter 2015 NeurIPS 'Efficient and Robust Automated Machine Learning' https://papers.nips.cc/paper/5872-efficient-and-robust-automated-machine-learning — SMAC(베이즈 최적화 · 무작위 숲 대리모형) + 메타학습 초기점 + 사후 Caruana 앙상블",
+      "wsl_distro": "Ubuntu",
+      "python": "/home/quant/venvs/nlff_autosklearn/bin/python",
+      "tmp_root": "~/venvs/nlff_autosklearn/_tmp",
+      "initial_configurations_via_metalearning": 25,
+      "ensemble_size": 50,
+      "ensemble_nbest": 50,
+      "memory_limit_mb": 3072,
+      "_defaults_src": "모두 auto-sklearn 0.15 기본값(메타학습 초기점 25 · 앙상블 크기 50 · nbest 50 · 실행당 메모리 3072 MB). 바꾼 것 = resampling_strategy(PredefinedSplit 시간순) · metric(r2 / roc_auc — FLAML 과 같은 지표) · dataset_compression 의 subsample 끔(무작위 행 줄이기가 분할 행 번호를 어긋나게 함 · precision 줄이기는 유지) · smac runcount_limit(시행 수)",
+      "budget": {
+        "max_trials": 60,
+        "time_left_s": 3600,
+        "per_run_s": null
+      },
+      "budget_smoke": {
+        "max_trials": 26,
+        "time_left_s": 600,
+        "per_run_s": null
+      },
+      "_budget_src": "시행 수 = SMAC runcount_limit 60(Bergstra & Bengio 2012) · 시간 상한 = 라이브러리 기본 time_left_for_this_task 3600 s · 실행당 = 기본(None = 전체의 1/10)",
+      "_budget_smoke_src": "스모크 시행 26 = SMAC 초기 설계(메타학습 초기점 25 + 기본 설정 1)보다 작게 줄 수 없다(smac.initial_design: 'Initial budget 26 cannot be higher than the run limit') — 라이브러리 하한"
+    }
+  },
+  "epoch": "all_hyg_px1000_2000_v1",
+  "flaml_version": "2.8.0",
+  "python": "3.12.10",
+  "refits": [
+    {
+      "target": "earn",
+      "refit_date": "2011-12-29",
+      "cut": "2011-11-29",
+      "predict_months": [
+        "2012-01-31",
+        "2012-02-29",
+        "2012-03-30"
+      ],
+      "engines": {
+        "autosklearn": {
+          "engine": "autosklearn",
+          "tag": "autosklearn_earn_2011-12-29",
+          "python": "3.9.25",
+          "platform": "linux",
+          "n_train": 1732,
+          "n_val": 1807,
+          "n_window": 7363,
+          "n_pred": 3695,
+          "ensemble_targets_equal_time_val": true,
+          "library": "auto-sklearn",
+          "version": "0.15.0",
+          "n_trials": 26,
+          "selection_metric": "monthly_spearman_ic",
+          "ensemble_members": [
+            {
+              "weight": 0.38,
+              "model": "RandomForest"
+            },
+            {
+              "weight": 0.36,
+              "model": "ARDRegression"
+            },
+            {
+              "weight": 0.12,
+              "model": "ExtraTreesRegressor"
+            },
+            {
+              "weight": 0.04,
+              "model": "MLPRegressor"
+            },
+            {
+              "weight": 0.04,
+              "model": "RandomForest"
+            },
+            {
+              "weight": 0.02,
+              "model": "LibLinear_SVR"
+            },
+            {
+              "weight": 0.02,
+              "model": "MLPRegressor"
+            },
+            {
+              "weight": 0.02,
+              "model": "LibSVM_SVR"
+            }
+          ],
+          "best_estimator": "RandomForest",
+          "leaderboard_top": [
+            {
+              "model": "ard_regression",
+              "ensemble_weight": 0.36,
+              "cost": 0.7054288128073382
+            },
+            {
+              "model": "random_forest",
+              "ensemble_weight": 0.38,
+              "cost": 0.7081951366898149
+            },
+            {
+              "model": "extra_trees",
+              "ensemble_weight": 0.12,
+              "cost": 0.7104598414481472
+            },
+            {
+              "model": "random_forest",
+              "ensemble_weight": 0.04,
+              "cost": 0.7503889653136209
+            },
+            {
+              "model": "mlp",
+              "ensemble_weight": 0.04,
+              "cost": 0.792601830315208
+            },
+            {
+              "model": "mlp",
+              "ensemble_weight": 0.02,
+              "cost": 0.8721597356926138
+            },
+            {
+              "model": "liblinear_svr",
+              "ensemble_weight": 0.02,
+              "cost": 0.9052584970722053
+            },
+            {
+              "model": "libsvm_svr",
+              "ensemble_weight": 0.02,
+              "cost": 0.943530543852711
+            }
+          ],
+          "search_s": 278.1,
+          "seconds": 663.6,
+          "peak_rss_tree_gb": 3.51,
+          "wall_s": 663.5
+        }
+      },
+      "n_train": 1732,
+      "n_val": 1807,
+      "n_refit_full": 7363,
+      "n_sample_months": 8,
+      "n_inputs": 202,
+      "n_pred": 3695,
+      "seconds": 672.9,
+      "peak_rss_gb_driver": 1.85
+    },
+    {
+      "target": "val",
+      "refit_date": "2011-12-29",
+      "cut": "2011-11-29",
+      "predict_months": [
+        "2012-01-31",
+        "2012-02-29"
+      ],
+      "engines": {
+        "autosklearn": {
+          "engine": "autosklearn",
+          "tag": "autosklearn_val_2011-12-29",
+          "python": "3.9.25",
+          "platform": "linux",
+          "n_train": 10406,
+          "n_val": 1993,
+          "n_window": 12399,
+          "n_pred": 2436,
+          "ensemble_targets_equal_time_val": true,
+          "library": "auto-sklearn",
+          "version": "0.15.0",
+          "n_trials": 26,
+          "selection_metric": "monthly_spearman_ic",
+          "ensemble_members": [
+            {
+              "weight": 0.36,
+              "model": "RandomForest"
+            },
+            {
+              "weight": 0.36,
+              "model": "KNearestNeighborsRegressor"
+            },
+            {
+              "weight": 0.14,
+              "model": "MLPRegressor"
+            },
+            {
+              "weight": 0.12,
+              "model": "MLPRegressor"
+            },
+            {
+              "weight": 0.02,
+              "model": "LibLinear_SVR"
+            }
+          ],
+          "best_estimator": "RandomForest",
+          "leaderboard_top": [
+            {
+              "model": "random_forest",
+              "ensemble_weight": 0.36,
+              "cost": 0.05974734689926686
+            },
+            {
+              "model": "k_nearest_neighbors",
+              "ensemble_weight": 0.36,
+              "cost": 0.06140565788335073
+            },
+            {
+              "model": "mlp",
+              "ensemble_weight": 0.14,
+              "cost": 0.08306820920062352
+            },
+            {
+              "model": "mlp",
+              "ensemble_weight": 0.12,
+              "cost": 0.0872755480973636
+            },
+            {
+              "model": "liblinear_svr",
+              "ensemble_weight": 0.02,
+              "cost": 0.8813163961395718
+            }
+          ],
+          "search_s": 318.0,
+          "seconds": 791.4,
+          "peak_rss_tree_gb": 2.84,
+          "wall_s": 791.4
+        }
+      },
+      "n_train": 10406,
+      "n_val": 1993,
+      "n_refit_full": 12399,
+      "n_sample_months": 12,
+      "n_inputs": 203,
+      "n_pred": 2436,
+      "seconds": 791.5,
+      "peak_rss_gb_driver": 1.85
+    },
+    {
+      "target": "val",
+      "refit_date": "2012-03-30",
+      "cut": "2012-02-29",
+      "predict_months": [
+        "2012-03-30"
+      ],
+      "engines": {
+        "autosklearn": {
+          "engine": "autosklearn",
+          "tag": "autosklearn_val_2012-03-30",
+          "python": "3.9.25",
+          "platform": "linux",
+          "n_train": 10330,
+          "n_val": 2436,
+          "n_window": 12766,
+          "n_pred": 1259,
+          "ensemble_targets_equal_time_val": true,
+          "library": "auto-sklearn",
+          "version": "0.15.0",
+          "n_trials": 26,
+          "selection_metric": "monthly_spearman_ic",
+          "ensemble_members": [
+            {
+              "weight": 0.54,
+              "model": "ExtraTreesRegressor"
+            },
+            {
+              "weight": 0.24,
+              "model": "RandomForest"
+            },
+            {
+              "weight": 0.16,
+              "model": "MLPRegressor"
+            },
+            {
+              "weight": 0.06,
+              "model": "DecisionTree"
+            }
+          ],
+          "best_estimator": "ExtraTreesRegressor",
+          "leaderboard_top": [
+            {
+              "model": "extra_trees",
+              "ensemble_weight": 0.54,
+              "cost": 0.08455534851570645
+            },
+            {
+              "model": "random_forest",
+              "ensemble_weight": 0.24,
+              "cost": 0.09154735308687623
+            },
+            {
+              "model": "mlp",
+              "ensemble_weight": 0.16,
+              "cost": 0.12945566939590158
+            },
+            {
+              "model": "decision_tree",
+              "ensemble_weight": 0.06,
+              "cost": 0.15234724357317453
+            }
+          ],
+          "search_s": 542.6,
+          "seconds": 1053.9,
+          "peak_rss_tree_gb": 2.93,
+          "wall_s": 1053.9
+        }
+      },
+      "n_train": 10330,
+      "n_val": 2436,
+      "n_refit_full": 12766,
+      "n_sample_months": 12,
+      "n_inputs": 203,
+      "n_pred": 1259,
+      "seconds": 1054.0,
+      "peak_rss_gb_driver": 1.85
+    },
+    {
+      "target": "dist",
+      "refit_date": "2011-12-29",
+      "cut": "2011-11-29",
+      "predict_months": [
+        "2012-01-31",
+        "2012-02-29",
+        "2012-03-30"
+      ],
+      "engines": {
+        "autosklearn": {
+          "engine": "autosklearn",
+          "tag": "autosklearn_dist_2011-12-29",
+          "python": "3.9.25",
+          "platform": "linux",
+          "n_train": 1830,
+          "n_val": 967,
+          "n_window": 6892,
+          "n_pred": 3695,
+          "ensemble_targets_equal_time_val": true,
+          "library": "auto-sklearn",
+          "version": "0.15.0",
+          "n_trials": 26,
+          "selection_metric": "roc_auc",
+          "ensemble_members": [
+            {
+              "weight": 0.64,
+              "model": "GradientBoostingClassifier"
+            },
+            {
+              "weight": 0.12,
+              "model": "AdaboostClassifier"
+            },
+            {
+              "weight": 0.06,
+              "model": "RandomForest"
+            },
+            {
+              "weight": 0.06,
+              "model": "RandomForest"
+            },
+            {
+              "weight": 0.04,
+              "model": "RandomForest"
+            },
+            {
+              "weight": 0.04,
+              "model": "AdaboostClassifier"
+            },
+            {
+              "weight": 0.02,
+              "model": "GradientBoostingClassifier"
+            },
+            {
+              "weight": 0.02,
+              "model": "SGD"
+            }
+          ],
+          "best_estimator": "GradientBoostingClassifier",
+          "leaderboard_top": [
+            {
+              "model": "random_forest",
+              "ensemble_weight": 0.04,
+              "cost": 0.12561576354679793
+            },
+            {
+              "model": "random_forest",
+              "ensemble_weight": 0.06,
+              "cost": 0.12932872582898325
+            },
+            {
+              "model": "random_forest",
+              "ensemble_weight": 0.06,
+              "cost": 0.13440188221454297
+            },
+            {
+              "model": "gradient_boosting",
+              "ensemble_weight": 0.64,
+              "cost": 0.16671568267039194
+            },
+            {
+              "model": "gradient_boosting",
+              "ensemble_weight": 0.02,
+              "cost": 0.19274318064848173
+            },
+            {
+              "model": "adaboost",
+              "ensemble_weight": 0.04,
+              "cost": 0.22112344680538187
+            },
+            {
+              "model": "adaboost",
+              "ensemble_weight": 0.12,
+              "cost": 0.27645026101021986
+            },
+            {
+              "model": "sgd",
+              "ensemble_weight": 0.02,
+              "cost": 0.45728255275347396
+            }
+          ],
+          "search_s": 295.9,
+          "seconds": 961.9,
+          "peak_rss_tree_gb": 4.28,
+          "wall_s": 961.9
+        }
+      },
+      "n_train": 1830,
+      "n_val": 967,
+      "n_refit_full": 6892,
+      "n_sample_months": 7,
+      "n_inputs": 202,
+      "n_pred": 3695,
+      "seconds": 961.9,
+      "peak_rss_gb_driver": 1.85
+    },
+    {
+      "target": "ret",
+      "refit_date": "2011-12-29",
+      "cut": "2011-11-29",
+      "predict_months": [
+        "2012-01-31",
+        "2012-02-29",
+        "2012-03-30"
+      ],
+      "engines": {
+        "autosklearn": {
+          "engine": "autosklearn",
+          "tag": "autosklearn_ret_2011-12-29",
+          "python": "3.9.25",
+          "platform": "linux",
+          "n_train": 1830,
+          "n_val": 967,
+          "n_window": 6892,
+          "n_pred": 3695,
+          "ensemble_targets_equal_time_val": true,
+          "library": "auto-sklearn",
+          "version": "0.15.0",
+          "n_trials": 26,
+          "selection_metric": "monthly_spearman_ic",
+          "ensemble_members": [
+            {
+              "weight": 0.3,
+              "model": "LibSVM_SVR"
+            },
+            {
+              "weight": 0.2,
+              "model": "LibSVM_SVR"
+            },
+            {
+              "weight": 0.14,
+              "model": "AdaboostRegressor"
+            },
+            {
+              "weight": 0.12,
+              "model": "ExtraTreesRegressor"
+            },
+            {
+              "weight": 0.1,
+              "model": "LibLinear_SVR"
+            },
+            {
+              "weight": 0.06,
+              "model": "LibLinear_SVR"
+            },
+            {
+              "weight": 0.02,
+              "model": "RandomForest"
+            },
+            {
+              "weight": 0.02,
+              "model": "RandomForest"
+            },
+            {
+              "weight": 0.02,
+              "model": "RandomForest"
+            },
+            {
+              "weight": 0.02,
+              "model": "RandomForest"
+            }
+          ],
+          "best_estimator": "LibSVM_SVR",
+          "leaderboard_top": [
+            {
+              "model": "libsvm_svr",
+              "ensemble_weight": 0.3,
+              "cost": 0.7058425748033021
+            },
+            {
+              "model": "extra_trees",
+              "ensemble_weight": 0.12,
+              "cost": 0.7183809103733119
+            },
+            {
+              "model": "libsvm_svr",
+              "ensemble_weight": 0.2,
+              "cost": 0.7241171761700742
+            },
+            {
+              "model": "random_forest",
+              "ensemble_weight": 0.02,
+              "cost": 0.7391545792727487
+            },
+            {
+              "model": "liblinear_svr",
+              "ensemble_weight": 0.1,
+              "cost": 0.7549319046863012
+            },
+            {
+              "model": "liblinear_svr",
+              "ensemble_weight": 0.06,
+              "cost": 0.7556594186506511
+            },
+            {
+              "model": "random_forest",
+              "ensemble_weight": 0.02,
+              "cost": 0.7644065863211408
+            },
+            {
+              "model": "random_forest",
+              "ensemble_weight": 0.02,
+              "cost": 0.7650859134338935
+            },
+            {
+              "model": "adaboost",
+              "ensemble_weight": 0.14,
+              "cost": 0.7735311951312072
+            },
+            {
+              "model": "random_forest",
+              "ensemble_weight": 0.02,
+              "cost": 0.7940905893301715
+            }
+          ],
+          "search_s": 237.1,
+          "seconds": 3212.9,
+          "peak_rss_tree_gb": 2.52,
+          "wall_s": 3212.9
+        }
+      },
+      "n_train": 1830,
+      "n_val": 967,
+      "n_refit_full": 6892,
+      "n_sample_months": 7,
+      "n_inputs": 202,
+      "n_pred": 3695,
+      "seconds": 3213.0,
+      "peak_rss_gb_driver": 1.85
+    }
+  ],
+  "timing": {
+    "features_s": 26.9,
+    "price_panel_s": 6.9,
+    "total_s": 6730.0
+  },
+  "pit_selftest_features": {
+    "months": [
+      "2010-02-26",
+      "2012-03-30"
+    ],
+    "rows_checked": 279,
+    "pass": true
+  },
+  "n_rows_panel": 40144,
+  "n_features": 204,
+  "outlier_selftest": {
+    "ticker": "A000070",
+    "factor": 1000000.0,
+    "n_rows_injected": 37,
+    "target": "earn",
+    "refit_date": "2011-12-29",
+    "control_on_spearman_min_mean": [
+      0.976458,
+      0.977216
+    ],
+    "control_off_spearman_min_mean": [
+      0.003498,
+      0.023865
+    ],
+    "diag_drop_ticker_spearman_min_mean": [
+      0.985698,
+      0.986235
+    ],
+    "rebuild_equals_main_design": true,
+    "threshold_min": 0.99,
+    "pass": false
+  },
+  "failed_engines": {},
+  "output_rows": {
+    "autosklearn": {
+      "NLFF_DIST": 3695,
+      "NLFF_EARN": 3695,
+      "NLFF_RET": 3695,
+      "NLFF_VAL": 3695
+    }
+  },
+  "peak_rss_gb": 1.85
+}
