@@ -199,6 +199,14 @@
       "decision": "FUNDAMENTAL-AVAIL-DEADLINE45-20261116(도훈 11-16 '보수적으로 법정기한 + 45일' · '공개일 + 1개월 규칙은 삭제' — 재무 쓸 수 있는 첫날 = max(법정 제출기한 + 45일 뒤 첫 거래일, 공개일 뒤 첫 거래일))",
       "note": "앞선 진행 중 항목 FUNDAMENTAL-AVAIL-LAG-1M-20261116(공개일 + 1개월)을 대신한다 — 그 재빌드는 08:3x 에 멈췄고(상장 전 이력 제외로 RAWDATA 가 바뀐다) 정본은 09:18 에 이 규칙으로 다시 교체했다(사본 .cache/fundamental_backup/20261116_091811). 완료 = RAWDATA 상장 전 행 제외(RAWDATA-PRELISTING-EXCLUDE-20261116) 뒤 팩터 DB 전체 재빌드(월간 · 일간 · IC) + 결합용 뷰 --full + 한국 FF 요인이 모두 rc 0 일 때 — 그때 이 항목과 FUNDAMENTAL-AVAIL-LAG-1M-20261116 의 completed_at 을 함께 채운다. 그 전 측정은 재측정 전 A 자격 · 기저 자격 없음.",
       "evidence": "06_Registry/decision_register.json FUNDAMENTAL-AVAIL-DEADLINE45-20261116 · 06_Registry/fundamental_source.json(legal_deadline_days 90 · 45 · deadline_buffer_days 45 · avail_lag_months 0) · .cache/fund_deadline45_20261116/candidate.log · switch.log(후보 115초 · 병합 8,917,194행 · 분기 7,715,833행 · 순서 감사 겹침 0 · 역전 0 · FY2025 사업보고서 3,147종목 = 2026-05-18 · 2026 1분기 3,573종목 = 2026-06-30)"
+    },
+    {
+      "id": "RAWDATA-PRELISTING-EXCLUDE-20261116",
+      "completed_at": null,
+      "scope": "all",
+      "decision": "RAWDATA-PRELISTING-EXCLUDE-20261116(도훈 11-16 '상장전 이력까지 백테스팅에 활용하지마 · 상장된 시점 이후 퀀티와이즈 가격부터 · 없는 시점은 유니버스에서 제외')",
+      "note": "RAWDATA 상장 전 행 삭제(rawdata_listing_cut.py · 퀀티 시장구분 R100100 첫 유가증권 · 코스닥 날짜) — 완료 = 팩터 DB 전체 재빌드 + 결합용 뷰 --full + FF 요인 rc 0(qw_login_chain.sh 가 채운다)",
+      "evidence": ".cache/listing_cut/ · .cache/qw_login_chain/status.json"
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
  "schema": "q_judgment_ledger_v1",
- "updated_at": "2026-11-16T10:23:45+0900",
+ "updated_at": "2026-11-16T10:48:43+0900",
  "judgments": [
   {
    "id": "J-20261016-001",
@@ -3389,6 +3389,29 @@
    ],
    "expectation": "재빌드 뒤 레인 재가동 때 2611.16540 재측정",
    "confidence": 0.9,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261116-014",
+   "at": "2026-11-16T10:48:43+0900",
+   "op": "OP-20261116-L1-REMEASURE",
+   "kind": "ops",
+   "summary": "[11-16 10:48] 도훈 '퀀티 로그인 뒤 보류 작업 바로 실행 · 연결해' — qw_login_chain.sh(시장구분 → RAWDATA 상장 전 행 삭제 → 팩터 DB 전체 재빌드 → 결합용 뷰 → FF → 판 표식 셋 → 레인 measure_hold 해제) · Qvest_StandingBoard.bat 매시 --tick. 10:37 첫 틱에서 기존 ListingMarket 통합문서(1990-01-03..2026-11-13)로 적재 → 자르기 80,851행 · 106종목 → 재빌드 10:39~",
+   "rationale": "막힌 곳은 상장일 잣대 하나였고, 통합문서가 이미 목표일(11-13)까지 차 있어 적재 관문을 지났다(앞서 Q 가 '끊긴 뒤 저장본은 쓰지 않는다'고 한 것은 Q 의 주의였지 도훈 규칙이 아니다 · 지운 범위 = 2013~15 코넥스 시작 뒤 · 1996 코스닥 개장 직후 · 삼성SDS 상장 전 3개월 — 상장 전 이력 꼴). 새 검사 없음 · 실패 단계는 자동 재시도 없이 알림.",
+   "framework_refs": [
+    "RAWDATA-PRELISTING-EXCLUDE-20261116 · FUNDAMENTAL-AVAIL-DEADLINE45-20261116 · lean-loop ⑤ 막지 않는다"
+   ],
+   "evidence": [
+    ".cache/qw_login_chain/status.json · .cache/scheduler_logs/qw_login_chain_20261116.log · .cache/listing_cut/dropped_20261116_103935_qw_login_chain_apply.parquet"
+   ],
+   "alternatives": [
+    "퀀티 새 수급을 기다린 뒤 자르기 — 통합문서가 이미 목표일까지 차 있어 기다릴 이유 없음"
+   ],
+   "expectation": "재빌드 약 12시간 뒤 done · 레인 보류 논문 측정 재개",
+   "confidence": 0.75,
    "status": "open",
    "reviews": [],
    "supersedes": null,
