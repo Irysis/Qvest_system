@@ -75,7 +75,7 @@ def cmd_todo(a):
     import research_pool_predicates as rp
     # 다시 채점하지 않는 것 = 등급이 난 논문 · 원문이 없어 unknown 인 논문(no_text). LLM 실패(unparsed)는 다음 실행이 다시 본다.
     done = {k for k, r in latest().items() if (r.get("rigor") in ("high", "mid", "low") or r.get("why") == "no_text")
-            and (not a.regrade or r.get("rubric") == "v2")}
+            and (not a.regrade or r.get("rubric") == RUBRIC)}
     ordered, _st = rp.alpha_pending_ordered(STAGE, REG)
     try:
         sk = json.load(io.open(SKIP_P, encoding="utf-8"))
@@ -207,23 +207,35 @@ def _skip_add(key, url, title, score, crit):
     return True
 
 
+RUBRIC = "v2.2"   # v2 기준 · 두 번 판독 → 낮은 점수(도훈 11-16 '두 번 채점')
+
+
 def cmd_ingest(a):
     _c, hi, mid = cfg()
-    o, why = _parse(a.run_out)
     rec = {"schema": "paper_rigor_v1", "paper_key": a.key, "title": a.title, "url": a.url, "at": now(),
-           "text_kind": a.text_kind, "model": a.model, "decision": "PAPER-ORDER-RIGOR-FILTER-20261116"}
-    if o is None:
-        rec.update({"rigor": "unknown", "why": why})
-    else:
+           "text_kind": a.text_kind, "model": a.model, "decision": "PAPER-ORDER-RIGOR-FILTER-20261116", "rubric": RUBRIC}
+    runs = []
+    for ro in [a.run_out] + list(a.more or []):
+        o, why = _parse(ro)
+        if o is None:
+            runs.append({"ok": False, "why": why})
+            continue
         CR = CRITERIA_BY_TYPE[o["paper_type"]]
         crit = {c: bool(o.get(c)) for c in CR}
-        score = sum(crit.values())
-        rg = band(score, hi, mid)
+        ev = o.get("evidence") if isinstance(o.get("evidence"), dict) else {}
+        runs.append({"ok": True, "paper_type": o["paper_type"], "criteria": crit, "score": sum(crit.values()),
+                     "evidence": {c: str(ev.get(c) or "")[:120] for c in CR}})
+    good = [r for r in runs if r["ok"]]
+    rec["runs"] = [{"ok": r["ok"], "score": r.get("score"), "paper_type": r.get("paper_type"), "why": r.get("why")} for r in runs]
+    if not good:
+        rec.update({"rigor": "unknown", "why": runs[0].get("why") if runs else "no_run"})
+    else:
+        lo = min(good, key=lambda r: r["score"])   # 낮은 쪽(보수) — 판독 하나만 성공했으면 그 하나(runs 에 남는다)
+        rg = band(lo["score"], hi, mid)
         if a.text_kind != "full" and rg == "low":
             rg = "unknown"   # 전문 없이 low 로 빼지 않는다(초록만으로는 기준 확인이 안 된다)
-        ev = o.get("evidence") if isinstance(o.get("evidence"), dict) else {}
-        rec.update({"rigor": rg, "score": score, "paper_type": o["paper_type"], "criteria": crit, "rubric": "v2",
-                    "evidence": {c: str(ev.get(c) or "")[:120] for c in CR}})
+        rec.update({"rigor": rg, "score": lo["score"], "paper_type": lo["paper_type"], "criteria": lo["criteria"],
+                    "evidence": lo["evidence"], "n_runs_ok": len(good)})
     with io.open(LOG_P, "a", encoding="utf-8", newline="\n") as fh:
         fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
     skipped = False
@@ -248,6 +260,7 @@ def main(argv):
     t = sp.add_parser("todo"); t.add_argument("--limit", type=int, default=0); t.add_argument("--regrade", action="store_true"); t.set_defaults(f=cmd_todo)
     p = sp.add_parser("prompt"); [p.add_argument(x) for x in ("key", "title", "text_file", "out")]; p.set_defaults(f=cmd_prompt)
     i = sp.add_parser("ingest"); [i.add_argument(x) for x in ("key", "url", "title", "run_out")]
+    i.add_argument("more", nargs="*")
     i.add_argument("--text-kind", default="full"); i.add_argument("--model", default=""); i.set_defaults(f=cmd_ingest)
     s = sp.add_parser("show"); s.add_argument("--key", default=""); s.set_defaults(f=cmd_show)
     a = ap.parse_args(argv)

@@ -27,9 +27,10 @@ while IFS=$'\t' read -r KEY URL TITLE; do
   W=".cache/paper_rigor/${KEY//[^A-Za-z0-9._-]/_}"; mkdir -p "$W"
   "$PY" -X utf8 02_Infrastructure/ops/rf_paper_text.py --url "$URL" --wdir "$W" >> "$LOG" 2>&1
   KIND="$("$PY" -X utf8 02_Infrastructure/ops/paper_rigor.py prompt "$KEY" "$TITLE" "$W/.clean_paper/paper.md" "$W/prompt.txt" 2>>"$LOG" | tr -d '\r')"
-  if [ "$KIND" = "none" ]; then echo "NO_TEXT" > "$W/run.out"; LLM_RC=0; LLM_USED_MODEL=none; LLM_USED_EFFORT=none
-  else rf_llm_agent_run "$W/prompt.txt" "$W/run.out" 900 --output-format text; fi
-  OUT="$("$PY" -X utf8 02_Infrastructure/ops/paper_rigor.py ingest "$KEY" "$URL" "$TITLE" "$W/run.out" --text-kind "${KIND:-none}" --model "$LLM_USED_MODEL/$LLM_USED_EFFORT" 2>>"$LOG" | tr -d '\r')"
+  # 두 번 판독 → 낮은 점수(도훈 11-16 '두 번 채점' — 1점 경계 흔들림 대응)
+  if [ "$KIND" = "none" ]; then echo "NO_TEXT" > "$W/run.out"; cp -f "$W/run.out" "$W/run2.out"; LLM_RC=0; LLM_USED_MODEL=none; LLM_USED_EFFORT=none
+  else rf_llm_agent_run "$W/prompt.txt" "$W/run.out" 900 --output-format text; rf_llm_agent_run "$W/prompt.txt" "$W/run2.out" 900 --output-format text; fi
+  OUT="$("$PY" -X utf8 02_Infrastructure/ops/paper_rigor.py ingest "$KEY" "$URL" "$TITLE" "$W/run.out" "$W/run2.out" --text-kind "${KIND:-none}" --model "$LLM_USED_MODEL/$LLM_USED_EFFORT" 2>>"$LOG" | tr -d '\r')"
   echo "[paper_rigor $(date '+%F %T')] $KEY rc=$LLM_RC kind=$KIND $OUT" | tee -a "$LOG"
   n=$((n + 1)); case "$OUT" in *$'\t'low$'\t'*) nlow=$((nlow + 1)) ;; esac
 done <<< "$TODO"
