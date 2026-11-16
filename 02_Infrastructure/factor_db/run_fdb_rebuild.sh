@@ -28,14 +28,15 @@ cd "$INFRA" || { echo "cannot cd $INFRA"; exit 2; }
 echo "[run_fdb_rebuild] START_PHASE=$START @ $(TS)"
 [ "$START" -ge 7 ] && echo "[run_fdb_rebuild] RESUME mode — phase6 skipped, no delete (additive merge onto existing files)"
 
-for P in 6 7 8; do
-  if [ "$P" -lt "$START" ]; then
+for P in 6 7 8 F; do   # F = 재무 팩터 새 정의 덮어쓰기(2026-11-16 · factor_db_daily_phaseF_fundamental.R)
+  if [ "$P" != "F" ] && [ "$P" -lt "$START" ]; then
     echo "[run_fdb_rebuild] skip phase$P (< START=$START)"
     continue
   fi
   echo "[run_fdb_rebuild] ===== phase$P begin @ $(TS) ====="
   # each phase in its OWN R process — ASCII-only -e (source path has no backslash)
-  "$RS" -e "source('factor_db/factor_db_daily_phase${P}.R')"
+  if [ "$P" = "F" ]; then PF="factor_db/factor_db_daily_phaseF_fundamental.R"; else PF="factor_db/factor_db_daily_phase${P}.R"; fi
+  "$RS" -e "source('$PF')"
   rc=$?
   if [ "$rc" -ne 0 ]; then
     echo "[run_fdb_rebuild] !!! phase$P FAILED rc=$rc @ $(TS) — ABORT (fdb_daily left partial)"

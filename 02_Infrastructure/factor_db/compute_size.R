@@ -51,49 +51,17 @@ compute_size <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
   s01 <- s01[is.finite(Raw_Value)]
   if (nrow(s01) > 0) results[["S01"]] <- s01
 
-  # --- S02: Float_Size = -log(estimated_shares × Close) ---
-  # 유통주식 정보가 별도로 없으면 Size와 동일 프록시 사용
-  # estimated_shares = Size / Close → Float_Size ≈ -log(Size)
-  # FUND에 SharesOutstanding 있으면 그걸 사용
-  if (!is.null(FUND) && nrow(FUND) > 0) {
-    # FUND is pre-filtered (FUND_pit) by builder — avoid copy+filter overhead
-    fund <- FUND  # already Factor_Date <= sig_d from builder
-
-    shares_data <- NULL
-    if ("Item" %in% names(fund)) {
-      shares_sub <- fund[Item == "SharesOutstanding"]
-      if (nrow(shares_sub) > 0) {
-        setorder(shares_sub, Ticker, Factor_Date)
-        shares_data <- shares_sub[, .SD[.N], by = Ticker][, .(Ticker, Shares = Value)]
-      }
-    } else if ("SharesOutstanding" %in% names(fund)) {
-      if ("Factor_Date" %in% names(fund)) {
-        setorder(fund, Ticker, Factor_Date)
-        shares_data <- fund[!is.na(SharesOutstanding), .SD[.N], by = Ticker][, .(Ticker, Shares = SharesOutstanding)]
-      } else {
-        shares_data <- fund[!is.na(SharesOutstanding), .(Ticker, Shares = SharesOutstanding)]
-      }
-    }
-
-    if (!is.null(shares_data) && nrow(shares_data) > 0) {
-      merged <- merge(latest[, .(Ticker, Close)], shares_data, by = "Ticker")
-      merged <- merged[Shares > 0 & Close > 0]
-      if (nrow(merged) > 0) {
-        s02 <- merged[, .(Ticker, Factor_Name = "S02_Float_Size",
-                          Raw_Value = -log(Shares * Close))]
-        s02 <- s02[is.finite(Raw_Value)]
-        if (nrow(s02) > 0) results[["S02"]] <- s02
-      }
-    }
-  }
-
-  # S02 fallback: use Size as proxy
-  if (!"S02" %in% names(results)) {
+  # --- S02: Float_Size = -log(시가총액 × 유동주식비율) — (2026-11-16 재정의) 구판은 재무 FUND 의 SharesOutstanding(= 시가총액 ÷ 종가로
+  #   만든 합성값)을 써서 사실상 -log(Size) = S01 과 같았다. 이제 RAWDATA 의 퀀티 유동주식비율(Float · % · 그날 값)로 유동 시가총액을 쓴다.
+  #   Float 이 없는 종목은 -log(Size)(구판과 같은 대체).
+  if ("Float" %in% names(latest)) {
     s02 <- latest[, .(Ticker, Factor_Name = "S02_Float_Size",
-                       Raw_Value = -log(Size))]
-    s02 <- s02[is.finite(Raw_Value)]
-    if (nrow(s02) > 0) results[["S02"]] <- s02
+                      Raw_Value = fifelse(is.finite(Float) & Float > 0, -log(Size * Float / 100), -log(Size)))]
+  } else {
+    s02 <- latest[, .(Ticker, Factor_Name = "S02_Float_Size", Raw_Value = -log(Size))]
   }
+  s02 <- s02[is.finite(Raw_Value)]
+  if (nrow(s02) > 0) results[["S02"]] <- s02
 
   # 결합
   if (length(results) == 0) {

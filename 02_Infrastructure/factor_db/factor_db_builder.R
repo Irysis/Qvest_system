@@ -418,9 +418,11 @@ cat("[factor_db_builder] Loaded. FACTOR_DB_DIR:", FACTOR_DB_DIR, "\n")
     if (!file.exists(fund_path)) stop("[factor_db_builder] QVEST_FUND_MERGED 경로가 없다: ", fund_path)
     cat("  ★Fundamentals 경로 덮어쓰기(QVEST_FUND_MERGED):", fund_path, "\n")
   } else {
-    fund_path <- file.path(CACHE_DIR, "fundamental_merged.parquet")
+    # (2026-11-16) 옛 병합 표(fundamental_merged.parquet)는 퇴역 — 재무 팩터는 compute_fundamental.R 이 재무 캐시 두 개(fund_access.R)를
+    #   직접 읽는다. 여기 FUND 는 비워 둔다(모듈 인자 호환만 · 읽는 모듈 없음).
+    fund_path <- ""
   }
-  if (file.exists(fund_path)) {
+  if (nzchar(fund_path) && file.exists(fund_path)) {
     .fdb_env$FUND <- as.data.table(read_parquet(fund_path))
     cat(sprintf("  Fundamentals: %s rows\n",
                 format(nrow(.fdb_env$FUND), big.mark = ",") ))
@@ -602,42 +604,37 @@ cat("[factor_db_builder] Loaded. FACTOR_DB_DIR:", FACTOR_DB_DIR, "\n")
 .preload_modules <- function() {
   if (isTRUE(.fdb_env$.modules_loaded)) return(invisible(NULL))
 
+  # (2026-11-16 재무 캐시 전환 · 도훈 '분기파일 · 연간파일 · 펀더멘털 팩터 재정의') quality · growth · accrual · quality_xf_native ·
+  #   xlsx_fund(XF) 모듈은 compute_fundamental.R 하나로 합쳤다(XF 팩터군 삭제). 재무 조회기 fund_access.R 를 먼저 전역에 올린다.
+  source(file.path(COMPUTE_MOD_DIR, "fund_access.R"), local = globalenv())
   module_map <- list(
     value            = "compute_value.R",
     momentum         = "compute_momentum.R",
-    quality          = "compute_quality.R",
-    quality_xf_native = "compute_quality_xf_native.R",
+    fundamental      = "compute_fundamental.R",
     defense          = "compute_defense.R",
     size             = "compute_size.R",
     consensus        = "compute_consensus.R",
     liquidity        = "compute_liquidity.R",
-    accrual          = "compute_accrual.R",
     risk             = "compute_risk.R",
     regime           = "compute_regime.R",
     crowding         = "compute_crowding.R",
-    growth           = "compute_growth.R",
     investor         = "compute_investor.R",
     technical        = "compute_technical.R",
-    xlsx_fund        = "xlsx_factor_calculator.R",
     custom           = "compute_custom_factors.R"
   )
   func_name_map <- list(
     value            = "compute_value",
     momentum         = "compute_momentum",
-    quality          = "compute_quality",
-    quality_xf_native = "compute_quality_xf_native",
+    fundamental      = "compute_fundamental",
     defense          = "compute_defense",
     size             = "compute_size",
     consensus        = "compute_consensus",
     liquidity        = "compute_liquidity",
-    accrual          = "compute_accrual",
     risk             = "compute_risk",
     regime           = "compute_regime",
     crowding         = "compute_crowding",
-    growth           = "compute_growth",
     investor         = "compute_investor",
     technical        = "compute_technical",
-    xlsx_fund        = "compute_xlsx_fundamentals",
     custom           = "compute_custom_factors"
   )
 
@@ -991,15 +988,13 @@ if (!force && file.exists(out_path)) {
   # Module display names (for logging)
   module_display <- list(
     value = "compute_value.R", momentum = "compute_momentum.R",
-    quality = "compute_quality.R",
-    quality_xf_native = "compute_quality_xf_native.R",
+    fundamental = "compute_fundamental.R",
     defense = "compute_defense.R",
     size = "compute_size.R", consensus = "compute_consensus.R",
-    liquidity = "compute_liquidity.R", accrual = "compute_accrual.R",
+    liquidity = "compute_liquidity.R",
     risk = "compute_risk.R", regime = "compute_regime.R",
-    crowding = "compute_crowding.R", growth = "compute_growth.R",
+    crowding = "compute_crowding.R",
     investor = "compute_investor.R", technical = "compute_technical.R",
-    xlsx_fund = "xlsx_factor_calculator.R",
     custom = "custom_factors"
   )
 
@@ -1037,7 +1032,8 @@ if (!force && file.exists(out_path)) {
 
   combined <- rbindlist(all_factors, use.names = TRUE, fill = TRUE)
 
-  combined <- .fdb_xf_fill_merge(combined)   # XF → DART 이름 채우기(변환 포함) — 함수 정의는 build_factor_db 위
+  # (2026-11-16) XF → DART 이름 채우기 단계 폐지 — XF 팩터군 삭제(재무는 compute_fundamental.R 하나 · 퀀티 단독). 아래 미대응 XF 중복 제거도
+  #   XF 행이 없으면 아무 일도 안 한다(호환으로 남김).
   # Unmapped XF (DU/EF/GD/LL/PR/RI 25개): both compute_quality_xf_native (DART)
   # AND xlsx_factor_calculator (QuantiWise) emit same Factor_Name.
   # Per-(Ticker, Factor_Name) dedup keep first → DART preferred (module called earlier).

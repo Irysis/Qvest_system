@@ -215,6 +215,14 @@
       "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116(도훈 11-16 '퀀티로만 바꿔주고, DART API 관련 데이터들은 완전히 삭제해줘') — 재무 정본 = 퀀티 재무 v2 단독(정정 연도 DART 당시 값 62만 행 · DART 접수일 바닥 제거)",
       "note": "정본 교체 13:14(사본 .cache/fundamental_backup/20261116_131427) · 완료 = 팩터 DB 전체 재빌드 + 결합용 뷰 --full + 한국 FF rc 0(qw_login_chain.sh 가 이 항목까지 채운다)",
       "evidence": ".cache/fund_qwonly_20261116/produce.log · fundamental_merged Origin = QW_V2 · QW_V2_derived 만"
+    },
+    {
+      "id": "FUNDAMENTAL-CACHES-REDEFINE-20261116",
+      "completed_at": null,
+      "scope": "all",
+      "decision": "도훈 11-16 '펀더멘털 데이터 캐시는 분기파일, 연간파일 하나씩 … 펀더멘털 팩터 정의를 새롭게 만든 펀더멘털 데이터 캐시 기반으로 재정의' · '112개 항목으로 계산가능한 모든 파생지표' · 'XF 삭제' · '올슨 O 스코어'",
+      "note": "재무 캐시 = fundamental_quarterly(TTM) · fundamental_annual(회계연도) · 파생 223 · 재무 팩터 98 재정의(compute_fundamental.R · fund_access.R) · XF 25 삭제 · 일간 DB 단계 F 덮어쓰기 · 완료 = 팩터 DB 전체 재빌드 + 결합용 뷰 --full + 한국 FF rc 0(qw_login_chain.sh)",
+      "evidence": ".cache/fundamental_caches_report.json · factor_db/factor_db_daily_phaseF_fundamental.R"
     }
   ]
 }

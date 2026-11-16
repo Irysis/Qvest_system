@@ -44,28 +44,9 @@ compute_value <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
   snap <- snap[MarketCap > 0]
 
   # ---- Helper: get latest PIT fundamental (wide) ----
-  fund_wide <- NULL
-  if (!is.null(FUND) && nrow(FUND) > 0L) {
-    # FUND may already be pre-filtered (FUND_pit from builder), or full FUND.
-    # Either way, apply PIT filter then take latest per Ticker×Item.
-    fund_pit <- if ("Factor_Date" %in% names(FUND)) FUND[Factor_Date <= sig_date]
-                else if ("Date" %in% names(FUND)) FUND[Date <= sig_date]
-                else FUND
-    if (nrow(fund_pit) > 0L) {
-      # For P/L and CF items, prefer TTM_Value; for B/S items, use Value
-      # setorder + .SD[.N] avoids O(N) which.max scan per group
-      if ("Factor_Date" %in% names(fund_pit)) {
-        setorder(fund_pit, Ticker, Item, Factor_Date)
-      }
-      fund_latest <- fund_pit[, .SD[.N], by = .(Ticker, Item)]
-      if ("TTM_Value" %in% names(fund_latest)) {
-        fund_latest[, use_val := fifelse(!is.na(TTM_Value), TTM_Value, Value)]
-      } else {
-        fund_latest[, use_val := Value]
-      }
-      fund_wide <- dcast(fund_latest, Ticker ~ Item, value.var = "use_val")
-    }
-  }
+  # (2026-11-16 재무 캐시 전환) 재무 가치 팩터(V01~V03 · V07~V11 · V13~V20 · V22~V24)는 compute_fundamental.R 로 옮겼다.
+  #   이 모듈은 컨센서스(V04~V06) · 합성 V12(성분 CFP = 영업현금흐름 TTM / 시가 — 재무 분기 캐시) · V21 만 낸다(아래 끝에서 거른다).
+  fund_wide <- if (exists("fa_latest")) tryCatch(fa_latest(sig_date, "q", c("OperatingCF", "EPSParentAdj")), error = function(e) NULL) else NULL
 
   # ---- Helper: get consensus snapshot (latest row <= sig_date per Ticker) ----
   # CONSENSUS is a named list of data.tables (e.g., CONSENSUS$eps_1y, CONSENSUS$bps_1y, ...)
@@ -186,8 +167,8 @@ compute_value <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
   # Trailing EPS = NetIncome / SharesOut.  (Size is market cap, NOT share count —
   # dividing by Size yielded an earnings *yield* that was then differenced against
   # a per-share consensus EPS, inflating eps_growth by ~1e5.)
-  dt[, trailing_eps := fifelse(!is.na(NetIncome) & !is.na(SharesOut) & SharesOut > 0,
-                               NetIncome / SharesOut, NA_real_)]
+  # (2026-11-16) 실적 EPS = 퀀티 수정 지배주주 EPS 최근 4분기 합(재무 분기 캐시 EPSParentAdj · TTM)
+  dt[, trailing_eps := if ("EPSParentAdj" %in% names(dt)) EPSParentAdj else NA_real_]
   dt[, eps_growth := fifelse(!is.na(eps_1y) & !is.na(trailing_eps) & abs(trailing_eps) > 1e-6,
                              (eps_1y - trailing_eps) / abs(trailing_eps), NA_real_)]
   dt[, V09 := fifelse(!is.na(V04) & !is.na(eps_growth) & eps_growth > 0.01,
@@ -370,7 +351,9 @@ compute_value <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
   results[["V24_Residual_Income"]] <- dt[!is.na(V24) & is.finite(V24),
                                           .(Ticker, Factor_Name = "V24_Residual_Income", Raw_Value = V24)]
 
-  # ---- Combine all ----
+  # ---- Combine all ---- (재무 가치 팩터는 compute_fundamental.R — 여기서는 컨센서스 · V12 · V21 만)
   out <- rbindlist(results, use.names = TRUE)
+  if (nrow(out)) out <- out[Factor_Name %in% c("V04_Forward_PE", "V05_Forward_PB", "V06_Forward_DY", "V09_PEG", "V12_Composite_Value") |
+                            startsWith(Factor_Name, "V21") | startsWith(Factor_Name, "V04") | startsWith(Factor_Name, "V05") | startsWith(Factor_Name, "V06")]
   return(out)
 }

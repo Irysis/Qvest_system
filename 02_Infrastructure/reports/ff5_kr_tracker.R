@@ -73,7 +73,7 @@ recover_raw_z <- function(sig_d, fnames) {
 ## RMW 원전 정합 (07-18 도훈 지시): OP/BE = (OperatingProfit − NetInterestExp) / TotalEquity
 ##   — fundamental_merged 직접 계산(GPA proxy 폐기). KR 영업이익=Rev−COGS−SGA = FF pre-interest OP,
 ##   FF 정의대로 이자비용 차감(순이자비용 사용 — gross 이자비용 미분리 정직 라벨). PIT=Factor_Date.
-FUND <- as.data.table(read_parquet(".cache/fundamental_merged.parquet",
+FUND <- as.data.table(read_parquet(".cache/fundamental_annual.parquet",   # 11-16 재무 연간 캐시(퀀티 단독 · 회계연도)
           col_select = c("Ticker", "Period_Date", "Factor_Date", "Item", "Value")))
 FUND <- FUND[Item %in% c("OperatingProfit", "NetInterestExp", "TotalEquity")]
 FUND[, `:=`(Period_Date = as.Date(Period_Date), Factor_Date = as.Date(Factor_Date))]

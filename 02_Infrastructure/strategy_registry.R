@@ -123,7 +123,7 @@ register_strategy <- function(registry, strategy_name, config,
   if (is.null(data_snapshot_id)) {
     data_snapshot_id <- tryCatch({
       cache_dir <- ifelse(exists("CACHE_DIR"), CACHE_DIR, ".cache")
-      key_files <- c("RAWDATA.parquet", "benchmark.parquet", "fundamental_merged.parquet")
+      key_files <- c("RAWDATA.parquet", "benchmark.parquet", "fundamental_quarterly.parquet", "fundamental_annual.parquet")
       mtimes <- sapply(file.path(cache_dir, key_files), function(f) {
         if (file.exists(f)) format(file.mtime(f), "%Y%m%d_%H%M") else "missing"
       })

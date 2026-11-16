@@ -2,13 +2,13 @@
   "V01_BM": {
     "name": "Book-to-Market",
     "category": "value",
-    "definition": "TotalEquity / MarketCap. Ratio of book value to market capitalization.",
+    "definition": "BookEquity(지배 자본 − 우선주 · 최근 분기) / 시가총액",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -43,18 +43,30 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "TotalEquity / MarketCap. Ratio of book value to market capitalization.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "V02_EP": {
     "name": "Earnings-to-Price",
     "category": "value",
-    "definition": "NetIncome / MarketCap. Earnings yield metric.",
+    "definition": "지배주주 순이익 TTM / 시가총액",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -89,18 +101,30 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "NetIncome / MarketCap. Earnings yield metric.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "V03_CFP": {
     "name": "Cash Flow-to-Price",
     "category": "value",
-    "definition": "OperatingCF / MarketCap. Operating cash flow yield.",
+    "definition": "영업현금흐름 TTM / 시가총액",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -135,6 +159,18 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "OperatingCF / MarketCap. Operating cash flow yield.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "V04_fPER": {
@@ -281,13 +317,13 @@
   "V07_EV_EBITDA": {
     "name": "EV/EBITDA",
     "category": "value",
-    "definition": "(MarketCap + TotalDebt - Cash) / EBITDA. Enterprise value to earnings multiple.",
+    "definition": "EV(시가총액 + 차입금·사채 − 현금) / EBITDA TTM (EBITDA>0)",
     "direction": "lower_better",
     "direction_economic": "lower_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -322,18 +358,30 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "(MarketCap + TotalDebt - Cash) / EBITDA. Enterprise value to earnings multiple.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "V08_PSR": {
     "name": "Price-to-Sales",
     "category": "value",
-    "definition": "MarketCap / Revenue. Price relative to revenue.",
+    "definition": "시가총액 / 매출 TTM",
     "direction": "lower_better",
     "direction_economic": "lower_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -381,12 +429,24 @@
         "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
         "window": "2005-01..2026-06 (258 months)"
       }
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "MarketCap / Revenue. Price relative to revenue.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "V09_PEG": {
     "name": "PEG Ratio",
     "category": "value",
-    "definition": "fPER / (EPS growth * 100). Price-to-earnings-to-growth.",
+    "definition": "선행 PER / (EPS 성장률 × 100) — 성장률 = (컨센서스 EPS 1y − 퀀티 수정 지배주주 EPS TTM) / |EPS TTM|",
     "direction": "lower_better",
     "direction_economic": "lower_better",
     "direction_economic_basis": "registry_original",
@@ -428,18 +488,30 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "fPER / (EPS growth * 100). Price-to-earnings-to-growth.",
+        "data_source": "consensus"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_value.R"
     }
   },
   "V10_FCF_Yield": {
     "name": "Free Cash Flow Yield",
     "category": "value",
-    "definition": "(OperatingCF - CapEx) / MarketCap. FCF relative to market value.",
+    "definition": "(영업현금흐름 − 설비투자) TTM / 시가총액",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -490,18 +562,30 @@
         "window": "2005-01..2026-06 (258 months)"
       },
       "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "(OperatingCF - CapEx) / MarketCap. FCF relative to market value.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "V11_Shareholder_Yield": {
     "name": "Shareholder Yield",
     "category": "value",
-    "definition": "Dividends / MarketCap. Cash returned to shareholders as % of market cap.",
+    "definition": "보통주 현금배당 TTM / 시가총액",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -536,6 +620,18 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "Dividends / MarketCap. Cash returned to shareholders as % of market cap.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "V12_Composite_Value": {
@@ -587,13 +683,13 @@
   "V13_EV_Sales": {
     "name": "EV/Sales",
     "category": "value",
-    "definition": "EV / Revenue. Enterprise value to revenue ratio.",
+    "definition": "EV / 매출 TTM",
     "direction": "lower_better",
     "direction_economic": "lower_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -647,18 +743,30 @@
       "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
       "cluster_label": "sales_to_price",
       "note": "V13_EV_Sales = EV/Revenue (EV = MarketCap + TotalDebt - Cash) 인데 저장값이 V08_PSR(MarketCap/Revenue)과 258/258 개월 cor = 1.000000 이다. 원천 재구성 실측(2026-06-30, 2582종목): NetDebt==0 인 종목 0.0%, |NetDebt|/MarketCap 중앙값 0.266, cor(MC/Rev, EV/Rev) = 0.900 (Spearman 0.753). 즉 EV 를 제대로 넣으면 0.90 이어야 하는데 1.000000 이 나온다 -> 저장된 V13 에서 **EV 항이 무력**하다. ★결함 유도 동일성 — 합(sum) 항이 값에 영향을 주지 못한다. 자동 병합 금지: 접으면 팩터가 아니라 **결함이 라벨 뒤로 사라진다**. 수리 후 재측정할 것. 영향 의심 범위(미확정): V07_EV_EBITDA / V14_EBIT_EV / V22_FCFF_EV."
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "EV / Revenue. Enterprise value to revenue ratio.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "V14_EBIT_EV": {
     "name": "V14_EBIT_EV",
     "category": "value",
-    "definition": "OperatingProfit / EV. Greenblatt Magic Formula component.",
+    "definition": "영업이익 TTM / EV",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -693,18 +801,30 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "OperatingProfit / EV. Greenblatt Magic Formula component.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "V15_NetDebt_Adj_EP": {
     "name": "Net Debt-Adjusted Earnings Yield",
     "category": "value",
-    "definition": "(NetIncome + InterestExp) / (MarketCap + NetDebt). Capital structure neutral earnings yield.",
+    "definition": "(지배주주 순이익 + 이자비용) TTM / (시가총액 + 순부채)",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -739,18 +859,30 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "(NetIncome + InterestExp) / (MarketCap + NetDebt). Capital structure neutral earnings yield.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "V16_Tobins_Q": {
     "name": "Tobin's Q",
     "category": "value",
-    "definition": "(MarketCap + TotalLiab) / TotalAssets. Market-to-replacement cost ratio.",
+    "definition": "(시가총액 + 총부채) / 총자산",
     "direction": "lower_better",
     "direction_economic": "lower_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -803,18 +935,30 @@
       "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
       "cluster_label": "assets_to_market",
       "note": "V16_Tobins_Q = (MarketCap + TotalLiab)/TotalAssets, V18_AM = TotalAssets/MarketCap. 이 둘이 rank basis 258/258 개월 |cor| = 1.0000 이려면 V16 이 사실상 MarketCap/TotalAssets (= 1/V18) 여야 한다 — 즉 **+TotalLiab 항이 무력**. sales_to_price 의 EV 항 무력화와 같은 계통의 독립 2번째 사례. ★결함 유도 동일성 — 합(sum) 항이 값에 영향을 주지 못한다. 자동 병합 금지: 접으면 팩터가 아니라 **결함이 라벨 뒤로 사라진다**. 수리 후 재측정할 것."
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "(MarketCap + TotalLiab) / TotalAssets. Market-to-replacement cost ratio.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "V17_Payout_Ratio": {
     "name": "Dividend Payout Ratio",
     "category": "value",
-    "definition": "Dividends / NetIncome. % of earnings paid out to shareholders.",
+    "definition": "보통주 현금배당 TTM / 지배주주 순이익 TTM",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -849,18 +993,30 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "Dividends / NetIncome. % of earnings paid out to shareholders.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "V18_AM": {
     "name": "Total Assets to Market",
     "category": "value",
-    "definition": "TotalAssets / MarketCap. Fama-French alternative value measure.",
+    "definition": "총자산 / 시가총액",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -913,18 +1069,30 @@
       "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
       "cluster_label": "assets_to_market",
       "note": "V16_Tobins_Q = (MarketCap + TotalLiab)/TotalAssets, V18_AM = TotalAssets/MarketCap. 이 둘이 rank basis 258/258 개월 |cor| = 1.0000 이려면 V16 이 사실상 MarketCap/TotalAssets (= 1/V18) 여야 한다 — 즉 **+TotalLiab 항이 무력**. sales_to_price 의 EV 항 무력화와 같은 계통의 독립 2번째 사례. ★결함 유도 동일성 — 합(sum) 항이 값에 영향을 주지 못한다. 자동 병합 금지: 접으면 팩터가 아니라 **결함이 라벨 뒤로 사라진다**. 수리 후 재측정할 것."
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "TotalAssets / MarketCap. Fama-French alternative value measure.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "V19_Debt_to_Market": {
     "name": "Debt-to-Market",
     "category": "value",
-    "definition": "TotalDebt / MarketCap. Leverage metric (Bhandari 1988).",
+    "definition": "차입금·사채 / 시가총액 (Bhandari 1988)",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -979,18 +1147,30 @@
         "window": "2005-01..2026-06 (258 months)"
       },
       "consumption_rule": "선별/Ω 추정에서는 canonical 만 사용(drop_alias_factors()). 코드 조회·과거 산출물 참조는 계속 유효 — 삭제·리넘버 없음."
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "TotalDebt / MarketCap. Leverage metric (Bhandari 1988).",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "V20_SP": {
     "name": "Sales-to-Price",
     "category": "value",
-    "definition": "Revenue / MarketCap. Inverse of PSR, Barbee et al. (1996).",
+    "definition": "매출 TTM / 시가총액",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -1045,6 +1225,18 @@
         "window": "2005-01..2026-06 (258 months)"
       },
       "consumption_rule": "선별/Ω 추정에서는 canonical 만 사용(drop_alias_factors()). 코드 조회·과거 산출물 참조는 계속 유효 — 삭제·리넘버 없음."
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "Revenue / MarketCap. Inverse of PSR, Barbee et al. (1996).",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "V21_Composite_Equity_Issuance": {
@@ -1096,13 +1288,13 @@
   "V22_FCFF_EV": {
     "name": "Free Cash Flow to Firm Yield",
     "category": "value",
-    "definition": "(OperatingCF - CapEx) / EV. Capital structure neutral FCF yield.",
+    "definition": "FCF TTM / EV",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -1153,18 +1345,30 @@
         "window": "2005-01..2026-06 (258 months)"
       },
       "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "(OperatingCF - CapEx) / EV. Capital structure neutral FCF yield.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "V23_RAFI_Weight": {
     "name": "Fundamental Index Weight",
     "category": "value",
-    "definition": "Mean of (Revenue/sum + OCF/sum + BV/sum + Dividends/sum). RAFI weighting proxy.",
+    "definition": "매출 · 영업현금흐름 · 장부가 · 배당의 단면 몫 평균(양수 2개 이상)",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -1199,18 +1403,30 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "Mean of (Revenue/sum + OCF/sum + BV/sum + Dividends/sum). RAFI weighting proxy.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "V24_Residual_Income": {
     "name": "Residual Income Yield",
     "category": "value",
-    "definition": "(NetIncome - Equity * CoE) / MarketCap. RI model variant.",
+    "definition": "(지배주주 순이익 TTM − 장부가 × 8%) / 시가총액",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -1245,6 +1461,18 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "(NetIncome - Equity * CoE) / MarketCap. RI model variant.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "M01_Mom_12_1": {
@@ -2925,13 +3153,13 @@
   "Q01_GPA": {
     "name": "Gross Profit to Assets",
     "category": "quality",
-    "definition": "GrossProfit / TotalAssets. Asset utilization efficiency.",
+    "definition": "매출총이익 TTM / 총자산 (Novy-Marx 2013)",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -2966,18 +3194,30 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "GrossProfit / TotalAssets. Asset utilization efficiency.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "Q02_ROE": {
     "name": "Return on Equity",
     "category": "quality",
-    "definition": "NetIncome / TotalEquity. Shareholder return efficiency.",
+    "definition": "지배주주 순이익 TTM / 1년 평균 장부가",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -3028,18 +3268,30 @@
         "window": "2005-01..2026-06 (258 months)"
       },
       "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "NetIncome / TotalEquity. Shareholder return efficiency.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "Q03_ROA": {
     "name": "Return on Assets",
     "category": "quality",
-    "definition": "NetIncome / TotalAssets. Asset efficiency.",
+    "definition": "순이익 TTM / 1년 평균 총자산",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -3074,18 +3326,30 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "NetIncome / TotalAssets. Asset efficiency.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "Q04_Piotroski_F": {
     "name": "Piotroski F-Score",
     "category": "quality",
-    "definition": "9-point financial strength score based on profitability, leverage, liquidity, source of funds.",
+    "definition": "Piotroski(2000) 9개 신호 합(회계연도 · 전년 대비)",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_annual",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -3120,18 +3384,30 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "9-point financial strength score based on profitability, leverage, liquidity, source of funds.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "Q05_Accrual": {
     "name": "Total Accrual Ratio",
     "category": "quality",
-    "definition": "(dCA - dCash - dCL + dST_Debt - Depreciation) / TA. Working capital accruals.",
+    "definition": "−[Δ(유동자산−현금) − Δ(유동부채−단기차입) − 감가상각] / 1년 평균 총자산 (Sloan 1996 · TTM 1년 변화)",
     "direction": "higher_better",
     "direction_economic": "lower_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": -1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -3195,18 +3471,30 @@
         "evidence": "compute_quality.R:130-132",
         "stored_expr": "-((NetIncome - OperatingCF)/TotalAssets)"
       }
-    ]
+    ],
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "(dCA - dCash - dCL + dST_Debt - Depreciation) / TA. Working capital accruals.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
+    }
   },
   "Q06_Asset_Growth": {
     "name": "Asset Growth",
     "category": "quality",
-    "definition": "-(dTA / lag TA). Negate: low asset growth = conservative = better.",
+    "definition": "−(총자산 전년 대비 증가율) (Cooper, Gulen & Schill 2008 · 회계연도)",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_annual",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -3257,18 +3545,30 @@
         "window": "2005-01..2026-06 (258 months)"
       },
       "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "-(dTA / lag TA). Negate: low asset growth = conservative = better.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "Q07_Earnings_Stability": {
     "name": "Earnings Stability",
     "category": "quality",
-    "definition": "1 - sd(earnings changes over 5 years) / mean(|earnings changes|). Earnings consistency.",
+    "definition": "−sd(회계연도 ROE · 5개 해 · 3개 이상)",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_annual",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -3303,18 +3603,30 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "1 - sd(earnings changes over 5 years) / mean(|earnings changes|). Earnings consistency.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "Q08_Composite_Quality": {
     "name": "Composite Quality Score",
     "category": "quality",
-    "definition": "Composite of GPA, ROE, ROA, Accrual signals. Multi-metric quality composite.",
+    "definition": "mean z(Q01, Q02, Q03, Q05) · 2개 이상",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -3349,18 +3661,30 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "Composite of GPA, ROE, ROA, Accrual signals. Multi-metric quality composite.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "Q09_CFOA": {
     "name": "Cash Flow from Operations to Assets",
     "category": "quality",
-    "definition": "OperatingCF / TotalAssets. Cash-based profitability.",
+    "definition": "영업현금흐름 TTM / 총자산",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -3395,18 +3719,30 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "OperatingCF / TotalAssets. Cash-based profitability.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "Q10_Gross_Margin": {
     "name": "Gross Profit Margin",
     "category": "quality",
-    "definition": "GrossProfit / Revenue. Pricing power indicator.",
+    "definition": "매출총이익 / 매출 (TTM)",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -3441,18 +3777,30 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "GrossProfit / Revenue. Pricing power indicator.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "Q11_Net_Margin": {
     "name": "Net Profit Margin",
     "category": "quality",
-    "definition": "NetIncome / Revenue. Bottom-line profitability.",
+    "definition": "지배주주 순이익 / 매출 (TTM)",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -3487,18 +3835,30 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "NetIncome / Revenue. Bottom-line profitability.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "Q12_Asset_Turnover": {
     "name": "Asset Turnover",
     "category": "quality",
-    "definition": "Revenue / TotalAssets. Efficiency of asset use.",
+    "definition": "매출 TTM / 1년 평균 총자산",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -3549,18 +3909,30 @@
         "window": "2005-01..2026-06 (258 months)"
       },
       "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "Revenue / TotalAssets. Efficiency of asset use.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "Q13_Fin_Leverage": {
     "name": "Financial Leverage",
     "category": "quality",
-    "definition": "TotalAssets / TotalEquity. Debt load relative to equity.",
+    "definition": "총자산 / 총자본",
     "direction": "higher_better",
     "direction_economic": "lower_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": -1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -3622,18 +3994,30 @@
         "evidence": "compute_quality.R:201-203",
         "stored_expr": "-(TotalAssets/TotalEquity)"
       }
-    ]
+    ],
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "TotalAssets / TotalEquity. Debt load relative to equity.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
+    }
   },
   "Q14_Current_Ratio": {
     "name": "Current Ratio",
     "category": "quality",
-    "definition": "CurrentAssets / CurrentLiab. Short-term liquidity.",
+    "definition": "유동자산 / 유동부채",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -3688,18 +4072,30 @@
       "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
       "cluster_label": "liquidity_ratio",
       "note": "Current Ratio 와 Quick Ratio 는 정의가 실제로 다르다(재고 포함/제외). median |cor| 0.975 로 겹치나 병합은 리서치 판단. ★부수 적발: 258개월 중 10개월에서 정렬 후 부호가 뒤집힌다(min=-0.975) — C13 IC-기반 방향추론이 이 쌍에서 불안정하다는 별도 신호."
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "CurrentAssets / CurrentLiab. Short-term liquidity.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "Q15_Debt_to_Equity": {
     "name": "Debt-to-Equity",
     "category": "quality",
-    "definition": "TotalDebt / TotalEquity. Leverage ratio.",
+    "definition": "차입금·사채 / 장부가",
     "direction": "higher_better",
     "direction_economic": "lower_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": -1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -3762,18 +4158,30 @@
         "evidence": "compute_quality.R:217-219",
         "stored_expr": "-(TotalDebt/TotalEquity)"
       }
-    ]
+    ],
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "TotalDebt / TotalEquity. Leverage ratio.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
+    }
   },
   "Q16_Debt_to_Assets": {
     "name": "Debt-to-Assets",
     "category": "quality",
-    "definition": "TotalDebt / TotalAssets. Debt burden relative to assets.",
+    "definition": "차입금·사채 / 총자산",
     "direction": "higher_better",
     "direction_economic": "lower_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": -1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -3819,18 +4227,30 @@
         "evidence": "compute_quality.R:225-227",
         "stored_expr": "-(TotalDebt/TotalAssets)"
       }
-    ]
+    ],
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "TotalDebt / TotalAssets. Debt burden relative to assets.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
+    }
   },
   "Q17_ROIC": {
     "name": "Return on Invested Capital",
     "category": "quality",
-    "definition": "NOPAT / (Equity + Debt - Cash). Return on total capital.",
+    "definition": "NOPAT TTM / 1년 평균 투하자본",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -3865,19 +4285,31 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "NOPAT / (Equity + Debt - Cash). Return on total capital.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "Q18_Op_Leverage": {
     "name": "Operating Leverage",
     "category": "quality",
-    "definition": "% change in Operating Income / % change in Revenue. Fixed cost impact.",
+    "definition": "영업이익 성장률 / 매출 성장률 (TTM 전년 대비 · |매출 성장| > 1%)",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "literature",
     "direction_economic_evidence": "Novy-Marx (2011) Review of Finance 15(1):103-134 'Operating Leverage' https://doi.org/10.1093/rof/rfq019 — 영업 레버리지가 높을수록 기대수익이 높다(코드 주석이 인용한 논문)",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -3923,18 +4355,30 @@
         "evidence": "Novy-Marx (2011) Review of Finance 15(1):103-134 'Operating Leverage' https://doi.org/10.1093/rof/rfq019 — 영업 레버리지가 높을수록 기대수익이 높다(코드 주석이 인용한 논문)",
         "stored_expr": "(COGS+SGA)/TotalAssets"
       }
-    ]
+    ],
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "% change in Operating Income / % change in Revenue. Fixed cost impact.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
+    }
   },
   "Q19_Cash_to_Assets": {
     "name": "Cash to Assets",
     "category": "quality",
-    "definition": "CashAndEquiv / TotalAssets. Liquidity position.",
+    "definition": "현금 / 총자산",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -3969,18 +4413,30 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "CashAndEquiv / TotalAssets. Liquidity position.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "Q20_Net_Equity_Issuance": {
     "name": "Net Equity Issuance",
     "category": "quality",
-    "definition": "-(dShares / lag Shares). Negate: buyback = positive.",
+    "definition": "−ln(보통주 발행주식 수 / 1년 전) (Pontiff & Woodgate 2008)",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -4031,18 +4487,30 @@
         "window": "2005-01..2026-06 (258 months)"
       },
       "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "-(dShares / lag Shares). Negate: buyback = positive.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "Q23_Sustainable_Growth": {
     "name": "Sustainable Growth Rate",
     "category": "quality",
-    "definition": "ROE * (1 - Dividend Payout Ratio). Internal growth potential.",
+    "definition": "ROE × (1 − 배당성향[0,1])",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -4093,18 +4561,30 @@
         "window": "2005-01..2026-06 (258 months)"
       },
       "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "ROE * (1 - Dividend Payout Ratio). Internal growth potential.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "Q24_Altman_Z": {
     "name": "Altman Z-Score",
     "category": "quality",
-    "definition": "1.2*WC_TA + 1.4*RE_TA + 3.3*EBIT_TA + 0.6*ME_TL + 1.0*Sales_TA. Bankruptcy risk.",
+    "definition": "Altman(1968) Z = 1.2 WC/TA + 1.4 RE/TA + 3.3 EBIT/TA + 0.6 시가총액/TL + 1.0 매출/TA (TTM)",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -4139,18 +4619,30 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "1.2*WC_TA + 1.4*RE_TA + 3.3*EBIT_TA + 0.6*ME_TL + 1.0*Sales_TA. Bankruptcy risk.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "Q25_Ohlson_O": {
     "name": "Ohlson O-Score",
     "category": "quality",
-    "definition": "Logit bankruptcy model using financials. Failure probability.",
+    "definition": "−Ohlson(1980) O-score Model 1 전 항목(SIZE = ln 총자산 · FUTL = CashEarnings/총부채)",
     "direction": "higher_better",
     "direction_economic": "lower_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": -1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -4196,18 +4688,30 @@
         "evidence": "compute_quality.R:461-462 (o_score at :454-458)",
         "stored_expr": "-o_score"
       }
-    ]
+    ],
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "Logit bankruptcy model using financials. Failure probability.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
+    }
   },
   "Q26_RnD_Intensity": {
     "name": "R&D Intensity",
     "category": "quality",
-    "definition": "RnDExpense / Revenue. Innovation investment.",
+    "definition": "연구개발비 / 매출 (TTM)",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -4258,18 +4762,30 @@
         "window": "2005-01..2026-06 (258 months)"
       },
       "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "RnDExpense / Revenue. Innovation investment.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "Q27_CapEx_to_Rev": {
     "name": "CapEx to Revenue",
     "category": "quality",
-    "definition": "−|CapEx (InvestCF)| / Revenue. Negated capital intensity — higher = lower investment = conservative (CMA logic).",
+    "definition": "−설비투자 / 매출 (TTM)",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "code_and_definition",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -4312,19 +4828,29 @@
         "to": "−|CapEx (InvestCF)| / Revenue. Negated capital intensity — higher = lower investment = conservative (CMA logic).",
         "decision": "FACTOR-DIRECTION-STORAGE-REPAIR-20261109",
         "reason": "코드 = −(|CapEx|/Revenue) · 주석 compute_quality.R:482 'Lower = more conservative = higher quality'"
+      },
+      {
+        "until": "2026-11-16",
+        "definition": "−|CapEx (InvestCF)| / Revenue. Negated capital intensity — higher = lower investment = conservative (CMA logic).",
+        "data_source": "fundamental"
       }
-    ]
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
+    }
   },
   "Q28_Cash_Conversion": {
     "name": "Cash Conversion Cycle",
     "category": "quality",
-    "definition": "OperatingCF / |NetIncome| (|x| < 10). Earnings backed by cash — higher = higher quality.",
+    "definition": "영업현금흐름 / |지배주주 순이익| (TTM · |x|<10)",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "code_and_definition",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -4378,19 +4904,29 @@
         "to": "OperatingCF / |NetIncome| (|x| < 10). Earnings backed by cash — higher = higher quality.",
         "decision": "FACTOR-DIRECTION-STORAGE-REPAIR-20261109",
         "reason": "코드 = OCF/|NI| · 주석 compute_quality.R:498 'Higher = earnings backed by cash = higher quality' · 등록부 문구(현금전환 주기 일수)는 다른 양"
+      },
+      {
+        "until": "2026-11-16",
+        "definition": "OperatingCF / |NetIncome| (|x| < 10). Earnings backed by cash — higher = higher quality.",
+        "data_source": "fundamental"
       }
-    ]
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
+    }
   },
   "Q29_Inventory_Turnover": {
     "name": "Inventory Turnover",
     "category": "quality",
-    "definition": "COGS / Inventory. Inventory efficiency.",
+    "definition": "매출원가 TTM / 1년 평균 재고",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -4425,18 +4961,30 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "COGS / Inventory. Inventory efficiency.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "Q30_Receivables_Turnover": {
     "name": "Receivables Turnover",
     "category": "quality",
-    "definition": "Revenue / Receivables. Collection efficiency.",
+    "definition": "매출 TTM / 1년 평균 매출채권",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -4471,18 +5019,30 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "Revenue / Receivables. Collection efficiency.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "Q31_WC_to_Assets": {
     "name": "Working Capital to Assets",
     "category": "quality",
-    "definition": "(CurrentAssets - CurrentLiab) / TotalAssets. WC position.",
+    "definition": "(유동자산 − 유동부채) / 총자산",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -4530,18 +5090,30 @@
         "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
         "window": "2005-01..2026-06 (258 months)"
       }
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "(CurrentAssets - CurrentLiab) / TotalAssets. WC position.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "Q32_Interest_Coverage": {
     "name": "Interest Coverage",
     "category": "quality",
-    "definition": "OperatingProfit / InterestExp. Debt service capacity.",
+    "definition": "영업이익 / |이자비용| (TTM)",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -4576,18 +5148,30 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "OperatingProfit / InterestExp. Debt service capacity.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "Q33_Earnings_Persistence": {
     "name": "Earnings Persistence",
     "category": "quality",
-    "definition": "AR(1) coefficient of earnings series. Autocorrelation of earnings.",
+    "definition": "회계연도 ROA AR(1) 계수 (10개 해 · 4개 이상)",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_annual",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -4622,18 +5206,30 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "AR(1) coefficient of earnings series. Autocorrelation of earnings.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "Q35_CashBased_OpProf": {
     "name": "Cash-Based Operating Profitability",
     "category": "quality",
-    "definition": "OperatingCF / Revenue. Cash profit margin.",
+    "definition": "영업현금흐름 / 매출 (TTM)",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -4668,6 +5264,18 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "OperatingCF / Revenue. Cash profit margin.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "D01_IdioVol": {
@@ -6325,7 +6933,7 @@
   "D28_Unlevered_Beta": {
     "name": "Unlevered Beta",
     "category": "defense",
-    "definition": "Negate asset beta adjusted for capital structure.",
+    "definition": "−베타 / (1 + 차입금·사채/장부가)",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "literature",
@@ -6335,7 +6943,7 @@
     "direction_defensive": "higher_better",
     "direction_defensive_definition": "higher_better",
     "direction_defensive_reason": "음수화된 자산 베타 — 클수록 사업 위험 낮음",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -6393,12 +7001,24 @@
         "window": "2005-01..2026-06 (258 months)"
       },
       "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "Negate asset beta adjusted for capital structure.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_defense.R"
     }
   },
   "D29_Accounting_Beta": {
     "name": "Accounting Beta",
     "category": "defense",
-    "definition": "Negate beta from accounting fundamentals (EPS vs market).",
+    "definition": "−회계 베타(회사 ROE ~ 시장 중앙값 ROE · 10개 회계연도 · 4쌍 이상 · Beaver, Kettler & Scholes 1970)",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "literature_mixed_defensive_tiebreak",
@@ -6408,7 +7028,7 @@
     "direction_defensive": "higher_better",
     "direction_defensive_definition": "higher_better",
     "direction_defensive_reason": "음수화된 회계 베타 — 클수록 이익의 경기 민감도 낮음",
-    "data_source": "fundamental",
+    "data_source": "fundamental_annual",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -6443,6 +7063,18 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "Negate beta from accounting fundamentals (EPS vs market).",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_defense.R"
     }
   },
   "D30_FM_Beta_21d": {
@@ -8342,7 +8974,7 @@
   "D60_Leverage": {
     "name": "Financial Leverage",
     "category": "defense",
-    "definition": "Negate (TotalDebt / TotalEquity). Leverage risk.",
+    "definition": "−차입금·사채 / 장부가",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "literature_mixed_defensive_tiebreak",
@@ -8352,7 +8984,7 @@
     "direction_defensive": "higher_better",
     "direction_defensive_definition": "higher_better",
     "direction_defensive_reason": "음수화된 부채비율 — 클수록 레버리지 낮음 = 재무 곤경 위험 작음",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -8404,6 +9036,18 @@
         "window": "2005-01..2026-06 (258 months)"
       },
       "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "Negate (TotalDebt / TotalEquity). Leverage risk.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_defense.R"
     }
   },
   "S01_Size": {
@@ -8476,7 +9120,7 @@
   "S02_Float_Size": {
     "name": "Float Size",
     "category": "size",
-    "definition": "-log(SharesOutstanding * Close). Log negative float value.",
+    "definition": "−ln(시가총액 × 유동주식비율)",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "literature",
@@ -8486,7 +9130,7 @@
     "direction_defensive": "lower_better",
     "direction_defensive_definition": "lower_better",
     "direction_defensive_reason": "규모 클수록 유동성·위기 내성 큼 — 정의 양이 −log 라 낮을수록 방어",
-    "data_source": "fundamental",
+    "data_source": "rawdata",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -8538,6 +9182,18 @@
         "window": "2005-01..2026-06 (258 months)"
       },
       "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "-log(SharesOutstanding * Close). Log negative float value.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_size.R"
     }
   },
   "C01_SUE": {
@@ -12777,13 +13433,13 @@
   "AC01_Total_Accruals_CF": {
     "name": "Total Accruals (CF Method)",
     "category": "accrual",
-    "definition": "(dWC - dCash - dCL + dST - Depr) / TA. Working capital accruals.",
+    "definition": "−(순이익 − 영업현금흐름) TTM / 1년 평균 총자산 (Sloan 1996)",
     "direction": "higher_better",
     "direction_economic": "lower_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": -1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -12847,18 +13503,30 @@
         "evidence": "compute_accrual.R:123-124",
         "stored_expr": "-(NI - OCF)/TotalAssets"
       }
-    ]
+    ],
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "(dWC - dCash - dCL + dST - Depr) / TA. Working capital accruals.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
+    }
   },
   "AC02_Total_Accruals_BS": {
     "name": "Total Accruals (BS Method)",
     "category": "accrual",
-    "definition": "dWC / TA where WC = CA - CL. Balance sheet method.",
+    "definition": "−Δ운전자본(1년) / 1년 평균 총자산",
     "direction": "higher_better",
     "direction_economic": "lower_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": -1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -12920,18 +13588,30 @@
         "evidence": "compute_accrual.R:151-152 (bs_acc at :150)",
         "stored_expr": "-((dCA-dCash)-(dCL-dSTD-dTP)-Dep)/avgTA"
       }
-    ]
+    ],
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "dWC / TA where WC = CA - CL. Balance sheet method.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
+    }
   },
   "AC03_WC_Accruals": {
     "name": "Working Capital Accruals",
     "category": "accrual",
-    "definition": "(dCA - dCash - dCL + dSTD) / TA.",
+    "definition": "−Δ[(유동자산−현금) − (유동부채−단기차입)] / 1년 평균 총자산",
     "direction": "higher_better",
     "direction_economic": "lower_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": -1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -12993,18 +13673,30 @@
         "evidence": "compute_accrual.R:173-174",
         "stored_expr": "-((dCA-dCash)-(dCL-dSTD-dTP))/avgTA"
       }
-    ]
+    ],
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "(dCA - dCash - dCL + dSTD) / TA.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
+    }
   },
   "AC04_NCO_Accruals": {
     "name": "Non-Current Operating Accruals",
     "category": "accrual",
-    "definition": "dNCA - dDepr / TA where NCA excl cash.",
+    "definition": "−Δ[(비유동자산−투자자산) − (비유동부채−장기차입)] / 1년 평균 총자산 (Richardson et al. 2005)",
     "direction": "higher_better",
     "direction_economic": "lower_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": -1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -13050,18 +13742,30 @@
         "evidence": "compute_accrual.R:197-198",
         "stored_expr": "-nco_acc/avgTA"
       }
-    ]
+    ],
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "dNCA - dDepr / TA where NCA excl cash.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
+    }
   },
   "AC05_NOA": {
     "name": "Net Operating Assets",
     "category": "accrual",
-    "definition": "(OA - OCL) / lag TA. Operating asset intensity.",
+    "definition": "−순영업자산 / 1년 전 총자산 (Hirshleifer et al. 2004)",
     "direction": "higher_better",
     "direction_economic": "lower_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": -1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -13107,18 +13811,30 @@
         "evidence": "compute_accrual.R:220-221",
         "stored_expr": "-(OA - OL)/TA"
       }
-    ]
+    ],
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "(OA - OCL) / lag TA. Operating asset intensity.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
+    }
   },
   "AC06_Comprehensive_Accruals": {
     "name": "Comprehensive Accruals",
     "category": "accrual",
-    "definition": "Mean of multiple accrual measures.",
+    "definition": "−(Δ장부가 − Δ현금) / 1년 평균 총자산",
     "direction": "higher_better",
     "direction_economic": "lower_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": -1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -13164,18 +13880,30 @@
         "evidence": "compute_accrual.R:236-237",
         "stored_expr": "-(dEquity - dCash)/avgTA"
       }
-    ]
+    ],
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "Mean of multiple accrual measures.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
+    }
   },
   "AC07_Operating_Accruals": {
     "name": "Operating Accruals",
     "category": "accrual",
-    "definition": "(Income - OCF) / TA. Accruals from operations.",
+    "definition": "AC01 과 같다(영업 발생액 = 순이익 − 영업현금흐름)",
     "direction": "higher_better",
     "direction_economic": "lower_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": -1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -13238,19 +13966,31 @@
         "evidence": "compute_accrual.R:260-261",
         "stored_expr": "-OPACC/avgTA"
       }
-    ]
+    ],
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "(Income - OCF) / TA. Accruals from operations.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
+    }
   },
   "AC08_Financial_Accruals": {
     "name": "Financial Accruals",
     "category": "accrual",
-    "definition": "dSTD + dLTD / TA. Financing side accruals.",
+    "definition": "AC06 − AC07",
     "direction": "lower_better",
     "direction_economic": "lower_better",
     "direction_economic_basis": "literature",
     "direction_economic_evidence": "Richardson, Sloan, Soliman & Tuna (2005) JAE 39(3):437-485 https://doi.org/10.1016/j.jacceco.2005.04.005; Bradshaw, Richardson & Sloan (2006) JAE 42(1-2):53-85 https://doi.org/10.1016/j.jacceco.2006.03.004 — 부채 조달(순외부조달)이 클수록 이후 수익이 낮다",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -13312,18 +14052,30 @@
         "evidence": "Richardson, Sloan, Soliman & Tuna (2005) JAE 39(3):437-485 https://doi.org/10.1016/j.jacceco.2005.04.005; Bradshaw, Richardson & Sloan (2006) JAE 42(1-2):53-85 https://doi.org/10.1016/j.jacceco.2006.03.004 — 부채 조달(순외부조달)이 클수록 이후 수익이 낮다",
         "stored_expr": "-(COMPACC - OPACC) = (dDebt - dInvestments)/avgTA via TA = TL + TE"
       }
-    ]
+    ],
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "dSTD + dLTD / TA. Financing side accruals.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
+    }
   },
   "AC09_NNI": {
     "name": "Non-Operating Income Impact",
     "category": "accrual",
-    "definition": "Net new investment (Richardson, Sloan, Soliman & Tuna 2005): [d(TA − Cash) − d(TL − Debt)] / avg TA; stored negated.",
+    "definition": "−Δ순영업자산 / 1년 평균 총자산 (Richardson et al. 2005)",
     "direction": "higher_better",
     "direction_economic": "lower_better",
     "direction_economic_basis": "code_and_definition",
     "stored_sign": -1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -13394,19 +14146,29 @@
         "to": "Net new investment (Richardson, Sloan, Soliman & Tuna 2005): [d(TA − Cash) − d(TL − Debt)] / avg TA; stored negated.",
         "decision": "FACTOR-DIRECTION-STORAGE-REPAIR-20261109",
         "reason": "코드 = −NNI/avgTA · Richardson et al. 2005 JAE 39(3):437-485 (투자 많을수록 낮은 수익) · 등록부 문구(영업외이익)는 다른 양"
+      },
+      {
+        "until": "2026-11-16",
+        "definition": "Net new investment (Richardson, Sloan, Soliman & Tuna 2005): [d(TA − Cash) − d(TL − Debt)] / avg TA; stored negated.",
+        "data_source": "fundamental"
       }
-    ]
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
+    }
   },
   "AC10_Pct_Accruals": {
     "name": "Percent Accruals",
     "category": "accrual",
-    "definition": "Accruals / |NI|. Accrual intensity.",
+    "definition": "−(순이익 − 영업현금흐름) / |순이익| (Hafzalla et al. 2011)",
     "direction": "higher_better",
     "direction_economic": "lower_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": -1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -13452,18 +14214,30 @@
         "evidence": "compute_accrual.R:309-311",
         "stored_expr": "-(NI - OCF)/max(|NI|,1e-8)"
       }
-    ]
+    ],
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "Accruals / |NI|. Accrual intensity.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
+    }
   },
   "AC12_Inventory_Accruals": {
     "name": "Inventory Accruals",
     "category": "accrual",
-    "definition": "dInventory / TA. Inventory buildup.",
+    "definition": "−Δ재고 / 1년 평균 총자산",
     "direction": "higher_better",
     "direction_economic": "lower_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": -1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -13509,18 +14283,30 @@
         "evidence": "compute_accrual.R:337-338",
         "stored_expr": "-dInventories/avgTA"
       }
-    ]
+    ],
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "dInventory / TA. Inventory buildup.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
+    }
   },
   "AC13_Abnormal_Accruals": {
     "name": "Abnormal Accruals",
     "category": "accrual",
-    "definition": "Residual from accrual prediction model.",
+    "definition": "−수정 Jones 모형 잔차(결정일 단면 회귀 · Dechow, Sloan & Sweeney 1995)",
     "direction": "higher_better",
     "direction_economic": "lower_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": -1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -13566,18 +14352,30 @@
         "evidence": "compute_accrual.R:371-372",
         "stored_expr": "-(modified-Jones residual)"
       }
-    ]
+    ],
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "Residual from accrual prediction model.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
+    }
   },
   "AC15_NonDiscretionary_Accruals": {
     "name": "Non-Discretionary Accruals",
     "category": "accrual",
-    "definition": "Jones model non-discretionary component.",
+    "definition": "수정 Jones 적합값",
     "direction": "higher_better",
     "direction_economic": "lower_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": -1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -13623,18 +14421,30 @@
         "evidence": "compute_accrual.R:400-401 (AC01 stored - AC13 stored)",
         "stored_expr": "-(total accruals - abnormal) = -NDA"
       }
-    ]
+    ],
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "Jones model non-discretionary component.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
+    }
   },
   "AC16_BS_vs_CF_Diff": {
     "name": "BS vs CF Accrual Difference",
     "category": "accrual",
-    "definition": "Abs(AC02 - AC01). Method disagreement.",
+    "definition": "−|현금흐름 방식 발생액 − 재무상태표 방식|",
     "direction": "higher_better",
     "direction_economic": "lower_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": -1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -13680,18 +14490,30 @@
         "evidence": "compute_accrual.R:414-415",
         "stored_expr": "-|AC01 - AC02|"
       }
-    ]
+    ],
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "Abs(AC02 - AC01). Method disagreement.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
+    }
   },
   "AC17_Accrual_Reversal": {
     "name": "Accrual Reversal",
     "category": "accrual",
-    "definition": "−|Accrual_t − Accrual_{t−1}| (accruals = (NI − OCF)/TA). Negated magnitude of accrual change — higher = more stable accruals.",
+    "definition": "−|발생액 − 1년 전 발생액|",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "code_and_definition",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -13734,19 +14556,29 @@
         "to": "−|Accrual_t − Accrual_{t−1}| (accruals = (NI − OCF)/TA). Negated magnitude of accrual change — higher = more stable accruals.",
         "decision": "FACTOR-DIRECTION-STORAGE-REPAIR-20261109",
         "reason": "코드 = −|acc1 − acc2| · 등록부 문구(부호 있는 변화율)와 다른 양 · 방향 = 등록부 higher_better 를 저장값에 그대로(안정 = 좋음 · AC22 발생액 변동성과 같은 뜻)"
+      },
+      {
+        "until": "2026-11-16",
+        "definition": "−|Accrual_t − Accrual_{t−1}| (accruals = (NI − OCF)/TA). Negated magnitude of accrual change — higher = more stable accruals.",
+        "data_source": "fundamental"
       }
-    ]
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
+    }
   },
   "AC19_Receivables_Accruals": {
     "name": "Receivables Accruals",
     "category": "accrual",
-    "definition": "dReceivables / TA. Receivable buildup.",
+    "definition": "−Δ매출채권 / 1년 평균 총자산",
     "direction": "higher_better",
     "direction_economic": "lower_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": -1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -13792,18 +14624,30 @@
         "evidence": "compute_accrual.R:468-469",
         "stored_expr": "-dAR/avgTA"
       }
-    ]
+    ],
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "dReceivables / TA. Receivable buildup.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
+    }
   },
   "AC20_Payables_Accruals": {
     "name": "Payables Accruals",
     "category": "accrual",
-    "definition": "dPayables / TA. Negative payables increase = good.",
+    "definition": "Δ매입채무 / 1년 평균 총자산",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -13838,18 +14682,30 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "dPayables / TA. Negative payables increase = good.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "AC21_CF_to_Accrual_Ratio": {
     "name": "CF to Accrual Ratio",
     "category": "accrual",
-    "definition": "OCF / Accruals. Cash-to-accrual quality.",
+    "definition": "영업현금흐름 / |순이익 − 영업현금흐름|",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -13884,18 +14740,30 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "OCF / Accruals. Cash-to-accrual quality.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "AC22_Accrual_Volatility": {
     "name": "Accrual Volatility",
     "category": "accrual",
-    "definition": "Std of historical accrual series. Consistency.",
+    "definition": "−sd(회계연도 발생액 · 5개 해)",
     "direction": "higher_better",
     "direction_economic": "lower_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": -1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_annual",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -13941,18 +14809,30 @@
         "evidence": "compute_accrual.R:516",
         "stored_expr": "-sd(accrual ratio over periods)"
       }
-    ]
+    ],
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "Std of historical accrual series. Consistency.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
+    }
   },
   "AC23_Accrual_Persistence": {
     "name": "Accrual Persistence",
     "category": "accrual",
-    "definition": "AR(1) of accrual series.",
+    "definition": "−AR(1)(회계연도 발생액 · 10개 해)",
     "direction": "higher_better",
     "direction_economic": "lower_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": -1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_annual",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -13998,18 +14878,30 @@
         "evidence": "compute_accrual.R:552",
         "stored_expr": "-AR1(accrual ratio)"
       }
-    ]
+    ],
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "AR(1) of accrual series.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
+    }
   },
   "AC24_NOA_Growth": {
     "name": "Net Operating Assets Growth",
     "category": "accrual",
-    "definition": "dNOA / lag NOA. NOA growth rate.",
+    "definition": "−Δ순영업자산 / 1년 전 총자산",
     "direction": "higher_better",
     "direction_economic": "lower_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": -1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -14072,18 +14964,30 @@
         "evidence": "compute_accrual.R:575-576",
         "stored_expr": "-(NOA_t - NOA_t-1)/lagTA"
       }
-    ]
+    ],
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "dNOA / lag NOA. NOA growth rate.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
+    }
   },
   "AC25_Accrual_Size_Interaction": {
     "name": "Accrual-Size Interaction",
     "category": "accrual",
-    "definition": "AC01 stored value (negated accruals) × z(−MarketCap). Higher = low accruals in small firms.",
+    "definition": "AC01 × z(−ln 시가총액)",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "code_and_definition",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -14137,8 +15041,18 @@
         "to": "AC01 stored value (negated accruals) × z(−MarketCap). Higher = low accruals in small firms.",
         "decision": "FACTOR-DIRECTION-STORAGE-REPAIR-20261109",
         "reason": "코드 = AC01 × z(−MarketCap) · 주석 compute_accrual.R:582 'Small firms with income-decreasing accruals outperform'"
+      },
+      {
+        "until": "2026-11-16",
+        "definition": "AC01 stored value (negated accruals) × z(−MarketCap). Higher = low accruals in small firms.",
+        "data_source": "fundamental"
       }
-    ]
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
+    }
   },
   "R01_VaR_95": {
     "name": "Value-at-Risk 95%",
@@ -15305,7 +16219,7 @@
   "R17_Market_Leverage": {
     "name": "Market Leverage",
     "category": "risk",
-    "definition": "Negate (TotalDebt / MarketCap). Bhandari (1988).",
+    "definition": "−차입금·사채 / 시가총액",
     "direction": "lower_better",
     "direction_economic": "lower_better",
     "direction_economic_basis": "literature",
@@ -15315,7 +16229,7 @@
     "direction_defensive": "higher_better",
     "direction_defensive_definition": "higher_better",
     "direction_defensive_reason": "음수화된 시장 레버리지 — 클수록 부채 부담·곤경 위험 작음",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -15374,12 +16288,24 @@
         "evidence": "Bhandari 1988, JF — 부채(비보통주 부채)/자기자본(시장가치) 높을수록 기대수익 높음(베타·규모 통제, 1월 포함·제외); Fama & French 1992, JF — 시장 레버리지(A/ME) 양(+) [위험한 쪽]; 단 B/M 고정 시 레버리지 자체는 음(−)(Penman, Richardson & Tuna 2007, JAR — 기업 B/P 조건부; George & Hwang 2010, JFE '레버리지 퍼즐') — 저장 양은 B/M 비중립 단변량 비율이라 단변량 근거를 따름 | DOI(Crossref 확인) https://doi.org/10.1111/j.1540-6261.1988.tb03952.x · https://doi.org/10.1111/j.1540-6261.1992.tb04398.x · https://doi.org/10.1111/j.1475-679x.2007.00240.x · https://doi.org/10.1016/j.jfineco.2009.11.003",
         "stored_expr": "-TotalDebt/MarketCap"
       }
-    ]
+    ],
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "Negate (TotalDebt / MarketCap). Bhandari (1988).",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_risk.R"
+    }
   },
   "R18_Book_Leverage": {
     "name": "Book Leverage",
     "category": "risk",
-    "definition": "Negate (TotalDebt / TotalAssets). Leverage on accounting basis.",
+    "definition": "−차입금·사채 / 총자산",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "literature_mixed_defensive_tiebreak",
@@ -15389,7 +16315,7 @@
     "direction_defensive": "higher_better",
     "direction_defensive_definition": "higher_better",
     "direction_defensive_reason": "음수화된 장부 레버리지 — 클수록 부채 부담 작음",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -15424,6 +16350,18 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "Negate (TotalDebt / TotalAssets). Leverage on accounting basis.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_risk.R"
     }
   },
   "R19_Composite_Risk": {
@@ -17560,13 +18498,13 @@
   "GR01_Revenue_Growth": {
     "name": "Revenue Growth",
     "category": "growth",
-    "definition": "(Revenue_now - Revenue_1y) / |Revenue_1y|. YoY revenue growth.",
+    "definition": "매출 TTM 전년 대비 증가율",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -17617,18 +18555,30 @@
         "window": "2005-01..2026-06 (258 months)"
       },
       "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "(Revenue_now - Revenue_1y) / |Revenue_1y|. YoY revenue growth.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "GR02_Earnings_Growth": {
     "name": "Earnings Growth",
     "category": "growth",
-    "definition": "(NI_now - NI_1y) / |NI_1y|. YoY earnings growth.",
+    "definition": "지배주주 순이익 TTM 전년 대비 증가율",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -17679,18 +18629,30 @@
         "window": "2005-01..2026-06 (258 months)"
       },
       "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "(NI_now - NI_1y) / |NI_1y|. YoY earnings growth.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "GR03_Asset_Growth": {
     "name": "Asset Growth",
     "category": "growth",
-    "definition": "Negate (dTA / lag TA). Cooper Gulen Schill (2008).",
+    "definition": "−(총자산 전년 대비 증가율 · 회계연도)",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_annual",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -17741,18 +18703,30 @@
         "window": "2005-01..2026-06 (258 months)"
       },
       "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "Negate (dTA / lag TA). Cooper Gulen Schill (2008).",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "GR04_GPA_Growth": {
     "name": "Gross Profit Assets Growth",
     "category": "growth",
-    "definition": "5Y growth in GrossProfit / Assets.",
+    "definition": "GPA − 5년 전 GPA (회계연도)",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_annual",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -17787,18 +18761,30 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "5Y growth in GrossProfit / Assets.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "GR05_ROE_Growth": {
     "name": "ROE Growth",
     "category": "growth",
-    "definition": "5Y growth in NetIncome / Equity.",
+    "definition": "ROE − 5년 전 ROE (회계연도)",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_annual",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -17833,18 +18819,30 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "5Y growth in NetIncome / Equity.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "GR06_OCF_Growth": {
     "name": "Operating Cash Flow Growth",
     "category": "growth",
-    "definition": "(OCF_now - OCF_1y) / |OCF_1y|. YoY OCF growth.",
+    "definition": "영업현금흐름 TTM 전년 대비 증가율",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -17895,18 +18893,30 @@
         "window": "2005-01..2026-06 (258 months)"
       },
       "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "(OCF_now - OCF_1y) / |OCF_1y|. YoY OCF growth.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "GR07_Composite_Growth": {
     "name": "Composite Growth Score",
     "category": "growth",
-    "definition": "mean(z(GR01..GR06)). Multi-metric growth composite.",
+    "definition": "mean z(GR01 … GR06) · 2개 이상",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -17941,18 +18951,30 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "mean(z(GR01..GR06)). Multi-metric growth composite.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "IN01_CapEx_to_Assets": {
     "name": "CapEx to Assets",
     "category": "growth",
-    "definition": "InvestCF / TotalAssets (negative = capex). Titman Wei Xie (2004).",
+    "definition": "투자활동 현금흐름 TTM / 총자산 (Titman, Wei & Xie 2004 · 음수 = 지출)",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -17987,18 +19009,30 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "InvestCF / TotalAssets (negative = capex). Titman Wei Xie (2004).",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "IN02_CapEx_to_Revenue": {
     "name": "CapEx to Revenue",
     "category": "growth",
-    "definition": "InvestCF / Revenue. Capital intensity ratio.",
+    "definition": "투자활동 현금흐름 TTM / 매출",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -18033,18 +19067,30 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "InvestCF / Revenue. Capital intensity ratio.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "IN03_RD_to_Market": {
     "name": "R&D to Market",
     "category": "growth",
-    "definition": "RnDExpense / MarketCap. R&D intensity.",
+    "definition": "연구개발비 TTM / 시가총액",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -18079,18 +19125,30 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "RnDExpense / MarketCap. R&D intensity.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "IN04_Net_Equity_Issuance": {
     "name": "Net Equity Issuance",
     "category": "growth",
-    "definition": "Negate (dShares / lag Shares). Bradshaw Richardson Sloan (2006).",
+    "definition": "−ln(발행주식 수 / 1년 전)",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -18141,18 +19199,30 @@
         "window": "2005-01..2026-06 (258 months)"
       },
       "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "Negate (dShares / lag Shares). Bradshaw Richardson Sloan (2006).",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "IN05_Net_Debt_Issuance": {
     "name": "Net Debt Issuance",
     "category": "growth",
-    "definition": "Negate (dDebt / TA). Deleveraging = positive.",
+    "definition": "−Δ차입금·사채(1년) / 1년 전 총자산",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -18203,18 +19273,30 @@
         "window": "2005-01..2026-06 (258 months)"
       },
       "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "Negate (dDebt / TA). Deleveraging = positive.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "IN06_Investment_to_Assets": {
     "name": "Investment to Assets",
     "category": "growth",
-    "definition": "Negate (dPPE + dInv) / lag TA. Low investment = better.",
+    "definition": "−(ΔPPE + Δ재고) / 1년 전 총자산 (Lyandres, Sun & Zhang 2008 · 회계연도)",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_annual",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -18249,6 +19331,18 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "Negate (dPPE + dInv) / lag TA. Low investment = better.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "MK01_CAPM_Beta": {
@@ -18318,1308 +19412,6 @@
         "window": "2005-01..2026-06 (258 months)"
       },
       "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
-    }
-  },
-  "XF_DU01_NetMargin": {
-    "name": "DuPont Net Margin",
-    "category": "quality",
-    "definition": "(PretaxIncome - TaxExpense) / Revenue. DuPont profitability component.",
-    "direction": "higher_better",
-    "direction_economic": "higher_better",
-    "direction_economic_basis": "registry_original",
-    "stored_sign": 1,
-    "direction_basis": "stored_raw_value",
-    "data_source": "fundamental_xlsx",
-    "lag_rule": "Factor_Date <= sig_d",
-    "update_freq": "quarterly",
-    "availability": {
-      "type": "regulatory",
-      "rule": "quarterly+45d;annual_3/31"
-    },
-    "restatement_prone": true,
-    "vintage_available": false,
-    "refresh_mode": "manual",
-    "labels": {
-      "economic_family": "quality",
-      "construction": "ratio",
-      "neutrality": "raw",
-      "horizon": "quarterly",
-      "capacity": "large",
-      "evidence_tier": "B",
-      "macro_sensitivity": "defensive",
-      "regime_profile": {
-        "risk_on": "neutral",
-        "elevated": "positive",
-        "crisis": "positive"
-      },
-      "correlation_group": "quality_cluster",
-      "turnover_profile": "low",
-      "data_dependency": "fundamental_xlsx"
-    },
-    "lifecycle": {
-      "status": "active",
-      "research_stage": "S7",
-      "mutation_count": 0,
-      "added_date": "2026-03-24",
-      "last_validated": {},
-      "deprecation_reason": {},
-      "mutation_parent": {}
-    }
-  },
-  "XF_DU02_AssetTurnover": {
-    "name": "DuPont Asset Turnover",
-    "category": "quality",
-    "definition": "Revenue / TotalAssets. DuPont efficiency component.",
-    "direction": "higher_better",
-    "direction_economic": "higher_better",
-    "direction_economic_basis": "registry_original",
-    "stored_sign": 1,
-    "direction_basis": "stored_raw_value",
-    "data_source": "fundamental_xlsx",
-    "lag_rule": "Factor_Date <= sig_d",
-    "update_freq": "quarterly",
-    "availability": {
-      "type": "regulatory",
-      "rule": "quarterly+45d;annual_3/31"
-    },
-    "restatement_prone": true,
-    "vintage_available": false,
-    "refresh_mode": "manual",
-    "labels": {
-      "economic_family": "quality",
-      "construction": "ratio",
-      "neutrality": "raw",
-      "horizon": "quarterly",
-      "capacity": "large",
-      "evidence_tier": "B",
-      "macro_sensitivity": "growth_positive",
-      "regime_profile": {
-        "risk_on": "positive",
-        "elevated": "neutral",
-        "crisis": "neutral"
-      },
-      "correlation_group": "quality_cluster",
-      "turnover_profile": "low",
-      "data_dependency": "fundamental_xlsx"
-    },
-    "lifecycle": {
-      "status": "active",
-      "research_stage": "S7",
-      "mutation_count": 0,
-      "added_date": "2026-03-24",
-      "last_validated": {},
-      "deprecation_reason": {},
-      "mutation_parent": {}
-    },
-    "dedup": {
-      "role": "redundant",
-      "cluster": "DUPC-035",
-      "partners": [
-        "Q12_Asset_Turnover"
-      ],
-      "adjudicated": false,
-      "needs_review": true,
-      "evidence": {
-        "max_pair_abs_cor": 1,
-        "measured_at": "2026-08-02",
-        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
-        "window": "2005-01..2026-06 (258 months)"
-      },
-      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
-    }
-  },
-  "XF_DU03_EquityMultiplier": {
-    "name": "DuPont Equity Multiplier",
-    "category": "leverage",
-    "definition": "TotalAssets / TotalEquity. DuPont leverage component.",
-    "direction": "lower_better",
-    "direction_economic": "lower_better",
-    "direction_economic_basis": "literature_mixed_defensive_tiebreak",
-    "direction_economic_evidence": "장부 레버리지: Fama & French 1992, JF — A/BE 음(−)(A/ME 와 함께); Penman, Richardson & Tuna 2007, JAR — 레버리지 성분 음(−); George & Hwang 2010, JFE — 고레버리지 저수익(레버리지 퍼즐); 재무곤경(고레버리지 포함) 주식 저수익(Campbell, Hilscher & Szilagyi 2008, JF) [방어 쪽] vs Bhandari 1988, JF — 부채비율 양(+)(시장가치 기준) [위험한 쪽] → 갈림 | DOI(Crossref 확인) https://doi.org/10.1111/j.1540-6261.1992.tb04398.x · https://doi.org/10.1111/j.1475-679x.2007.00240.x · https://doi.org/10.1016/j.jfineco.2009.11.003 · https://doi.org/10.1111/j.1540-6261.1988.tb03952.x",
-    "stored_sign": 1,
-    "direction_basis": "stored_raw_value",
-    "direction_defensive": "lower_better",
-    "direction_defensive_definition": "lower_better",
-    "direction_defensive_reason": "자기자본승수 낮을수록 레버리지 낮음",
-    "data_source": "fundamental_xlsx",
-    "lag_rule": "Factor_Date <= sig_d",
-    "update_freq": "quarterly",
-    "availability": {
-      "type": "regulatory",
-      "rule": "quarterly+45d;annual_3/31"
-    },
-    "restatement_prone": true,
-    "vintage_available": false,
-    "refresh_mode": "manual",
-    "labels": {
-      "economic_family": "leverage",
-      "construction": "ratio",
-      "neutrality": "raw",
-      "horizon": "quarterly",
-      "capacity": "large",
-      "evidence_tier": "B",
-      "macro_sensitivity": "inflation_negative",
-      "regime_profile": {
-        "risk_on": "neutral",
-        "elevated": "negative",
-        "crisis": "negative"
-      },
-      "correlation_group": "leverage_cluster",
-      "turnover_profile": "low",
-      "data_dependency": "fundamental_xlsx"
-    },
-    "lifecycle": {
-      "status": "active",
-      "research_stage": "S7",
-      "mutation_count": 0,
-      "added_date": "2026-03-24",
-      "last_validated": {},
-      "deprecation_reason": {},
-      "mutation_parent": {}
-    },
-    "dedup": {
-      "role": "redundant",
-      "cluster": "DUPC-036",
-      "partners": [
-        "Q13_Fin_Leverage"
-      ],
-      "adjudicated": false,
-      "needs_review": true,
-      "evidence": {
-        "max_pair_abs_cor": 0.999306,
-        "measured_at": "2026-08-02",
-        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
-        "window": "2005-01..2026-06 (258 months)"
-      },
-      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
-    }
-  },
-  "XF_LL01_DebtToCapital": {
-    "name": "Debt to Capital",
-    "category": "leverage",
-    "definition": "(ShortTermBorr+LongTermBorr) / (TotalEquity+ShortTermBorr+LongTermBorr). Capital structure leverage.",
-    "direction": "lower_better",
-    "direction_economic": "lower_better",
-    "direction_economic_basis": "literature_mixed_defensive_tiebreak",
-    "direction_economic_evidence": "장부 레버리지: Fama & French 1992, JF — A/BE 음(−)(A/ME 와 함께); Penman, Richardson & Tuna 2007, JAR — 레버리지 성분 음(−); George & Hwang 2010, JFE — 고레버리지 저수익(레버리지 퍼즐); 재무곤경(고레버리지 포함) 주식 저수익(Campbell, Hilscher & Szilagyi 2008, JF) [방어 쪽] vs Bhandari 1988, JF — 부채비율 양(+)(시장가치 기준) [위험한 쪽] → 갈림 | DOI(Crossref 확인) https://doi.org/10.1111/j.1540-6261.1992.tb04398.x · https://doi.org/10.1111/j.1475-679x.2007.00240.x · https://doi.org/10.1016/j.jfineco.2009.11.003 · https://doi.org/10.1111/j.1540-6261.1988.tb03952.x",
-    "stored_sign": 1,
-    "direction_basis": "stored_raw_value",
-    "direction_defensive": "lower_better",
-    "direction_defensive_definition": "lower_better",
-    "direction_defensive_reason": "차입금/(차입금+자본) 낮을수록 레버리지 낮음",
-    "data_source": "fundamental_xlsx",
-    "lag_rule": "Factor_Date <= sig_d",
-    "update_freq": "quarterly",
-    "availability": {
-      "type": "regulatory",
-      "rule": "quarterly+45d;annual_3/31"
-    },
-    "restatement_prone": true,
-    "vintage_available": false,
-    "refresh_mode": "manual",
-    "labels": {
-      "economic_family": "leverage",
-      "construction": "ratio",
-      "neutrality": "raw",
-      "horizon": "quarterly",
-      "capacity": "large",
-      "evidence_tier": "B",
-      "macro_sensitivity": "inflation_negative",
-      "regime_profile": {
-        "risk_on": "neutral",
-        "elevated": "negative",
-        "crisis": "negative"
-      },
-      "correlation_group": "leverage_cluster",
-      "turnover_profile": "low",
-      "data_dependency": "fundamental_xlsx"
-    },
-    "lifecycle": {
-      "status": "active",
-      "research_stage": "S7",
-      "mutation_count": 0,
-      "added_date": "2026-03-24",
-      "last_validated": {},
-      "deprecation_reason": {},
-      "mutation_parent": {}
-    },
-    "dedup": {
-      "role": "redundant",
-      "cluster": "DUPC-020",
-      "partners": [
-        "D60_Leverage",
-        "Q15_Debt_to_Equity"
-      ],
-      "adjudicated": false,
-      "needs_review": true,
-      "evidence": {
-        "max_pair_abs_cor": 0.980912,
-        "measured_at": "2026-08-02",
-        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
-        "window": "2005-01..2026-06 (258 months)"
-      },
-      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
-    }
-  },
-  "XF_LL02_NetDebt": {
-    "name": "Net Debt",
-    "category": "leverage",
-    "definition": "(ShortTermBorr+LongTermBorr) - CashAndEquiv. Raw net debt, cross-sectionally normalized.",
-    "direction": "lower_better",
-    "direction_economic": "lower_better",
-    "direction_economic_basis": "literature_mixed_defensive_tiebreak",
-    "direction_economic_evidence": "레버리지 근거 갈림(Bhandari 1988 양 vs Penman, Richardson & Tuna 2007·George & Hwang 2010 음) + 원 단위 수준이라 규모 효과(Banz 1981)가 섞임 → 갈림 | DOI(Crossref 확인) https://doi.org/10.1016/0304-405X(81)90018-0",
-    "stored_sign": 1,
-    "direction_basis": "stored_raw_value",
-    "direction_defensive": "lower_better",
-    "direction_defensive_definition": "lower_better",
-    "direction_defensive_reason": "순부채 작을수록 재무 여력 큼",
-    "data_source": "fundamental_xlsx",
-    "lag_rule": "Factor_Date <= sig_d",
-    "update_freq": "quarterly",
-    "availability": {
-      "type": "regulatory",
-      "rule": "quarterly+45d;annual_3/31"
-    },
-    "restatement_prone": true,
-    "vintage_available": false,
-    "refresh_mode": "manual",
-    "labels": {
-      "economic_family": "leverage",
-      "construction": "level",
-      "neutrality": "raw",
-      "horizon": "quarterly",
-      "capacity": "large",
-      "evidence_tier": "C",
-      "macro_sensitivity": "inflation_negative",
-      "regime_profile": {
-        "risk_on": "neutral",
-        "elevated": "negative",
-        "crisis": "negative"
-      },
-      "correlation_group": "leverage_cluster",
-      "turnover_profile": "low",
-      "data_dependency": "fundamental_xlsx"
-    },
-    "lifecycle": {
-      "status": "active",
-      "research_stage": "S7",
-      "mutation_count": 0,
-      "added_date": "2026-03-24",
-      "last_validated": {},
-      "deprecation_reason": {},
-      "mutation_parent": {}
-    }
-  },
-  "XF_LL03_CashRatio": {
-    "name": "Cash Ratio",
-    "category": "leverage",
-    "definition": "CashAndEquiv / CurrentLiab. Most conservative liquidity measure.",
-    "direction": "higher_better",
-    "direction_economic": "higher_better",
-    "direction_economic_basis": "literature_mixed_defensive_tiebreak",
-    "direction_economic_evidence": "직접 단면 문헌 없음(비율 단독 정렬) — 관련: Palazzo 2012, JFE(현금/자산 높을수록 기대수익 높음), Altman Z 구성(WC/TA)·재무곤경 저수익(Dichev 1998, JF)",
-    "stored_sign": 1,
-    "direction_basis": "stored_raw_value",
-    "direction_defensive": "higher_better",
-    "direction_defensive_definition": "higher_better",
-    "direction_defensive_reason": "현금/유동부채 클수록 위기 내성(유동성 완충)",
-    "data_source": "fundamental_xlsx",
-    "lag_rule": "Factor_Date <= sig_d",
-    "update_freq": "quarterly",
-    "availability": {
-      "type": "regulatory",
-      "rule": "quarterly+45d;annual_3/31"
-    },
-    "restatement_prone": true,
-    "vintage_available": false,
-    "refresh_mode": "manual",
-    "labels": {
-      "economic_family": "leverage",
-      "construction": "ratio",
-      "neutrality": "raw",
-      "horizon": "quarterly",
-      "capacity": "large",
-      "evidence_tier": "B",
-      "macro_sensitivity": "defensive",
-      "regime_profile": {
-        "risk_on": "neutral",
-        "elevated": "positive",
-        "crisis": "positive"
-      },
-      "correlation_group": "leverage_cluster",
-      "turnover_profile": "low",
-      "data_dependency": "fundamental_xlsx"
-    },
-    "lifecycle": {
-      "status": "active",
-      "research_stage": "S7",
-      "mutation_count": 0,
-      "added_date": "2026-03-24",
-      "last_validated": {},
-      "deprecation_reason": {},
-      "mutation_parent": {}
-    }
-  },
-  "XF_LL04_QuickRatio": {
-    "name": "Quick Ratio",
-    "category": "leverage",
-    "definition": "(CurrentAssets - Inventory) / CurrentLiab. Acid-test liquidity.",
-    "direction": "higher_better",
-    "direction_economic": "higher_better",
-    "direction_economic_basis": "literature_mixed_defensive_tiebreak",
-    "direction_economic_evidence": "직접 단면 문헌 없음(비율 단독 정렬) — 관련: Palazzo 2012, JFE(현금/자산 높을수록 기대수익 높음), Altman Z 구성(WC/TA)·재무곤경 저수익(Dichev 1998, JF)",
-    "stored_sign": 1,
-    "direction_basis": "stored_raw_value",
-    "direction_defensive": "higher_better",
-    "direction_defensive_definition": "higher_better",
-    "direction_defensive_reason": "당좌비율 클수록 위기 내성",
-    "data_source": "fundamental_xlsx",
-    "lag_rule": "Factor_Date <= sig_d",
-    "update_freq": "quarterly",
-    "availability": {
-      "type": "regulatory",
-      "rule": "quarterly+45d;annual_3/31"
-    },
-    "restatement_prone": true,
-    "vintage_available": false,
-    "refresh_mode": "manual",
-    "labels": {
-      "economic_family": "leverage",
-      "construction": "ratio",
-      "neutrality": "raw",
-      "horizon": "quarterly",
-      "capacity": "large",
-      "evidence_tier": "B",
-      "macro_sensitivity": "defensive",
-      "regime_profile": {
-        "risk_on": "neutral",
-        "elevated": "positive",
-        "crisis": "positive"
-      },
-      "correlation_group": "leverage_cluster",
-      "turnover_profile": "low",
-      "data_dependency": "fundamental_xlsx"
-    },
-    "lifecycle": {
-      "status": "active",
-      "research_stage": "S7",
-      "mutation_count": 0,
-      "added_date": "2026-03-24",
-      "last_validated": {},
-      "deprecation_reason": {},
-      "mutation_parent": {}
-    },
-    "dedup": {
-      "role": "redundant",
-      "cluster": "DUPC-037",
-      "partners": [
-        "Q14_Current_Ratio",
-        "Q31_WC_to_Assets",
-        "XF_LL05_WorkingCapital"
-      ],
-      "adjudicated": true,
-      "needs_review": false,
-      "evidence": {
-        "max_pair_abs_cor": 0.974887,
-        "measured_at": "2026-08-02",
-        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
-        "window": "2005-01..2026-06 (258 months)"
-      },
-      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
-      "cluster_label": "liquidity_ratio",
-      "note": "Current Ratio 와 Quick Ratio 는 정의가 실제로 다르다(재고 포함/제외). median |cor| 0.975 로 겹치나 병합은 리서치 판단. ★부수 적발: 258개월 중 10개월에서 정렬 후 부호가 뒤집힌다(min=-0.975) — C13 IC-기반 방향추론이 이 쌍에서 불안정하다는 별도 신호."
-    }
-  },
-  "XF_LL05_WorkingCapital": {
-    "name": "Working Capital Ratio",
-    "category": "leverage",
-    "definition": "(CurrentAssets - CurrentLiab) / TotalAssets. Net working capital scaled by assets.",
-    "direction": "higher_better",
-    "direction_economic": "higher_better",
-    "direction_economic_basis": "literature_mixed_defensive_tiebreak",
-    "direction_economic_evidence": "직접 단면 문헌 없음(비율 단독 정렬) — 관련: Palazzo 2012, JFE(현금/자산 높을수록 기대수익 높음), Altman Z 구성(WC/TA)·재무곤경 저수익(Dichev 1998, JF)",
-    "stored_sign": 1,
-    "direction_basis": "stored_raw_value",
-    "direction_defensive": "higher_better",
-    "direction_defensive_definition": "higher_better",
-    "direction_defensive_reason": "순운전자본/총자산 클수록 재무 완충 큼",
-    "data_source": "fundamental_xlsx",
-    "lag_rule": "Factor_Date <= sig_d",
-    "update_freq": "quarterly",
-    "availability": {
-      "type": "regulatory",
-      "rule": "quarterly+45d;annual_3/31"
-    },
-    "restatement_prone": true,
-    "vintage_available": false,
-    "refresh_mode": "manual",
-    "labels": {
-      "economic_family": "leverage",
-      "construction": "ratio",
-      "neutrality": "raw",
-      "horizon": "quarterly",
-      "capacity": "large",
-      "evidence_tier": "B",
-      "macro_sensitivity": "defensive",
-      "regime_profile": {
-        "risk_on": "neutral",
-        "elevated": "positive",
-        "crisis": "positive"
-      },
-      "correlation_group": "leverage_cluster",
-      "turnover_profile": "low",
-      "data_dependency": "fundamental_xlsx"
-    },
-    "lifecycle": {
-      "status": "active",
-      "research_stage": "S7",
-      "mutation_count": 0,
-      "added_date": "2026-03-24",
-      "last_validated": {},
-      "deprecation_reason": {},
-      "mutation_parent": {}
-    },
-    "dedup": {
-      "role": "alias",
-      "canonical": "Q31_WC_to_Assets",
-      "cluster": "DUPC-037",
-      "deprecated_for_selection": true,
-      "adjudicated": true,
-      "mechanism": "정의문 동일 — 양쪽 다 (CurrentAssets - CurrentLiab)/TotalAssets. data_source 만 다름 (Q31=fundamental/DART, XF_LL05=fundamental_xlsx). 실측 median |cor| = 1.0000 (258개월). 단 12개월에서 부호 역전(min=-0.184)",
-      "reason": "Q31 = DART 네이티브. xlsx 트윈은 소스 혼합 위험(월별 발산 12건 실측).",
-      "evidence": {
-        "median_abs_cor": 1,
-        "median_cor": 1,
-        "n_months": 258,
-        "basis": "signal_zscore_pearson",
-        "verdict": "EXACT_DUP",
-        "measured_at": "2026-08-02",
-        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
-        "window": "2005-01..2026-06 (258 months)"
-      },
-      "consumption_rule": "선별/Ω 추정에서는 canonical 만 사용(drop_alias_factors()). 코드 조회·과거 산출물 참조는 계속 유효 — 삭제·리넘버 없음."
-    }
-  },
-  "XF_PR01_EBITDA_Margin": {
-    "name": "EBITDA Margin",
-    "category": "quality",
-    "definition": "(OperatingProfit + DepAmort) / Revenue. Cash-oriented profitability margin.",
-    "direction": "higher_better",
-    "direction_economic": "higher_better",
-    "direction_economic_basis": "registry_original",
-    "stored_sign": 1,
-    "direction_basis": "stored_raw_value",
-    "data_source": "fundamental_xlsx",
-    "lag_rule": "Factor_Date <= sig_d",
-    "update_freq": "quarterly",
-    "availability": {
-      "type": "regulatory",
-      "rule": "quarterly+45d;annual_3/31"
-    },
-    "restatement_prone": true,
-    "vintage_available": false,
-    "refresh_mode": "manual",
-    "labels": {
-      "economic_family": "quality",
-      "construction": "ratio",
-      "neutrality": "raw",
-      "horizon": "quarterly",
-      "capacity": "large",
-      "evidence_tier": "B",
-      "macro_sensitivity": "defensive",
-      "regime_profile": {
-        "risk_on": "neutral",
-        "elevated": "positive",
-        "crisis": "positive"
-      },
-      "correlation_group": "quality_cluster",
-      "turnover_profile": "low",
-      "data_dependency": "fundamental_xlsx"
-    },
-    "lifecycle": {
-      "status": "active",
-      "research_stage": "S7",
-      "mutation_count": 0,
-      "added_date": "2026-03-24",
-      "last_validated": {},
-      "deprecation_reason": {},
-      "mutation_parent": {}
-    },
-    "dedup": {
-      "role": "redundant",
-      "cluster": "DUPC-044",
-      "partners": [
-        "XF_Q06_Op_Margin"
-      ],
-      "adjudicated": false,
-      "needs_review": true,
-      "evidence": {
-        "max_pair_abs_cor": 0.984654,
-        "measured_at": "2026-08-02",
-        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
-        "window": "2005-01..2026-06 (258 months)"
-      },
-      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
-    }
-  },
-  "XF_PR02_RetainedEarnings_Ratio": {
-    "name": "Retained Earnings Ratio",
-    "category": "quality",
-    "definition": "RetainedEarnings / TotalEquity. Internal funding capacity.",
-    "direction": "higher_better",
-    "direction_economic": "higher_better",
-    "direction_economic_basis": "registry_original",
-    "stored_sign": 1,
-    "direction_basis": "stored_raw_value",
-    "data_source": "fundamental_xlsx",
-    "lag_rule": "Factor_Date <= sig_d",
-    "update_freq": "quarterly",
-    "availability": {
-      "type": "regulatory",
-      "rule": "quarterly+45d;annual_3/31"
-    },
-    "restatement_prone": true,
-    "vintage_available": false,
-    "refresh_mode": "manual",
-    "labels": {
-      "economic_family": "quality",
-      "construction": "ratio",
-      "neutrality": "raw",
-      "horizon": "quarterly",
-      "capacity": "large",
-      "evidence_tier": "C",
-      "macro_sensitivity": "defensive",
-      "regime_profile": {
-        "risk_on": "neutral",
-        "elevated": "positive",
-        "crisis": "positive"
-      },
-      "correlation_group": "quality_cluster",
-      "turnover_profile": "low",
-      "data_dependency": "fundamental_xlsx"
-    },
-    "lifecycle": {
-      "status": "active",
-      "research_stage": "S7",
-      "mutation_count": 0,
-      "added_date": "2026-03-24",
-      "last_validated": {},
-      "deprecation_reason": {},
-      "mutation_parent": {}
-    }
-  },
-  "XF_PR03_TaxRate": {
-    "name": "Effective Tax Rate",
-    "category": "quality",
-    "definition": "TaxExpense / PretaxIncome. Effective tax burden (PretaxIncome > 0 only).",
-    "direction": "lower_better",
-    "direction_economic": "lower_better",
-    "direction_economic_basis": "registry_original",
-    "stored_sign": 1,
-    "direction_basis": "stored_raw_value",
-    "data_source": "fundamental_xlsx",
-    "lag_rule": "Factor_Date <= sig_d",
-    "update_freq": "quarterly",
-    "availability": {
-      "type": "regulatory",
-      "rule": "quarterly+45d;annual_3/31"
-    },
-    "restatement_prone": true,
-    "vintage_available": false,
-    "refresh_mode": "manual",
-    "labels": {
-      "economic_family": "quality",
-      "construction": "ratio",
-      "neutrality": "raw",
-      "horizon": "quarterly",
-      "capacity": "large",
-      "evidence_tier": "C",
-      "macro_sensitivity": "neutral",
-      "regime_profile": {
-        "risk_on": "neutral",
-        "elevated": "neutral",
-        "crisis": "neutral"
-      },
-      "correlation_group": "quality_cluster",
-      "turnover_profile": "low",
-      "data_dependency": "fundamental_xlsx"
-    },
-    "lifecycle": {
-      "status": "active",
-      "research_stage": "S7",
-      "mutation_count": 0,
-      "added_date": "2026-03-24",
-      "last_validated": {},
-      "deprecation_reason": {},
-      "mutation_parent": {}
-    }
-  },
-  "XF_PR04_NetInterestMargin": {
-    "name": "Net Interest Margin",
-    "category": "quality",
-    "definition": "(InterestIncome − InterestExpense) / Revenue. Net interest income margin (relevant for financials).",
-    "direction": "higher_better",
-    "direction_economic": "higher_better",
-    "direction_economic_basis": "code_and_definition",
-    "stored_sign": 1,
-    "direction_basis": "stored_raw_value",
-    "data_source": "fundamental_xlsx",
-    "lag_rule": "Factor_Date <= sig_d",
-    "update_freq": "quarterly",
-    "availability": {
-      "type": "regulatory",
-      "rule": "quarterly+45d;annual_3/31"
-    },
-    "restatement_prone": true,
-    "vintage_available": false,
-    "refresh_mode": "manual",
-    "labels": {
-      "economic_family": "quality",
-      "construction": "ratio",
-      "neutrality": "raw",
-      "horizon": "quarterly",
-      "capacity": "large",
-      "evidence_tier": "C",
-      "macro_sensitivity": "neutral",
-      "regime_profile": {
-        "risk_on": "neutral",
-        "elevated": "neutral",
-        "crisis": "neutral"
-      },
-      "correlation_group": "quality_cluster",
-      "turnover_profile": "low",
-      "data_dependency": "fundamental_xlsx"
-    },
-    "lifecycle": {
-      "status": "active",
-      "research_stage": "S7",
-      "mutation_count": 0,
-      "added_date": "2026-03-24",
-      "last_validated": {},
-      "deprecation_reason": {},
-      "mutation_parent": {}
-    },
-    "definition_history": [
-      {
-        "date": "2026-11-09",
-        "from": "NetInterestExp / TotalAssets. Interest income efficiency (relevant for financials).",
-        "to": "(InterestIncome − InterestExpense) / Revenue. Net interest income margin (relevant for financials).",
-        "decision": "FACTOR-DIRECTION-STORAGE-REPAIR-20261109",
-        "reason": "DART 행 = 순이자수익/매출 · 엑셀 채움(순이자비용/총자산)은 빌더 수리로 −순이자비용/매출로 맞춘다"
-      }
-    ]
-  },
-  "XF_PR05_EBITDA_to_Assets": {
-    "name": "EBITDA to Assets",
-    "category": "quality",
-    "definition": "(OperatingProfit + DepAmort) / TotalAssets. Asset-level cash profitability.",
-    "direction": "higher_better",
-    "direction_economic": "higher_better",
-    "direction_economic_basis": "registry_original",
-    "stored_sign": 1,
-    "direction_basis": "stored_raw_value",
-    "data_source": "fundamental_xlsx",
-    "lag_rule": "Factor_Date <= sig_d",
-    "update_freq": "quarterly",
-    "availability": {
-      "type": "regulatory",
-      "rule": "quarterly+45d;annual_3/31"
-    },
-    "restatement_prone": true,
-    "vintage_available": false,
-    "refresh_mode": "manual",
-    "labels": {
-      "economic_family": "quality",
-      "construction": "ratio",
-      "neutrality": "raw",
-      "horizon": "quarterly",
-      "capacity": "large",
-      "evidence_tier": "B",
-      "macro_sensitivity": "defensive",
-      "regime_profile": {
-        "risk_on": "neutral",
-        "elevated": "positive",
-        "crisis": "positive"
-      },
-      "correlation_group": "quality_cluster",
-      "turnover_profile": "low",
-      "data_dependency": "fundamental_xlsx"
-    },
-    "lifecycle": {
-      "status": "active",
-      "research_stage": "S7",
-      "mutation_count": 0,
-      "added_date": "2026-03-24",
-      "last_validated": {},
-      "deprecation_reason": {},
-      "mutation_parent": {}
-    }
-  },
-  "XF_EF01_InventoryTurnover": {
-    "name": "Inventory Turnover",
-    "category": "quality",
-    "definition": "COGS / Inventory. Inventory management efficiency.",
-    "direction": "higher_better",
-    "direction_economic": "higher_better",
-    "direction_economic_basis": "registry_original",
-    "stored_sign": 1,
-    "direction_basis": "stored_raw_value",
-    "data_source": "fundamental_xlsx",
-    "lag_rule": "Factor_Date <= sig_d",
-    "update_freq": "quarterly",
-    "availability": {
-      "type": "regulatory",
-      "rule": "quarterly+45d;annual_3/31"
-    },
-    "restatement_prone": true,
-    "vintage_available": false,
-    "refresh_mode": "manual",
-    "labels": {
-      "economic_family": "quality",
-      "construction": "ratio",
-      "neutrality": "raw",
-      "horizon": "quarterly",
-      "capacity": "large",
-      "evidence_tier": "B",
-      "macro_sensitivity": "growth_positive",
-      "regime_profile": {
-        "risk_on": "positive",
-        "elevated": "neutral",
-        "crisis": "neutral"
-      },
-      "correlation_group": "efficiency_cluster",
-      "turnover_profile": "low",
-      "data_dependency": "fundamental_xlsx"
-    },
-    "lifecycle": {
-      "status": "active",
-      "research_stage": "S7",
-      "mutation_count": 0,
-      "added_date": "2026-03-24",
-      "last_validated": {},
-      "deprecation_reason": {},
-      "mutation_parent": {}
-    }
-  },
-  "XF_EF02_DaysPayable": {
-    "name": "Days Payable Outstanding",
-    "category": "quality",
-    "definition": "AccountsPay / (COGS / 365). Days to pay suppliers.",
-    "direction": "higher_better",
-    "direction_economic": "higher_better",
-    "direction_economic_basis": "registry_original",
-    "stored_sign": 1,
-    "direction_basis": "stored_raw_value",
-    "data_source": "fundamental_xlsx",
-    "lag_rule": "Factor_Date <= sig_d",
-    "update_freq": "quarterly",
-    "availability": {
-      "type": "regulatory",
-      "rule": "quarterly+45d;annual_3/31"
-    },
-    "restatement_prone": true,
-    "vintage_available": false,
-    "refresh_mode": "manual",
-    "labels": {
-      "economic_family": "quality",
-      "construction": "ratio",
-      "neutrality": "raw",
-      "horizon": "quarterly",
-      "capacity": "large",
-      "evidence_tier": "C",
-      "macro_sensitivity": "neutral",
-      "regime_profile": {
-        "risk_on": "neutral",
-        "elevated": "neutral",
-        "crisis": "neutral"
-      },
-      "correlation_group": "efficiency_cluster",
-      "turnover_profile": "low",
-      "data_dependency": "fundamental_xlsx"
-    },
-    "lifecycle": {
-      "status": "active",
-      "research_stage": "S7",
-      "mutation_count": 0,
-      "added_date": "2026-03-24",
-      "last_validated": {},
-      "deprecation_reason": {},
-      "mutation_parent": {}
-    }
-  },
-  "XF_EF03_DaysReceivable": {
-    "name": "Days Receivable Outstanding",
-    "category": "quality",
-    "definition": "AccountsRecv / (Revenue / 365). Days to collect from customers.",
-    "direction": "lower_better",
-    "direction_economic": "lower_better",
-    "direction_economic_basis": "registry_original",
-    "stored_sign": 1,
-    "direction_basis": "stored_raw_value",
-    "data_source": "fundamental_xlsx",
-    "lag_rule": "Factor_Date <= sig_d",
-    "update_freq": "quarterly",
-    "availability": {
-      "type": "regulatory",
-      "rule": "quarterly+45d;annual_3/31"
-    },
-    "restatement_prone": true,
-    "vintage_available": false,
-    "refresh_mode": "manual",
-    "labels": {
-      "economic_family": "quality",
-      "construction": "ratio",
-      "neutrality": "raw",
-      "horizon": "quarterly",
-      "capacity": "large",
-      "evidence_tier": "C",
-      "macro_sensitivity": "neutral",
-      "regime_profile": {
-        "risk_on": "neutral",
-        "elevated": "neutral",
-        "crisis": "neutral"
-      },
-      "correlation_group": "efficiency_cluster",
-      "turnover_profile": "low",
-      "data_dependency": "fundamental_xlsx"
-    },
-    "lifecycle": {
-      "status": "active",
-      "research_stage": "S7",
-      "mutation_count": 0,
-      "added_date": "2026-03-24",
-      "last_validated": {},
-      "deprecation_reason": {},
-      "mutation_parent": {}
-    }
-  },
-  "XF_EF04_CCC": {
-    "name": "Cash Conversion Cycle",
-    "category": "quality",
-    "definition": "DaysReceivable + DaysInventory - DaysPayable. Working capital cycle length in days.",
-    "direction": "lower_better",
-    "direction_economic": "lower_better",
-    "direction_economic_basis": "registry_original",
-    "stored_sign": 1,
-    "direction_basis": "stored_raw_value",
-    "data_source": "fundamental_xlsx",
-    "lag_rule": "Factor_Date <= sig_d",
-    "update_freq": "quarterly",
-    "availability": {
-      "type": "regulatory",
-      "rule": "quarterly+45d;annual_3/31"
-    },
-    "restatement_prone": true,
-    "vintage_available": false,
-    "refresh_mode": "manual",
-    "labels": {
-      "economic_family": "quality",
-      "construction": "composite",
-      "neutrality": "raw",
-      "horizon": "quarterly",
-      "capacity": "large",
-      "evidence_tier": "B",
-      "macro_sensitivity": "growth_positive",
-      "regime_profile": {
-        "risk_on": "neutral",
-        "elevated": "neutral",
-        "crisis": "negative"
-      },
-      "correlation_group": "efficiency_cluster",
-      "turnover_profile": "low",
-      "data_dependency": "fundamental_xlsx"
-    },
-    "lifecycle": {
-      "status": "active",
-      "research_stage": "S7",
-      "mutation_count": 0,
-      "added_date": "2026-03-24",
-      "last_validated": {},
-      "deprecation_reason": {},
-      "mutation_parent": {}
-    }
-  },
-  "XF_GD01_GrossProfit_Growth": {
-    "name": "Gross Profit Growth",
-    "category": "growth",
-    "definition": "dGrossProfit / |GrossProfit_prev|. Top-line margin growth.",
-    "direction": "higher_better",
-    "direction_economic": "higher_better",
-    "direction_economic_basis": "registry_original",
-    "stored_sign": 1,
-    "direction_basis": "stored_raw_value",
-    "data_source": "fundamental_xlsx",
-    "lag_rule": "Factor_Date <= sig_d",
-    "update_freq": "quarterly",
-    "availability": {
-      "type": "regulatory",
-      "rule": "quarterly+45d;annual_3/31"
-    },
-    "restatement_prone": true,
-    "vintage_available": false,
-    "refresh_mode": "manual",
-    "labels": {
-      "economic_family": "growth",
-      "construction": "change",
-      "neutrality": "raw",
-      "horizon": "quarterly",
-      "capacity": "large",
-      "evidence_tier": "B",
-      "macro_sensitivity": "growth_positive",
-      "regime_profile": {
-        "risk_on": "positive",
-        "elevated": "neutral",
-        "crisis": "negative"
-      },
-      "correlation_group": "growth_cluster",
-      "turnover_profile": "medium",
-      "data_dependency": "fundamental_xlsx"
-    },
-    "lifecycle": {
-      "status": "active",
-      "research_stage": "S7",
-      "mutation_count": 0,
-      "added_date": "2026-03-24",
-      "last_validated": {},
-      "deprecation_reason": {},
-      "mutation_parent": {}
-    },
-    "dedup": {
-      "role": "redundant",
-      "cluster": "DUPC-039",
-      "partners": [
-        "Q34_GP_Growth"
-      ],
-      "adjudicated": false,
-      "needs_review": true,
-      "evidence": {
-        "max_pair_abs_cor": 1,
-        "measured_at": "2026-08-02",
-        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
-        "window": "2005-01..2026-06 (258 months)"
-      },
-      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
-    }
-  },
-  "XF_GD02_OpProfit_Growth": {
-    "name": "Operating Profit Growth",
-    "category": "growth",
-    "definition": "dOperatingProfit / |OperatingProfit_prev|. Core earnings growth.",
-    "direction": "higher_better",
-    "direction_economic": "higher_better",
-    "direction_economic_basis": "registry_original",
-    "stored_sign": 1,
-    "direction_basis": "stored_raw_value",
-    "data_source": "fundamental_xlsx",
-    "lag_rule": "Factor_Date <= sig_d",
-    "update_freq": "quarterly",
-    "availability": {
-      "type": "regulatory",
-      "rule": "quarterly+45d;annual_3/31"
-    },
-    "restatement_prone": true,
-    "vintage_available": false,
-    "refresh_mode": "manual",
-    "labels": {
-      "economic_family": "growth",
-      "construction": "change",
-      "neutrality": "raw",
-      "horizon": "quarterly",
-      "capacity": "large",
-      "evidence_tier": "B",
-      "macro_sensitivity": "growth_positive",
-      "regime_profile": {
-        "risk_on": "positive",
-        "elevated": "neutral",
-        "crisis": "negative"
-      },
-      "correlation_group": "growth_cluster",
-      "turnover_profile": "medium",
-      "data_dependency": "fundamental_xlsx"
-    },
-    "lifecycle": {
-      "status": "active",
-      "research_stage": "S7",
-      "mutation_count": 0,
-      "added_date": "2026-03-24",
-      "last_validated": {},
-      "deprecation_reason": {},
-      "mutation_parent": {}
-    }
-  },
-  "XF_GD03_OCF_Growth": {
-    "name": "Operating Cash Flow Growth",
-    "category": "growth",
-    "definition": "dOperatingCF / |OperatingCF_prev|. Cash flow momentum.",
-    "direction": "higher_better",
-    "direction_economic": "higher_better",
-    "direction_economic_basis": "registry_original",
-    "stored_sign": 1,
-    "direction_basis": "stored_raw_value",
-    "data_source": "fundamental_xlsx",
-    "lag_rule": "Factor_Date <= sig_d",
-    "update_freq": "quarterly",
-    "availability": {
-      "type": "regulatory",
-      "rule": "quarterly+45d;annual_3/31"
-    },
-    "restatement_prone": true,
-    "vintage_available": false,
-    "refresh_mode": "manual",
-    "labels": {
-      "economic_family": "growth",
-      "construction": "change",
-      "neutrality": "raw",
-      "horizon": "quarterly",
-      "capacity": "large",
-      "evidence_tier": "B",
-      "macro_sensitivity": "growth_positive",
-      "regime_profile": {
-        "risk_on": "positive",
-        "elevated": "neutral",
-        "crisis": "negative"
-      },
-      "correlation_group": "growth_cluster",
-      "turnover_profile": "medium",
-      "data_dependency": "fundamental_xlsx"
-    },
-    "lifecycle": {
-      "status": "active",
-      "research_stage": "S7",
-      "mutation_count": 0,
-      "added_date": "2026-03-24",
-      "last_validated": {},
-      "deprecation_reason": {},
-      "mutation_parent": {}
-    },
-    "dedup": {
-      "role": "redundant",
-      "cluster": "DUPC-024",
-      "partners": [
-        "GR06_OCF_Growth"
-      ],
-      "adjudicated": false,
-      "needs_review": true,
-      "evidence": {
-        "max_pair_abs_cor": 1,
-        "measured_at": "2026-08-02",
-        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
-        "window": "2005-01..2026-06 (258 months)"
-      },
-      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
-    }
-  },
-  "XF_GD04_Dividend_Growth": {
-    "name": "Dividend Growth",
-    "category": "growth",
-    "definition": "dDividends / |Dividends_prev|. Shareholder payout momentum.",
-    "direction": "higher_better",
-    "direction_economic": "higher_better",
-    "direction_economic_basis": "registry_original",
-    "stored_sign": 1,
-    "direction_basis": "stored_raw_value",
-    "data_source": "fundamental_xlsx",
-    "lag_rule": "Factor_Date <= sig_d",
-    "update_freq": "quarterly",
-    "availability": {
-      "type": "regulatory",
-      "rule": "quarterly+45d;annual_3/31"
-    },
-    "restatement_prone": true,
-    "vintage_available": false,
-    "refresh_mode": "manual",
-    "labels": {
-      "economic_family": "growth",
-      "construction": "change",
-      "neutrality": "raw",
-      "horizon": "quarterly",
-      "capacity": "large",
-      "evidence_tier": "C",
-      "macro_sensitivity": "defensive",
-      "regime_profile": {
-        "risk_on": "neutral",
-        "elevated": "positive",
-        "crisis": "neutral"
-      },
-      "correlation_group": "growth_cluster",
-      "turnover_profile": "low",
-      "data_dependency": "fundamental_xlsx"
-    },
-    "lifecycle": {
-      "status": "active",
-      "research_stage": "S7",
-      "mutation_count": 0,
-      "added_date": "2026-03-24",
-      "last_validated": {},
-      "deprecation_reason": {},
-      "mutation_parent": {}
-    }
-  },
-  "XF_RI01_RnD_to_Revenue": {
-    "name": "R&D to Revenue",
-    "category": "quality",
-    "definition": "RandD / Revenue. Research intensity, innovation proxy.",
-    "direction": "higher_better",
-    "direction_economic": "higher_better",
-    "direction_economic_basis": "registry_original",
-    "stored_sign": 1,
-    "direction_basis": "stored_raw_value",
-    "data_source": "fundamental_xlsx",
-    "lag_rule": "Factor_Date <= sig_d",
-    "update_freq": "quarterly",
-    "availability": {
-      "type": "regulatory",
-      "rule": "quarterly+45d;annual_3/31"
-    },
-    "restatement_prone": true,
-    "vintage_available": false,
-    "refresh_mode": "manual",
-    "labels": {
-      "economic_family": "quality",
-      "construction": "ratio",
-      "neutrality": "raw",
-      "horizon": "quarterly",
-      "capacity": "large",
-      "evidence_tier": "C",
-      "macro_sensitivity": "growth_positive",
-      "regime_profile": {
-        "risk_on": "positive",
-        "elevated": "neutral",
-        "crisis": "neutral"
-      },
-      "correlation_group": "investment_cluster",
-      "turnover_profile": "low",
-      "data_dependency": "fundamental_xlsx"
-    },
-    "lifecycle": {
-      "status": "active",
-      "research_stage": "S7",
-      "mutation_count": 0,
-      "added_date": "2026-03-24",
-      "last_validated": {},
-      "deprecation_reason": {},
-      "mutation_parent": {}
-    },
-    "dedup": {
-      "role": "redundant",
-      "cluster": "DUPC-038",
-      "partners": [
-        "Q26_RnD_Intensity"
-      ],
-      "adjudicated": false,
-      "needs_review": true,
-      "evidence": {
-        "max_pair_abs_cor": 0.989644,
-        "measured_at": "2026-08-02",
-        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
-        "window": "2005-01..2026-06 (258 months)"
-      },
-      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
-    }
-  },
-  "XF_RI02_CapEx_proxy": {
-    "name": "CapEx Proxy",
-    "category": "quality",
-    "definition": "-InvestCF / TotalAssets. Capital expenditure intensity (InvestCF is negative for spending).",
-    "direction": "lower_better",
-    "direction_economic": "lower_better",
-    "direction_economic_basis": "literature",
-    "direction_economic_evidence": "Titman, Wei & Xie (2004) JFQA 39(4):677-700 'Capital Investments and Stock Returns' https://doi.org/10.1017/S0022109000003173 — 투자를 크게 늘린 기업의 이후 수익이 낮다 · 수리 뒤 IN01_CapEx_to_Assets 의 정확히 반대 부호(같은 양)",
-    "stored_sign": 1,
-    "direction_basis": "stored_raw_value",
-    "data_source": "fundamental_xlsx",
-    "lag_rule": "Factor_Date <= sig_d",
-    "update_freq": "quarterly",
-    "availability": {
-      "type": "regulatory",
-      "rule": "quarterly+45d;annual_3/31"
-    },
-    "restatement_prone": true,
-    "vintage_available": false,
-    "refresh_mode": "manual",
-    "labels": {
-      "economic_family": "quality",
-      "construction": "ratio",
-      "neutrality": "raw",
-      "horizon": "quarterly",
-      "capacity": "large",
-      "evidence_tier": "C",
-      "macro_sensitivity": "growth_positive",
-      "regime_profile": {
-        "risk_on": "positive",
-        "elevated": "neutral",
-        "crisis": "negative"
-      },
-      "correlation_group": "investment_cluster",
-      "turnover_profile": "low",
-      "data_dependency": "fundamental_xlsx"
-    },
-    "lifecycle": {
-      "status": "active",
-      "research_stage": "S7",
-      "mutation_count": 0,
-      "added_date": "2026-03-24",
-      "last_validated": {},
-      "deprecation_reason": {},
-      "mutation_parent": {}
-    },
-    "direction_history": [
-      {
-        "date": "2026-11-09",
-        "from": "higher_better",
-        "to": "lower_better",
-        "decision": "FACTOR-DIRECTION-TWO-VIEWS-20261109",
-        "reason": "기대수익 방향을 문헌으로(두 방향 분리 · 도훈 'C안'): Titman, Wei & Xie (2004) JFQA 39(4):677-700 'Capital Investments and Stock Returns' https://doi.org/10.1017/S0022109000003173 — 투자를 크게 늘린 기업의 이후 수익이 낮다 · 수리 뒤 IN01_CapEx_to_Assets 의 정확히 반대 부호(같은 양)",
-        "evidence": "Titman, Wei & Xie (2004) JFQA 39(4):677-700 'Capital Investments and Stock Returns' https://doi.org/10.1017/S0022109000003173 — 투자를 크게 늘린 기업의 이후 수익이 낮다 · 수리 뒤 IN01_CapEx_to_Assets 의 정확히 반대 부호(같은 양)",
-        "stored_expr": "DART: -InvestCF/TotalAssets · xlsx: -InvestCF/TA (같은 식)"
-      }
-    ]
-  },
-  "XF_RI03_SGA_to_Revenue": {
-    "name": "SGA to Revenue",
-    "category": "quality",
-    "definition": "SGAExpense / Revenue. Selling, general, and admin cost efficiency.",
-    "direction": "lower_better",
-    "direction_economic": "lower_better",
-    "direction_economic_basis": "registry_original",
-    "stored_sign": 1,
-    "direction_basis": "stored_raw_value",
-    "data_source": "fundamental_xlsx",
-    "lag_rule": "Factor_Date <= sig_d",
-    "update_freq": "quarterly",
-    "availability": {
-      "type": "regulatory",
-      "rule": "quarterly+45d;annual_3/31"
-    },
-    "restatement_prone": true,
-    "vintage_available": false,
-    "refresh_mode": "manual",
-    "labels": {
-      "economic_family": "quality",
-      "construction": "ratio",
-      "neutrality": "raw",
-      "horizon": "quarterly",
-      "capacity": "large",
-      "evidence_tier": "C",
-      "macro_sensitivity": "neutral",
-      "regime_profile": {
-        "risk_on": "neutral",
-        "elevated": "neutral",
-        "crisis": "neutral"
-      },
-      "correlation_group": "investment_cluster",
-      "turnover_profile": "low",
-      "data_dependency": "fundamental_xlsx"
-    },
-    "lifecycle": {
-      "status": "active",
-      "research_stage": "S7",
-      "mutation_count": 0,
-      "added_date": "2026-03-24",
-      "last_validated": {},
-      "deprecation_reason": {},
-      "mutation_parent": {}
     }
   },
   "INV13_Foreign_Resid_Individual_21d": {
@@ -20336,13 +20128,13 @@
   "AC11_Accruals_to_Assets": {
     "name": "Accruals to Assets (simple)",
     "category": "accrual",
-    "definition": "Alias of AC01 for completeness. (NI - OCF) / TA.",
+    "definition": "AC01 과 같다",
     "direction": "higher_better",
     "direction_economic": "lower_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": -1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d (fundamental lag)",
     "update_freq": "quarterly",
     "availability": {
@@ -20406,19 +20198,31 @@
         "evidence": "compute_accrual.R:320-323 (copy of AC01)",
         "stored_expr": "-(NI - OCF)/TotalAssets"
       }
-    ]
+    ],
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "Alias of AC01 for completeness. (NI - OCF) / TA.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
+    }
   },
   "AC18_Accrual_Quality": {
     "name": "Accrual Quality (QMJ Asness 2019)",
     "category": "accrual",
-    "definition": "ACC = -(NI - OCF) / TA. Identical to AC01 by construction. QMJ component.",
+    "definition": "AC01 과 같다",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "literature",
     "direction_economic_evidence": "Sloan (1996) The Accounting Review 71(3):289-315 https://www.jstor.org/stable/248290 — 발생액이 큰 기업의 이후 수익이 낮다 · 저장값 = AC01_Total_Accruals_CF 와 같다(AC01 = 높을수록 좋음)",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d (fundamental lag)",
     "update_freq": "quarterly",
     "availability": {
@@ -20482,7 +20286,19 @@
         "evidence": "Sloan (1996) The Accounting Review 71(3):289-315 https://www.jstor.org/stable/248290 — 발생액이 큰 기업의 이후 수익이 낮다 · 저장값 = AC01_Total_Accruals_CF 와 같다(AC01 = 높을수록 좋음)",
         "stored_expr": "-(NI - OCF)/TotalAssets"
       }
-    ]
+    ],
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "ACC = -(NI - OCF) / TA. Identical to AC01 by construction. QMJ component.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
+    }
   },
   "D10_Blume_Adj_Beta": {
     "name": "Blume-Adjusted Beta",
@@ -20739,13 +20555,13 @@
   "Q21_Revenue_Growth": {
     "name": "Revenue Growth (YoY)",
     "category": "growth",
-    "definition": "(Revenue_curr - Revenue_prev) / |Revenue_prev|",
+    "definition": "매출 TTM 전년 대비 증가율((x−x₁)/|x₁|)",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d (quarterly lag)",
     "update_freq": "quarterly",
     "availability": {
@@ -20796,18 +20612,30 @@
         "window": "2005-01..2026-06 (258 months)"
       },
       "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "(Revenue_curr - Revenue_prev) / |Revenue_prev|",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "Q22_Earnings_Growth": {
     "name": "Earnings Growth (YoY)",
     "category": "growth",
-    "definition": "(NetIncome_curr - NetIncome_prev) / max(|NetIncome_prev|, 1e-8)",
+    "definition": "지배주주 순이익 TTM 전년 대비 증가율((x−x₁)/|x₁|)",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d (quarterly lag)",
     "update_freq": "quarterly",
     "availability": {
@@ -20858,18 +20686,30 @@
         "window": "2005-01..2026-06 (258 months)"
       },
       "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "(NetIncome_curr - NetIncome_prev) / max(|NetIncome_prev|, 1e-8)",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "Q34_GP_Growth": {
     "name": "Gross Profit Growth (5Y)",
     "category": "growth",
-    "definition": "5-year growth in GrossProfit / TotalAssets ratio.",
+    "definition": "GPA − 5년 전 GPA (회계연도)",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "registry_original",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_annual",
     "lag_rule": "Factor_Date <= sig_d (quarterly lag)",
     "update_freq": "quarterly",
     "availability": {
@@ -20920,6 +20760,18 @@
         "window": "2005-01..2026-06 (258 months)"
       },
       "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
+    },
+    "definition_history": [
+      {
+        "until": "2026-11-16",
+        "definition": "5-year growth in GrossProfit / TotalAssets ratio.",
+        "data_source": "fundamental"
+      }
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "T01_RSI14": {
@@ -21770,13 +21622,13 @@
   "AC14_Discretionary_Accruals": {
     "name": "Discretionary Accruals",
     "category": "accrual",
-    "definition": "−|Jones-model discretionary accruals| (AC13 magnitude, negated). Higher = less earnings management (Dechow, Sloan & Sweeney 1995).",
+    "definition": "−|수정 Jones 잔차|",
     "direction": "higher_better",
     "direction_economic": "higher_better",
     "direction_economic_basis": "code_and_definition",
     "stored_sign": 1,
     "direction_basis": "stored_raw_value",
-    "data_source": "fundamental",
+    "data_source": "fundamental_quarterly",
     "lag_rule": "Factor_Date <= sig_d",
     "update_freq": "quarterly",
     "availability": {
@@ -21831,70 +21683,17 @@
         "to": "−|Jones-model discretionary accruals| (AC13 magnitude, negated). Higher = less earnings management (Dechow, Sloan & Sweeney 1995).",
         "decision": "FACTOR-DIRECTION-STORAGE-REPAIR-20261109",
         "reason": "코드 = −|AC13| · 주석 compute_accrual.R:384 'negate abs: low magnitude = good'"
+      },
+      {
+        "until": "2026-11-16",
+        "definition": "−|Jones-model discretionary accruals| (AC13 magnitude, negated). Higher = less earnings management (Dechow, Sloan & Sweeney 1995).",
+        "data_source": "fundamental"
       }
-    ]
-  },
-  "XF_Q06_Op_Margin": {
-    "name": "Operating Margin (XF native)",
-    "category": "quality",
-    "definition": "OperatingProfit / Revenue. Core operating profitability margin, xlsx-native quarterly. Higher operating profitability predicts higher returns (operating-profitability evidence: Novy-Marx 2013; Ball-Gerakos-Linnainmaa-Nikolaev 2015).",
-    "direction": "higher_better",
-    "direction_economic": "higher_better",
-    "direction_economic_basis": "registry_original",
-    "stored_sign": 1,
-    "direction_basis": "stored_raw_value",
-    "data_source": "fundamental_xlsx",
-    "lag_rule": "Factor_Date <= sig_d",
-    "update_freq": "quarterly",
-    "availability": {
-      "type": "regulatory",
-      "rule": "quarterly+45d;annual_3/31"
-    },
-    "restatement_prone": true,
-    "vintage_available": false,
-    "refresh_mode": "manual",
-    "storage": "monthly",
-    "labels": {
-      "economic_family": "quality",
-      "construction": "ratio",
-      "neutrality": "raw",
-      "horizon": "quarterly",
-      "capacity": "large",
-      "evidence_tier": "B",
-      "macro_sensitivity": "defensive",
-      "regime_profile": {
-        "risk_on": "neutral",
-        "elevated": "positive",
-        "crisis": "positive"
-      },
-      "correlation_group": "quality_cluster",
-      "turnover_profile": "low",
-      "data_dependency": "fundamental_xlsx"
-    },
-    "lifecycle": {
-      "status": "active",
-      "research_stage": "S7",
-      "mutation_count": 0,
-      "added_date": "2026-06-10",
-      "last_validated": {},
-      "deprecation_reason": {},
-      "mutation_parent": {}
-    },
-    "dedup": {
-      "role": "redundant",
-      "cluster": "DUPC-044",
-      "partners": [
-        "XF_PR01_EBITDA_Margin"
-      ],
-      "adjudicated": false,
-      "needs_review": true,
-      "evidence": {
-        "max_pair_abs_cor": 0.984654,
-        "measured_at": "2026-08-02",
-        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
-        "window": "2005-01..2026-06 (258 months)"
-      },
-      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
+    ],
+    "redefined": {
+      "at": "2026-11-16",
+      "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116 · 도훈 11-16 펀더멘털 팩터 재정의(분기 · 연간 재무 캐시)",
+      "module": "compute_fundamental.R"
     }
   },
   "RP_combo_1403_8125_2002_06975_2007_08115": {
@@ -21929,6 +21728,41 @@
       "research_stage": "S0",
       "mutation_count": 0,
       "added_date": "2026-09-17",
+      "origin": "add_factor_custom"
+    }
+  },
+  "RP_1603_00751": {
+    "name": "Equity forecast: Predicting long term stock price movement using machine learning",
+    "category": "custom",
+    "definition": "논문 충실구현 신호(동결 패널). 출처: https://arxiv.org/abs/1603.00751 · 등급 B · 패널 136510행 2000-03-31~2026-11-05",
+    "direction": "higher_better",
+    "direction_economic": "higher_better",
+    "direction_economic_basis": "registry_original",
+    "stored_sign": 1,
+    "direction_basis": "stored_raw_value",
+    "data_source": "rawdata",
+    "lag_rule": "Factor_Date <= sig_d",
+    "update_freq": "monthly",
+    "availability": {
+      "type": "fixed",
+      "rule": "T-1"
+    },
+    "restatement_prone": true,
+    "vintage_available": true,
+    "refresh_mode": "auto",
+    "labels": {
+      "economic_family": "custom",
+      "construction": "custom_template",
+      "neutrality": "raw",
+      "horizon": "monthly",
+      "evidence_tier": "B",
+      "template": "engine"
+    },
+    "lifecycle": {
+      "status": "active",
+      "research_stage": "S0",
+      "mutation_count": 0,
+      "added_date": "2026-11-06",
       "origin": "add_factor_custom"
     }
   }

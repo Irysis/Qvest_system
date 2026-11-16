@@ -453,15 +453,17 @@
       "_note": "2026-11-10 신설. 파마-맥베스 통제 특성 월말 패널(log ME · B/M · OP · INV · 모멘텀 — 재무 = Factor_Date ≤ 월말)"
     },
     {
-      "path": ".cache/fundamental_xlsx.parquet",
-      "producer": "02_Infrastructure/data/parse_fundamental_xlsx.R",
+      "path": ".cache/fundamental_annual.parquet",
+      "producer": "02_Infrastructure/data/build_fundamental_caches.R (fundamental_produce_v2.R 경유 · 월간 [5a2/7])",
       "entry_fn": "(source)",
-      "schedule": "on_demand",
+      "schedule": "monthly",
       "date_col": null,
-      "max_lag_days": null,
-      "depends_on": [],
+      "max_lag_days": 35,
+      "depends_on": [
+        ".cache/fundamental_v2/fund_v2_quarterly.parquet"
+      ],
       "tier": 2,
-      "_note": "2026-07-17 orphan 등재. QuantiWise Fundamental xlsx 파싱(41 raw items) — 도훈 수동 refresh 의존(automation 보류, project-quantiwise-refresh-automation). SLA 미설정: 수동 소스라 stale 알림이 액션 불가 소음이 됨"
+      "_note": "2026-11-16 재무 연간 캐시(퀀티 단독 · 회계연도 · 파생지표 전부) — 옛 fundamental_xlsx.parquet 를 대신한다"
     },
     {
       "path": ".cache/ml_momentum_pred.parquet",

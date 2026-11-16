@@ -41,7 +41,7 @@
 suppressMessages(library(data.table))
 
 RF_BASE_CACHE_VERSION <- "rf_base_cache_v3"   # v3(2026-11-11 · 판 2 S1): 셀 경로가 기저 엔진에 측정 시작일을 넘긴다 — 주입 전(v2) 캐시가 적중하지 않게 판을 올린다
-RF_BASE_CACHE_AUX_FILES <- c("fundamental_merged.parquet", "fundamental_xlsx.parquet",
+RF_BASE_CACHE_AUX_FILES <- c("fundamental_quarterly.parquet", "fundamental_annual.parquet",   # 11-16 재무 캐시 두 개
                              "ecos_bond_rates.parquet", "investor_wide.parquet")
 RF_BASE_CACHE_AUX_DIRS  <- c("consensus")
 

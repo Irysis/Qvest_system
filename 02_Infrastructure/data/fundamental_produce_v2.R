@@ -2,10 +2,10 @@
 # fundamental_produce_v2.R — 재무 원천 v2 생산기(2026-11-09 · 도훈 결정 '퀀티 메인 · DART 서브' · '보충 끝나면 전체 재빌드')
 #
 #   build_fundamental_v2.py(퀀티 메인 · DART 정정 검사 · 실제 공시일)
-#   → build_fundamental_merged_v2.R(날짜 순서 계약 · 옛 Source 역할 표지)
+#   → build_fundamental_caches.R(분기 · 연간 캐시 · 파생지표 전부 · 날짜 순서 계약 — 11-16 · 옛 병합 표 · 분기 표 퇴역)
 #   → 후보 검사 → 지금 정본 사본(.cache/fundamental_backup/<시각>/) → 정본 교체:
-#       .cache/fundamental_merged.parquet  ← 병합 표
-#       .cache/fundamental_xlsx.parquet    ← 분기 표(XF 팩터 · xlsx_factor_calculator.R)
+#       .cache/fundamental_quarterly.parquet ← 분기 캐시(TTM)
+#       .cache/fundamental_annual.parquet    ← 연간 캐시
 #
 # 부르는 곳: build_fundamental_derived.R(06_Registry/fundamental_source.json::active == "v2" 일 때 위임 —
 #   월간 [5a2/7] · DART 보충 완료 단계). 직접 실행: Rscript fundamental_produce_v2.R [--candidate-only]
@@ -36,10 +36,11 @@ if (!nzchar(ROOT)) { .say("오류: 프로젝트 루트를 찾지 못했다"); qu
 DATA <- file.path(ROOT, "02_Infrastructure", "data")
 CACHE <- file.path(ROOT, ".cache")
 V2D <- file.path(CACHE, "fundamental_v2")
-CAND_M <- file.path(V2D, "candidate_fundamental_merged.parquet")
-CAND_X <- file.path(V2D, "candidate_fundamental_xlsx.parquet")
-CANON_M <- file.path(CACHE, "fundamental_merged.parquet")
-CANON_X <- file.path(CACHE, "fundamental_xlsx.parquet")
+# (2026-11-16 도훈 '펀더멘털 데이터 캐시는 분기파일, 연간파일 하나씩') 정본 = 재무 캐시 두 개 — 옛 병합 표 · 분기 표는 퇴역
+CAND_M <- file.path(V2D, "candidate_fundamental_quarterly.parquet")
+CAND_X <- file.path(V2D, "candidate_fundamental_annual.parquet")
+CANON_M <- file.path(CACHE, "fundamental_quarterly.parquet")
+CANON_X <- file.path(CACHE, "fundamental_annual.parquet")
 
 # ---- 0. 입력 ---------------------------------------------------------------------------------------
 need <- c(file.path(CACHE, "qw_fund_v2", paste0("FundV2_", c("BS", "IS", "CF", "META"), ".parquet")),
@@ -57,41 +58,39 @@ Sys.setenv(PYTHONUTF8 = "1")
 rc <- system2(PY, c("-X", "utf8", shQuote(file.path(DATA, "build_fundamental_v2.py")), "--root", shQuote(ROOT)))
 if (!identical(as.integer(rc), 0L)) { .say("오류: build_fundamental_v2.py rc=%s — 정본 그대로", rc); quit(save = "no", status = 1) }
 
-# ---- 2. 병합 표 · 분기 표 후보 ------------------------------------------------------------------------
+# ---- 2. 재무 캐시 후보(분기 · 연간 — build_fundamental_caches.R · 파생지표 전부) ---------------------------------
 RS <- file.path(R.home("bin"), if (.Platform$OS.type == "windows") "Rscript.exe" else "Rscript")
-.say("2/4 병합 표 · 분기 표 후보(build_fundamental_merged_v2.R)...")
-rc <- system2(RS, c("--no-save", shQuote(file.path(DATA, "build_fundamental_merged_v2.R")), "--root", shQuote(ROOT),
-                    "--out", shQuote(CAND_M), "--out-xlsx", shQuote(CAND_X)))
-if (!identical(as.integer(rc), 0L)) { .say("오류: build_fundamental_merged_v2.R rc=%s — 정본 그대로", rc); quit(save = "no", status = 1) }
+.say("2/4 분기 · 연간 캐시 후보(build_fundamental_caches.R)...")
+rc <- system2(RS, c("--no-save", shQuote(file.path(DATA, "build_fundamental_caches.R")), "--root", shQuote(ROOT),
+                    "--out-q", shQuote(CAND_M), "--out-a", shQuote(CAND_X)))
+if (!identical(as.integer(rc), 0L)) { .say("오류: build_fundamental_caches.R rc=%s — 정본 그대로", rc); quit(save = "no", status = 1) }
 
 # ---- 3. 후보 검사 ----------------------------------------------------------------------------------
 .fail <- character()
 # was_v2 = 지금 정본이 이미 v2 산출(전환 뒤 월간 재생성) → 행 수가 5% 넘게 줄면 멈춘다(입력 결손 의심).
 #   전환 직전(정본 = v1)은 v2 가 옛 표보다 커서 비교하지 않는다.
-.check <- function(path, cols, n_items, label, canon, was_v2) {
+.check <- function(path, label, canon) {
   if (!file.exists(path)) { .fail <<- c(.fail, sprintf("%s 후보 없음", label)); return(invisible(NULL)) }
-  d <- as.data.table(read_parquet(path))
-  if (!identical(names(d), cols)) .fail <<- c(.fail, sprintf("%s 열 %s", label, paste(names(d), collapse = ",")))
-  if (uniqueN(d$Item) != n_items) .fail <<- c(.fail, sprintf("%s 항목 %d(기대 %d)", label, uniqueN(d$Item), n_items))
+  d <- as.data.table(read_parquet(path, col_select = c("Ticker", "Item", "Period_Date", "Factor_Date")))
   if (uniqueN(d$Ticker) < 2000L) .fail <<- c(.fail, sprintf("%s 종목 %d(< 2000)", label, uniqueN(d$Ticker)))
+  if (uniqueN(d$Item) < 300L) .fail <<- c(.fail, sprintf("%s 항목 %d(< 300)", label, uniqueN(d$Item)))
   setorder(d, Ticker, Item, Period_Date)
   bad <- d[, .(v = Factor_Date <= shift(Factor_Date) & Ticker == shift(Ticker) & Item == shift(Item))][v == TRUE, .N]
   if (bad > 0L) .fail <<- c(.fail, sprintf("%s 날짜 순서 계약 위반 %d", label, bad))
   if (any(d$Factor_Date <= d$Period_Date)) .fail <<- c(.fail, sprintf("%s Factor_Date <= Period_Date", label))
-  if (was_v2 && file.exists(canon)) {
+  if (file.exists(canon)) {
     n_old <- nrow(read_parquet(canon, col_select = "Ticker"))
     if (nrow(d) < 0.95 * n_old)
       .fail <<- c(.fail, sprintf("%s 행 %s < 지금 정본 %s 의 95%%", label, format(nrow(d), big.mark = ","), format(n_old, big.mark = ",")))
   }
   .say("   %s 후보: 행 %s · 종목 %d · 항목 %d · 날짜 %s~%s", label, format(nrow(d), big.mark = ","), uniqueN(d$Ticker),
        uniqueN(d$Item), format(min(d$Factor_Date)), format(max(d$Factor_Date)))
-  invisible(d)
+  invisible(NULL)
 }
 .say("3/4 후보 검사...")
 WAS_V2 <- file.exists(file.path(CACHE, "fundamental_backup", "ACTIVE_V2"))
-.check(CAND_M, c("Ticker", "Period", "Period_Date", "Factor_Date", "Item", "Value", "Source", "Origin", "Freq"), 181L,
-       "병합 표", CANON_M, WAS_V2)
-.check(CAND_X, c("Ticker", "Period", "Item", "Value", "Period_Date", "Factor_Date"), 41L, "분기 표", CANON_X, WAS_V2)
+.check(CAND_M, "분기 캐시", CANON_M)
+.check(CAND_X, "연간 캐시", CANON_X)
 if (length(.fail)) { .say("오류: 후보 검사 실패 — 정본 그대로: %s", paste(.fail, collapse = " | ")); quit(save = "no", status = 1) }
 if (CAND_ONLY) { .say("후보만(--candidate-only) — 정본 그대로 · %.0fs", as.numeric(difftime(Sys.time(), t0, units = "secs"))); quit(save = "no", status = 0) }
 

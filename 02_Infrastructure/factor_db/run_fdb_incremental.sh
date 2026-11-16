@@ -21,9 +21,10 @@ cd "$INFRA" || { echo "cannot cd $INFRA"; exit 2; }
 [ -x "$RS" ] || { echo "Rscript not found: $RS"; exit 2; }
 export FDB_INCR_YM="$YM"
 echo "[incremental] FDB_INCR_YM=$YM @ $(TS)"
-for P in 6 7 8; do
+for P in 6 7 8 F; do   # F = 재무 팩터 새 정의(2026-11-16)
   echo "[incremental] ===== phase$P begin @ $(TS) ====="
-  "$RS" -e "source('factor_db/factor_db_daily_phase${P}.R')"
+  if [ "$P" = "F" ]; then PF="factor_db/factor_db_daily_phaseF_fundamental.R"; else PF="factor_db/factor_db_daily_phase${P}.R"; fi
+  "$RS" -e "source('$PF')"
   rc=$?
   if [ "$rc" -ne 0 ]; then echo "[incremental] !!! phase$P FAILED rc=$rc @ $(TS)"; exit "$rc"; fi
   echo "[incremental] ===== phase$P done rc=0 @ $(TS) ====="

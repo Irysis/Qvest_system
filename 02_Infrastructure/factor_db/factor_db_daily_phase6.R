@@ -106,7 +106,14 @@ if (file.exists(.macro_path_p6)) {
 # Ensure VIX column exists even if merge skipped (NA fallback for by=Ticker)
 if (!("VIX" %in% names(RW))) RW[, VIX := NA_real_]
 
-FUND <- as.data.table(read_parquet(file.path(CACHE_DIR, "fundamental_merged.parquet")))
+# (2026-11-16 도훈 재무 팩터 재정의) 옛 병합 재무 표(fundamental_merged.parquet)는 퇴역 — 재무 팩터는 단계 F
+#   (factor_db_daily_phaseF_fundamental.R · 새 분기 · 연간 캐시)가 덮어쓴다. 여기서는 옛 코드가 돌도록 가짜 종목 1개의
+#   빈 값 표만 둔다(실제 종목과 맞물리지 않아 옛 재무 열 = NA).
+.LEG_ITEMS <- c("TotalEquity","Revenue","NetIncome","OperatingProfit","TotalAssets","TotalLiab","CashAndEquiv","GrossProfit",
+  "OperatingCF","DepAmort","RandD","RetainedEarnings","CapitalStock","COGS","SGAExpense","PretaxIncome","CurrentAssets",
+  "CurrentLiab","AccountsRecv","Inventory","AccountsPay","TangibleAssets","IntangibleAssets","NonCurrentAssets",
+  "NonCurrentLiab","TotalDebt","ShortTermBorr","InvestCF","FinanceCF","Dividends","WorkingCapital","FCF2","InterestExp","InterestIncome")
+FUND <- CJ(Ticker = "__LEGACY_NONE__", Factor_Date = as.Date(c("1900-01-01", "1900-01-02")), Item = .LEG_ITEMS)[, Value := NA_real_]
 FUND[, Factor_Date := as.Date(Factor_Date)]
 cat(sprintf("  FUND: %s rows\n", format(nrow(FUND), big.mark=",")))
 

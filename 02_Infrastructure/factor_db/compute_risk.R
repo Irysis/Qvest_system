@@ -165,58 +165,16 @@ compute_risk <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
   # ==========================================================================
   # R17: Market Leverage = Total Debt / MarketCap (Bhandari 1988)
   # ==========================================================================
-  if (!is.null(FUND) && nrow(FUND) > 0L) {
-    fund <- copy(FUND)
-    if ("Factor_Date" %in% names(fund)) {
-      fund <- fund[Factor_Date <= sig_d]
-    } else if ("Date" %in% names(fund)) {
-      fund <- fund[Date <= sig_d]
-      setnames(fund, "Date", "Factor_Date")
-    }
-    is_long <- "Item" %in% names(fund)
-
-    snap <- RAWDATA[Date == sig_d & !is.na(Close) & Close > 0,
-                    .(Ticker, Close, Size)]
-    # Size IS market cap (compute_size.R:38); `Close * Size` was Close × MarketCap.
-    snap[, MarketCap := Size]
-    snap <- snap[MarketCap > 0]
-
-    if (is_long) {
-      items_lev <- c("ShortTermBorr", "LongTermBorr", "TotalAssets")
-      lev_dt <- fund[Item %in% items_lev]
-      if (nrow(lev_dt) > 0L) {
-        setorder(lev_dt, Ticker, Item, Factor_Date)
-        latest <- lev_dt[, .SD[.N], by = .(Ticker, Item)]
-        lev_wide <- dcast(latest, Ticker ~ Item, value.var = "Value")
-      } else {
-        lev_wide <- NULL
-      }
-    } else {
-      setorder(fund, Ticker, Factor_Date)
-      lev_wide <- fund[, .SD[.N], by = Ticker]
-    }
-
+  # (2026-11-16 재무 캐시 전환 · 도훈 '분기파일 · 연간파일') 부채 · 총자산 = 재무 분기 캐시(TTM 기준 최신 · fund_access.R::fa_latest)
+  #   TotalDebt = 차입금 + 사채(단기 + 장기 · build_fundamental_caches.R 3-1) — 두 줄 다 없으면 NA. FUND 인자는 쓰지 않는다.
+  if (exists("fa_latest")) {
+    snap <- RAWDATA[Date == sig_d & !is.na(Close) & Close > 0 & !is.na(Size) & Size > 0, .(Ticker, MarketCap = Size)]
+    lev_wide <- tryCatch(fa_latest(sig_d, "q", c("TotalDebt", "TotalAssets")), error = function(e) NULL)
     if (!is.null(lev_wide) && nrow(lev_wide) > 0L) {
-      .sc_lw <- function(col) if (col %in% names(lev_wide)) lev_wide[[col]] else rep(NA_real_, nrow(lev_wide))
-      # 2026-11-10: both debt lines absent = unknown (NA), not a debt-free firm — the old zero-fill gave R17/R18 = 0 to every
-      #   ticker without a debt line. One line present = the other is 0 (the vendor omits nil non-current lines — 11-10 measured:
-      #   DLTT = 0 never appears). ShortTermBorr / LongTermBorr are DLC / DLTT incl. bonds since the same day (build_fundamental_merged_v2.R
-      #   DEBT_TO), and since 2026-11-10(2) the merged table writes the missing line's 0 row itself (period-complete debt lines) — the
-      #   latest row of each line now comes from the same period (before, a line that stopped being reported kept its last old value).
-      std <- .sc_lw("ShortTermBorr"); ltd <- .sc_lw("LongTermBorr")
-      td  <- fifelse(is.na(std) & is.na(ltd), NA_real_, fifelse(is.na(std), 0, std) + fifelse(is.na(ltd), 0, ltd))
-      lev_wide[, TotalDebt := td]
-
-      lev_m <- merge(lev_wide[, .(Ticker, TotalDebt)], snap[, .(Ticker, MarketCap)],
-                     by = "Ticker", all = FALSE)
-      if (nrow(lev_m) > 0L) {
-        lev_m[, R17 := fifelse(MarketCap > 0, -TotalDebt / MarketCap, NA_real_)]
-        results[["R17"]] <- lev_m[!is.na(R17), .(Ticker, Factor_Name = "R17_Market_Leverage", Raw_Value = R17)]
-      }
-
-      # ---- R18: Book Leverage = TotalDebt / TotalAssets ----
-      ta_vec <- .sc_lw("TotalAssets")
-      lev_wide[, R18 := fifelse(!is.na(ta_vec) & ta_vec > 0, -td / ta_vec, NA_real_)]
+      lev_m <- merge(lev_wide[, .(Ticker, TotalDebt)], snap, by = "Ticker")
+      lev_m[, R17 := fifelse(MarketCap > 0 & is.finite(TotalDebt), -TotalDebt / MarketCap, NA_real_)]
+      results[["R17"]] <- lev_m[!is.na(R17), .(Ticker, Factor_Name = "R17_Market_Leverage", Raw_Value = R17)]
+      lev_wide[, R18 := fifelse(is.finite(TotalAssets) & TotalAssets > 0 & is.finite(TotalDebt), -TotalDebt / TotalAssets, NA_real_)]
       results[["R18"]] <- lev_wide[!is.na(R18), .(Ticker, Factor_Name = "R18_Book_Leverage", Raw_Value = R18)]
     }
   }

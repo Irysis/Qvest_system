@@ -111,7 +111,7 @@ say "⑤ rc=$r"; [ "$r" = "0" ] || fail ff "build_kr_factor_returns.R rc=$r"
 import json, os, datetime
 now = datetime.datetime.now().astimezone().isoformat(timespec="seconds")
 p = "06_Registry/factor_db_vintage.json"; d = json.load(open(p, encoding="utf-8"))
-ids = ("FUNDAMENTAL-AVAIL-LAG-1M-20261116", "FUNDAMENTAL-AVAIL-DEADLINE45-20261116", "RAWDATA-PRELISTING-EXCLUDE-20261116", "FUNDAMENTAL-QW-ONLY-20261116")
+ids = ("FUNDAMENTAL-AVAIL-LAG-1M-20261116", "FUNDAMENTAL-AVAIL-DEADLINE45-20261116", "RAWDATA-PRELISTING-EXCLUDE-20261116", "FUNDAMENTAL-QW-ONLY-20261116", "FUNDAMENTAL-CACHES-REDEFINE-20261116")
 for x in d["entries"]:
     if x.get("id") in ids and not str(x.get("completed_at") or "").strip():
         x["completed_at"] = now; print("vintage completed", x["id"])

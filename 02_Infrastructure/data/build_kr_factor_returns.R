@@ -533,10 +533,16 @@ krf_load_inputs <- function(root, cfg) {
   if (length(miss)) stop("[krf] 재무 표 열 없음: ", paste(miss, collapse = ","), " — 정렬 원인 진단을 가를 수 없다(중단)")
   FUND <- as.data.table(open_dataset(fp) |> dplyr::filter(Item %in% items) |>
                           dplyr::select(dplyr::all_of(fcols)) |> dplyr::collect())
-  # v1.1 정정 의심 연도 DART 당시 기록 — 설정 · 세 파일 가운데 하나라도 없으면 빌드하지 않는다(fail-closed · 옛 요인 파일 유지)
+  # (2026-11-16 도훈 FUNDAMENTAL-QW-ONLY-NO-DART-20261116 = B) 재무 원천 = 퀀티 단독 — 정정 의심 연도 DART 당시 기록(v1.1)은 없앴다.
+  #   설정 fundamentals.restated_record = null 이면 정정 의심 기록 = 0행(v2 1단계 표에 restated 표지 자체가 없다 · Check = qw_only).
   rr <- cfg$fundamentals$restated_record
+  if (is.null(rr)) {
+    RR <- list(RS = data.table(Ticker = character(), fy = integer(), BE_r = numeric(), TA_r = numeric(), OPN_r = numeric(),
+                               R_d = as.Date(character())), diag = list(rule = "quantiwise_only"))
+    rp <- NULL
+  } else {
   rr_keys <- c("check_table", "dart_annual", "dart_raw")
-  if (is.null(rr) || length(setdiff(rr_keys, names(rr))))
+  if (length(setdiff(rr_keys, names(rr))))
     stop("[krf] 설정 fundamentals.restated_record 의 ", paste(setdiff(rr_keys, names(rr)), collapse = ","), " 없음 — v1.0 규칙으로 돌아가지 않는다")
   rp <- vapply(rr_keys, function(k) file.path(root, rr[[k]]), character(1))
   if (any(!file.exists(rp))) stop("[krf] 정정 의심 연도 DART 기록 입력 없음: ", paste(rp[!file.exists(rp)], collapse = " | "),
@@ -551,14 +557,16 @@ krf_load_inputs <- function(root, cfg) {
                           dplyr::select(dplyr::all_of(c("Ticker", "bsns_year", "rcept_no", "fs_div", "account_id", "thstrm_amount"))) |>
                           dplyr::collect())
   RR <- krf_restated_record(REST, CK, FD, RAWB)
+  }
   bp <- file.path(root, cfg$rf$bond_path)
   RFY <- as.data.table(read_parquet(bp))[Series == cfg$rf$series, .(Date = as.Date(Date), y = as.numeric(Value))]
   if (!nrow(RFY)) stop("[krf] RF 계열 없음: ", cfg$rf$series)
   fi <- function(p) { x <- file.info(p); list(path = .krf_rel(p, root), size = unname(x$size), mtime = format(x$mtime, "%Y-%m-%dT%H:%M:%S")) }
   list(RAW = RAW, FUND = FUND, RFY = RFY, epoch = ep, RS = RR$RS, rs_diag = RR$diag,
        inputs = list(rawdata = fi(file.path(root, ".cache", "rawdata.parquet")), fundamentals = fi(fp), rf = fi(bp),
-                     restated_check = fi(rp[["check_table"]]), restated_dart_annual = fi(rp[["dart_annual"]]),
-                     restated_dart_raw = fi(rp[["dart_raw"]]),
+                     restated_check = if (is.null(rp)) NULL else fi(rp[["check_table"]]),
+                     restated_dart_annual = if (is.null(rp)) NULL else fi(rp[["dart_annual"]]),
+                     restated_dart_raw = if (is.null(rp)) NULL else fi(rp[["dart_raw"]]),
                      fundamental_source_active = src$active))
 }
 

@@ -803,14 +803,14 @@ if dr_want dart; then dr_stage_begin dart   # ── 단계 dart(= 재무 정본
 FUND_MONTHLY_STAMP="$BASE/.cache/.fund_monthly_last_run_ym"
 _FUND_YM=$(date +%Y%m)
 if [ "$(tr -d '\r\n ' < "$FUND_MONTHLY_STAMP" 2>/dev/null)" != "$_FUND_YM" ]; then
-  echo "[5a2/7] fundamental_merged monthly rebuild(퀀티 단독)..."
+  echo "[5a2/7] 재무 캐시(분기 · 연간) monthly rebuild(퀀티 단독)..."
   if "$RSCRIPT" --no-save "$INFRA/data/build_fundamental_derived.R"; then
     echo "$_FUND_YM" > "$FUND_MONTHLY_STAMP"
   else
     echo "  [warn] build_fundamental_derived failed (fail-soft — 기존 정본 유지 · 스탬프 보류 → 내일 재시도)"
   fi
 else
-  echo "[5a2/7] fundamental_merged skipped (이번 달 $_FUND_YM 이미 실행)"
+  echo "[5a2/7] 재무 캐시 skipped (이번 달 $_FUND_YM 이미 실행)"
 fi
 dr_stage_end; fi   # ── 단계 dart 끝 ──
 
