@@ -555,6 +555,21 @@ fi
 
 # ── 측정 + 검증 호출 — 한 곳 (정상 경로와 아래 감사 미실행 재시도가 같은 호출을 쓴다) ──
 rp_verify(){
+  # ★측정 보류(11-16 도훈 '데이터가 부정확하니까 쓰지말자') — 설정 replication_lane.measure_hold = true 면 검증기(감사 + 측정)를 띄우지 않고
+  #   요청을 pending + failure=measure_hold_deferred 로 되돌린다(아래 리프레시 배리어 연기와 같은 verify-only 경로 · 엔진 보존 · auto_retries 무소모).
+  #   구현(에이전트 · 사전검사)까지는 돈다. 풀기 = 키를 false 로(다음 틱이 검증기만 재실행). rc 75.
+  if [ "$("$PY" -c "
+import io,json
+try: print(bool((json.loads(io.open(r'$CFG','rb').read().decode('utf-8')).get('replication_lane') or {}).get('measure_hold')))
+except Exception: print('False')" 2>/dev/null | tr -d '\r')" = "True" ]; then
+    jl verify_deferred_measure_hold "paper=$P_KEY" "note=측정 보류 설정 — 검증기 없이 pending 복원(엔진 보존 · 풀면 verify-only)"
+    "$PY" -c "
+import io,json,time
+d=json.loads(io.open(r'$REQ','rb').read().decode('utf-8'))
+d['status']='pending'; d['failure']='measure_hold_deferred'; d['measure_hold_at']=time.strftime('%Y-%m-%dT%H:%M:%S%z')
+io.open(r'$REQ','wb').write(json.dumps(d,ensure_ascii=False,indent=1).encode('utf-8'))"
+    return 75
+  fi
   # ★리프레시 배리어 — 검증기(RAWDATA 첫 읽기) 직전 (2026-09-24). 에이전트가 도는 30분 사이 daily_refresh 가 잠금을 잡을 수 있다.
   #   held 면 RB_VERIFY_WAIT_S(기본 600초 — 셀 대기와 같은 근거 · refresh_barrier.R 머리) 동안 기다리고, 그래도 held 면
   #   **측정 없이** 요청을 pending + failure=refresh_lock_deferred 로 되돌린다(auto_retries 무소모 · 엔진 보존 →
@@ -670,7 +685,7 @@ rp_gpu_gate_pre_verify(){
   rp_slot_handoff "engine_gpu_dependency_pre_verify:${cl#* }" 1
 }
 # ★gpu_handoff(2026-10-20 · WP3) — CPU 슬롯이 측정 직전 GPU 엔진을 발견해 넘긴 요청. 엔진은 그대로(사전검사 통과분) → GPU 슬롯은 검증기만.
-if { [ "$PREV_FAIL" = "audit_not_run" ] || [ "$PREV_FAIL" = "refresh_lock_deferred" ] || [ "$PREV_FAIL" = "memory_gate_deferred" ] || [ "$PREV_FAIL" = "audit_ruled" ] || [ "$PREV_FAIL" = "session_reverify" ] || [ "$PREV_FAIL" = "gpu_handoff" ] || [ "$PREV_FAIL" = "verify_interrupted" ] || [ "$HAS_RULING" = "1" ]; } && [ -s "$WDIR/engine.R" ]; then
+if { [ "$PREV_FAIL" = "audit_not_run" ] || [ "$PREV_FAIL" = "refresh_lock_deferred" ] || [ "$PREV_FAIL" = "memory_gate_deferred" ] || [ "$PREV_FAIL" = "measure_hold_deferred" ] || [ "$PREV_FAIL" = "audit_ruled" ] || [ "$PREV_FAIL" = "session_reverify" ] || [ "$PREV_FAIL" = "gpu_handoff" ] || [ "$PREV_FAIL" = "verify_interrupted" ] || [ "$HAS_RULING" = "1" ]; } && [ -s "$WDIR/engine.R" ]; then
   rp_gpu_gate_pre_verify
   # ★refresh_lock_deferred(2026-09-24) — 검증기 직전 리프레시 배리어로 측정 없이 연기된 요청. 엔진은 멀쩡하다 → 검증기만.
   # ★audit_ruled(2026-10-14) — 감사 상충을 세션이 판정해 suspect 수용 · 진행으로 정한 요청(요청의 audit_ruling). 엔진은 그대로 →
@@ -679,6 +694,8 @@ if { [ "$PREV_FAIL" = "audit_not_run" ] || [ "$PREV_FAIL" = "refresh_lock_deferr
     jl verify_only_retry "paper=$P_KEY" "note=리프레시 배리어 연기분 재시도 — 에이전트 없이 검증기(측정+감사)만 재실행(엔진 보존)"
   elif [ "$PREV_FAIL" = "memory_gate_deferred" ]; then
     jl verify_only_retry "paper=$P_KEY" "note=메모리 관문 연기분 재시도 — 에이전트 없이 검증기(측정+감사)만 재실행(엔진 보존 · 11-15 MEMORY-GATE-LANE-TICKS-20261115)"
+  elif [ "$PREV_FAIL" = "measure_hold_deferred" ]; then
+    jl verify_only_retry "paper=$P_KEY" "note=측정 보류 연기분 — 에이전트 없이 검증기만(엔진 보존 · 보류가 켜져 있으면 다시 연기)"
   elif [ "$PREV_FAIL" = "audit_ruled" ] || [ "$HAS_RULING" = "1" ]; then
     jl verify_only_retry "paper=$P_KEY" "note=감사 상충 세션 판정 반영 — 에이전트 · 감사 재스폰 없이 검증기만(엔진 보존)"
   elif [ "$PREV_FAIL" = "session_reverify" ]; then

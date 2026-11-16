@@ -1,6 +1,6 @@
 {
  "schema": "q_judgment_ledger_v1",
- "updated_at": "2026-11-16T09:37:33+0900",
+ "updated_at": "2026-11-16T10:23:45+0900",
  "judgments": [
   {
    "id": "J-20261016-001",
@@ -3369,6 +3369,29 @@
    "status": "open",
    "reviews": [],
    "supersedes": "J-20261116-003",
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261116-013",
+   "at": "2026-11-16T10:23:45+0900",
+   "op": "OP-20261116-L1-REMEASURE",
+   "kind": "stop_continue",
+   "summary": "[11-16 10:23] 도훈 '데이터가 부정확하니까 쓰지말자' — 레인 gpu1 의 2611.16540 측정(07:19~ · 워커 6)을 멈춤 · 상장 전 이력 자르기 · 팩터 DB 재빌드 전 데이터로는 측정하지 않는다 · 2107.11371 충실구현은 구현까지만 · 측정은 데이터 수리 뒤",
+   "rationale": "판 표식 범위 전체 미완 + 상장 전 행 미삭제 — 측정 결과는 어차피 쓸 수 없다(도훈 결정). 레인은 replication_lane.enabled=false 라 죽은 claim 을 회수하지 않는다 · 재가동 때 슬롯이 같은 논문을 다시 잡는다(엔진 · 감사 산출 보존).",
+   "framework_refs": [
+    "lean-loop ⑦ 판 표식 · pit.md C6"
+   ],
+   "evidence": [
+    "rf_replication_slots status gpu1 claim dead · 체크포인트 09:30"
+   ],
+   "alternatives": [
+    "엔진 시운전으로 계속 — 도훈 거절"
+   ],
+   "expectation": "재빌드 뒤 레인 재가동 때 2611.16540 재측정",
+   "confidence": 0.9,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
    "superseded_by": null
   }
  ],
