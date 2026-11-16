@@ -483,6 +483,28 @@ dr_stage_end; fi   # ── 단계 qw 끝 ──
 # (11-10) [1z] 는 universe 단계 머리에 둔다 — 08_Tests/data/test_rawdata_size_guard.R 가 '# ── [1z]' ~ 'echo "[3/7]' 를 잘라 실행하므로
 #   그 구간에 단계 경계(if/fi)가 끼면 안 된다. Size 결측 실패는 universe 단계 실패로 계상된다(재실행 = universe 와 하류).
 if dr_want universe; then dr_stage_begin universe   # ── 단계 universe ──
+# ── [1y] 상장 전 행 삭제 (2026-11-16 · 도훈 결정 RAWDATA-PRELISTING-EXCLUDE-20261116 · pit.md C6) ─────────
+#   도훈 '상장전 이력까지 백테스팅에 활용하지마 … 상장된 시점 이후 퀀티와이즈에 찍히는 가격데이터부터 · 없는 시점은 유니버스에 제외' —
+#   종목마다 퀀티 시장구분(R100100 · [1pre-ext] 외부 책 ListingMarket)이 처음 유가증권 · 코스닥이 된 날보다 앞선 RAWDATA 행을 지운다
+#   (data/rawdata_listing_cut.py). 값은 바꾸지 않는다 — 상장 첫날 Ret 도 저장값 그대로(도훈 11-16 '진짜 수익일 수 있다').
+#   [0b'] 적재기가 창 행을 다시 붙이므로 매일 돈다(멱등 — 지울 행이 없으면 쓰지 않는다 · 지운 행은 .cache/listing_cut/ 에 남긴다).
+#   universe 단계 머리라 [1z] Size · [3] 유니버스 · [3b] BM_Ret · [6a] 팩터 빌드가 지운 뒤의 RAWDATA 를 본다. 리프레시 잠금 아래(QVEST_LISTING_CUT_LOCKED=1).
+#   ★[1z] 시험 절단 구간('# ── [1z]' ~ 'echo "[3/7]' · test_rawdata_size_guard.R) 밖에 둔다.
+#   rc 0 = 정상 · 2 = 입력 없음(시장구분 파일 · 미변경) · 3 = 시장구분 파일에 KS · KQ 코드 없음(미변경) · 그 밖 = 오류. 끄기: QVEST_DR_LISTING_CUT=0
+if [ "${QVEST_DR_LISTING_CUT:-1}" != "1" ]; then
+  echo "!! [1y] 상장 전 행 삭제 꺼짐(QVEST_DR_LISTING_CUT=${QVEST_DR_LISTING_CUT}) — 상장 전 행이 RAWDATA 에 남을 수 있다"
+elif [ -z "$QVENV_PY" ]; then
+  echo "!! [1y] 상장 전 행 삭제 — python 없음(미측정)"; DR_FAILED+=("listing_cut:no_python")
+else
+  _lc_out="$(QVEST_LISTING_CUT_LOCKED=1 "$QVENV_PY" -X utf8 "$INFRA/data/rawdata_listing_cut.py" --root "$BASE" --apply --label nightly 2>&1)"; _lc_rc=$?
+  printf '%s\n' "$_lc_out"
+  if [ "$_lc_rc" -eq 0 ]; then
+    echo "[1y] 상장 전 행 삭제 — $(printf '%s\n' "$_lc_out" | grep '^LISTING_CUT ' | tail -1)"
+  else
+    echo "!! [1y] ★상장 전 행 삭제 rc=$_lc_rc — RAWDATA 미변경(상장 전 행이 남았을 수 있다 · .cache/listing_cut/)"
+    DR_FAILED+=("listing_cut(rc=$_lc_rc)")
+  fi
+fi
 # ── [1z] RAWDATA 최근일 Size 채움률 경보 (2026-09-23 W-02 · 도훈 승인 처방 §3) ─────────
 #   사고: Naver 시총 스냅샷이 09-12 부터 매 실행 디코드 예외로 죽어 RAWDATA.Size 가
 #   09-10~22 100% 결측이었는데, 이 스텝은 "RAWDATA 전진" 만 봐서 매일 성공으로 끝났다.

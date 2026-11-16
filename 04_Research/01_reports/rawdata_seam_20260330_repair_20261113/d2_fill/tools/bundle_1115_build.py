@@ -1,7 +1,8 @@
 """적용 대기 묶음(11-15) 명세 만들기 — 등록부 · RAWDATA 쓰기 없음. 적용할 때 다시 돌려 값을 새로 잰다.
 
 묶음 = 값이 바뀌는 3행(A012470 1998-07-13 · A008080 2012-01-12 · 2012-11-30 — 시총 기준 · 주식 수 불변) +
-       고정 5행((가) 유가증권 이전상장 첫날 — 저장값 비트 그대로 · 규칙이 바뀌어도 시총 기준으로 채워지지 않게).
+       고정 5행((가) 유가증권 이전상장 첫날 — 저장값 비트 그대로 · 규칙이 바뀌어도 시총 기준으로 채워지지 않게)
+       → 11-16 고정 3행: 외감 → 유가증권 2행(A016560 · A027840)은 상장 전 행 삭제(RAWDATA-PRELISTING-EXCLUDE-20261116)로 첫 행이 돼 값 판정 없이 뺀다(SKIP_PINS).
 (나) 2행(A003580 · A013520)은 등록부에 넣지 않는다(현행 유지 — 단절 전 체결 0 이라 확인값이 아니다).
 도훈 결정 RAWDATA-7ROWS-CORPACTION-REQUERY-20261115 — 적용은 한 묶음(판 원장 1줄).
 
@@ -37,10 +38,15 @@ CHANGE = [
      "재현 = d2_fill/tools/list9_check.py. 측정 축 밖(동전주)."),
 ]
 
+# 11-16 RAWDATA-PRELISTING-EXCLUDE-20261116: 상장 전(외감) 행이 지워져 그 종목 첫 행이 된 고정 2행 — 1계층 세션 지시대로 값 판정 없이 뺀다
+#   (첫 행은 앞 행이 없어 row_pair 가 멈춘다 · 저장값은 그대로 남는다 — 상장 첫날 Ret = 저장값).
+SKIP_PINS = {"A016560": "외감 → 유가증권", "A027840": "외감 → 유가증권"}
 rj = list(csv.DictReader(open(f"{SP}/ca7_rejudge_rows.csv", encoding="utf-8")))
-pins = [r for r in rj if r["group"] == "가"]
+ga = [r for r in rj if r["group"] == "가"]
+assert len(ga) == 5 and all(r["verdict"].startswith("확정") for r in ga), "ca7_rejudge 결과가 (가) 확정 5행이 아니다 — 다시 판정할 것"
+pins = [r for r in ga if r["code"] not in SKIP_PINS]
+skipped = [r for r in ga if r["code"] in SKIP_PINS]
 keep = [r for r in rj if r["group"] != "가"]
-assert len(pins) == 5 and all(r["verdict"].startswith("확정") for r in pins), "ca7_rejudge 결과가 (가) 확정 5행이 아니다 — 다시 판정할 것"
 
 keys = [(d, c) for d, c, *_ in CHANGE] + [(r["date"], r["code"]) for r in pins]
 t = pq.read_table(RAW, columns=["Date", "Ticker", "Size", "Ret"], filters=[("Ticker", "in", sorted({c for _, c in keys}))]).to_pandas()
@@ -86,30 +92,30 @@ for r in pins:
 spec = dict(
     schema="ret_fill_bundle_pending_v1", decision=[DEC, "RAWDATA-INTERNAL-BREAK-FILL-D2D3-20261114"], status="pending", built_at=now,
     rerun_before_apply="적용 직전에 이 스크립트를 다시 돌려 값을 새로 잰다(적용 전 저장값 단정이 멈춤 장치)",
-    apply_when=("다음 범위 all 팩터 DB 수리에 얹는다 — 11-15 확정(오케스트레이터 회신 · 도훈 '지금 적용' 미선택). 지금 따로 적용하면 판 원장 범위에 달 구분이 없어 "
-                "완료 전 측정이 모두 낡음이 된다. 종가 수리는 없어졌으므로(QW-FILE-IS-REFERENCE-20261115) 싣는 수리는 다른 사유의 범위 all 수리다(C6 수리가 RAWDATA 를 바꾸면 그것도)."),
+    apply_when=("범위 all 수리에 싣는다 — 11-15 기본안 · 1계층 세션 요청 11-16(RAWDATA-PRELISTING-EXCLUDE-20261116). "
+                "상장 전 행 삭제(11-16 10:39 · qw_login_chain)로 첫 행이 된 외감 → 유가증권 2행은 값 판정 없이 뺐다(SKIP_PINS · not_registered)."),
     cautions=[
-        "C6(RAWDATA-PRELISTING-C6-20261115 · 도훈 결정 대기)와 맞물린다: 고정 2행(A016560 1996-11-19 · A027840 1997-11-25 — 외감 → 유가증권)과 기존 등록부 13행"
-        "(코넥스 → 코스닥 8 · 장외 → 코스닥 5)은 상장 전 이력 바로 다음 첫날이다. C6 를 RAWDATA 상장 전 행 삭제로 풀면 이 행들이 종목의 첫 행이 되고, "
-        "감사기 등록부 강제(rawdata_seam_audit.R registry_fix — 저장값이 NA 여도 등록부 값을 쓴다)가 상장 첫날에 −52 ~ +11% 가짜 수익을 써 넣는다"
-        "(경보 없음 · 로그 '[SEAM_FILL] 수동 등록부 강제 n행'뿐) → 그 수리에서는 이 15행을 등록부에서 빼고 고정 2행은 싣지 않는다. "
-        "유니버스 거르기(RAWDATA 그대로)로 풀면 바꿀 것 없음. 이 스크립트의 row_pair 는 묶음 8행이 첫 행이면 멈추지만 등록부 13행은 검사 밖이다 "
-        "(11-15 점검 = 등록부 14 + 고정 5 = 19행 모두 앞 이력 94 ~ 2,587행 · 첫 행 0).",
+        "11-16 도훈 정정('상장 첫날에는 가격변동폭제한이 커져서 가짜수익이 아니라 진짜 수익일 수 있다' · '자꾸 네가 스스로 새롭게 검증하려고 하지마. "
+        "퀀티와이즈 데이터가 무조건 맞는거야'): 상장 첫날 Ret 은 저장값 그대로다 — 상장 전 행을 지워 첫 행이 돼도 NA 로 바꾸지 않는다. "
+        "기존 등록부 14행은 그대로 둔다(첫 행이 돼도 등록부 값 = 저장값 → 등록부 강제 0). 11-15 의 'C6 수리 때 15행을 빼라'는 주의는 이 정정으로 거뒀다.",
     ],
     procedure=[
-        "① 등록부 06_Registry/ret_fill_registry.json entries 끝에 entries_change 3 + entries_pin 5 추가(ret_before 열은 빼고 · 다른 바이트 보존)",
+        "① 등록부 06_Registry/ret_fill_registry.json entries 끝에 entries_change 3 + entries_pin 3 추가(ret_before 열은 빼고 · 다른 바이트 보존)",
         "② writer 잠금 아래 seam_repair_locked.sh --apply — 23:30 전 또는 밤 로그 '[lock] 데이터 갱신 완료' 뒤 · 07:10 아침 체인과 겹치지 않게",
-        "③ 적용 뒤 대조 = Ret 3행만 바뀜(고정 5행은 등록부 강제 0 · 비트 동일) · 전 열 대조(d2b_diff.R)",
-        "④ 파생 = FF 요인 재빌드 · 팩터 DB Ret 모듈 부분 재계산(명세에 xlsx_fund 포함 — 빠지면 밸류 · 성장 XF 채움 행 소실) · IC · 결합용 뷰 · 이번 달",
-        "⑤ 판 원장 06_Registry/factor_db_vintage.json 1줄(진행 중 = JSON null · 끝나면 completed_at) · 1계층 세션 통지(τ_D 규칙 — IS 판정 · 칸 수 · 경로만)",
+        "③ 적용 뒤 = seam_repair 출력의 등록부 강제 행 수(값 변경 3)만 적는다(11-16 도훈 '새롭게 검증하려고 하지마' — 대조 단계 없음)",
+        "④ 파생 = 1계층 세션의 팩터 DB 전체 재빌드(월간 · 일간 · IC → 결합용 뷰 --full → FF — 전체라 xlsx_fund 채움 포함)가 대신한다(11-16 요청)",
+        "⑤ 판 원장 06_Registry/factor_db_vintage.json 1줄 RAWDATA-PRELISTING-EXCLUDE-20261116(범위 all · 진행 중 = JSON null · 완료 = 그 재빌드) · 1계층 세션 통지(지운 행 수 · 종목 수)",
     ],
     entries_change=entries_change, entries_pin=entries_pin,
     not_registered=[dict(Date=r["date"], Ticker=r["code"], Ret_stored=float(r["stored"]), verdict=r["verdict"],
                          reason="이미 발행된 주식의 상장(발행주식수 그대로) + 배당락 — 빠진 조정 없음. 단절 전 체결 0(호가만)이라 체결 기준 확인값이 아니어서 등록부에 넣지 않는다(현행 유지).")
-                    for r in keep],
+                    for r in keep]
+                   + [dict(Date=r["date"], Ticker=r["code"], Ret_stored=float(r["stored"]), verdict=r["verdict"],
+                           reason=f"{SKIP_PINS[r['code']]} — 11-16 상장 전 행 삭제로 종목 첫 행이 됐다 · 1계층 세션 지시대로 값 판정 없이 뺀다(저장값은 그대로 남는다).")
+                      for r in skipped],
 )
 OUT.write_text(json.dumps(spec, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
-print(f"{OUT} · 값 변경 {len(entries_change)} · 고정 {len(entries_pin)} · 등록 안 함 {len(keep)}")
+print(f"{OUT} · 값 변경 {len(entries_change)} · 고정 {len(entries_pin)} · 등록 안 함 {len(keep) + len(skipped)}")
 for e in entries_change:
     print(f"  변경 {e['Date']} {e['Ticker']} {e['ret_before']!r} → {e['Ret']!r}")
 for e in entries_pin:
