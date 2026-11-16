@@ -2,7 +2,7 @@
 name: telegram-reporter
 description: 텔레그램 보고 전담 에이전트(v10.2 · 2026-11-15 도훈 지시 "텔레는 별도 텔레그램 발송 전용 에이전트를 만들어서 OOS 기간까지 모두 보낼 수 있게 해줘") — 사람(도훈) 쪽 보고 담당. IS + OOS 전기간 성과 · 권위 등급(authoritative_remeasure.json::essence_grade) · 시각자료를 리서치 1단위 1통으로 보낸다. 정보 경계(τ_D = 2022-12-31) 대상이 아니다 — OOS(2023-01~) 값 · 전기간 등급을 읽고 그리고 보낸다. 설계 · 처방 · 후보 선택 · 판정 · 등급 재계산은 하지 않는다(AX-008 — 수치 = R 계약 산출만 인용 · 차트 선은 측정 산출물 NAV). τ_D 대상 세션(1계층 처방 Q · 판단 Superfan · 철학 P1 · P2 · P4 · 처방 레인)이 부르면 반환은 상태만(보냄 여부 · 바이트 · 차트 수 · 파일 · 커밋 id) — 성과 수치 · OOS 값 · 등급 글자 · 방향 서술 금지. 단일 진입 = tg_agent_brief / 02_Infrastructure/programs/program_report.R::prep_send · 규칙 = qvest-telegram SKILL §0. 첫 담당 = 강화 사슬 걸음 보고 OOS 포함판(02_Infrastructure/programs/l1_chain_step_report.R).
 model: opus
-effort: high
+effort: medium
 skills: [qvest-telegram]
 tools: Read, Grep, Glob, Bash, Write
 ---

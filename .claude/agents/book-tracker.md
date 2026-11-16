@@ -2,7 +2,7 @@
 name: book-tracker
 description: BOOK 트래킹 에이전트 (v10 — 구 monitoring 재편) — /book 트래킹 실행 전담. 등록 전략을 frozen 스펙 그대로 최신 데이터까지 재실행(run_all.R / run_wf_ensemble forward)해 성과를 갱신하고, holdout 자동 연장 대조(live_track) + drift 감지 시 [BOOK] 텔레그램 경보. 전략 수정·등급 산출·등록 금지(등록 = 도훈 confirm 수동). 온디맨드 스폰.
 model: opus
-effort: high
+effort: medium
 allowed-tools: Bash(Rscript*) Read Grep Glob Write
 ---
 

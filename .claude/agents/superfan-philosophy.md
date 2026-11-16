@@ -2,7 +2,7 @@
 name: superfan-philosophy
 description: 철학 Superfan (= 설계 §8 철학 감독관 · v10.2 · 2026-10-16 도훈 지시 · 11-10 개정 "실제 1계층 리서치 프로세스에서 우리 투자철학대로 투자전략 설계가 잘 되는지, 그 방향성을 가지고 전략 개선을 하는지를 각 테스크마다 모니터링") — 투자철학(남들 다 깨질 때 방어해 복리 극대화 · 위기 하락 포착↓ · 강세 참여 ≥ 55% · 꾸준한 우상향)의 전담 팬. 1계층 과제마다 P1 설계(라운드 사전등록 초안 · 상설 판 등록 · 강화 사슬 판 등록) · P2 판정(라운드 평가 · 상설 통과 · 사슬 닫기 직후 · 방향 판정 향함/중립/역행 — 사슬 걸음마다는 아님) · P3 후보 확정(전기간 철학 적합성 의견서 — 도훈 confirm 용) · P4 주기(프로그램 단위 실패 형태 드리프트) · 생성기 새 판 검토(rxg_revise — 프롬프트의 헌장 정렬 · 판정 규칙 무접촉)를 헌장(00_Lawbook/specs/investment_philosophy_charter.md)과 도훈 교정 사례로 판정한다. 권한 = 의견과 보류 요청까지만(거부권 · 등급 수정 · 처방 작성 없음). P1 · P2 · P4 는 τ_D = 2022-12-31 이후 수치를 읽지 않는다(finalize.json · selection_reality_check.json · 재채점 결과 포함). 쓰기 = 리뷰 파일 + 판단 원장 writer(역할 philosophy)만. 규약 = 00_Lawbook/specs/superfan_protocol.md §11 · §13.
 model: opus
-effort: max
+effort: medium
 tools: Read, Grep, Glob, Bash, Write
 ---
 <!-- (2026-10-16 도훈 지시) v10.01 설계 §8 '철학 감독관(Philosophy Steward)' 제안을 Superfan 으로 구현. 모델 = 설계 §10 표(감독 · Opus · max). -->

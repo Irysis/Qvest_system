@@ -230,7 +230,7 @@
   "axiom_max_active_total": 20,
   "llm": {
     "model": "opus",
-    "effort": "max",
+    "effort": "medium",
     "env_override": [
       "QVEST_RP_MODEL",
       "QVEST_RP_EFFORT"
@@ -239,7 +239,7 @@
     "consumed_by": "02_Infrastructure/ops/rf_llm_env.sh::rf_llm_resolve — 무인 레인(replication · chain_generator · fidelity_audit · overlay_audit · cleaner_distill · paper_router · paper_atlas)이 여기서 모델·노력을 읽는다(v10.01 D12 편성 · 설정에 없는 레인은 llm.model/effort 로 떨어진다). ★2026-09-04 이전에는 이 블록을 **읽는 코드가 0건**이었고 각 레인이 자기 기본값(:-opus/:-max)을 들고 있었다 — 정책을 적어 둔 문서를 아무도 소비하지 않는 상태였다.",
     "fable_limit_fallback": {
       "model": "opus",
-      "effort": "max",
+      "effort": "medium",
       "note": "★도훈 지시 2026-09-17 \"fable 한도 소진하면 opus 5 최대 effort 로 진행\". Fable 계열로 해석된 레인에만 붙는다(rf_llm_env.sh::rf_llm_resolve → LLM_FALLBACK_MODEL/EFFORT). 집행 = rf_llm_agent_run 두 겹: ①claude --fallback-model(CLI 내부 과부하·사용불가 전환 — 한도 소진 포함 여부는 CLI 문서에 없음) ②이번 실행 출력의 한도 문구 감지 → 폴백 모델로 처음부터 1회 재실행(보장선). 폴백까지 한도면 구판처럼 환경 실패(재시도 예산 미소모·쿨다운). 배선 레인 = replication · chain_generator · 충실도 감사 팬아웃의 Fable 축(2026-11-11 · 그 밖 이관 레인은 폴백 없이 뜬다). 끄기 = 환경변수 QVEST_LLM_FALLBACK=off. ★model 은 별칭 'opus' — CLI 가 최신 Opus 로 푼다(2.1.261 실측 claude-opus-5)."
     },
     "model_alias_policy": "★도훈 지시 2026-09-17 \"opus, fable 모두 다른 명령 없이도 항상 최신 모델\". 모델은 ID(claude-fable-5-1 등)가 아니라 별칭(fable/opus/sonnet)으로 적는다 — CLI 가 그날의 최신으로 푼다. 실측(CLI 2.1.261 · --output-format json modelUsage): fable→claude-fable-5-1 · opus→claude-opus-5. 스케줄러 세션도 같은 CLI 2.1.261(transcript version 필드). 검사 = 08_Tests/ops/test_rf_llm_fallback.sh(ID 고정 재발 차단).",
@@ -256,57 +256,57 @@
       },
       "fidelity_audit": {
         "model": "opus",
-        "effort": "xhigh",
+        "effort": "medium",
         "note": "★v10.01 D12(도훈 채택 2026-10-13): 감사 = Opus xhigh(축 하나씩 좁은 정밀 검사 · 6개 병렬). 팬아웃 축별 모델은 06_Registry/rf_fidelity_axes.json 이 정본 — 이 값은 단일 감사자 폴백용. (2026-11-11: 팬아웃 판독형 3축은 fable — 축 등록부가 정본이고 이 단일 감사자 폴백 값은 그대로다.)"
       },
       "overlay_audit": {
         "model": "opus",
-        "effort": "xhigh",
+        "effort": "medium",
         "note": "★v10.01 D12: 코드 감사(새 팩터 · 새 arm 의 누출 · 퇴화 · 중복 — G1 승계) = Opus xhigh. 축별 model/effort(06_Registry/rf_overlay_adversary_axes.json)가 이 값을 덮고, 환경변수 QVEST_OA_MODEL/QVEST_OA_EFFORT 가 최우선. 병합은 R(rf_overlay_audit_merge.R · 결정론)이 근거를 재도출해 판정한다."
       },
       "cleaner_distill": {
         "model": "sonnet",
-        "effort": "high",
+        "effort": "medium",
         "note": "★v10.01 D12: 주간 증류 = 정형 증류(명확한 사양 실행) → Sonnet. 다음 에이전트가 읽는 기억이라 medium 보다 한 단계 위(high)."
       },
       "paper_router": {
         "model": "sonnet",
-        "effort": "high",
+        "effort": "medium",
         "note": "★v10.01 D12: 논문 트리아지 = 루브릭 분류(paper_router_prompt.md v5 엔진 분류) → Sonnet high. 틀려도 큐 순서 문제이고 판독 단계가 다시 본다."
       },
       "paper_atlas": {
         "model": "opus",
-        "effort": "xhigh",
+        "effort": "medium",
         "note": "★v10.01(2026-10-13) 메커니즘 지도 추출(paper_atlas_run.sh) — 원문 판독 · 수치 위치 확인이라 판단형(Opus). 산출은 스테이징뿐이고 R 검증기가 위치 없는 수치를 거부하므로 max 까지는 불필요(xhigh)."
       },
       "analyst": {
         "model": "opus",
-        "effort": "max",
+        "effort": "medium",
         "note": "★v10.01 D12 — 전략 분석가(전략 이해서). 레인 스크립트는 처방 루프 구축 단계에서 생긴다(개선안 §10.4)."
       },
       "prescriber": {
         "model": "opus",
-        "effort": "max",
+        "effort": "medium",
         "note": "★v10.01 D12 — 처방 담당(처방전 1~3건)."
       },
       "reviewer": {
         "model": "opus",
-        "effort": "max",
+        "effort": "medium",
         "note": "★v10.01 D12 — 리뷰어(사전 가설 대비 기전 판독 · 다음 수). 정보 경계 τ_D 2022-12-31."
       },
       "steward": {
         "model": "opus",
-        "effort": "max",
+        "effort": "medium",
         "note": "★v10.01 D12 — 철학 감독관(의견 · 보류 요청만 · 등급 권한 없음)."
       },
       "factor_definer": {
         "model": "opus",
-        "effort": "xhigh",
+        "effort": "medium",
         "note": "★v10.01 D12 — 팩터 정의자(논문 근거 → 정의서)."
       },
       "coder": {
         "model": "sonnet",
-        "effort": "high",
+        "effort": "medium",
         "note": "★v10.01 D12 — 엔진 · 처방 · 팩터 코더(사양서 → 코드). PIT 는 모델이 아니라 미래값 섭동 검사가 지킨다."
       },
       "report_writer": {
@@ -390,7 +390,8 @@
       "model": "opus",
       "effort": "max",
       "note": "★실패가 사이클 하나를 태운다(재구현 10/28). 다만 지적 20건 중 9건이 가드 미신고라 노력수준으로는 안 고쳐진다 — 신고 체크리스트가 먼저다."
-    }
+    },
+    "effort_test_note": "도훈 11-16 'opus와 sonnet 노력수준은 중간으로 바꿔줘 — 속도와 퀄리티의 트레이드오프 테스트' — opus · sonnet 레인 · 기본값 effort → medium(이전 = max · xhigh · high · 에이전트 정의 .claude/agents 도 같음 · fable 레인은 그대로) · 검증기 없이 운영으로 본다"
   },
   "base_min_port_t": 0,
   "factor_analysis": {

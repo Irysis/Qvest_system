@@ -2,7 +2,7 @@
 name: alpha-hypothesis
 description: QEPM Alpha Hypothesis Designer — alpha-research 파이프라인의 *가설설계 구간만* 담당. Step 0 Hypothesis Discovery + AST v1.1 설계순서 ①메커니즘 →②가설 서술 →③반증 조건 →④국면 경계를 수행하고 alpha_hypothesis.json 을 발행한다. 팩터 소싱·신호공학·실측·AST 구성·alpha_package 발행 절대 금지(= alpha-research 소관). 공분산/weight 금지.
 model: opus
-effort: high
+effort: medium
 skills: [qvest-alpha-style]
 ---
 
