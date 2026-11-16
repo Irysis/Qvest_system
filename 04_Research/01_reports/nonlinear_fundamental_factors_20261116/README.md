@@ -1,6 +1,6 @@
 # 비선형 재무 팩터(NLFF) — AutoML 판 (2026-11-16)
 
-도훈 지시(11-16): "AutoML 을 써서 비선형 재무 팩터 구현해 봐." · "새 패키지 설치해도 돼." · "auto-sklearn, tpot, automl 패키지도 활용해봐." · RET = 시장 대비 초과 수익 · "캐시데이터 이용하는거면 극단치 제어도 해야겠네" · "AutoML의 모델 선택 지표를 순위 IC로 바꿔줘".
+도훈 지시(11-16): "AutoML 을 써서 비선형 재무 팩터 구현해 봐." · "새 패키지 설치해도 돼." · "auto-sklearn, tpot, automl 패키지도 활용해봐." · RET = 시장 대비 초과 수익 · "캐시데이터 이용하는거면 극단치 제어도 해야겠네" · "AutoML의 모델 선택 지표를 순위 IC로 바꿔줘" · "권장안대로 진행"(엔진별 표적 · auto-sklearn 재적합 상한 · 극단치 시험 상대 기준 · 전체 실행 준비).
 상태: **코드 · 설정 · 엔진 3종(FLAML · auto-sklearn · TPOT) 스모크 완료. 전체 실행은 하지 않았다**(같은 PC 팩터 DB 전체 재빌드와 겹치지 않게). 성과 지표(IC · 수익률)는 계산 · 보고하지 않았다 — 실행 기록에 남는 검증 IC 는 학습 창 안(τ_D 이전) 모델 선택 값이며 동작 확인용이다. 측정은 나중에 시스템 표준 계약이 한다.
 
 ## 1. 질문
@@ -162,6 +162,23 @@ FLAML의 `ensemble=True`는 sklearn `StackingRegressor`의 기본 KFold로 메�
 
 ## 9. 실행법
 
+### 9-A. 전체 실행(준비만 · 아직 실행하지 않음 · 도훈 11-16 '권장안대로 진행')
+
+`bash run_full.sh [END=2026-10] [WORKERS=4]` — 순서 FLAML → TPOT → auto-sklearn · 엔진 하나가 끝나면 다음 · 한 엔진의 한 표적이 실패(종료 코드 ≠ 0 · 엔진 실패 = 3)하면 그 엔진의 남은 표적만 멈추고 다음 엔진으로 간다.
+
+| 엔진 | 표적(설정 `engines.<e>.targets`) | 드라이버 · 작업기 | 워커 | 로그 | 산출 폴더 |
+|---|---|---|---|---|---|
+| FLAML | earn · val · dist · ret | 공용 `.venv_qvest_ml`(작업기 없음) | 4 | `logs/full_flaml_<t>.log` · `run_flaml_<t>_2000-01_<END>_log.json` | `.cache/nl_fundamental_factors/flaml/` + 선형 대조 `linear/` |
+| TPOT | earn · dist · ret | `.venv_nlff_automl` → `.venv_nlff_tpot` | 4(dask 워커) | `logs/full_tpot_<t>.log` · `run_tpot_<t>_…_log.json` | `.cache/nl_fundamental_factors/tpot/` |
+| auto-sklearn | earn · dist · ret | `.venv_nlff_automl` → WSL `~/venvs/nlff_autosklearn` | 4(dask 워커 · WSL) | `logs/full_autosklearn_<t>.log` · `run_autosklearn_<t>_…_log.json` | `.cache/nl_fundamental_factors/autosklearn/` |
+
+- 실행 단위 = 엔진 × 표적(`nlff_run.py --engine E --targets T`). 단위마다 메타 `NLFF_meta_<t>.json`(재학습별 시행 수 · 고른 모델 · 재적합 대체 경로 여부)을 산출 폴더에 쓴다.
+- **재개**: 단위 단위로만 된다 — 산출 parquet 과 메타가 둘 다 있으면 그 단위를 건너뛴다. 단위 안(재학습 중간)에서는 재개하지 않는다(끊기면 그 엔진 × 표적을 처음부터). 다시 돌리려면 그 두 파일을 지운다.
+- 전제: 같은 PC 의 팩터 DB 전체 재빌드 · 무거운 레인이 끝난 뒤(§11). 엔진은 동시에 돌리지 않는다(순차).
+- `--engine all` 도 설정의 엔진별 표적 목록을 따른다(그 엔진 목록에 없는 표적은 건너뛴다).
+
+### 9-B. 스모크 · 수동
+
 ```
 cd 04_Research/01_reports/nonlinear_fundamental_factors_20261116
 # FLAML 판(공용 venv · 코어) — 종전 그대로
@@ -198,7 +215,8 @@ cd 04_Research/01_reports/nonlinear_fundamental_factors_20261116
 - FLAML 두 판의 차이는 xgboost 판(공용 3.4.1 · 전용 2.1.4)뿐이다 — xgboost 가 앙상블에 든 val 2012-03 만 값이 다르다(오전 실측: 그 달만 최대 차 0.028 · 나머지 달 차 0).
 - TPOT 이 고른 파이프라인은 모두 앞단에 `RFE(ExtraTrees)` 특성 선택이 붙었다(기록 `best_pipeline`). 평가 수 = 개체 × 세대(스모크 8 실측) · 그중 점수가 난 평가 7(earn · val · ret) · 5(dist) — 나머지는 평가 시간 상한 · 실패.
 - TPOT 의 val 이 느린 이유 = 5묶음 재적합의 RandomForest 가 탐색 공간 고정값 `n_jobs = 1` 로 단일 코어였다(py-spy 로 확인 · 2,637 s) → 재적합에서만 `n_jobs` 를 워커 수로 올려 816 s(결과 불변 — 나무 결과는 `n_jobs` 와 무관).
-- **극단치 자가 시험**(earn 2011-12 · 종목 A000070 · 원 입력 · 원 표적 × 1e6 · 37행): 다른 종목 예측의 날짜별 Spearman — **제어 켬 최소 0.976 · 평균 0.977 / 제어 끔(원값) 최소 0.003 · 평균 0.024 / 진단: 그 종목을 아예 뺐을 때 최소 0.986**. 재구성 설계 행렬 = 본 실행과 같음. 미리 정한 문턱(최소 ≥ 0.99)은 **넘지 못했다(pass = False · 기록 그대로)**. 다만 그 종목을 빼기만 해도 0.986 이라, 스모크 표본(학습 1,732행)에서 종목 하나가 바뀔 때의 기본 민감도가 이미 0.99 아래다 — 1e6 배 주입의 영향(0.977)은 그 기본 민감도와 같은 크기이고, 제어를 끄면 일치도가 0 근처로 무너진다(시험이 극단치를 잡아내는 힘 = 확인). 문턱은 결과를 본 뒤 바꾸지 않았다 — 판정 문턱 재설정은 도훈 결정 사항(§12).
+- **극단치 자가 시험**(earn 2011-12 · 종목 A000070 · 원 입력 · 원 표적 × 1e6 · 37행): 다른 종목 예측의 날짜별 Spearman — **제어 켬 최소 0.976 · 평균 0.977 / 제어 끔(원값) 최소 0.003 · 평균 0.024 / 진단: 그 종목을 아예 뺐을 때 최소 0.986**. 재구성 설계 행렬 = 본 실행과 같음. 미리 정한 문턱(최소 ≥ 0.99)은 **넘지 못했다(pass = False · 기록 그대로)**. 다만 그 종목을 빼기만 해도 0.986 이라, 스모크 표본(학습 1,732행)에서 종목 하나가 바뀔 때의 기본 민감도가 이미 0.99 아래다 — 1e6 배 주입의 영향(0.977)은 그 기본 민감도와 같은 크기이고, 제어를 끄면 일치도가 0 근처로 무너진다(시험이 극단치를 잡아내는 힘 = 확인). 문턱은 결과를 본 뒤 Q 가 바꾸지 않았다.
+  - **재판정(상대 기준 · 도훈 11-16 '권장안대로 진행')**: 판정 = 주입 일치도(최소) ≥ 같은 종목을 뺐을 때 일치도(최소) − 0.01 → 0.976458 ≥ 0.985698 − 0.01 = 0.975698 → **통과**(여유 0.00076 — 얇다). 코드 · 설정에 반영(`outlier_control.selftest_margin` · 기록 `rule` · `pass`) 뒤 FLAML 스모크 재실행(공용 venv · 67 s · 같은 값 · `pass = True` · `smoke_flaml_stdout.txt`).
 
 ### 10-B. 11-16 오전 — FLAML 코어 판 첫 스모크(옛 표적 · 옛 선택 지표 r2 · 사료 · `smoke_log.json` · `smoke_stdout.txt`)
 
@@ -236,6 +254,18 @@ AutoML이 고른 모델(시행 8 — FLAML은 lgbm → rf 순서로 시작하므
 
 ### 11-A. 엔진별(11-16 오후 · 스모크 실측 바탕 · 추정)
 
+**재추정(도훈 11-16 '권장안대로 진행' 반영 · 엔진별 표적 · auto-sklearn 재적합 상한)**
+
+| 엔진 | 재학습 수 | 1회(추정) | 소계 | 메모리 |
+|---|---|---|---|---|
+| FLAML | 171(earn · dist · ret 각 ≈ 22 + val ≈ 105) | earn 계열 1.5 ~ 2 분 · val 3 ~ 5 분 | **≈ 8 ~ 11 h** | ≈ 3 ~ 4 GB |
+| TPOT | 66(earn · dist · ret) | 탐색 ≈ 60 분(평가 60 이 상한 60 분에 먼저 닿는다고 봄) + 재적합(상한 없음 · 1 파이프라인) | **≈ 66 ~ 90 h** | 작업기 ≈ 1.5 ~ 3 GB |
+| auto-sklearn | 66(earn · dist · ret) | 탐색 ≤ 60 분 + 재적합 ≤ 60 분(상한 · 넘으면 대체 경로) → 1회 ≤ 약 2 h | **≈ 70 ~ 135 h**(위쪽 끝 = 66 × 2 h 상한) | 작업기 나무 ≈ 3 ~ 4.3 GB(WSL) |
+| **합계(순차)** | | | **≈ 145 ~ 235 h(약 6 ~ 10 일)** | |
+
+- 비용 자원 = 같은 PC 의 CPU 4코어(병목) — 재빌드 · 레인과 겹치면 늘어난다. 외부 엔진은 시간 상한이 먼저 닿으므로 부하가 크면 시간은 비슷하고 시행 수가 준다(§12-D).
+- 아래 표는 val 포함 · 재적합 상한 없음 가정의 이전 추정(사료).
+
 재학습 수(표적 공통): earn · dist · ret 각 ≈ 22 회 + val ≈ 105 회 = **≈ 171 회**.
 
 | 엔진 | 1회 시간 근거(스모크 실측) | 1회 추정(전체 예산) | 소계 | 메모리 |
@@ -265,8 +295,8 @@ AutoML이 고른 모델(시행 8 — FLAML은 lgbm → rf 순서로 시작하므
 ## 12. 한계 · 문제점
 
 **11-16 오후(엔진 3종 · 표적 · 지표 · 극단치) 추가분**
-- A. **극단치 자가 시험이 미리 정한 문턱(0.99)을 못 넘었다**(제어 켬 0.976 · 제어 끔 0.003 · 종목 빼기 진단 0.986). 시험은 극단치를 잡아내는 힘이 있고(제어 끔 붕괴), 제어 켬의 영향은 종목 하나 빼기와 같은 크기다. 문턱을 '종목 빼기 일치도 − 여유' 같은 상대 기준으로 바꿀지는 도훈 결정 — 결과를 본 뒤 Q 가 바꾸지 않았다.
-- B. **auto-sklearn 앙상블 재적합에 시간 상한이 없다.** 탐색 때는 실행당 상한(기본 = 전체의 1/10)이 있지만 `refit()` 에는 없다. 스모크 ret 에서 탐색 237 s · 재적합 ≈ 2,976 s(학습 창 2.8천 행)였다. 후보 중 scikit-learn 0.24 의 `criterion = "mae"` 숲(random_forest · extra_trees — 기본 탐색 공간에 있음)은 표본 수의 제곱으로 느려져 전체 실행(표본 1만 ~ 12만)에선 사실상 끝나지 않을 수 있다. 대안(측정 전 결정 필요): (1) 재적합에 시간 상한 + 넘으면 탐색 때 적합한 모델 그대로 쓰기 (2) `mae` 기준을 탐색 공간에서 빼기(기본 공간 변경) (3) 재적합 없이 탐색 모델(학습 부분만) 쓰기.
+- A. **극단치 자가 시험이 미리 정한 문턱(0.99)을 못 넘었다**(제어 켬 0.976 · 제어 끔 0.003 · 종목 빼기 진단 0.986). 시험은 극단치를 잡아내는 힘이 있고(제어 끔 붕괴), 제어 켬의 영향은 종목 하나 빼기와 같은 크기다. → **도훈 11-16 '권장안대로 진행'**: 상대 기준(종목 빼기 일치도 − 0.01)으로 고정 · 재판정 통과(여유 0.00076 — 얇아서 전체 실행 첫 스모크마다 다시 볼 값).
+- B. **auto-sklearn 앙상블 재적합에 시간 상한이 없다.** 탐색 때는 실행당 상한(기본 = 전체의 1/10)이 있지만 `refit()` 에는 없다. 스모크 ret 에서 탐색 237 s · 재적합 ≈ 2,976 s(학습 창 2.8천 행)였다. 후보 중 scikit-learn 0.24 의 `criterion = "mae"` 숲(random_forest · extra_trees — 기본 탐색 공간에 있음)은 표본 수의 제곱으로 느려져 전체 실행(표본 1만 ~ 12만)에선 사실상 끝나지 않을 수 있다. → **도훈 11-16 '권장안대로 진행'**: (1) 재적합 상한(= 탐색 예산) + 넘으면 탐색 모델(학습 부분만)로 고정(§13). 남은 위험: TPOT 재적합에는 상한이 없다(지시 범위 밖 · 1 파이프라인이라 작지만 `RFE(ExtraTrees)` 는 표본이 크면 길 수 있다).
 - C. **auto-sklearn 메타학습 초기점이 IC 지표에선 꺼진다**(메타학습 자료가 기본 지표에만 있음) — 회귀 표적의 auto-sklearn 은 '메타학습 없는 SMAC' 이다. dist(AUC)만 메타학습을 쓴다.
 - D. **시간 상한이 시행 수를 정할 수 있다**(TPOT · auto-sklearn). FLAML 은 시행 수 고정 · 시간 무제한이라 기계 부하와 무관하지만, 두 외부 엔진은 상한(기본값)에 닿으면 실제 시행 수가 부하에 따라 달라진다 — 재현성이 약하다. 실제 시행 수는 기록 `n_trials`.
 - E. **TPOT 1.1.0 파이프라인 안의 내부 교차검증**: 일부 구성요소(예: 학습기를 변환기로 쓰는 단계)는 학습 부분 안에서 sklearn 기본 KFold 를 쓸 수 있다. 학습 부분 안이라 미래 정보는 없지만 시간 순서는 아니다(선택용 검증은 시간순 그대로). 스모크에서 고른 파이프라인 = `RFE(ExtraTrees)` + 부스팅/숲(내부 교차검증 단계 없음).
@@ -296,9 +326,14 @@ AutoML이 고른 모델(시행 8 — FLAML은 lgbm → rf 순서로 시작하므
 | 엔진 | 시간순 분할 처리 | 앙상블 | 예산(측정 전 고정) | 선택 지표 |
 |---|---|---|---|---|
 | FLAML 2.8.0 | `X_val`/`y_val` 직접 전달(holdout) | 내장 스태킹 끔(sklearn 기본 KFold) → 공통 Caruana(시간순 검증 예측 · 크기 50) | `max_iter` 60 · 스모크 8 | IC(사용자 함수) · dist AUC |
-| auto-sklearn 0.15.0 | `resampling_strategy = PredefinedSplit`(학습 부분 −1 · 검증 0 · 행 순서 = [학습, 검증]) · 분할이 정확히 하나 · 색인 일치 단정 · 무작위 행 줄이기(`dataset_compression` subsample) 끔 | **내장 앙상블(Caruana · 크기 50 = 기본) 사용** — 앙상블 표적(`load_targets_ensemble`)이 시간순 검증 표적과 순서 · 길이까지 같은지 매 재학습 단정(다르면 그 엔진 중단). **음성 대조**: `resampling_strategy = "holdout"`(기본 무작위)으로 바꾼 사본에서 단정이 발화함을 확인(합성 자료) | SMAC `runcount_limit` 60 · 시간 상한 3600 s(기본) · 실행당 기본(1/10) · 스모크 26(= 초기 설계 하한 · 아래) · 메타학습 초기점 25 · 실행당 메모리 3072 MB(기본) | IC(`make_scorer`) · dist AUC |
+| auto-sklearn 0.15.0 | `resampling_strategy = PredefinedSplit`(학습 부분 −1 · 검증 0 · 행 순서 = [학습, 검증]) · 분할이 정확히 하나 · 색인 일치 단정 · 무작위 행 줄이기(`dataset_compression` subsample) 끔 | **내장 앙상블(Caruana · 크기 50 = 기본) 사용** — 앙상블 표적(`load_targets_ensemble`)이 시간순 검증 표적과 순서 · 길이까지 같은지 매 재학습 단정(다르면 그 엔진 중단). **음성 대조**: `resampling_strategy = "holdout"`(기본 무작위)으로 바꾼 사본에서 단정이 발화함을 확인(합성 자료) | SMAC `runcount_limit` 60 · 시간 상한 3600 s(기본) · 실행당 기본(1/10) · 스모크 26(= 초기 설계 하한 · 아래) · 메타학습 초기점 25 · 실행당 메모리 3072 MB(기본) · **최종 재적합 상한 = 탐색 시간 예산과 같은 3600 s(스모크 600 s · 도훈 11-16 '권장안대로 진행')** | IC(`make_scorer`) · dist AUC |
 | TPOT 1.1.0 | `cv = PredefinedSplit`(기본 `cv=10` 은 뒤섞은 KFold) · `validation_strategy = "none"`(기본 · 무작위 train_test_split 안 씀) · 학습 뒤 `cv_gen` 분할 색인 단정 | 없음(최선 파이프라인 1개 · 라이브러리 기본) — 파이프라인 안 스태킹 단계가 있으면 그 단계는 학습 부분 안에서만 적합 | 개체 10 × 세대 6 = 평가 60(스모크 4 × 2 = 8 · 실측 평가 수 = 개체 × 세대) · 시간 상한 60 분(기본) · 평가당 10 분(기본) | IC(sklearn `make_scorer`) · dist AUC |
 
+- **엔진별 실행 표적(도훈 11-16 '권장안대로 진행')**: FLAML = earn · val · dist · ret · TPOT · auto-sklearn = earn · dist · ret(val 제외 — 재학습 171회 중 약 105회가 3개월 주기 val). 설정 `engines.<e>.targets` · `--engine all` 도 따른다. 외부 엔진의 val 은 없다 — 엔진 비교는 earn · dist · ret 에서만.
+- **auto-sklearn 최종 재적합 시간 상한(도훈 11-16 '권장안대로 진행')**: 상한 = 그 재학습의 탐색 시간 예산(`time_left_s`)과 같은 크기. 근거 — 탐색 예산은 '재학습 1회에 쓸 만한 계산'으로 이미 정한 값이고, 재적합은 같은 앙상블 구성원을 표본 1.25배(학습 부분 → 창 전체)로 한 번씩 다시 적합하는 일이라 정상이면 탐색보다 짧다. 상한을 같게 두면 재학습 1회 비용이 탐색 예산의 2배로 묶인다.
+  - 구현: 재적합을 fork 한 자식 프로세스에서 하고 상한 안에 끝나면 그 예측, 넘거나 실패하면 자식을 죽이고 **탐색 때 학습 부분으로 적합한 앙상블**(`automl_.models_`)로 예측한다. 그 모델이 학습 부분만으로 적합됐는지는 합성 자료에서 확인했다(학습 부분 재적합과 예측 차 0 · 전체 재적합과는 다름).
+  - 양방향 확인(합성 자료): 상한 0.01 s → 대체 경로(`refit_fallback = true` · 사유 'time_cap 초과') · 상한 600 s → 정상 재적합(`false`).
+  - 기록: 실행 기록 `engines.autosklearn.refit_fallback` · `refit_fallback_reason` · `refit_s` · 드라이버 요약 `refit_fallbacks` · 산출 메타 `NLFF_meta_<t>.json`. 대체 경로를 탄 재학습의 팩터는 '창 전체 재적합 없음'(최근 20% 표본월 미학습)이다 — 측정 계약이 메타로 구별할 수 있다.
 - 최종 재적합: 세 엔진 모두 고른 모델(앙상블)을 재학습 창 전체(실현일 ≤ 재학습일 − 1개월)로 다시 적합한다(auto-sklearn `refit` · TPOT = 파이프라인 복제 후 `fit` · val 은 종목 5묶음마다).
 - TPOT 재적합은 단일 프로세스라 탐색 공간이 학습기에 박아 둔 `n_jobs = 1` 을 워커 수로 올린다(나무 학습기 결과는 `n_jobs` 와 무관 · 시간만 준다).
 - **auto-sklearn 메타학습**: 사용자 지표(IC)에는 메타학습 자료가 없어(`metalearning/files/monthly_spearman_ic_*` 없음 경고) 메타학습 초기점이 비활성 — 초기점은 SMAC 기본 초기 설계로 대신된다. dist(AUC)만 메타학습 초기점을 쓴다. SMAC 은 초기 설계 크기(메타학습 25 + 기본 1 = 26)보다 작은 `runcount_limit` 을 거부한다(스모크 26 의 이유).
@@ -322,13 +357,14 @@ AutoML이 고른 모델(시행 8 — FLAML은 lgbm → rf 순서로 시작하므
 
 ## 파일
 
-- `nlff_config.json` — 설정 정본(v4: automl(선택 지표 IC) · engines(auto-sklearn · TPOT 예산 · 환경) · outlier_control · targets(ret 초과 수익 · val 윈저) · linear_control · output · smoke)
+- `nlff_config.json` — 설정 정본(v4 + 11-16 '권장안대로 진행' — engines.<e>.targets · autosklearn refit_cap_s · outlier_control.selftest_margin: automl(선택 지표 IC) · engines(auto-sklearn · TPOT 예산 · 환경) · outlier_control · targets(ret 초과 수익 · val 윈저) · linear_control · output · smoke)
 - `nlff_data.py` — 입력 as-of 패널 · 표적(ret = KOSPI200 대비 초과 수익 · `bench_logcum`) · 위생 유니버스 · PIT 자가 시험
 - `nlff_automl.py` — 시간순 분할 단정 · 선택 지표 `ic_mean` · FLAML 탐색(사용자 지표) · Caruana 앙상블 · 재적합 · 선형 대조 · 외부 엔진 어댑터 `fit_external`
 - `nlff_engine_worker.py` — 외부 엔진 작업기(auto-sklearn = WSL · TPOT = `.venv_nlff_tpot` · 파이썬 3.9 호환)
 - `nlff_ic.py` — 외부 엔진용 선택 지표(피클 가능 모듈 · 날짜 = 환경 변수 파일)
+- `run_full.sh` — 전체 실행 스크립트(준비만 · 미실행 · 엔진 × 표적 단위 · 재개 = 단위 건너뛰기)
 - `nlff_run.py` — 걸어가는 학습 드라이버(손잡이 `--engine` · 출력 · 실행 기록 · 극단치 자가 시험 `outlier_selftest`)
 - `env/freeze_venv_nlff_automl.txt` · `env/freeze_venv_nlff_tpot.txt` · `env/freeze_wsl_nlff_autosklearn.txt` — 전용 환경 판 목록(설치 직후)
-- `smoke_flaml_log.json`(공용 venv) · `smoke_flaml_log_venv_nlff_automl.json` · `smoke_tpot_log.json` · `smoke_tpot_stdout.txt` · `smoke_autosklearn_stdout.txt`(+ `smoke_autosklearn_log.json` — 끝까지 돈 경우) — 11-16 오후 스모크 기록
+- `smoke_flaml_log.json` · `smoke_flaml_stdout.txt`(공용 venv · 상대 기준 재판정 뒤) · `smoke_flaml_log_venv_nlff_automl.json` · `smoke_tpot_log.json` · `smoke_tpot_stdout.txt` · `smoke_autosklearn_stdout.txt`(+ `smoke_autosklearn_log.json` — 끝까지 돈 경우) — 11-16 오후 스모크 기록
 - `smoke_log.json` · `smoke_stdout.txt` — 11-16 오전 FLAML 코어 판 첫 스모크(옛 표적 · 사료)
 - `probe_b60_log.json` · `probe_stdout.txt` — 시행 60 비용 탐침 기록(오전)

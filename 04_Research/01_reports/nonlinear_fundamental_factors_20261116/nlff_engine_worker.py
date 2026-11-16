@@ -134,11 +134,53 @@ def run_autosklearn(job, Xtr, ytr, Xva, yva, res):
     except Exception as e:  # 진단용 — 실패해도 결과에 영향 없음
         res["leaderboard_err"] = str(e)[:200]
 
+    cap = job.get("refit_cap_s")
+    res["refit_cap_s"] = cap
+    res["refit_fallback"] = False
+
+    def _refit_child(conn, Xf, yf, Xp):
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                est.refit(Xf, yf)
+            conn.send(("ok", pred_of(est, Xp, task)))
+        except Exception as e:  # 실패도 대체 경로로 보낸다(사유 기록)
+            conn.send(("err", "%s: %s" % (type(e).__name__, str(e)[:500])))
+        conn.close()
+
     def refit_predict(Xf, yf, Xp):
+        """최종 재적합(재학습 창 전체) — 시간 상한 refit_cap_s(도훈 11-16 '권장안대로 진행').
+        재적합은 fork 한 자식 프로세스에서 하고, 상한 안에 끝나면 그 예측을 쓴다. 넘거나 실패하면 자식을 죽이고
+        탐색 때 학습 부분으로 적합한 앙상블 구성원(automl_.models_ — 학습 부분만 적합됨 · 합성 자료로 일치 확인)으로 예측한다(대체 경로 · 기록)."""
+        import multiprocessing as mp
+        t0 = time.time()
+        if cap is None:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                est.refit(Xf, yf)
+            return pred_of(est, Xp, task)
+        ctx = mp.get_context("fork")
+        pa, ch = ctx.Pipe(duplex=False)
+        pr = ctx.Process(target=_refit_child, args=(ch, Xf, yf, Xp))
+        pr.start(); ch.close()
+        out = None
+        if pa.poll(float(cap)):
+            try:
+                out = pa.recv()
+            except EOFError:
+                out = ("err", "자식 종료(EOF)")
+        pr.join(5)
+        if pr.is_alive():
+            pr.kill(); pr.join()
+        res["refit_s"] = round(time.time() - t0, 1)
+        if out is not None and out[0] == "ok":
+            return out[1]
+        res["refit_fallback"] = True
+        res["refit_fallback_reason"] = ("time_cap %ss 초과" % cap) if out is None else out[1]
+        am._can_predict = True          # 재적합 없이 탐색 모델(학습 부분만 적합)로 예측
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            est.refit(Xf, yf)
-        return pred_of(est, Xp, task)
+            return pred_of(est, Xp, task)
     refit_predict.cleanup = lambda: __import__("shutil").rmtree(tmp, ignore_errors=True)
     return refit_predict
 

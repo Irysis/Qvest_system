@@ -209,7 +209,13 @@
     "_doc": "엔진 선택 손잡이 nlff_run.py --engine flaml|autosklearn|tpot|all. 모든 엔진 = 같은 입력 행렬 · 같은 표적 · 같은 시간순 분할(드라이버 time_split) · 같은 선택 지표(automl.metric = 회귀 월별 단면 Spearman IC · 이진 roc_auc). 예산 = 평가한 파이프라인 수 60(Bergstra & Bengio 2012 JMLR 13 §2.1 https://www.jmlr.org/papers/v13/bergstra12a.html — FLAML max_iter 와 같은 근거) + 시간 상한은 각 라이브러리 기본값(안전판). ★엔진별 결과는 시행 회계상 별도 변형 — 측정 뒤 엔진 고르기 = 시행 수 가산(선택 현실 점검 대상 · README §13).",
     "flaml": {
       "python": "(드라이버 프로세스)",
-      "_budget_src": "automl.max_iter(60) · smoke.max_iter(8)"
+      "_budget_src": "automl.max_iter(60) · smoke.max_iter(8)",
+      "targets": [
+        "earn",
+        "val",
+        "dist",
+        "ret"
+      ]
     },
     "autosklearn": {
       "library": "auto-sklearn",
@@ -226,15 +232,23 @@
       "budget": {
         "max_trials": 60,
         "time_left_s": 3600,
-        "per_run_s": null
+        "per_run_s": null,
+        "refit_cap_s": 3600
       },
       "budget_smoke": {
         "max_trials": 26,
         "time_left_s": 600,
-        "per_run_s": null
+        "per_run_s": null,
+        "refit_cap_s": 600
       },
       "_budget_src": "시행 수 = SMAC runcount_limit 60(Bergstra & Bengio 2012) · 시간 상한 = 라이브러리 기본 time_left_for_this_task 3600 s · 실행당 = 기본(None = 전체의 1/10)",
-      "_budget_smoke_src": "스모크 시행 26 = SMAC 초기 설계(메타학습 초기점 25 + 기본 설정 1)보다 작게 줄 수 없다(smac.initial_design: 'Initial budget 26 cannot be higher than the run limit') — 라이브러리 하한"
+      "_budget_smoke_src": "스모크 시행 26 = SMAC 초기 설계(메타학습 초기점 25 + 기본 설정 1)보다 작게 줄 수 없다(smac.initial_design: 'Initial budget 26 cannot be higher than the run limit') — 라이브러리 하한",
+      "targets": [
+        "earn",
+        "dist",
+        "ret"
+      ],
+      "_refit_cap_src": "최종 재적합 시간 상한(측정 전 고정 · 도훈 11-16 '권장안대로 진행') = 그 재학습의 탐색 시간 예산(time_left_s · 전체 3600 s · 스모크 600 s)과 같은 크기. 근거: 탐색 예산은 '재학습 1회에 쓸 만한 계산'으로 이미 정한 값이고, 재적합은 같은 앙상블 구성원을 표본 1.25배(학습 부분 → 창 전체)로 한 번씩 다시 적합하는 일이라 정상이면 탐색보다 짧다 — 상한을 탐색 예산과 같게 두면 재학습 1회 비용이 탐색 예산의 2배로 묶인다. 넘거나 실패하면 탐색 때 학습 부분으로 적합한 앙상블(automl_.models_)로 예측(대체 경로 · 실행 기록 refit_fallback · 산출 메타 NLFF_meta*.json)"
     },
     "tpot": {
       "library": "TPOT",
@@ -255,14 +269,21 @@
         "time_left_s": 600
       },
       "_budget_src": "평가 수 ≈ 60 = 개체 10 × 세대 6(Bergstra & Bengio 2012 · 기본 개체 50 으로는 세대 1 = 무작위 탐색이 되므로 진화가 일어나도록 개체를 줄여 세대를 늘렸다 — 측정 전 고정) · 시간 상한 = 라이브러리 기본 max_time_mins 60",
-      "_refit_note": "재적합(창 전체 · val 5묶음)은 단일 프로세스 — 파이프라인 안 n_jobs=1 을 워커 수로 올린다(나무 결과 불변 · 시간만)"
-    }
+      "_refit_note": "재적합(창 전체 · val 5묶음)은 단일 프로세스 — 파이프라인 안 n_jobs=1 을 워커 수로 올린다(나무 결과 불변 · 시간만)",
+      "targets": [
+        "earn",
+        "dist",
+        "ret"
+      ]
+    },
+    "_targets_src": "엔진별 실행 표적(측정 전 고정 · 도훈 11-16 '권장안대로 진행'): FLAML = 전 표적 · TPOT · auto-sklearn = earn · dist · ret(val 제외 — 재학습 171회 중 약 105회가 3개월 주기 val 이고 외부 엔진은 재학습 1회가 약 1시간). --engine all 도 이 목록을 따른다(nlff_run)"
   },
   "outlier_control": {
     "_doc": "극단치 제어 규칙(도훈 11-16 · README §14) — 모든 통계는 날짜별 단면 안에서만",
     "inputs": "날짜별 단면 순위 → (−1, 1)(Gu, Kelly & Xiu 2020 · Kelly, Pruitt & Su 2019) — 순위는 단조 변환에 불변이므로 1/99 윈저는 순위 안에 포함된다(윈저는 꼬리 1% 의 순서를 동점으로 지울 뿐 영향 크기를 더 줄이지 않는다 → 따로 두지 않음). 분모 부호: 생산자 fc_derive 의 sdv(분모 > 0 만) · sda · gr(분모 절댓값 — 부호 뒤집힘 없음) · dA_X = 1년 전 총자산 > 0 만. 가격 배수형(P/E · P/B) 입력은 없다(순수 재무). 결측 = 0(단면 중앙) + 행 결측 비율 1열(Gu, Kelly & Xiu 2020 은 중앙값 채움 · 항목별 결측 지시 변수 203개는 넣지 않음 — 입력 차원 2배 · 순위 0 과 결측 0 의 구별은 결측 비율 열로)",
     "targets": "earn · ret = 표본월 단면 순위 표적(−1, 1) · val = 날짜별 단면 1/99 윈저 · dist = 0/1(제어 불필요) — 엔진 공통(드라이버가 만든 표적을 모든 엔진이 그대로 쓴다)",
     "loss": "회귀 엔진은 위 순위 · 윈저 표적으로 적합 · Huber 류 손실은 엔진 기본 후보 안에 있을 때만(새 패밀리 추가 없음)",
-    "selftest": "스모크마다 outlier_selftest: 한 종목 원 입력 · 원 표적 × 1e6 → 다른 종목 예측의 날짜별 Spearman 최소 ≥ 0.99(제어 켬) · 대조 팔 = 제어 끔(원값)"
+    "selftest": "스모크마다 outlier_selftest: 한 종목 원 입력 · 원 표적 × 1e6 → 다른 종목 예측의 날짜별 Spearman. 판정(상대 기준 · 도훈 11-16 '권장안대로 진행') = 주입 일치도(최소) ≥ 같은 종목을 뺐을 때 일치도(최소) − 0.01. 대조 팔 = 제어 끔(원값) · 기록만",
+    "selftest_margin": 0.01
   }
 }

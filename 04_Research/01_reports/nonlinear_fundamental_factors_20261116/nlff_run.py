@@ -70,7 +70,7 @@ def shift_months(ymstr: str, k: int) -> str:
     return f"{t.year:04d}-{t.month:02d}"
 
 
-def outlier_selftest(prepare, ri, months, Xraw, feats, X, yraw, task, ac, budget, P_base, factor=1e6):
+def outlier_selftest(prepare, ri, months, Xraw, feats, X, yraw, task, ac, budget, P_base, factor=1e6, margin=0.01):
     """극단치 자가 시험(양성 대조 1건 · 스모크 · FLAML): 한 종목의 원 입력 · 원 표적을 factor 배로 키운 뒤 같은 절차로 다시 만든 예측에서
     다른 종목들의 예측 순위가 얼마나 바뀌는지 잰다(날짜별 단면 Spearman — 예측끼리의 일치도이지 성과 지표가 아니다).
     모델 설정은 원 자료 탐색 결과로 고정(자료 효과만 분리). 대조 팔 = 극단치 제어를 끈 판(원값 입력 + 원값 표적)."""
@@ -115,7 +115,10 @@ def outlier_selftest(prepare, ri, months, Xraw, feats, X, yraw, task, ac, budget
     return {"ticker": str(k), "factor": factor, "n_rows_injected": int(mask.sum()), "target": "earn", "refit_date": str(P_base["Rd"]),
             "control_on_spearman_min_mean": [on_min, on_mean], "control_off_spearman_min_mean": [off_min, off_mean],
             "diag_drop_ticker_spearman_min_mean": [del_min, del_mean],
-            "rebuild_equals_main_design": rk, "threshold_min": 0.99, "pass": bool(on_min >= 0.99 and rk)}
+            "rebuild_equals_main_design": rk,
+            # 판정 = 상대 기준(도훈 11-16 '권장안대로 진행'): 주입 일치도(최소) ≥ 종목 빼기 일치도(최소) − margin
+            "rule": f"control_on_min >= drop_ticker_min - {margin}", "margin": margin,
+            "pass": bool(on_min >= del_min - margin and rk)}
 
 
 def main():
@@ -296,7 +299,8 @@ def main():
             ytr, yva, pidx, yall, dva = P_["ytr"], P_["yva"], P_["pidx"], P_["yall"], P_["dva"]
             Xtr_m, Xva_m, Xwin_m, Xp_m = P_["Xtr"], P_["Xva"], P_["Xwin"], P_["Xp"]
             if ARGS.smoke and T in ("earn",) and "outlier_selftest" not in log and fl_ver is not None:
-                log["outlier_selftest"] = outlier_selftest(prepare, ri, months, Xraw, feats, X, Y[T], task, ac, budget, P_)
+                log["outlier_selftest"] = outlier_selftest(prepare, ri, months, Xraw, feats, X, Y[T], task, ac, budget, P_,
+                                                  margin=float(cfg["outlier_control"]["selftest_margin"]))
                 print(f"[nlff] 극단치 자가 시험 {log['outlier_selftest']}", flush=True)
             if T == "val":
                 wfold, pfold = folds[idx].astype(np.int64), folds[pidx].astype(np.int64)
@@ -312,7 +316,7 @@ def main():
                 rows_out[key].append(fr[np.isfinite(fr["Raw_Value"])])
 
             for E in engines:
-                if E in failed:
+                if E in failed or T not in cfg["engines"][E]["targets"]:     # 엔진별 실행 표적(설정 engines.<e>.targets)
                     continue
                 er = {}; tE = time.time()
                 try:
@@ -376,11 +380,31 @@ def main():
     log["timing"]["total_s"] = round(time.time() - t0, 1)
     log["peak_rss_gb"] = round(peak_rss_gb(), 2)
     etag = "all" if ARGS.engine == "all" else "-".join(engines)
-    tag = f"smoke_{etag}" if ARGS.smoke else f"run_{etag}_{start}_{end}"
+    ttag = "" if targets == ["earn", "val", "dist", "ret"] else "_" + "-".join(targets)
+    tag = f"smoke_{etag}{ttag}" if ARGS.smoke else f"run_{etag}{ttag}_{start}_{end}"
+    # 산출 메타(엔진별): 재학습마다 시행 수 · 고른 모델 · auto-sklearn 재적합 대체 경로 여부
+    for E in engines:
+        if E in failed or E not in log["output_rows"]:
+            continue
+        meta = {"engine": E, "run_tag": tag, "targets": [t for t in targets if t in cfg["engines"][E]["targets"]],
+                "start": start, "end": end, "epoch": ax["epoch"], "written_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+                "refits": [{"target": r["target"], "refit_date": r["refit_date"],
+                            "n_trials": r["engines"][E].get("n_trials"),
+                            "best_estimator": r["engines"][E].get("best_estimator"),
+                            "refit_fallback": r["engines"][E].get("refit_fallback"),
+                            "refit_fallback_reason": r["engines"][E].get("refit_fallback_reason")}
+                           for r in log["refits"] if E in r.get("engines", {})]}
+        with open(out_dirs[E] / f"NLFF_meta{ttag}.json", "w", encoding="utf-8") as f:
+            json.dump(meta, f, ensure_ascii=False, indent=2, default=str)
+    log["refit_fallbacks"] = [{"engine": E, "target": r["target"], "refit_date": r["refit_date"]}
+                              for r in log["refits"] for E, er in r.get("engines", {}).items() if er.get("refit_fallback")]
+    if log["refit_fallbacks"]:
+        print(f"[nlff] ★재적합 대체 경로 {len(log['refit_fallbacks'])}건: {log['refit_fallbacks']}", flush=True)
     with open(D.HERE / f"{tag}_log.json", "w", encoding="utf-8") as f:
         json.dump(log, f, ensure_ascii=False, indent=2, default=str)
     print(f"[nlff] 끝 · {log['timing']['total_s']}s · 드라이버 최대 메모리 {log['peak_rss_gb']} GB · 실패 {failed or '없음'} · 출력 {log['output_rows']}", flush=True)
+    return 3 if failed else 0           # 엔진 실패 = 종료 코드 3(run_full.sh 가 그 엔진만 멈춘다)
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main() or 0)
