@@ -89,6 +89,9 @@ fc_derive <- function(D, yl) {
   D[, ShortTermDebt := fifelse(is.na(CurrentBorr) & is.na(CurrentBonds), NA_real_, z0(CurrentBorr) + z0(CurrentBonds))]
   D[, LongTermDebt  := fifelse(is.na(LongTermBorr) & is.na(Bonds), NA_real_, z0(LongTermBorr) + z0(Bonds))]
   D[, TotalDebt     := fifelse(is.na(ShortTermDebt) & is.na(LongTermDebt), NA_real_, z0(ShortTermDebt) + z0(LongTermDebt))]
+  # (2026-11-16 도훈 '나' · OP-20261116-DEBT-ZEROFILL) 퀀티는 차입금이 없는 회사에 0 행을 주지 않는다 — 총차입금이 있는 기간이면 없는 줄 = 0
+  #   (옛 병합 표 규칙 · TotalDebt 는 이미 z0 합 · 2014Q4 기준 단기 있고 장기 없음 730곳 → 장기부채 비율 · PF_dLever · d_LongTermDebt 가 NA 였다)
+  D[is.finite(TotalDebt) & is.na(ShortTermDebt), ShortTermDebt := 0][is.finite(TotalDebt) & is.na(LongTermDebt), LongTermDebt := 0]
   D[, NetDebtCalc   := TotalDebt - CashAndEquiv]
   D[, WorkingCapital := CurrentAssets - CurrentLiab]
   D[, NWC_NonCash   := (CurrentAssets - CashAndEquiv) - (CurrentLiab - z0(ShortTermDebt))]

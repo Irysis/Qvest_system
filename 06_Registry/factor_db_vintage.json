@@ -186,7 +186,7 @@
     },
     {
       "id": "FUNDAMENTAL-AVAIL-LAG-1M-20261116",
-      "completed_at": null,
+      "completed_at": "2026-11-17T00:14:31+09:00",
       "scope": "all",
       "decision": "FUNDAMENTAL-AVAIL-LAG-20261115(도훈 11-16 'A 1달 일괄' — 재무 쓸 수 있는 첫날 = 공개일 + 1개월 뒤 첫 거래일 · DART 당시 값도 같다)",
       "note": "재무 v2 의 Factor_Date · DART_Factor_Date 를 1개월 늦췄다(build_fundamental_v2.py · 등록부 fundamental_source.json avail_lag_months = 1). 병합 표 · 분기 표(XF) · 재무 원천 팩터 전부 · 결합용 뷰 · 한국 FF 요인(팩터 조정 알파 노치 입력 = 모든 등급)이 바뀐다 — 범위 all. 계기 = 무인 Judge 11-15 L-JG-20261115_200516(PIT 인증 불가 · C4). 완료 = 팩터 DB 전체 재빌드(월간 · 일간 · IC) + 결합용 뷰 --full + FF 요인이 모두 rc 0 일 때 .cache/fund_lag_rebuild_20261116/run_chain.sh 가 completed_at 을 채운다. 그 전 측정은 재측정 전 A 자격 · 기저 자격 없음.",
@@ -194,7 +194,7 @@
     },
     {
       "id": "FUNDAMENTAL-AVAIL-DEADLINE45-20261116",
-      "completed_at": null,
+      "completed_at": "2026-11-17T00:14:31+09:00",
       "scope": "all",
       "decision": "FUNDAMENTAL-AVAIL-DEADLINE45-20261116(도훈 11-16 '보수적으로 법정기한 + 45일' · '공개일 + 1개월 규칙은 삭제' — 재무 쓸 수 있는 첫날 = max(법정 제출기한 + 45일 뒤 첫 거래일, 공개일 뒤 첫 거래일))",
       "note": "앞선 진행 중 항목 FUNDAMENTAL-AVAIL-LAG-1M-20261116(공개일 + 1개월)을 대신한다 — 그 재빌드는 08:3x 에 멈췄고(상장 전 이력 제외로 RAWDATA 가 바뀐다) 정본은 09:18 에 이 규칙으로 다시 교체했다(사본 .cache/fundamental_backup/20261116_091811). 완료 = RAWDATA 상장 전 행 제외(RAWDATA-PRELISTING-EXCLUDE-20261116) 뒤 팩터 DB 전체 재빌드(월간 · 일간 · IC) + 결합용 뷰 --full + 한국 FF 요인이 모두 rc 0 일 때 — 그때 이 항목과 FUNDAMENTAL-AVAIL-LAG-1M-20261116 의 completed_at 을 함께 채운다. 그 전 측정은 재측정 전 A 자격 · 기저 자격 없음.",
@@ -202,7 +202,7 @@
     },
     {
       "id": "RAWDATA-PRELISTING-EXCLUDE-20261116",
-      "completed_at": null,
+      "completed_at": "2026-11-17T00:14:31+09:00",
       "scope": "all",
       "decision": "RAWDATA-PRELISTING-EXCLUDE-20261116(도훈 11-16 '상장전 이력까지 백테스팅에 활용하지마 · 상장된 시점 이후 퀀티와이즈 가격부터 · 없는 시점은 유니버스에서 제외')",
       "note": "RAWDATA 상장 전 행 삭제(rawdata_listing_cut.py · 퀀티 시장구분 R100100 첫 유가증권 · 코스닥 날짜) — 완료 = 팩터 DB 전체 재빌드 + 결합용 뷰 --full + FF 요인 rc 0(qw_login_chain.sh 가 채운다)",
@@ -210,7 +210,7 @@
     },
     {
       "id": "FUNDAMENTAL-QW-ONLY-20261116",
-      "completed_at": null,
+      "completed_at": "2026-11-17T00:14:31+09:00",
       "scope": "all",
       "decision": "FUNDAMENTAL-QW-ONLY-NO-DART-20261116(도훈 11-16 '퀀티로만 바꿔주고, DART API 관련 데이터들은 완전히 삭제해줘') — 재무 정본 = 퀀티 재무 v2 단독(정정 연도 DART 당시 값 62만 행 · DART 접수일 바닥 제거)",
       "note": "정본 교체 13:14(사본 .cache/fundamental_backup/20261116_131427) · 완료 = 팩터 DB 전체 재빌드 + 결합용 뷰 --full + 한국 FF rc 0(qw_login_chain.sh 가 이 항목까지 채운다)",
@@ -218,11 +218,19 @@
     },
     {
       "id": "FUNDAMENTAL-CACHES-REDEFINE-20261116",
-      "completed_at": null,
+      "completed_at": "2026-11-17T00:14:31+09:00",
       "scope": "all",
       "decision": "도훈 11-16 '펀더멘털 데이터 캐시는 분기파일, 연간파일 하나씩 … 펀더멘털 팩터 정의를 새롭게 만든 펀더멘털 데이터 캐시 기반으로 재정의' · '112개 항목으로 계산가능한 모든 파생지표' · 'XF 삭제' · '올슨 O 스코어'",
       "note": "재무 캐시 = fundamental_quarterly(TTM) · fundamental_annual(회계연도) · 파생 223 · 재무 팩터 98 재정의(compute_fundamental.R · fund_access.R) · XF 25 삭제 · 일간 DB 단계 F 덮어쓰기 · 완료 = 팩터 DB 전체 재빌드 + 결합용 뷰 --full + 한국 FF rc 0(qw_login_chain.sh)",
       "evidence": ".cache/fundamental_caches_report.json · factor_db/factor_db_daily_phaseF_fundamental.R"
+    },
+    {
+      "id": "FUNDAMENTAL-DEBT-ZEROFILL-20261117",
+      "completed_at": null,
+      "scope": "all",
+      "decision": "도훈 11-16 '나'(재빌드 뒤 수리) · 11-17 '차입금 빈칸 채우기 작업 시작' — 총차입금이 있는 기간의 단기 · 장기부채 빈칸 = 0(장기부채 비율 · PF_dLever · d_LongTermDebt 등)",
+      "note": "재무 캐시 재생산 11-17 09:3x(build_fundamental_caches.R) · 완료 = 두 번째 재빌드(qw_login_chain 완료 판정 결함으로 00:37 재시작 · 그동안 일간 DB 재생성) 끝 + 차입금 팩터 월간 부분 재빌드 + 일간 단계 F · 이 줄이 열려 있는 동안 측정은 모두 낡음(01:46 시작 2611.16540 레인 측정 포함 — 재빌드 중 측정)",
+      "evidence": ".cache/fundamental_caches_report.json · 02_Infrastructure/data/build_fundamental_caches.R"
     }
   ]
 }

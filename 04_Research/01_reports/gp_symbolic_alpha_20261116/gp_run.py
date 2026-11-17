@@ -7,7 +7,7 @@
   4. 기계적 선택: 학습 α IR > 0 ∧ 검증 α IR > 0 ∧ 커버리지 ≥ 하한 ∧ 표준 팩터 |ρ| < 0.7 → 검증 α IR 내림차순 →
      보유 지문 중복 제거 → 이미 고른 것과 |ρ| < 0.7 인 것만 → k 개.
   5. Y+1 의 월말 신호를 Y+1-12-31 까지 자른 패널로 계산(수식은 고정) → 팩터 파일.
-사용: python gp_run.py --smoke [--variants EXP,ROLL3] [--tag <run>]  ·  python gp_run.py --full (금지 — 설계 단계)
+사용: python gp_run.py --smoke [--variants EXP,ROLL3] [--tag <run>]  ·  python gp_run.py --full (2026-11-17 허용)
 """
 from __future__ import annotations
 
@@ -231,12 +231,20 @@ def main():
     a = ap.parse_args()
     cfg = load_cfg()
     O.configure(cfg["grammar"])
+    # (2026-11-17 도훈 '유전프로그래밍 수식 알파 … 작업 시작해주고') 전체 실행 허용 — 설정은 gp_config.json 본 절(evolution · walkforward · data) 그대로
+    if not (a.smoke or a.full):
+        sys.exit("사용: --smoke | --full")
+    mode = "full" if a.full else "smoke"
     if a.full:
-        sys.exit("[gp_run] 전체 실행은 이 설계 단계에서 금지(도훈 11-16 '설계와 짧은 구간 시험까지') — --smoke 만.")
-    if not a.smoke:
-        sys.exit("사용: --smoke")
-    S = cfg["smoke"]
-    run = a.tag or ("smoke_" + time.strftime("%Y%m%d_%H%M%S"))
+        W = cfg["walkforward"]; D = cfg["data"]
+        S = {"history_buffer_start": D["history_buffer_start"], "fitness_start": D["fitness_start"],
+             "data_end": time.strftime("%Y-%m-%d"), "val_months": W["val_months"],
+             "first_evolution_year_end": W["first_evolution_year_end"], "last_evolution_year_end": W["last_evolution_year_end"],
+             "population": cfg["evolution"]["population"], "generations": cfg["evolution"]["generations"],
+             "hall_of_fame": cfg["evolution"]["hall_of_fame"]}
+    else:
+        S = cfg["smoke"]
+    run = a.tag or (mode + "_" + time.strftime("%Y%m%d_%H%M%S"))
     run_dir = os.path.join(OUT_CACHE, run)
     os.makedirs(run_dir, exist_ok=True)
     logf = open(os.path.join(run_dir, "run.log"), "w", encoding="utf-8")
@@ -244,16 +252,21 @@ def main():
     def log(m):
         print(m, flush=True); logf.write(m + "\n"); logf.flush()
     t0 = time.perf_counter()
-    tick, pick_day = pick_smoke_tickers(cfg)
-    log(f"[smoke] 종목 {len(tick)} (pick {pick_day} 위생 멤버 무작위) · RSS {rss_gb():.2f}GB")
+    if a.full:
+        tick, pick_day = None, None   # 전 종목(날마다 위생 멤버로 유니버스 판정 — 패널이 가진다)
+        log(f"[full] 전 종목 · {S['history_buffer_start']}~{S['data_end']} · RSS {rss_gb():.2f}GB")
+    else:
+        tick, pick_day = pick_smoke_tickers(cfg)
+        log(f"[smoke] 종목 {len(tick)} (pick {pick_day} 위생 멤버 무작위) · RSS {rss_gb():.2f}GB")
     full = build_panel_subprocess(None, S["history_buffer_start"], S["data_end"], tick, os.path.join(run_dir, "panel"))
-    log(f"[smoke] 패널 적재 {time.perf_counter()-t0:.0f}s · RSS {rss_gb():.2f}GB")
+    log(f"[{mode}] 패널 적재 {time.perf_counter()-t0:.0f}s · RSS {rss_gb():.2f}GB")
     evo_cfg = dict(cfg["evolution"]); evo_cfg.update(population=S["population"], generations=S["generations"],
                                                     hall_of_fame=S["hall_of_fame"])
     wf = {"fitness_start": S["fitness_start"], "val_months": S["val_months"], "embargo_months": cfg["walkforward"]["embargo_months"]}
     years = list(range(S["first_evolution_year_end"], S["last_evolution_year_end"] + 1))
-    variants = {"EXP": {"window": "expanding"}, f"ROLL{S['rolling_years']}": {"window": "rolling", "years": S["rolling_years"]}}
-    summary = {"run": run, "mode": "smoke", "tickers": len(tick), "pick_day": pick_day, "years": years, "variants": {}}
+    variants = (dict(cfg["walkforward"]["variants"]) if a.full else
+                {"EXP": {"window": "expanding"}, f"ROLL{S['rolling_years']}": {"window": "rolling", "years": S["rolling_years"]}})
+    summary = {"run": run, "mode": mode, "tickers": (len(tick) if tick is not None else "all"), "pick_day": pick_day, "years": years, "variants": {}}
     for v, vc in variants.items():
         tv = time.perf_counter()
         tabs = walk_forward(cfg, full, v, vc, evo_cfg, wf, run_dir, years, log)
