@@ -214,6 +214,15 @@ def rank_ic(score, fwd, mask, min_n=30):
     return ic
 
 
+def december_signals(frame, burn_years):
+    """해마다 12월 신호의 위치 dict[해] 와, 첫 burn_years 해를 예열로 둔 뒤의 선택 해 목록.
+    선택 해 Y 의 12월 신호일에 그때까지의 자료로 고르고, 그 신호(12월 말) ~ 다음 해 11월 말 신호에 쓴다."""
+    ym = [(int(str(d)[:4]), int(str(d)[5:7])) for d in frame.sig_dates]
+    dec = {y: s for s, (y, m) in enumerate(ym) if m == 12}
+    first = min(y for y, _ in ym)
+    return [y for y in sorted(dec) if y >= first + burn_years - 1], dec
+
+
 def save_factor_panel(path, name, score, frame, mask=None):
     """팩터 점수 [신호 × 종목] → 측정기가 읽는 긴 표(Date · Ticker · Factor_Name · Raw_Value) parquet."""
     import pyarrow as pa

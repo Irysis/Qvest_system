@@ -17,7 +17,7 @@ EXTRA=("$@")
 "$PY" -X utf8 "$RD/ops/aif_run.py" --job terminals --stage terminals "${EXTRA[@]}" -- "$RS" --vanilla "$RD/run/03_export_frame.R"
 rc=$?; [ $rc -eq 0 ] || { echo "[run_stage2] 틀 내보내기 실패 rc=$rc — 멈춘다"; exit $rc; }
 if [ -f "$RD/py/aif_terminals.py" ]; then
-  "$PY" -X utf8 "$RD/ops/aif_run.py" --job terminals --stage terminals "${EXTRA[@]}" -- "$VPY" -X utf8 "$RD/py/aif_terminals.py"
+  "$PY" -X utf8 "$RD/ops/aif_run.py" --job terminals --stage terminals --summary "$ROOT/.cache/aif_research/stage_summary_terminals.json" "${EXTRA[@]}" -- "$VPY" -X utf8 "$RD/py/aif_terminals.py"
   rc=$?
 fi
 echo "[run_stage2] 끝 rc=$rc"; exit $rc
