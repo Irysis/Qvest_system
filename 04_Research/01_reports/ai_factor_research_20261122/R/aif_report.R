@@ -73,6 +73,7 @@ aif_db_window <- function(M, cfg, root, d0) {
 aif_compare_tables <- function(res, M, cfg, root, out_dir, label = "새 팩터", overlap = NULL) {
   d0 <- as.Date(max(vapply(res, function(r) as.numeric(min(r$daily$Date)), 0)), origin = "1970-01-01"); cm_from <- format(d0, "%Y-%m")
   DBW <- aif_db_window(M, cfg, root, d0)
+  for (cn in c("start", "end")) if (cn %in% names(DBW)) set(DBW, j = cn, value = as.character(DBW[[cn]]))   # 저장분을 다시 읽으면 날짜형이 된다 — 글자로 맞추지 않으면 새 팩터 줄의 날짜가 빈칸이 된다
   NEW <- rbindlist(lapply(names(res), function(id) rbind(aif_cstat(label, id, "top", res[[id]]$daily$top, res[[id]]$daily$Date, FALSE, M, cfg, d0),
                                                          aif_cstat(label, id, "ls", res[[id]]$daily$ls, res[[id]]$daily$Date, TRUE, M, cfg, d0), fill = TRUE)), fill = TRUE)
   CMN <- rbind(DBW, NEW, fill = TRUE)

@@ -11,9 +11,9 @@ set -u
 JOB="$1"; STAGE="$2"; SCRIPT="$3"; SETN="$4"; LABEL="$5"; shift 5
 SD="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 RD="$(cd "$SD" && pwd -W 2>/dev/null)"; [ -n "$RD" ] || RD="$SD"
-ROOT="${AIF_ROOT:-${QM_ROOT:-}}"; ROOT="${ROOT//\//}"
+ROOT="${AIF_ROOT:-${QM_ROOT:-}}"; ROOT="${ROOT//\\//}"
 [ -n "$ROOT" ] || { echo "[run_generator] QM_ROOT 가 없다"; exit 2; }
-PY="${QVEST_PY:-python}"; PY="${PY//\//}"
+PY="${QVEST_PY:-python}"; PY="${PY//\\//}"
 VPY="${AIF_GEN_PY:-$ROOT/.venv_qvest_ml/Scripts/python.exe}"      # 생성기 실행 환경(수식 탐색은 전용 환경을 AIF_GEN_PY 로 넘긴다)
 RS="C:/Program Files/R/R-4.6.2/bin/Rscript.exe"
 OUT="$ROOT/.cache/aif_research"

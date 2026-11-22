@@ -40,7 +40,7 @@ aif_chart_factor <- function(res, ref, cfg, label, out_png, note = NULL) {
   sub <- sprintf("상위 분위 롱온리: CAGR %s · SD %s · SR %s · MDD %s\n%s(같은 구간 %s~): CAGR %s · SD %s · SR %s · MDD %s",
                  aif_pct(a$CAGR), aif_pct(a$SD), aif_num(a$SR), aif_pct(a$MDD), bl, format(min(D$Date), "%Y-%m"),
                  aif_pct(bst$CAGR), aif_pct(bst$SD), aif_num(bst$SR), aif_pct(bst$MDD))
-  p1 <- ggplot(P, aes(Date, v, colour = s)) + geom_line(linewidth = 0.55) + .aif_split_line(cfg, D$Date) + scale_y_log10(labels = label_number(accuracy = 0.1)) +
+  p1 <- ggplot(P, aes(Date, v, colour = s)) + geom_line(linewidth = 0.55) + .aif_split_line(cfg, D$Date) + scale_y_log10(labels = label_number(accuracy = NULL)) +
     scale_colour_manual(values = cols) + labs(title = sprintf("%s — 상위 분위 롱온리 vs %s", label, bl), subtitle = sub) + aif_theme()
   dd <- function(v) v / cummax(v) - 1
   P2 <- P[s != "유니버스 동일가중"][, dd := dd(v), by = s]
@@ -50,12 +50,12 @@ aif_chart_factor <- function(res, ref, cfg, label, out_png, note = NULL) {
   p3 <- if (length(qn)) {
     Q <- rbindlist(lapply(qn, function(q) data.table(Date = D$Date, s = sub("q", "", q), v = aif_cum(D[[q]]))))
     Q[, s := factor(paste0(s, "분위"), levels = paste0(seq_along(qn), "분위"))]
-    ggplot(Q, aes(Date, v, colour = s)) + geom_line(linewidth = 0.45) + .aif_split_line(cfg, D$Date) + scale_y_log10(labels = label_number(accuracy = 0.1)) +
+    ggplot(Q, aes(Date, v, colour = s)) + geom_line(linewidth = 0.45) + .aif_split_line(cfg, D$Date) + scale_y_log10(labels = label_number(accuracy = NULL)) +
       scale_colour_brewer(palette = "RdYlBu", direction = -1) + labs(title = "5분위 누적수익(5분위 = 점수 상위)") + aif_theme(10)
   } else NULL
   l <- .aif_one(res$stats, "ls")
   L <- rbind(data.table(Date = D$Date, s = "거래비용 전", v = aif_cum(D$ls)), data.table(Date = D$Date, s = "편도 15bp 차감", v = aif_cum(D$ls_net)))
-  p4 <- ggplot(L, aes(Date, v, colour = s)) + geom_line(linewidth = 0.5) + .aif_split_line(cfg, D$Date) + scale_y_log10(labels = label_number(accuracy = 0.1)) +
+  p4 <- ggplot(L, aes(Date, v, colour = s)) + geom_line(linewidth = 0.5) + .aif_split_line(cfg, D$Date) + scale_y_log10(labels = label_number(accuracy = NULL)) +
     scale_colour_manual(values = c("거래비용 전" = AIF_COL[["ls"]], "편도 15bp 차감" = AIF_COL[["net"]])) +
     labs(title = sprintf("상위−하위 롱숏 누적수익(CAGR %s · SR %s · MDD %s)", aif_pct(l$CAGR), aif_num(l$SR), aif_pct(l$MDD))) + aif_theme(10)
   I <- copy(res$ic_monthly)[, cum := cumsum(IC)]
@@ -74,15 +74,15 @@ aif_chart_grid <- function(res_list, labels, ref, cfg, out_prefix, n_per = 6L, w
     P <- rbindlist(lapply(pages[[pg]], function(id) {
       D <- merge(res_list[[id]]$daily, ref$daily, by = "Date", all.x = TRUE); st <- .aif_one(res_list[[id]]$stats, what)
       ttl <- sprintf("%s\nCAGR %s · SR %s · MDD %s", labels[[id]], aif_pct(st$CAGR), aif_num(st$SR), aif_pct(st$MDD))
-      if (what == "top") rbind(data.table(f = ttl, Date = D$Date, s = "팩터 상위 분위", v = aif_cum(D$top)), data.table(f = ttl, Date = D$Date, s = bl, v = aif_cum(D$bm)))
-      else data.table(f = ttl, Date = D$Date, s = "상위−하위 롱숏", v = aif_cum(D$ls))
+      nm <- if (what == "top") "팩터 상위 분위" else "상위−하위 롱숏"
+      rbind(data.table(f = ttl, Date = D$Date, s = nm, v = aif_cum(if (what == "top") D$top else D$ls)), data.table(f = ttl, Date = D$Date, s = bl, v = aif_cum(D$bm)))   # 벤치마크 선은 두 그림 모두에 넣는다
     }))
-    P[, f := factor(f, levels = unique(f))]
-    cols <- if (what == "top") setNames(c(AIF_COL[["factor"]], AIF_COL[["bench"]]), c("팩터 상위 분위", bl)) else c("상위−하위 롱숏" = AIF_COL[["ls"]])
+    P[, f := factor(f, levels = unique(f))]; P[, s := factor(s, levels = unique(s))]
+    cols <- setNames(c(if (what == "top") AIF_COL[["factor"]] else AIF_COL[["ls"]], AIF_COL[["bench"]]), c(if (what == "top") "팩터 상위 분위" else "상위−하위 롱숏", bl))
     g <- ggplot(P, aes(Date, v, colour = s)) + geom_line(linewidth = 0.45) + facet_wrap(~f, ncol = 2, scales = "free") +
       geom_vline(xintercept = as.Date(cfg$measure$is_end), linetype = "dashed", colour = "#888888", linewidth = 0.3) +
-      scale_y_log10(labels = label_number(accuracy = 0.1)) + scale_colour_manual(values = cols) +
-      labs(title = if (what == "top") sprintf("신규 팩터 P/L — 상위 분위 롱온리 vs %s (%d/%d)", bl, pg, length(pages)) else sprintf("신규 팩터 P/L — 상위−하위 롱숏 (%d/%d)", pg, length(pages)),
+      scale_y_log10(labels = label_number(accuracy = NULL)) + scale_colour_manual(values = cols) +
+      labs(title = if (what == "top") sprintf("신규 팩터 P/L — 상위 분위 롱온리 vs %s (%d/%d)", bl, pg, length(pages)) else sprintf("신규 팩터 P/L — 상위−하위 롱숏 vs %s (%d/%d)", bl, pg, length(pages)),
            subtitle = "로그축 · 점선 = IS/OOS 경계(2022-12-31) · 거래비용 전") + aif_theme(10) + theme(strip.text = element_text(size = 9, hjust = 0))
     out <- c(out, aif_png(g, sprintf("%s_%s_%02d.png", out_prefix, what, pg), w = 1080, h = 380 + 420 * ceiling(length(pages[[pg]]) / 2)))
   }

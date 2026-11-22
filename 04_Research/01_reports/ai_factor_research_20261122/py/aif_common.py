@@ -73,6 +73,20 @@ def write_json(obj, path):
     return write_atomic(path, w)
 
 
+def load_ckpt(path, fp):
+    """체크포인트(npz)를 읽어 dict 로 돌려준다 — 파일이 없거나 판 표식(fp)이 다르면 None.
+    파일은 읽자마자 닫는다(윈도에서는 열려 있는 파일을 덮어쓸 수 없어, 열어 둔 채 다시 쓰면 확정 저장이 실패한다)."""
+    if not os.path.exists(path):
+        return None
+    try:
+        with np.load(path, allow_pickle=True) as z:
+            if str(z["fp"]) != fp:
+                return None
+            return {k: z[k] for k in z.files}
+    except Exception:  # noqa: BLE001 — 깨진 체크포인트는 없는 것으로 본다
+        return None
+
+
 def read_json(path, default=None):
     try:
         with open(path, encoding="utf-8") as fh:

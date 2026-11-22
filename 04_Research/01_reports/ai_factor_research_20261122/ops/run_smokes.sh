@@ -7,9 +7,9 @@ main() {
 set -u
 SD="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 RD="$(cd "$SD" && pwd -W 2>/dev/null)"; [ -n "$RD" ] || RD="$SD"
-ROOT="${AIF_ROOT:-${QM_ROOT:-}}"; ROOT="${ROOT//\//}"
+ROOT="${AIF_ROOT:-${QM_ROOT:-}}"; ROOT="${ROOT//\\//}"
 [ -n "$ROOT" ] || { echo "[run_smokes] QM_ROOT 가 없다"; exit 2; }
-PY="${QVEST_PY:-python}"; PY="${PY//\//}"
+PY="${QVEST_PY:-python}"; PY="${PY//\\//}"
 VPY="$ROOT/.venv_qvest_ml/Scripts/python.exe"
 GPY="$ROOT/.venv_gp_alpha/Scripts/python.exe"
 run() { local job="$1" stage="$2"; shift 2; "$PY" -X utf8 "$RD/ops/aif_run.py" --job "$job" --stage "$stage" --no-notify -- "$@"; local rc=$?; echo "[run_smokes] $job rc=$rc"; return $rc; }

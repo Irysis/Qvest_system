@@ -122,7 +122,7 @@ def main():
         nxt = list(range(sY, min(sY + 12, f.ns)))
         a1, b1 = cp.seg[nxt[0]], cp.seg[nxt[-1] + 1]
         if os.path.exists(ck) and not a.force:
-            z = np.load(ck, allow_pickle=True)
+            z = ac.load_ckpt(ck, fp) or {"fp": ""}              # 읽자마자 닫는다(열어 두면 같은 파일을 다시 쓸 수 없다)
             if str(z["fp"]) == fp:
                 comp[a1:b1] = z["comp"]
                 for k in range(N_TOP):

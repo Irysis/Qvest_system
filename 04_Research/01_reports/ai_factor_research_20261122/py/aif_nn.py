@@ -129,7 +129,7 @@ def run_target(tk, cfg, X, xnames, Z, znames, cp, out_dir, fp, force, unit0, dev
         a1, b1 = cp.seg[nxt[0]], cp.seg[nxt[-1] + 1]
         ck = "%s/%s_%d.npz" % (out_dir, tk, yy)
         if os.path.exists(ck) and not force:
-            z = np.load(ck, allow_pickle=True)
+            z = ac.load_ckpt(ck, fp) or {"fp": ""}              # 읽자마자 닫는다(열어 두면 같은 파일을 다시 쓸 수 없다)
             if str(z["fp"]) == fp:
                 pred[a1:b1] = z["pred"]
                 logs.append(z["log"].item())
@@ -215,7 +215,7 @@ def main():
     znames = ac.read_json(store.dir + "/macro_state_meta.json")["names"]
     fp = "%s|v%d|%d|%d" % (f.meta.get("rawdata_tag"), VERSION, X.shape[1], Z.shape[1])
     tks = ["1m"] if a.smoke else (["1m", "12m"] if a.target == "both" else [a.target])
-    n_years = len({int(str(d)[:4]) for d in f.sig_dates}) - BURN_YEARS + 1
+    n_years = 1 if a.smoke else len(ac.december_signals(f, BURN_YEARS)[0])       # 재학습하는 해의 수(진행률 분모)
     ac.stage_begin("neural_net", n_years * len(tks), "재학습", 0.02, 0.9)
     ac.log("장치 %s · 입력 %d열 · 표본 %d칸", dev, X.shape[1] + Z.shape[1], cp.n)
     manifest, u0 = [], 0
