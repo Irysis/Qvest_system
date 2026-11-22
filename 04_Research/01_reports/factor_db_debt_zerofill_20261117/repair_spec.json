@@ -1,0 +1,13 @@
+{
+  "schema": "factor_subset_repair_spec/v1",
+  "decision": "FUNDAMENTAL-DEBT-ZEROFILL-20261117",
+  "title": "차입금 빈칸 0 채우기",
+  "why": "도훈 11-17 '차입금 빈칸 채우기 작업 시작' · 11-22 '차입금 팩터 부분 재빌드랑 단계 F 돌려줘' — 재무 캐시(11-17 09:33)는 총차입금이 있는 기간의 단기 · 장기부채 빈칸 = 0 으로 수리됐으나 월간 팩터 DB 는 수리 전 캐시로 지어졌다.",
+  "targets_source": "지금 코드 · 지금 캐시로 fundamental · value · defense · risk 모듈만 build_factor_db(save = FALSE) 3달(2012-06 · 2019-06 · 2025-06)을 운영 월 파일과 대조 — 세 달 모두 Q04_Piotroski_F 하나만 바뀌었다(145 중 · 값 바뀜 58/86/120 · 새로 값 생김 627/683/987 · 사라짐 0). 코드 추적(PF_dLever → PiotroskiF)과 일치.",
+  "targets": [
+    "Q04_Piotroski_F"
+  ],
+  "modules": [
+    "fundamental"
+  ]
+}
