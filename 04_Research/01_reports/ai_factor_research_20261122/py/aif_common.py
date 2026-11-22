@@ -38,6 +38,13 @@ def cfg():
     return _CFG
 
 
+SMOKE = {"on": False}          # 시험 실행 — 산출을 "<이름>_smoke" 폴더로 돌린다(본 실행의 체크포인트 · 팩터 파일을 건드리지 않는다)
+
+
+def smoke_name(name):
+    return name + "_smoke" if SMOKE["on"] else name
+
+
 def out(*parts):
     return "/".join([root(), cfg()["paths"]["out_cache"], *parts])
 
@@ -111,6 +118,8 @@ def status_set(**kw):
 
 
 def stage_begin(key, unit_total, unit_name, part_from=0.0, part_to=1.0):
+    if SMOKE["on"]:                                       # 시험 실행은 진행 상태를 바꾸지 않는다
+        return
     st = status_read()
     sp = st.get("stage_progress") or {}
     sp[key] = max(float(sp.get(key) or 0), part_from)
@@ -121,6 +130,8 @@ def stage_begin(key, unit_total, unit_name, part_from=0.0, part_to=1.0):
 
 
 def stage_unit(unit_done, detail=None):
+    if SMOKE["on"]:
+        return
     st = status_read()
     key = st.get("stage_key")
     a, b = float(st.get("part_from") or 0), float(st.get("part_to") or 1)
@@ -131,6 +142,8 @@ def stage_unit(unit_done, detail=None):
 
 
 def stage_end(done=True):
+    if SMOKE["on"]:
+        return
     st = status_read()
     key = st.get("stage_key")
     sp = st.get("stage_progress") or {}

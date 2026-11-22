@@ -48,6 +48,40 @@ aif_port_daily <- function(mask, M, Rx, lag_days = 0L) {
   out
 }
 
+## 임의 비중 표(신호 × 종목 · 음수 = 매도)의 일별 수익 — 잠재팩터 포트폴리오용.
+##   비중은 월말 신호일에 정해져 다음 거래일부터 적용된다. 비중 합이 1 이 아니면 나머지는 수익 0 인 자리로 남는다
+##   (롱숏 비중의 합이 0 이면 자기자본 1 에 대한 롱숏 손익이 된다).
+aif_port_daily_w <- function(W, M, Rx) {
+  e <- nrow(Rx); out <- rep(NA_real_, length(M$dates))
+  W[!is.finite(W)] <- 0
+  rows <- which(rowSums(abs(W)) > 0 & M$hold_ok)
+  if (!length(rows)) return(out)
+  wx <- xts(W[rows, , drop = FALSE], order.by = M$dates[M$sig_idx[rows]]); colnames(wx) <- M$tickers
+  r <- suppressWarnings(Return.portfolio(Rx, weights = wx, geometric = TRUE, verbose = FALSE))
+  out[match(as.Date(index(r)), M$dates)] <- as.numeric(r)
+  out[seq_along(out) > e] <- NA_real_
+  out
+}
+
+## 비중 표 하나의 성과(잠재팩터 포트폴리오) — 롱숏이라 무위험 수익을 빼지 않는다. 반환 = list(id, stats, daily, misc)
+aif_measure_weights <- function(id, W, M, Rx, cfg) {
+  r <- aif_port_daily_w(W, M, Rx)
+  daily <- data.table(Date = M$dates, ls = r)[is.finite(ls)]
+  per <- aif_periods(cfg)
+  st <- rbindlist(lapply(names(per), function(p) {
+    sel <- daily$Date >= per[[p]][1] & daily$Date <= per[[p]][2]
+    if (sum(sel) < 60L) return(NULL)
+    d <- daily$Date[sel]; i <- match(d, M$dates)
+    z <- aif_stats(daily$ls[sel], d, M$bm[i], M$rf[i], cfg, ls = TRUE)
+    if (is.null(z)) NULL else cbind(data.table(factor = id, portfolio = "ls", cost = "gross", period = p), as.data.table(z))
+  }), fill = TRUE)
+  rows <- which(rowSums(abs(W), na.rm = TRUE) > 0 & M$hold_ok)
+  misc <- data.table(factor = id, first_signal = as.character(M$sig_dates[min(rows)]), last_signal = as.character(M$sig_dates[max(rows)]), n_months = length(rows),
+                     names_avg = mean(rowSums(is.finite(W[rows, , drop = FALSE]) & W[rows, , drop = FALSE] != 0)),
+                     gross_avg = mean(rowSums(abs(W[rows, , drop = FALSE]), na.rm = TRUE)), net_avg = mean(rowSums(W[rows, , drop = FALSE], na.rm = TRUE)))
+  list(id = id, stats = st, daily = daily, misc = misc)
+}
+
 ## 같은 것을 직접 계산(달 초 동일가중 · 달 안 보유) — Return.portfolio 와 같은 값인지 대조하는 용도
 aif_port_daily_direct <- function(mask, M) {
   out <- rep(NA_real_, length(M$dates))

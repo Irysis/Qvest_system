@@ -17,7 +17,7 @@ import numpy as np
 import aif_common as ac
 from aif_enumerate import Compact
 from aif_features import FeatureStore
-from aif_tree import BURN_YEARS, EMBARGO_M, VAL_FRAC, _nlff_automl, design, macro_z, target_rank
+from aif_tree import BURN_YEARS, EMBARGO_M, VAL_FRAC, _nlff_automl, design, macro_z, make_ens, target_rank
 
 VERSION = 1
 HIDDEN, N_SEEDS, BATCH, MAX_EPOCH, PATIENCE = (32, 16, 8), 10, 10000, 100, 5
@@ -119,6 +119,8 @@ def run_target(tk, cfg, X, xnames, Z, znames, cp, out_dir, fp, force, unit0, dev
         qm = np.isin(np.array([int(str(d)[5:7]) for d in f.sig_dates]), [3, 6, 9, 12])
         usable &= qm[cp.S]
     sel_years, dec = ac.december_signals(f, BURN_YEARS)
+    if ac.SMOKE["on"]:
+        sel_years = [2010]
     pred = np.full(cp.n, np.nan, dtype=np.float32)
     logs, names = [], xnames + znames
     for n, yy in enumerate(sel_years):
@@ -177,22 +179,13 @@ def run_target(tk, cfg, X, xnames, Z, znames, cp, out_dir, fp, force, unit0, dev
         ac.stage_unit(unit0 + n + 1, "%s %d년 재학습 끝" % (tk, yy))
     S = np.full((f.ns, f.nt), np.nan, dtype=np.float32)
     S[cp.S, cp.J] = pred
-    path = ac.out("factors") + "/%s.parquet" % cfg["name"]
+    path = ac.out(ac.smoke_name("factors")) + "/%s.parquet" % cfg["name"]
     ac.save_factor_panel(path, cfg["name"], S, f)
-    ac.write_json({"target": tk, "retrains": logs}, ac.results("stage3_nn", "retrain_log_%s.json" % tk))
+    ac.write_json({"target": tk, "retrains": logs}, ac.results(ac.smoke_name("stage3_nn"), "retrain_log_%s.json" % tk))
     out = [{"id": cfg["name"], "path": path, "direction": 1, "method": "예측 모형 2판 · 신경망", "desc": cfg["desc"]}]
-    tp = ac.out("factors") + "/%s.parquet" % cfg["tree"]
-    if os.path.exists(tp):                                           # 두 팔의 평균 = 달마다 멤버 안 순위의 평균(둘 다 값이 있는 칸만)
-        import pyarrow.parquet as pq
-        t = pq.read_table(tp, columns=["Date", "Ticker", "Raw_Value"]).to_pandas()
-        Tm = np.full((f.ns, f.nt), np.nan, dtype=np.float32)
-        si = np.searchsorted(f.sig_dates, t["Date"].to_numpy().astype("datetime64[D]"))
-        ti = f.ticker_index(t["Ticker"].to_list())
-        Tm[si, ti] = t["Raw_Value"].to_numpy(dtype=np.float32)
-        E = (ac.rank_pm1(S, f.mem) + ac.rank_pm1(Tm, f.mem)) / 2.0
-        pe = ac.out("factors") + "/%s.parquet" % cfg["ens"]
-        ac.save_factor_panel(pe, cfg["ens"], E, f)
-        out.append({"id": cfg["ens"], "path": pe, "direction": 1, "method": "예측 모형 2판 · 두 팔 평균", "desc": "트리 AutoML 과 신경망 예측의 순위 평균"})
+    e = make_ens(f, tk)                                              # 두 팔의 평균(트리 팔 파일이 있을 때)
+    if e:
+        out.append(e)
     return out, len(sel_years)
 
 
@@ -200,7 +193,12 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--target", default="both")
     ap.add_argument("--force", action="store_true")
+    ap.add_argument("--smoke", action="store_true", help="한 해(2010) · 1개월 표적 · 씨앗 2개 · 격자 1칸 — 코드 경로 시험용")
     a = ap.parse_args()
+    ac.SMOKE["on"] = a.smoke
+    global N_SEEDS, GRID_LR, GRID_L1
+    if a.smoke:
+        N_SEEDS, GRID_LR, GRID_L1 = 2, (0.01,), (1e-4,)
     import torch
     ac.low_priority()
     dev = "cuda" if torch.cuda.is_available() else "cpu"
@@ -208,15 +206,15 @@ def main():
     f = ac.Frame()
     store = FeatureStore(f)
     cp = Compact(f)
-    out_dir = ac.out("nn")
-    for d in (out_dir, ac.results("stage3_nn"), ac.out("factors")):
+    out_dir = ac.out(ac.smoke_name("nn"))
+    for d in (out_dir, ac.results(ac.smoke_name("stage3_nn")), ac.out(ac.smoke_name("factors"))):
         os.makedirs(d, exist_ok=True)
     ac.stage_begin("neural_net", 1, "준비", 0.0, 0.02)
     X, xnames = design(store, cp)
     Z = np.load(store.dir + "/macro_state.npy")
     znames = ac.read_json(store.dir + "/macro_state_meta.json")["names"]
     fp = "%s|v%d|%d|%d" % (f.meta.get("rawdata_tag"), VERSION, X.shape[1], Z.shape[1])
-    tks = ["1m", "12m"] if a.target == "both" else [a.target]
+    tks = ["1m"] if a.smoke else (["1m", "12m"] if a.target == "both" else [a.target])
     n_years = len({int(str(d)[:4]) for d in f.sig_dates}) - BURN_YEARS + 1
     ac.stage_begin("neural_net", n_years * len(tks), "재학습", 0.02, 0.9)
     ac.log("장치 %s · 입력 %d열 · 표본 %d칸", dev, X.shape[1] + Z.shape[1], cp.n)
@@ -228,7 +226,7 @@ def main():
     ac.write_json({"at": ac._now(), "stage": "neural_net", "factors": manifest,
                    "params": {"hidden": HIDDEN, "seeds": N_SEEDS, "batch": BATCH, "max_epoch": MAX_EPOCH, "patience": PATIENCE, "grid_lr": GRID_LR, "grid_l1": GRID_L1,
                               "_source": "Gu, Kelly & Xiu 2020 RFS 의 NN3(은닉 32-16-8 · 배치 정규화 · L1 · 조기 종료 · 씨앗 10개 · 배치 10,000 · 100에폭 · 학습률과 L1 격자) https://doi.org/10.1093/rfs/hhaa009"}},
-                  ac.out("manifest_nn.json"))
+                  ac.out(ac.smoke_name("manifest_nn") + ".json"))
     ac.stage_end(done=False)
     return 0
 

@@ -90,12 +90,17 @@ def stage1_score(v, res, fit, ev):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--force", action="store_true")
+    ap.add_argument("--smoke", action="store_true", help="한 해(2010)만 · 쌍을 만들 특성 12개 — 코드 경로 시험용")
     a = ap.parse_args()
+    ac.SMOKE["on"] = a.smoke
+    global M_TOP
+    if a.smoke:
+        M_TOP = 12
     ac.low_priority()
     f = ac.Frame()
     store = FeatureStore(f)
     cp = Compact(f)
-    out_dir = ac.out("fboost")
+    out_dir = ac.out(ac.smoke_name("fboost"))
     os.makedirs(out_dir, exist_ok=True)
     ac.stage_begin("feature_boost", 1, "준비", 0.0, 0.02)
     X, names = load_features(store, cp)
@@ -105,6 +110,8 @@ def main():
     yok = np.isfinite(y)
     fp = "%s|v%d|%d" % (f.meta.get("rawdata_tag"), VERSION, len(names))
     sel_years, dec = ac.december_signals(f, BURN_YEARS)
+    if a.smoke:
+        sel_years = [2010]
     ac.stage_begin("feature_boost", len(sel_years), "해", 0.02, 0.9)
     comp = np.full(cp.n, np.nan, dtype=np.float32)
     tops = [np.full(cp.n, np.nan, dtype=np.float32) for _ in range(N_TOP)]
@@ -204,12 +211,13 @@ def main():
         ac.log("%d년 말 — 표본 %d · 후보 %d → %d → 뽑힘 %d · %.0f초", yy, len(idx), len(cand), len(keep), len(picked), time.time() - t0)
         ac.stage_unit(n + 1, "%d년 말 선택 — %d개" % (yy, len(picked)))
         del vals, oof, res
-    os.makedirs(ac.results("stage3_fboost"), exist_ok=True)
-    with open(ac.results("stage3_fboost", "selected_formulas.csv"), "w", newline="", encoding="utf-8-sig") as fh:
+    res_dir = ac.results(ac.smoke_name("stage3_fboost"))
+    os.makedirs(res_dir, exist_ok=True)
+    with open(res_dir + "/selected_formulas.csv", "w", newline="", encoding="utf-8-sig") as fh:
         w = csv.DictWriter(fh, fieldnames=list(rows[0].keys()))
         w.writeheader()
         w.writerows(rows)
-    fac_dir = ac.out("factors")
+    fac_dir = ac.out(ac.smoke_name("factors"))
     os.makedirs(fac_dir, exist_ok=True)
     manifest = []
 
@@ -225,7 +233,7 @@ def main():
         save("FBOOST_TOP%d" % (k + 1), tops[k], "해마다 %d번째로 뽑힌 쌍 연산 특성(식은 해마다 바뀐다)" % (k + 1))
     ac.write_json({"at": ac._now(), "stage": "feature_boost", "factors": manifest, "n_base_features": len(names),
                    "params": {"M_TOP": M_TOP, "N_KEEP": N_KEEP, "K_SELECT": K_SELECT, "N_BINS": N_BINS, "N_FOLDS": N_FOLDS, "N_TREES": N_TREES, "LGB": LGB, "_source": PARAM_SRC},
-                   "selected_csv": ac.results("stage3_fboost", "selected_formulas.csv")}, ac.out("manifest_fboost.json"))
+                   "selected_csv": res_dir + "/selected_formulas.csv"}, ac.out(ac.smoke_name("manifest_fboost") + ".json"))
     ac.log("끝 — 선택 %d해 · 팩터 %d개 저장", len(sel_years), len(manifest))
     ac.stage_end(done=False)
     return 0

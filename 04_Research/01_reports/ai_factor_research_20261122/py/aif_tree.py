@@ -83,6 +83,30 @@ def importance(models, names):
     return [(names[i], round(float(tot[i]), 4)) for i in o if tot[i] > 0]
 
 
+ENS = {"1m": ("TREE_1M", "NN_1M", "ENS_1M"), "12m": ("TREE_12M", "NN_12M", "ENS_12M")}
+
+
+def make_ens(f, tk):
+    """두 팔의 평균 — 달마다 멤버 안 순위의 평균(둘 다 값이 있는 칸만). 두 팔의 팩터 파일이 모두 있을 때만 만든다."""
+    import pyarrow.parquet as pq
+    tn, nn_, en = ENS[tk]
+    fd = ac.out(ac.smoke_name("factors"))
+    pt, pn = fd + "/%s.parquet" % tn, fd + "/%s.parquet" % nn_
+    if not (os.path.exists(pt) and os.path.exists(pn)):
+        return None
+
+    def load(p):
+        t = pq.read_table(p, columns=["Date", "Ticker", "Raw_Value"]).to_pandas()
+        M = np.full((f.ns, f.nt), np.nan, dtype=np.float32)
+        si = np.searchsorted(f.sig_dates, t["Date"].to_numpy().astype("datetime64[D]"))
+        M[si, f.ticker_index(t["Ticker"].to_list())] = t["Raw_Value"].to_numpy(dtype=np.float32)
+        return M
+    E = (ac.rank_pm1(load(pt), f.mem) + ac.rank_pm1(load(pn), f.mem)) / 2.0
+    pe = fd + "/%s.parquet" % en
+    ac.save_factor_panel(pe, en, E, f)
+    return {"id": en, "path": pe, "direction": 1, "method": "예측 모형 2판 · 두 팔 평균", "desc": "트리 AutoML 과 신경망 예측의 순위 평균"}
+
+
 def run_target(tk, cfg, X, xnames, Z, znames, cp, out_dir, fp, force, unit0, n_units):
     na, acfg0 = _nlff_automl()
     acfg = dict(acfg0, estimator_list=ESTIMATORS)
@@ -99,6 +123,9 @@ def run_target(tk, cfg, X, xnames, Z, znames, cp, out_dir, fp, force, unit0, n_u
         qm = np.isin(np.array([int(str(d)[5:7]) for d in f.sig_dates]), [3, 6, 9, 12])
         usable &= qm[cp.S]
     sel_years, dec = ac.december_signals(f, BURN_YEARS)
+    max_iter = int(acfg["max_iter"])
+    if ac.SMOKE["on"]:
+        sel_years, max_iter = [2010], 6
     pred = np.full(cp.n, np.nan, dtype=np.float32)
     logs = []
     names = xnames + znames
@@ -124,7 +151,7 @@ def run_target(tk, cfg, X, xnames, Z, znames, cp, out_dir, fp, force, unit0, n_u
             ac.log("%s %d — 표본이 모자라 건너뜀", tk, yy)
             continue
         log = {"target": tk, "year": yy, "n_train": int(tr.sum()), "n_val": int(va.sum()), "val_from": str(dates[w][va].min()), "refit_cut": str(refit_cut)}
-        members = na.fit_refit("regression", Xw[tr], y[w][tr], Xw[va], y[w][va], acfg, int(acfg["max_iter"]), ac.threads(), SEED, log, dates_va=dates[w][va])
+        members = na.fit_refit("regression", Xw[tr], y[w][tr], Xw[va], y[w][va], acfg, max_iter, ac.threads(), SEED, log, dates_va=dates[w][va])
         models = na.refit_models("regression", members, Xw, y[w], ac.threads())
         del Xw
         rows = np.arange(a1, b1)
@@ -146,9 +173,9 @@ def run_target(tk, cfg, X, xnames, Z, znames, cp, out_dir, fp, force, unit0, n_u
         del models
     S = np.full((f.ns, f.nt), np.nan, dtype=np.float32)
     S[cp.S, cp.J] = pred
-    path = ac.out("factors") + "/%s.parquet" % cfg["name"]
+    path = ac.out(ac.smoke_name("factors")) + "/%s.parquet" % cfg["name"]
     ac.save_factor_panel(path, cfg["name"], S, f)
-    ac.write_json({"target": tk, "retrains": logs}, ac.results("stage3_tree", "retrain_log_%s.json" % tk))
+    ac.write_json({"target": tk, "retrains": logs}, ac.results(ac.smoke_name("stage3_tree"), "retrain_log_%s.json" % tk))
     return {"id": cfg["name"], "path": path, "direction": 1, "method": "예측 모형 2판 · 트리 AutoML", "desc": cfg["desc"]}, len(sel_years)
 
 
@@ -156,32 +183,37 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--target", default="both")
     ap.add_argument("--force", action="store_true")
+    ap.add_argument("--smoke", action="store_true", help="한 해(2010) · 1개월 표적 · 탐색 6회 — 코드 경로 시험용")
     a = ap.parse_args()
+    ac.SMOKE["on"] = a.smoke
     ac.low_priority()
     f = ac.Frame()
     store = FeatureStore(f)
     cp = Compact(f)
-    out_dir = ac.out("tree")
+    out_dir = ac.out(ac.smoke_name("tree"))
     os.makedirs(out_dir, exist_ok=True)
-    os.makedirs(ac.results("stage3_tree"), exist_ok=True)
-    os.makedirs(ac.out("factors"), exist_ok=True)
+    os.makedirs(ac.results(ac.smoke_name("stage3_tree")), exist_ok=True)
+    os.makedirs(ac.out(ac.smoke_name("factors")), exist_ok=True)
     ac.stage_begin("tree_automl", 1, "준비", 0.0, 0.02)
     X, xnames = design(store, cp)
     Z = np.load(store.dir + "/macro_state.npy")
     znames = ac.read_json(store.dir + "/macro_state_meta.json")["names"]
     fp = "%s|v%d|%d|%d" % (f.meta.get("rawdata_tag"), VERSION, X.shape[1], Z.shape[1])
-    tks = ["1m", "12m"] if a.target == "both" else [a.target]
+    tks = ["1m"] if a.smoke else (["1m", "12m"] if a.target == "both" else [a.target])
     n_years = len({int(str(d)[:4]) for d in f.sig_dates}) - BURN_YEARS + 1
     ac.stage_begin("tree_automl", n_years * len(tks), "재학습", 0.02, 0.9)
     manifest, u0 = [], 0
     for tk in tks:
         m, k = run_target(tk, TARGETS[tk], X, xnames, Z, znames, cp, out_dir, fp, a.force, u0, n_years * len(tks))
         manifest.append(m)
+        e = make_ens(f, tk)
+        if e:
+            manifest.append(e)
         u0 += k
     ac.write_json({"at": ac._now(), "stage": "tree_automl", "factors": manifest,
                    "params": {"estimators": ESTIMATORS, "val_frac": VAL_FRAC, "embargo_months": EMBARGO_M, "seed": SEED,
                               "_source": "승인 계획 '머신러닝 방법론' · 탐색 설정(시행 60 · 앙상블 크기 · 탐색 공간 = 라이브러리 기본)은 nlff_config.json::automl 그대로"}},
-                  ac.out("manifest_tree.json"))
+                  ac.out(ac.smoke_name("manifest_tree") + ".json"))
     ac.stage_end(done=False)
     return 0
 

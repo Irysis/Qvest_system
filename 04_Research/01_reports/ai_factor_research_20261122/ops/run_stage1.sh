@@ -3,6 +3,8 @@
 #   각 작업은 감시 셸(aif_run.py)이 띄운다 — 출발 조건을 기다리고, 낮은 우선순위로 돌리고, 진행 알림을 보낸다.
 #   앞 작업이 실패하면 뒤 작업은 돌리지 않는다. 다시 띄우면 끝난 단위는 건너뛴다.
 #   사용: bash ops/run_stage1.sh [--no-notify]
+# (본문을 함수에 넣었다 — 셸이 파일을 끝까지 읽은 뒤 실행하므로, 도는 중에 이 파일을 고쳐도 실행 중인 것은 영향을 받지 않는다)
+main() {
 set -u
 SD="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 RD="$(cd "$SD" && pwd -W 2>/dev/null)"; [ -n "$RD" ] || RD="$SD"      # 윈도 형식 경로(파이썬 · Rscript 에 넘긴다)
@@ -17,3 +19,5 @@ EXTRA=("$@")
 rc=$?; [ $rc -eq 0 ] || { echo "[run_stage1] 앞 작업 실패 rc=$rc — 멈춘다"; exit $rc; }
 "$PY" -X utf8 "$RD/ops/aif_run.py" --job perf --stage perf_base --summary "$OUT/stage_summary_perf_db.json" "${EXTRA[@]}" -- "$RS" --vanilla "$RD/run/02_stage1_factor_db.R"
 rc=$?; echo "[run_stage1] 끝 rc=$rc"; exit $rc
+}
+main "$@"; exit $?
