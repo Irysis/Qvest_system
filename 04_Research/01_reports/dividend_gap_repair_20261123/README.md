@@ -83,11 +83,12 @@ Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{ Comma
 | 수식 탐색 3판 멈춤 | 08:25:48 단위 경계(30/38 · 체크포인트 30개)에서 셸 → 감시 셸 → 작업 순서로 종료. 다시 띄우기 = `bash 04_Research/01_reports/ai_factor_research_20261122/ops/run_queue_long.sh > .cache/aif_research/logs/run_queue_long_20261124_resume.out 2>&1`(끝난 단위는 건너뛴다) — **단계 F 가 첫 적재를 지난 뒤** |
 | 2 원천 반영 | 끝 08:26 — META 신규 59,199 · INFO 신규 19,733 · 변경 0 · 삭제 0. 원천 표 사본 = `.cache/fundamental_backup/20261124_082627_pre_div_supp/qw_fund_v2/` |
 | 3 원장 열기 | 끝 08:26 — `FUNDAMENTAL-DIV-GAP-SUPPLEMENT-20261123`(completed_at = null) |
-| 4 캐시 재생산 | **반쯤** — 08:27 `fundamental_produce_v2.R` 이 1/4(분기 표 `fund_v2_quarterly.parquet` 08:27:41) · 2/4(캐시 후보 `.cache/fundamental_v2/candidate_fundamental_{quarterly,annual}.parquet` 08:32 · 행 70,682,391 / 16,079,171 = 생산 보고와 일치)를 끝낸 순간 메모리 안전장치(가용 2.0GB)에 걸려 종료. **정본 캐시는 옛 것 그대로**. 캐시 생산기의 실제 정점은 약 14.7GB 였다(새벽 실측 10.3GB 는 중단 시점 값). 남은 3/4(후보 검사) · 4/4(사본 · 교체)는 `tools/finish_produce.R`(공식 코드를 그대로 옮긴 것 · 옛 사본 정리만 뺌)로 돌린다 — 아래 5 · 7 이 깨끗할 때만 |
-| 5 캐시 대조 | 도는 중 — 옛 정본 대 후보(`cache_diff.json`) |
-| 6 FF 요인 | 도는 중 — `.cache/scheduler_logs/div_gap_krf.log` |
-| 7 영향 팩터 탐침 | 다음 — 후보 캐시로(환경변수 `QVEST_FUND_Q` · `QVEST_FUND_A` = 후보 경로) `rebuild_factor_subset.R --dry-run`(사양 `tools/probe_spec.DRYRUN_ONLY.json` — 쓰기 실행 금지 · 기록은 `--log` 로 따로) → `tools/probe_read.py` 로 풀이 → `repair_spec.json` |
-| 8 월간 부분 재빌드 · 9 일간 단계 F · 10 검증 · 11 닫기 | 아직 — 정본 교체 뒤. 원장 닫기 = `tools/ledger_edit.py close <사양.json>`(형식 보존 단정 포함) |
+| 4 캐시 재생산 | 끝 08:43 — 08:27 실행은 후보를 다 만든 직후 메모리 안전장치(가용 2.0GB · 캐시 생산기 정점 14.7GB)에 걸려 멈췄고(정본 그대로), 남은 3/4 · 4/4 를 `tools/finish_produce.R`(공식 코드 그대로 · 옛 사본 정리만 뺌)로 돌렸다: 후보 검사 통과(분기 70,682,391행 · 3,719종목 · 397항목 / 연간 16,079,171행 · 날짜 순서 계약 위반 0) → 옛 캐시 = `.cache/fundamental_backup/20261124_084352/` → 정본 교체 08:43:52 |
+| 5 캐시 대조 | 끝(교체 전 · 옛 정본 대 후보 · `cache_diff.json`) — 분기 표: 값 생김 293,520(14항목 = 배당 원계정 4 + 분기 단독 4 + DPS · PayoutRatio · DividendToEquity · CashDivCommon_Growth · AdjDPS_Growth · Delta_PayoutRatio · 기간 201209~201409) · 값 바뀜 0 · 사라짐 76(배당 항목의 201206 행 8종목 — 새로 들어온 201209 행보다 날짜가 늦어 날짜 순서 계약이 버림) · Factor_Date 바뀜 121,887 = 전부 기간 202609(달력 꼬리). 연간 표: 값 생김 48,953(10항목) · 그 밖 변화 0 |
+| 6 FF 요인 | 끝 08:38 — rc 0 · 207초 · 정점 3.7GB(`.cache/scheduler_logs/div_gap_krf.log`) |
+| 7 영향 팩터 탐침 | 끝 08:42 — 후보 캐시로 네 모듈 14달 모의 재계산(`probe_result.json`): 달라진 팩터 = **V11_Shareholder_Yield · V17_Payout_Ratio · V23_RAFI_Weight · Q23_Sustainable_Growth** 넷 · 201301~201512 의 여덟 달에서만 · 대조 달(201206 · 201212 · 201612 · 201906 · 202112 · 202506) 차이 0. `repair_spec.json`(모듈 fundamental) — 재무 모듈만으로 다시 계산한 두 달(201306 · 201412)이 네 모듈 탐침과 팩터별로 일치함을 확인 |
+| 8 월간 부분 재빌드 | **도는 중** 08:45~ — WMI 로 띄움 · 작업자 1 · 로그 `.cache/scheduler_logs/div_gap_subset.out.log` · 요약 `.cache/scheduler_logs/factor_subset_repair_20261124_0845*.json`(result = 성공이어야 한다) · 끝나면 이번 달 따로: `QVEST_RFS_SPEC=<repair_spec.json> Rscript 02_Infrastructure/factor_db/rebuild_factor_subset.R --months 202611` |
+| 9 일간 단계 F · 10 검증 · 11 닫기 | 아직 — 8 뒤. 단계 F 는 README 위쪽의 WMI 명령(로그 `div_gap_phaseF.log` · 끝 줄 `RC=0 END`) · 띄우기 전 `fdb_daily_202611.parquet` 의 끝 날짜 · 행 수를 적어 둔다 · 첫 적재(1~2분)를 지나면 수식 탐색을 다시 띄운다. 원장 닫기 = `tools/ledger_edit.py close <사양.json>` |
 
 - 메모리 안전장치 = `tools/run_guard.ps1`(프로세스 트리의 사용량을 재고 가용이 문턱 아래면 트리를 끝낸다). 무거운 단계는 이것으로 감싸 띄웠다.
 - 같은 PC 의 다른 세션 둘(신선도 · 밤 갱신 점검 / 스타일 국면 브리핑 검토)에 이 사슬이 쓰는 파일을 건드리지 말라고 알려 뒀다. 원장을 닫으면 점검 세션에 한 줄 알린다(그쪽이 팩터 등록부 사본 동기화를 도훈께 권고할 예정).
