@@ -1,0 +1,3121 @@
+{
+  "target": "1m",
+  "retrains": [
+    {
+      "target": "1m",
+      "year": 2004,
+      "n_train": 33603,
+      "n_val": 6879,
+      "val_from": "2003-11-28",
+      "refit_cut": "2004-11-30",
+      "selection_metric": "monthly_spearman_ic(loss = 1 − IC)",
+      "best_estimator": "xgboost",
+      "n_trials": 60,
+      "best_loss_per_estimator": {
+        "lgbm": 0.7798544724473019,
+        "xgboost": 0.7453672145290051,
+        "rf": 0.7738644917959067,
+        "extra_tree": 0.7762148969964521,
+        "sgd": 0.7457192303999356
+      },
+      "ensemble_weights": {
+        "extra_tree": 0.04,
+        "lgbm": 0.02,
+        "rf": 0.04,
+        "sgd": 0.48,
+        "xgboost": 0.42
+      },
+      "best_configs": {
+        "extra_tree": {
+          "n_estimators": 9,
+          "max_features": 0.817492152261147,
+          "max_leaves": 5,
+          "random_state": 20261123
+        },
+        "lgbm": {
+          "n_estimators": 4,
+          "num_leaves": 11,
+          "min_child_samples": 10,
+          "learning_rate": 0.29217656002529596,
+          "log_max_bin": 8,
+          "colsample_bytree": 0.8664793063908852,
+          "reg_alpha": 0.001042006333946597,
+          "reg_lambda": 1.4460831994807508,
+          "deterministic": true,
+          "force_row_wise": true,
+          "random_state": 20261123
+        },
+        "rf": {
+          "n_estimators": 11,
+          "max_features": 1.0,
+          "max_leaves": 4,
+          "random_state": 20261123
+        },
+        "sgd": {
+          "penalty": "l2",
+          "alpha": 1.196139045476528e-05,
+          "l1_ratio": 0.9999999999999999,
+          "epsilon": 0.1,
+          "learning_rate": "invscaling",
+          "eta0": 0.01901588227795425,
+          "power_t": 0.33213222906735945,
+          "average": false,
+          "loss": "squared_epsilon_insensitive",
+          "random_state": 20261123
+        },
+        "xgboost": {
+          "n_estimators": 84,
+          "max_leaves": 13,
+          "min_child_weight": 37.018970440104674,
+          "learning_rate": 0.08298171789825311,
+          "subsample": 0.917837529417581,
+          "colsample_bylevel": 1.0,
+          "colsample_bytree": 1.0,
+          "reg_alpha": 0.0009765625,
+          "reg_lambda": 1.336484510746126
+        }
+      },
+      "importance_top": [
+        [
+          "L02_Turnover",
+          0.0034
+        ],
+        [
+          "cat_kosdaq",
+          0.003
+        ],
+        [
+          "D01_IdioVol",
+          0.0019
+        ],
+        [
+          "CR06_DTC_Proxy",
+          0.0019
+        ],
+        [
+          "s_mkt_1m",
+          0.0011
+        ],
+        [
+          "L14_Price_Impact",
+          0.0011
+        ],
+        [
+          "s_us_term",
+          0.001
+        ],
+        [
+          "L05_Dollar_Volume",
+          0.0009
+        ],
+        [
+          "q_sl_EBITDA",
+          0.0009
+        ],
+        [
+          "p_mom_5",
+          0.0006
+        ],
+        [
+          "s_mkt_dd_250",
+          0.0005
+        ],
+        [
+          "s_breadth_3m",
+          0.0004
+        ],
+        [
+          "p_vol_250",
+          0.0004
+        ],
+        [
+          "M30_Mom_10d",
+          0.0003
+        ],
+        [
+          "CR01_Sector_Comovement",
+          0.0003
+        ],
+        [
+          "L26_Log_MktCap",
+          0.0003
+        ],
+        [
+          "RP_1603_00751",
+          0.0003
+        ],
+        [
+          "S02_Float_Size",
+          0.0003
+        ],
+        [
+          "s_vix",
+          0.0003
+        ],
+        [
+          "T10_RSI28",
+          0.0003
+        ],
+        [
+          "s_mkt_3m",
+          0.0002
+        ],
+        [
+          "s_mkt_vol_60",
+          0.0002
+        ],
+        [
+          "L28_Vol_Mom_63d",
+          0.0002
+        ],
+        [
+          "s_fx_krw_3m",
+          0.0002
+        ]
+      ],
+      "seconds": 264.0
+    },
+    {
+      "target": "1m",
+      "year": 2005,
+      "n_train": 39556,
+      "n_val": 11154,
+      "val_from": "2004-09-30",
+      "refit_cut": "2005-11-30",
+      "selection_metric": "monthly_spearman_ic(loss = 1 − IC)",
+      "best_estimator": "xgboost",
+      "n_trials": 60,
+      "best_loss_per_estimator": {
+        "lgbm": 0.8775158919512508,
+        "xgboost": 0.8533545189075147,
+        "rf": 0.8787309619350715,
+        "extra_tree": 0.8774097933230592,
+        "sgd": 0.8583578813636923
+      },
+      "ensemble_weights": {
+        "lgbm": 0.04,
+        "sgd": 0.48,
+        "xgboost": 0.48
+      },
+      "best_configs": {
+        "lgbm": {
+          "n_estimators": 4,
+          "num_leaves": 29,
+          "min_child_samples": 14,
+          "learning_rate": 0.2413002889729339,
+          "log_max_bin": 9,
+          "colsample_bytree": 1.0,
+          "reg_alpha": 0.008811183819397524,
+          "reg_lambda": 1.3709625855933145,
+          "deterministic": true,
+          "force_row_wise": true,
+          "random_state": 20261123
+        },
+        "sgd": {
+          "penalty": "l1",
+          "alpha": 2.7208804557564686e-06,
+          "l1_ratio": 0.9999999999999999,
+          "epsilon": 0.036837955038256556,
+          "learning_rate": "invscaling",
+          "eta0": 0.0016640527481691474,
+          "power_t": 0.21162319090136125,
+          "average": false,
+          "loss": "epsilon_insensitive",
+          "random_state": 20261123
+        },
+        "xgboost": {
+          "n_estimators": 10,
+          "max_leaves": 24,
+          "min_child_weight": 0.10010180851711238,
+          "learning_rate": 0.5819865729420262,
+          "subsample": 1.0,
+          "colsample_bylevel": 1.0,
+          "colsample_bytree": 0.9962975463940674,
+          "reg_alpha": 0.0009765625,
+          "reg_lambda": 3.9672617272247175
+        }
+      },
+      "importance_top": [
+        [
+          "CR06_DTC_Proxy",
+          0.0066
+        ],
+        [
+          "L02_Turnover",
+          0.0043
+        ],
+        [
+          "cat_kosdaq",
+          0.0043
+        ],
+        [
+          "L14_Price_Impact",
+          0.0024
+        ],
+        [
+          "s_breadth_3m",
+          0.0012
+        ],
+        [
+          "s_kr_credit",
+          0.0011
+        ],
+        [
+          "T07_PMA20",
+          0.0009
+        ],
+        [
+          "p_notrade_250",
+          0.0009
+        ],
+        [
+          "s_kr3y",
+          0.0009
+        ],
+        [
+          "V16_Tobins_Q",
+          0.0008
+        ],
+        [
+          "L05_Dollar_Volume",
+          0.0008
+        ],
+        [
+          "q_O_OENEG",
+          0.0007
+        ],
+        [
+          "s_mkt_3m",
+          0.0007
+        ],
+        [
+          "s_mkt_1m",
+          0.0007
+        ],
+        [
+          "L26_Log_MktCap",
+          0.0007
+        ],
+        [
+          "L04_Bid_Ask_Proxy",
+          0.0007
+        ],
+        [
+          "s_mkt_dd_250",
+          0.0007
+        ],
+        [
+          "T09_PMA120",
+          0.0006
+        ],
+        [
+          "s_mkt_12m",
+          0.0005
+        ],
+        [
+          "s_us10y_3m",
+          0.0005
+        ],
+        [
+          "p_mom_5",
+          0.0005
+        ],
+        [
+          "s_mkt_vol_60",
+          0.0005
+        ],
+        [
+          "S02_Float_Size",
+          0.0004
+        ],
+        [
+          "s_us_term",
+          0.0004
+        ],
+        [
+          "M01_Mom_12_1",
+          0.0004
+        ],
+        [
+          "T10_RSI28",
+          0.0004
+        ],
+        [
+          "T08_PMA60",
+          0.0004
+        ],
+        [
+          "M11_ST_Reversal",
+          0.0004
+        ],
+        [
+          "p_vol_120",
+          0.0004
+        ],
+        [
+          "L06_Zero_Trade_Days",
+          0.0003
+        ]
+      ],
+      "seconds": 294.5
+    },
+    {
+      "target": "1m",
+      "year": 2006,
+      "n_train": 46255,
+      "n_val": 16446,
+      "val_from": "2005-07-29",
+      "refit_cut": "2006-11-30",
+      "selection_metric": "monthly_spearman_ic(loss = 1 − IC)",
+      "best_estimator": "xgboost",
+      "n_trials": 60,
+      "best_loss_per_estimator": {
+        "lgbm": 0.8288407883776476,
+        "xgboost": 0.8108172257031072,
+        "rf": 0.8407855934358273,
+        "extra_tree": 0.8400807240134209,
+        "sgd": 0.8236154404806275
+      },
+      "ensemble_weights": {
+        "rf": 0.06,
+        "sgd": 0.38,
+        "xgboost": 0.56
+      },
+      "best_configs": {
+        "rf": {
+          "n_estimators": 11,
+          "max_features": 1.0,
+          "max_leaves": 4,
+          "random_state": 20261123,
+          "FLAML_sample_size": 10000
+        },
+        "sgd": {
+          "penalty": "l2",
+          "alpha": 2.0093310818855295e-05,
+          "l1_ratio": 0.9999999999999999,
+          "epsilon": 0.1,
+          "learning_rate": "invscaling",
+          "eta0": 0.00666326564448999,
+          "power_t": 0.2938799719426362,
+          "average": false,
+          "loss": "squared_epsilon_insensitive",
+          "random_state": 20261123,
+          "FLAML_sample_size": 46255
+        },
+        "xgboost": {
+          "n_estimators": 31,
+          "max_leaves": 17,
+          "min_child_weight": 0.32619496663867315,
+          "learning_rate": 0.17645615758373007,
+          "subsample": 0.8965052132047895,
+          "colsample_bylevel": 0.8741321555899038,
+          "colsample_bytree": 1.0,
+          "reg_alpha": 0.0009765625,
+          "reg_lambda": 1.3757818756533318,
+          "FLAML_sample_size": 46255
+        }
+      },
+      "importance_top": [],
+      "seconds": 185.8
+    },
+    {
+      "target": "1m",
+      "year": 2007,
+      "n_train": 55806,
+      "n_val": 20948,
+      "val_from": "2006-04-28",
+      "refit_cut": "2007-11-30",
+      "selection_metric": "monthly_spearman_ic(loss = 1 − IC)",
+      "best_estimator": "xgboost",
+      "n_trials": 60,
+      "best_loss_per_estimator": {
+        "lgbm": 0.8318061202595917,
+        "xgboost": 0.8155310049279288,
+        "rf": 0.8329358892755561,
+        "extra_tree": 0.8276501204932848,
+        "sgd": 0.8160704384839947
+      },
+      "ensemble_weights": {
+        "sgd": 0.5,
+        "xgboost": 0.5
+      },
+      "best_configs": {
+        "sgd": {
+          "penalty": "l2",
+          "alpha": 0.0001,
+          "l1_ratio": 0.1500000000000002,
+          "epsilon": 0.1,
+          "learning_rate": "invscaling",
+          "eta0": 0.010000000000000005,
+          "power_t": 0.25,
+          "average": false,
+          "loss": "huber",
+          "random_state": 20261123,
+          "FLAML_sample_size": 55806
+        },
+        "xgboost": {
+          "n_estimators": 10,
+          "max_leaves": 9,
+          "min_child_weight": 0.7294570255284247,
+          "learning_rate": 0.1866514940816001,
+          "subsample": 1.0,
+          "colsample_bylevel": 0.98425063154805,
+          "colsample_bytree": 0.9093696225879023,
+          "reg_alpha": 0.0017240626549020394,
+          "reg_lambda": 4.073686084984736,
+          "FLAML_sample_size": 55806
+        }
+      },
+      "importance_top": [],
+      "seconds": 101.3
+    },
+    {
+      "target": "1m",
+      "year": 2008,
+      "n_train": 65743,
+      "n_val": 22010,
+      "val_from": "2007-02-28",
+      "refit_cut": "2008-11-28",
+      "selection_metric": "monthly_spearman_ic(loss = 1 − IC)",
+      "best_estimator": "xgboost",
+      "n_trials": 60,
+      "best_loss_per_estimator": {
+        "lgbm": 0.8227549426676946,
+        "xgboost": 0.786638912967391,
+        "rf": 0.8234853278818568,
+        "extra_tree": 0.8194981708609499,
+        "sgd": 0.8119985297767515
+      },
+      "ensemble_weights": {
+        "rf": 0.02,
+        "sgd": 0.22,
+        "xgboost": 0.76
+      },
+      "best_configs": {
+        "rf": {
+          "n_estimators": 20,
+          "max_features": 1.0,
+          "max_leaves": 4,
+          "random_state": 20261123,
+          "FLAML_sample_size": 10000
+        },
+        "sgd": {
+          "penalty": "elasticnet",
+          "alpha": 0.0010311961605437158,
+          "l1_ratio": 0.005006293744186481,
+          "epsilon": 0.08953160844750573,
+          "learning_rate": "invscaling",
+          "eta0": 0.009337351439780964,
+          "power_t": 0.22177930874750887,
+          "average": false,
+          "loss": "huber",
+          "random_state": 20261123,
+          "FLAML_sample_size": 10000
+        },
+        "xgboost": {
+          "n_estimators": 38,
+          "max_leaves": 30,
+          "min_child_weight": 5.568787461848433,
+          "learning_rate": 0.07212896859555254,
+          "subsample": 0.8124296719683688,
+          "colsample_bylevel": 0.9999552370459348,
+          "colsample_bytree": 0.878073117579178,
+          "reg_alpha": 0.002088809626875311,
+          "reg_lambda": 44.64628549785761,
+          "FLAML_sample_size": 65743
+        }
+      },
+      "importance_top": [],
+      "seconds": 248.2
+    },
+    {
+      "target": "1m",
+      "year": 2009,
+      "n_train": 76592,
+      "n_val": 22113,
+      "val_from": "2007-11-30",
+      "refit_cut": "2009-11-30",
+      "selection_metric": "monthly_spearman_ic(loss = 1 − IC)",
+      "best_estimator": "xgboost",
+      "n_trials": 60,
+      "best_loss_per_estimator": {
+        "lgbm": 0.8329611909423802,
+        "xgboost": 0.8005245827343427,
+        "rf": 0.8460256002126,
+        "extra_tree": 0.8469605369665564,
+        "sgd": 0.8207382587481812
+      },
+      "ensemble_weights": {
+        "lgbm": 0.12,
+        "sgd": 0.36,
+        "xgboost": 0.52
+      },
+      "best_configs": {
+        "lgbm": {
+          "n_estimators": 22,
+          "num_leaves": 5,
+          "min_child_samples": 6,
+          "learning_rate": 0.17731510940415643,
+          "log_max_bin": 7,
+          "colsample_bytree": 0.6590530458858049,
+          "reg_alpha": 0.0023735488866368382,
+          "reg_lambda": 1.5183235938605866,
+          "deterministic": true,
+          "force_row_wise": true,
+          "random_state": 20261123,
+          "FLAML_sample_size": 10000
+        },
+        "sgd": {
+          "penalty": "l2",
+          "alpha": 2.2603353312543044e-05,
+          "l1_ratio": 0.7969697154762562,
+          "epsilon": 0.1,
+          "learning_rate": "invscaling",
+          "eta0": 0.011642902810772267,
+          "power_t": 0.11380333137920107,
+          "average": false,
+          "loss": "squared_epsilon_insensitive",
+          "random_state": 20261123,
+          "FLAML_sample_size": 76592
+        },
+        "xgboost": {
+          "n_estimators": 77,
+          "max_leaves": 14,
+          "min_child_weight": 1.7339427506289034,
+          "learning_rate": 0.10562988189724704,
+          "subsample": 0.8965052132047895,
+          "colsample_bylevel": 1.0,
+          "colsample_bytree": 1.0,
+          "reg_alpha": 0.0009765625,
+          "reg_lambda": 5.754847907954033,
+          "FLAML_sample_size": 76592
+        }
+      },
+      "importance_top": [
+        [
+          "CR06_DTC_Proxy",
+          0.0246
+        ],
+        [
+          "L02_Turnover",
+          0.0165
+        ],
+        [
+          "L14_Price_Impact",
+          0.0095
+        ],
+        [
+          "cat_kosdaq",
+          0.007
+        ],
+        [
+          "T14_HLRange",
+          0.0065
+        ],
+        [
+          "T07_PMA20",
+          0.0042
+        ],
+        [
+          "p_dvol_250",
+          0.0032
+        ],
+        [
+          "L41_Intraday_Vol_Proxy",
+          0.0032
+        ],
+        [
+          "M11_ST_Reversal",
+          0.0029
+        ],
+        [
+          "S02_Float_Size",
+          0.0027
+        ],
+        [
+          "SE01_Volatility_Uncertainty",
+          0.0027
+        ],
+        [
+          "L05_Dollar_Volume",
+          0.0024
+        ],
+        [
+          "v_gpp",
+          0.0022
+        ],
+        [
+          "V16_Tobins_Q",
+          0.002
+        ],
+        [
+          "s_kq_ks_3m",
+          0.002
+        ],
+        [
+          "p_mom_12_1",
+          0.0019
+        ],
+        [
+          "V01_BM",
+          0.0018
+        ],
+        [
+          "C02_EPS_Chg_1m",
+          0.0016
+        ],
+        [
+          "M30_Mom_10d",
+          0.0014
+        ],
+        [
+          "s_breadth_3m",
+          0.0014
+        ],
+        [
+          "v_ebitdap",
+          0.0013
+        ],
+        [
+          "s_us_term",
+          0.0012
+        ],
+        [
+          "M28_OP_Rev_Mom",
+          0.0012
+        ],
+        [
+          "s_mkt_12m",
+          0.0011
+        ],
+        [
+          "s_us10y_3m",
+          0.0011
+        ],
+        [
+          "L27_Price_Level",
+          0.001
+        ],
+        [
+          "M05_Trended_Mom",
+          0.0008
+        ],
+        [
+          "p_vol_20",
+          0.0008
+        ],
+        [
+          "C03_EPS_Chg_3m",
+          0.0007
+        ],
+        [
+          "s_vix",
+          0.0007
+        ]
+      ],
+      "seconds": 288.4
+    },
+    {
+      "target": "1m",
+      "year": 2010,
+      "n_train": 86479,
+      "n_val": 24818,
+      "val_from": "2008-09-30",
+      "refit_cut": "2010-11-30",
+      "selection_metric": "monthly_spearman_ic(loss = 1 − IC)",
+      "best_estimator": "sgd",
+      "n_trials": 60,
+      "best_loss_per_estimator": {
+        "lgbm": 0.8527833140091672,
+        "xgboost": 0.8187242344335766,
+        "rf": 0.8618729486274304,
+        "extra_tree": 0.859177789282666,
+        "sgd": 0.8173175837386328
+      },
+      "ensemble_weights": {
+        "lgbm": 0.02,
+        "sgd": 0.36,
+        "xgboost": 0.62
+      },
+      "best_configs": {
+        "lgbm": {
+          "n_estimators": 4,
+          "num_leaves": 18,
+          "min_child_samples": 32,
+          "learning_rate": 0.11889182956124612,
+          "log_max_bin": 9,
+          "colsample_bytree": 0.9188140276687888,
+          "reg_alpha": 0.16011092721126646,
+          "reg_lambda": 0.13117549532870904,
+          "deterministic": true,
+          "force_row_wise": true,
+          "random_state": 20261123,
+          "FLAML_sample_size": 10000
+        },
+        "sgd": {
+          "penalty": "l1",
+          "alpha": 1.1713349135910879e-05,
+          "l1_ratio": 0.9999999999999999,
+          "epsilon": 0.00577729524346324,
+          "learning_rate": "optimal",
+          "eta0": 0.00017493329133741906,
+          "power_t": 0.13285883533465453,
+          "average": false,
+          "loss": "epsilon_insensitive",
+          "random_state": 20261123,
+          "FLAML_sample_size": 86479
+        },
+        "xgboost": {
+          "n_estimators": 31,
+          "max_leaves": 17,
+          "min_child_weight": 0.32619496663867315,
+          "learning_rate": 0.17645615758373007,
+          "subsample": 0.8965052132047895,
+          "colsample_bylevel": 0.8741321555899038,
+          "colsample_bytree": 1.0,
+          "reg_alpha": 0.0009765625,
+          "reg_lambda": 1.3757818756533318,
+          "FLAML_sample_size": 86479
+        }
+      },
+      "importance_top": [
+        [
+          "CR06_DTC_Proxy",
+          0.0099
+        ],
+        [
+          "L14_Price_Impact",
+          0.001
+        ],
+        [
+          "cat_kosdaq",
+          0.0009
+        ],
+        [
+          "D01_IdioVol",
+          0.0007
+        ],
+        [
+          "p_dvol_250",
+          0.0006
+        ],
+        [
+          "T07_PMA20",
+          0.0006
+        ],
+        [
+          "s_mkt_1m",
+          0.0005
+        ],
+        [
+          "L06_Zero_Trade_Days",
+          0.0004
+        ],
+        [
+          "p_mom_5",
+          0.0003
+        ],
+        [
+          "v_rep",
+          0.0003
+        ],
+        [
+          "s_cs_disp_1m",
+          0.0003
+        ],
+        [
+          "s_kr_credit",
+          0.0003
+        ],
+        [
+          "s_mkt_3m",
+          0.0003
+        ],
+        [
+          "T14_HLRange",
+          0.0003
+        ],
+        [
+          "M30_Mom_10d",
+          0.0002
+        ],
+        [
+          "p_notrade_250",
+          0.0002
+        ],
+        [
+          "L05_Dollar_Volume",
+          0.0002
+        ],
+        [
+          "p_mom_12_1",
+          0.0002
+        ],
+        [
+          "s_breadth_3m",
+          0.0002
+        ],
+        [
+          "v_gpp",
+          0.0002
+        ],
+        [
+          "V16_Tobins_Q",
+          0.0002
+        ],
+        [
+          "s_kq_ks_3m",
+          0.0002
+        ],
+        [
+          "T09_PMA120",
+          0.0002
+        ],
+        [
+          "s_us10y_3m",
+          0.0001
+        ],
+        [
+          "L27_Price_Level",
+          0.0001
+        ],
+        [
+          "q_dA_SharesCommonOutAdj",
+          0.0001
+        ],
+        [
+          "s_fx_krw_3m",
+          0.0001
+        ],
+        [
+          "v_ebitdap",
+          0.0001
+        ],
+        [
+          "c_eps_chg_1m",
+          0.0001
+        ],
+        [
+          "s_kr3y_3m",
+          0.0001
+        ]
+      ],
+      "seconds": 1520.3
+    },
+    {
+      "target": "1m",
+      "year": 2011,
+      "n_train": 94724,
+      "n_val": 28777,
+      "val_from": "2009-07-31",
+      "refit_cut": "2011-11-30",
+      "selection_metric": "monthly_spearman_ic(loss = 1 − IC)",
+      "best_estimator": "sgd",
+      "n_trials": 60,
+      "best_loss_per_estimator": {
+        "lgbm": 0.8386333249815542,
+        "xgboost": 0.8547549122581299,
+        "rf": 0.8515815734175476,
+        "extra_tree": 0.8534261551455868,
+        "sgd": 0.8240277815386285
+      },
+      "ensemble_weights": {
+        "extra_tree": 0.02,
+        "lgbm": 0.48,
+        "sgd": 0.5
+      },
+      "best_configs": {
+        "extra_tree": {
+          "n_estimators": 4,
+          "max_features": 0.7997323264449901,
+          "max_leaves": 15,
+          "random_state": 20261123,
+          "FLAML_sample_size": 10000
+        },
+        "lgbm": {
+          "n_estimators": 42,
+          "num_leaves": 4,
+          "min_child_samples": 30,
+          "learning_rate": 0.11295286887842439,
+          "log_max_bin": 8,
+          "colsample_bytree": 0.8039265918151056,
+          "reg_alpha": 0.0043613696862488584,
+          "reg_lambda": 1.932399169888674,
+          "deterministic": true,
+          "force_row_wise": true,
+          "random_state": 20261123,
+          "FLAML_sample_size": 10000
+        },
+        "sgd": {
+          "penalty": "l2",
+          "alpha": 0.0006114927115318061,
+          "l1_ratio": 0.5256461026384591,
+          "epsilon": 0.1,
+          "learning_rate": "invscaling",
+          "eta0": 0.1,
+          "power_t": 0.22082808275558682,
+          "average": false,
+          "loss": "squared_epsilon_insensitive",
+          "random_state": 20261123,
+          "FLAML_sample_size": 94724
+        }
+      },
+      "importance_top": [
+        [
+          "CR06_DTC_Proxy",
+          0.1754
+        ],
+        [
+          "L14_Price_Impact",
+          0.042
+        ],
+        [
+          "cat_kosdaq",
+          0.0218
+        ],
+        [
+          "T14_HLRange",
+          0.0205
+        ],
+        [
+          "p_mom_5",
+          0.0182
+        ],
+        [
+          "p_dvol_250",
+          0.0136
+        ],
+        [
+          "p_ivol_60",
+          0.0116
+        ],
+        [
+          "T07_PMA20",
+          0.0106
+        ],
+        [
+          "L05_Dollar_Volume",
+          0.0104
+        ],
+        [
+          "R01_VaR_95",
+          0.0102
+        ],
+        [
+          "S02_Float_Size",
+          0.0082
+        ],
+        [
+          "p_mom_12_1",
+          0.0079
+        ],
+        [
+          "s_kq_ks_3m",
+          0.0079
+        ],
+        [
+          "V16_Tobins_Q",
+          0.0075
+        ],
+        [
+          "v_opp",
+          0.0074
+        ],
+        [
+          "p_vol_20",
+          0.0074
+        ],
+        [
+          "M30_Mom_10d",
+          0.0073
+        ],
+        [
+          "M05_Trended_Mom",
+          0.0066
+        ],
+        [
+          "v_gpp",
+          0.0063
+        ],
+        [
+          "s_mkt_dd_250",
+          0.0062
+        ],
+        [
+          "M07_IndMom",
+          0.0052
+        ],
+        [
+          "C02_EPS_Chg_1m",
+          0.005
+        ],
+        [
+          "s_us_term",
+          0.0048
+        ],
+        [
+          "M01_Mom_12_1",
+          0.004
+        ],
+        [
+          "c_eps_chg_1m",
+          0.0038
+        ],
+        [
+          "M28_OP_Rev_Mom",
+          0.0033
+        ],
+        [
+          "Q08_Composite_Quality",
+          0.0032
+        ],
+        [
+          "M11_ST_Reversal",
+          0.003
+        ],
+        [
+          "C07_TP_Mom",
+          0.0027
+        ],
+        [
+          "v_tbp",
+          0.0027
+        ]
+      ],
+      "seconds": 289.0
+    },
+    {
+      "target": "1m",
+      "year": 2012,
+      "n_train": 103826,
+      "n_val": 33135,
+      "val_from": "2010-04-30",
+      "refit_cut": "2012-11-30",
+      "selection_metric": "monthly_spearman_ic(loss = 1 − IC)",
+      "best_estimator": "xgboost",
+      "n_trials": 60,
+      "best_loss_per_estimator": {
+        "lgbm": 0.8651207387539805,
+        "xgboost": 0.8337916983634428,
+        "rf": 0.8624567537744978,
+        "extra_tree": 0.8673644734230529,
+        "sgd": 0.8405681755923939
+      },
+      "ensemble_weights": {
+        "lgbm": 0.02,
+        "sgd": 0.34,
+        "xgboost": 0.64
+      },
+      "best_configs": {
+        "lgbm": {
+          "n_estimators": 4,
+          "num_leaves": 11,
+          "min_child_samples": 29,
+          "learning_rate": 0.08258714831608756,
+          "log_max_bin": 9,
+          "colsample_bytree": 1.0,
+          "reg_alpha": 0.008257792124967432,
+          "reg_lambda": 0.9480523569360249,
+          "deterministic": true,
+          "force_row_wise": true,
+          "random_state": 20261123,
+          "FLAML_sample_size": 103826
+        },
+        "sgd": {
+          "penalty": "l2",
+          "alpha": 0.0002675639945105016,
+          "l1_ratio": 0.47650947083787165,
+          "epsilon": 0.08215553145701507,
+          "learning_rate": "optimal",
+          "eta0": 0.0551544934788911,
+          "power_t": 0.3082924176947496,
+          "average": false,
+          "loss": "huber",
+          "random_state": 20261123,
+          "FLAML_sample_size": 103826
+        },
+        "xgboost": {
+          "n_estimators": 89,
+          "max_leaves": 7,
+          "min_child_weight": 0.5619707619549922,
+          "learning_rate": 0.10628006486885752,
+          "subsample": 0.7653752332383716,
+          "colsample_bylevel": 0.7636873420069269,
+          "colsample_bytree": 0.8217356586158882,
+          "reg_alpha": 0.0037458591448053576,
+          "reg_lambda": 0.2603622038071159,
+          "FLAML_sample_size": 103826
+        }
+      },
+      "importance_top": [
+        [
+          "CR06_DTC_Proxy",
+          0.0121
+        ],
+        [
+          "L14_Price_Impact",
+          0.0015
+        ],
+        [
+          "p_dvol_250",
+          0.0013
+        ],
+        [
+          "T07_PMA20",
+          0.0007
+        ],
+        [
+          "cat_kosdaq",
+          0.0006
+        ],
+        [
+          "s_mkt_dd_250",
+          0.0004
+        ],
+        [
+          "s_kr_credit",
+          0.0004
+        ],
+        [
+          "v_gpp",
+          0.0003
+        ],
+        [
+          "s_breadth_3m",
+          0.0003
+        ],
+        [
+          "s_mkt_1m",
+          0.0002
+        ],
+        [
+          "M30_Mom_10d",
+          0.0002
+        ],
+        [
+          "p_mom_5",
+          0.0002
+        ],
+        [
+          "s_vix",
+          0.0002
+        ],
+        [
+          "s_us10y_3m",
+          0.0002
+        ],
+        [
+          "s_us_term",
+          0.0002
+        ],
+        [
+          "s_kq_ks_3m",
+          0.0002
+        ],
+        [
+          "v_ebitda_ev",
+          0.0002
+        ],
+        [
+          "L06_Zero_Trade_Days",
+          0.0002
+        ],
+        [
+          "L27_Price_Level",
+          0.0002
+        ],
+        [
+          "s_kr3y",
+          0.0002
+        ],
+        [
+          "M05_Trended_Mom",
+          0.0002
+        ],
+        [
+          "T14_HLRange",
+          0.0001
+        ]
+      ],
+      "seconds": 343.3
+    },
+    {
+      "target": "1m",
+      "year": 2013,
+      "n_train": 114170,
+      "n_val": 36485,
+      "val_from": "2011-02-28",
+      "refit_cut": "2013-11-29",
+      "selection_metric": "monthly_spearman_ic(loss = 1 − IC)",
+      "best_estimator": "sgd",
+      "n_trials": 60,
+      "best_loss_per_estimator": {
+        "lgbm": 0.860513544596329,
+        "xgboost": 0.8650976126354455,
+        "rf": 0.8752242852132864,
+        "extra_tree": 0.8785241365147197,
+        "sgd": 0.840732620952315
+      },
+      "ensemble_weights": {
+        "extra_tree": 0.04,
+        "lgbm": 0.34,
+        "sgd": 0.62
+      },
+      "best_configs": {
+        "extra_tree": {
+          "n_estimators": 4,
+          "max_features": 0.9782752338759043,
+          "max_leaves": 11,
+          "random_state": 20261123,
+          "FLAML_sample_size": 10000
+        },
+        "lgbm": {
+          "n_estimators": 42,
+          "num_leaves": 4,
+          "min_child_samples": 8,
+          "learning_rate": 0.11185156302142502,
+          "log_max_bin": 7,
+          "colsample_bytree": 0.6400047002875371,
+          "reg_alpha": 0.0009765625,
+          "reg_lambda": 3.4742507982684803,
+          "deterministic": true,
+          "force_row_wise": true,
+          "random_state": 20261123,
+          "FLAML_sample_size": 10000
+        },
+        "sgd": {
+          "penalty": "l2",
+          "alpha": 4.6390550351827216e-05,
+          "l1_ratio": 0.9999999999999999,
+          "epsilon": 0.004624061376901383,
+          "learning_rate": "optimal",
+          "eta0": 0.0032112165085811852,
+          "power_t": 0.22937856770760068,
+          "average": false,
+          "loss": "epsilon_insensitive",
+          "random_state": 20261123,
+          "FLAML_sample_size": 114170
+        }
+      },
+      "importance_top": [
+        [
+          "CR06_DTC_Proxy",
+          0.1127
+        ],
+        [
+          "L14_Price_Impact",
+          0.0352
+        ],
+        [
+          "T07_PMA20",
+          0.0136
+        ],
+        [
+          "p_ivol_60",
+          0.0127
+        ],
+        [
+          "T14_HLRange",
+          0.0118
+        ],
+        [
+          "L05_Dollar_Volume",
+          0.011
+        ],
+        [
+          "p_mom_5",
+          0.0097
+        ],
+        [
+          "p_mom_12_1",
+          0.009
+        ],
+        [
+          "R01_VaR_95",
+          0.0087
+        ],
+        [
+          "c_eps_chg_1m",
+          0.0079
+        ],
+        [
+          "L35_Reversal_Intensity",
+          0.007
+        ],
+        [
+          "v_gpp",
+          0.0069
+        ],
+        [
+          "v_tbp",
+          0.0064
+        ],
+        [
+          "V16_Tobins_Q",
+          0.0061
+        ],
+        [
+          "p_dvol_250",
+          0.0053
+        ],
+        [
+          "SE01_Volatility_Uncertainty",
+          0.0047
+        ],
+        [
+          "s_kq_ks_3m",
+          0.0046
+        ],
+        [
+          "M07_IndMom",
+          0.0037
+        ],
+        [
+          "p_vol_20",
+          0.0037
+        ],
+        [
+          "Q08_Composite_Quality",
+          0.0035
+        ],
+        [
+          "M11_ST_Reversal",
+          0.0033
+        ],
+        [
+          "v_ebitda_ev",
+          0.0032
+        ],
+        [
+          "v_opp",
+          0.0029
+        ],
+        [
+          "M28_OP_Rev_Mom",
+          0.0027
+        ],
+        [
+          "p_gap_20",
+          0.0027
+        ],
+        [
+          "V14_EBIT_EV",
+          0.0024
+        ],
+        [
+          "M30_Mom_10d",
+          0.002
+        ],
+        [
+          "p_size",
+          0.002
+        ],
+        [
+          "cat_kq150",
+          0.0019
+        ],
+        [
+          "M10_Intermediate_Mom",
+          0.0018
+        ]
+      ],
+      "seconds": 1283.4
+    },
+    {
+      "target": "1m",
+      "year": 2014,
+      "n_train": 123506,
+      "n_val": 41032,
+      "val_from": "2011-11-30",
+      "refit_cut": "2014-11-28",
+      "selection_metric": "monthly_spearman_ic(loss = 1 − IC)",
+      "best_estimator": "sgd",
+      "n_trials": 60,
+      "best_loss_per_estimator": {
+        "lgbm": 0.8839066196436295,
+        "xgboost": 0.8869708226007873,
+        "rf": 0.8808117820560051,
+        "extra_tree": 0.8883488077733808,
+        "sgd": 0.8547998712526296
+      },
+      "ensemble_weights": {
+        "lgbm": 0.22,
+        "sgd": 0.78
+      },
+      "best_configs": {
+        "lgbm": {
+          "n_estimators": 5,
+          "num_leaves": 6,
+          "min_child_samples": 4,
+          "learning_rate": 0.3439871133837925,
+          "log_max_bin": 8,
+          "colsample_bytree": 0.45643070748661774,
+          "reg_alpha": 0.02340577487117452,
+          "reg_lambda": 0.3410439243653038,
+          "deterministic": true,
+          "force_row_wise": true,
+          "random_state": 20261123,
+          "FLAML_sample_size": 10000
+        },
+        "sgd": {
+          "penalty": "elasticnet",
+          "alpha": 4.3058439275822316e-07,
+          "l1_ratio": 0.5525801634914881,
+          "epsilon": 0.1,
+          "learning_rate": "invscaling",
+          "eta0": 0.01049609278107726,
+          "power_t": 0.24775955880525996,
+          "average": false,
+          "loss": "squared_epsilon_insensitive",
+          "random_state": 20261123,
+          "FLAML_sample_size": 123506
+        }
+      },
+      "importance_top": [
+        [
+          "CR06_DTC_Proxy",
+          0.1096
+        ],
+        [
+          "R01_VaR_95",
+          0.0174
+        ],
+        [
+          "L14_Price_Impact",
+          0.0137
+        ],
+        [
+          "v_gpp",
+          0.0087
+        ],
+        [
+          "p_vol_20",
+          0.008
+        ],
+        [
+          "M11_ST_Reversal",
+          0.0063
+        ],
+        [
+          "p_dvol_250",
+          0.0062
+        ],
+        [
+          "p_mom_12_1",
+          0.006
+        ],
+        [
+          "v_op_ev",
+          0.0055
+        ],
+        [
+          "V16_Tobins_Q",
+          0.0049
+        ],
+        [
+          "cat_kosdaq",
+          0.0046
+        ],
+        [
+          "T07_PMA20",
+          0.0041
+        ],
+        [
+          "L05_Dollar_Volume",
+          0.004
+        ],
+        [
+          "T14_HLRange",
+          0.0038
+        ],
+        [
+          "C03_EPS_Chg_3m",
+          0.0038
+        ],
+        [
+          "C02_EPS_Chg_1m",
+          0.0036
+        ],
+        [
+          "M09_Composite_Mom",
+          0.0036
+        ],
+        [
+          "S02_Float_Size",
+          0.0032
+        ],
+        [
+          "M17_Low_52w",
+          0.0031
+        ]
+      ],
+      "seconds": 379.4
+    },
+    {
+      "target": "1m",
+      "year": 2015,
+      "n_train": 134529,
+      "n_val": 46233,
+      "val_from": "2012-09-28",
+      "refit_cut": "2015-11-30",
+      "selection_metric": "monthly_spearman_ic(loss = 1 − IC)",
+      "best_estimator": "lgbm",
+      "n_trials": 60,
+      "best_loss_per_estimator": {
+        "lgbm": 0.8779394516397716,
+        "xgboost": 0.9050951965148519,
+        "rf": 0.9041458816614508,
+        "extra_tree": 0.9090521308971488,
+        "sgd": 0.8833667508831498
+      },
+      "ensemble_weights": {
+        "lgbm": 0.48,
+        "sgd": 0.42,
+        "xgboost": 0.1
+      },
+      "best_configs": {
+        "lgbm": {
+          "n_estimators": 338,
+          "num_leaves": 5,
+          "min_child_samples": 19,
+          "learning_rate": 0.3437736053279408,
+          "log_max_bin": 9,
+          "colsample_bytree": 0.8750165262824764,
+          "reg_alpha": 0.0009765625,
+          "reg_lambda": 60.01043696197869,
+          "deterministic": true,
+          "force_row_wise": true,
+          "random_state": 20261123,
+          "FLAML_sample_size": 134529
+        },
+        "sgd": {
+          "penalty": "l2",
+          "alpha": 1.527897384144495e-05,
+          "l1_ratio": 0.9999999999999999,
+          "epsilon": 0.1,
+          "learning_rate": "invscaling",
+          "eta0": 0.003559391234441318,
+          "power_t": 0.07126323550118405,
+          "average": false,
+          "loss": "squared_epsilon_insensitive",
+          "random_state": 20261123,
+          "FLAML_sample_size": 134529
+        },
+        "xgboost": {
+          "n_estimators": 10,
+          "max_leaves": 9,
+          "min_child_weight": 0.7294570255284247,
+          "learning_rate": 0.1866514940816001,
+          "subsample": 1.0,
+          "colsample_bylevel": 1.0,
+          "colsample_bytree": 0.9962975463940674,
+          "reg_alpha": 0.0009765625,
+          "reg_lambda": 4.073686084984736,
+          "FLAML_sample_size": 10000
+        }
+      },
+      "importance_top": [
+        [
+          "CR06_DTC_Proxy",
+          0.0505
+        ],
+        [
+          "s_us_term",
+          0.012
+        ],
+        [
+          "s_breadth_3m",
+          0.0117
+        ],
+        [
+          "L14_Price_Impact",
+          0.0096
+        ],
+        [
+          "cat_kosdaq",
+          0.0094
+        ],
+        [
+          "s_fx_krw_3m",
+          0.0086
+        ],
+        [
+          "s_mkt_1m",
+          0.0083
+        ],
+        [
+          "R01_VaR_95",
+          0.0077
+        ],
+        [
+          "s_mkt_12m",
+          0.0072
+        ],
+        [
+          "s_mkt_dd_250",
+          0.0072
+        ],
+        [
+          "s_kr3y",
+          0.0068
+        ],
+        [
+          "s_mkt_vol_60",
+          0.0067
+        ],
+        [
+          "s_jpy_3m",
+          0.0066
+        ],
+        [
+          "T14_HLRange",
+          0.0066
+        ],
+        [
+          "M07_IndMom",
+          0.006
+        ],
+        [
+          "s_vix",
+          0.0059
+        ],
+        [
+          "v_gpp",
+          0.0054
+        ],
+        [
+          "s_kr3y_3m",
+          0.0054
+        ],
+        [
+          "SE01_Volatility_Uncertainty",
+          0.0052
+        ],
+        [
+          "s_cs_disp_1m",
+          0.0052
+        ],
+        [
+          "L27_Price_Level",
+          0.0051
+        ],
+        [
+          "T07_PMA20",
+          0.005
+        ],
+        [
+          "s_vkospi",
+          0.0049
+        ],
+        [
+          "M30_Mom_10d",
+          0.0046
+        ],
+        [
+          "q_O_OENEG",
+          0.0045
+        ],
+        [
+          "cat_kq150",
+          0.0043
+        ],
+        [
+          "p_mom_5",
+          0.0043
+        ],
+        [
+          "L05_Dollar_Volume",
+          0.0042
+        ],
+        [
+          "s_small_large_3m",
+          0.0041
+        ],
+        [
+          "s_us10y_3m",
+          0.004
+        ]
+      ],
+      "seconds": 356.7
+    },
+    {
+      "target": "1m",
+      "year": 2016,
+      "n_train": 146141,
+      "n_val": 52258,
+      "val_from": "2013-07-31",
+      "refit_cut": "2016-11-30",
+      "selection_metric": "monthly_spearman_ic(loss = 1 − IC)",
+      "best_estimator": "lgbm",
+      "n_trials": 60,
+      "best_loss_per_estimator": {
+        "lgbm": 0.879276505198768,
+        "xgboost": 0.9201304428767771,
+        "rf": 0.9200270919188377,
+        "extra_tree": 0.9166427400938011,
+        "sgd": 0.8802414350258493
+      },
+      "ensemble_weights": {
+        "lgbm": 0.6,
+        "sgd": 0.4
+      },
+      "best_configs": {
+        "lgbm": {
+          "n_estimators": 114,
+          "num_leaves": 9,
+          "min_child_samples": 17,
+          "learning_rate": 0.1886345664318745,
+          "log_max_bin": 6,
+          "colsample_bytree": 0.8409950002228181,
+          "reg_alpha": 0.01612042006042715,
+          "reg_lambda": 0.04810681275587387,
+          "deterministic": true,
+          "force_row_wise": true,
+          "random_state": 20261123,
+          "FLAML_sample_size": 146141
+        },
+        "sgd": {
+          "penalty": "None",
+          "alpha": 0.0004898809860160858,
+          "l1_ratio": 0.15158070562145445,
+          "epsilon": 0.1,
+          "learning_rate": "constant",
+          "eta0": 0.00568855788255916,
+          "power_t": 0.2618395521693101,
+          "average": false,
+          "loss": "squared_error",
+          "random_state": 20261123,
+          "FLAML_sample_size": 146141
+        }
+      },
+      "importance_top": [
+        [
+          "CR06_DTC_Proxy",
+          0.0763
+        ],
+        [
+          "L14_Price_Impact",
+          0.0231
+        ],
+        [
+          "s_us_term",
+          0.0148
+        ],
+        [
+          "s_fx_krw_3m",
+          0.0139
+        ],
+        [
+          "s_breadth_3m",
+          0.0137
+        ],
+        [
+          "s_mkt_12m",
+          0.0136
+        ],
+        [
+          "T14_HLRange",
+          0.013
+        ],
+        [
+          "v_gpp",
+          0.0116
+        ],
+        [
+          "s_kr3y_3m",
+          0.0115
+        ],
+        [
+          "L35_Reversal_Intensity",
+          0.0106
+        ],
+        [
+          "cat_kosdaq",
+          0.0103
+        ],
+        [
+          "L27_Price_Level",
+          0.0099
+        ],
+        [
+          "p_ivol_60",
+          0.0095
+        ],
+        [
+          "T07_PMA20",
+          0.0093
+        ],
+        [
+          "s_kr3y",
+          0.0085
+        ],
+        [
+          "s_mkt_1m",
+          0.0085
+        ],
+        [
+          "p_dvol_250",
+          0.0078
+        ],
+        [
+          "cat_kq150",
+          0.0077
+        ],
+        [
+          "s_us10y_3m",
+          0.007
+        ],
+        [
+          "s_vkospi",
+          0.0069
+        ],
+        [
+          "s_kq_ks_3m",
+          0.0065
+        ],
+        [
+          "p_mom_5",
+          0.0061
+        ],
+        [
+          "q_O_OENEG",
+          0.0058
+        ],
+        [
+          "L26_Log_MktCap",
+          0.0058
+        ],
+        [
+          "S02_Float_Size",
+          0.0058
+        ],
+        [
+          "p_size",
+          0.0058
+        ],
+        [
+          "M30_Mom_10d",
+          0.0057
+        ],
+        [
+          "s_jpy_3m",
+          0.0056
+        ],
+        [
+          "C02_EPS_Chg_1m",
+          0.0056
+        ],
+        [
+          "L05_Dollar_Volume",
+          0.0052
+        ]
+      ],
+      "seconds": 558.3
+    },
+    {
+      "target": "1m",
+      "year": 2017,
+      "n_train": 155980,
+      "n_val": 60394,
+      "val_from": "2014-04-30",
+      "refit_cut": "2017-11-30",
+      "selection_metric": "monthly_spearman_ic(loss = 1 − IC)",
+      "best_estimator": "lgbm",
+      "n_trials": 60,
+      "best_loss_per_estimator": {
+        "lgbm": 0.8765468255083867,
+        "xgboost": 0.9165229848891518,
+        "rf": 0.9160191795597599,
+        "extra_tree": 0.913410362425207,
+        "sgd": 0.887751845332923
+      },
+      "ensemble_weights": {
+        "lgbm": 0.8,
+        "sgd": 0.2
+      },
+      "best_configs": {
+        "lgbm": {
+          "n_estimators": 68,
+          "num_leaves": 15,
+          "min_child_samples": 4,
+          "learning_rate": 0.1453634864865228,
+          "log_max_bin": 6,
+          "colsample_bytree": 1.0,
+          "reg_alpha": 0.001597919971475831,
+          "reg_lambda": 1.5008142518056449,
+          "deterministic": true,
+          "force_row_wise": true,
+          "random_state": 20261123,
+          "FLAML_sample_size": 155980
+        },
+        "sgd": {
+          "penalty": "elasticnet",
+          "alpha": 1.610558584378584e-06,
+          "l1_ratio": 0.06313611457776401,
+          "epsilon": 0.1,
+          "learning_rate": "invscaling",
+          "eta0": 0.1,
+          "power_t": 0.20510207035870034,
+          "average": false,
+          "loss": "squared_epsilon_insensitive",
+          "random_state": 20261123,
+          "FLAML_sample_size": 155980
+        }
+      },
+      "importance_top": [
+        [
+          "CR06_DTC_Proxy",
+          0.1219
+        ],
+        [
+          "L14_Price_Impact",
+          0.0397
+        ],
+        [
+          "T14_HLRange",
+          0.0201
+        ],
+        [
+          "s_mkt_1m",
+          0.0187
+        ],
+        [
+          "s_breadth_3m",
+          0.0173
+        ],
+        [
+          "s_mkt_12m",
+          0.0164
+        ],
+        [
+          "s_us_term",
+          0.0164
+        ],
+        [
+          "T07_PMA20",
+          0.0159
+        ],
+        [
+          "s_fx_krw_3m",
+          0.0157
+        ],
+        [
+          "L05_Dollar_Volume",
+          0.0135
+        ],
+        [
+          "s_kr3y",
+          0.0133
+        ],
+        [
+          "v_gpp",
+          0.0131
+        ],
+        [
+          "s_mkt_vol_60",
+          0.013
+        ],
+        [
+          "s_mkt_3m",
+          0.0125
+        ],
+        [
+          "cat_kosdaq",
+          0.0124
+        ],
+        [
+          "cat_kq150",
+          0.0114
+        ],
+        [
+          "L35_Reversal_Intensity",
+          0.011
+        ],
+        [
+          "L27_Price_Level",
+          0.0109
+        ],
+        [
+          "p_size",
+          0.0089
+        ],
+        [
+          "s_kr3y_3m",
+          0.0085
+        ],
+        [
+          "s_wti_3m",
+          0.0082
+        ],
+        [
+          "p_mom_5",
+          0.0078
+        ],
+        [
+          "C02_EPS_Chg_1m",
+          0.0077
+        ],
+        [
+          "s_cs_disp_1m",
+          0.0073
+        ],
+        [
+          "s_kq_ks_3m",
+          0.0072
+        ],
+        [
+          "S02_Float_Size",
+          0.0072
+        ],
+        [
+          "s_jpy_3m",
+          0.0069
+        ],
+        [
+          "s_us10y_3m",
+          0.0069
+        ],
+        [
+          "M07_IndMom",
+          0.0067
+        ],
+        [
+          "M06_High_52w",
+          0.0064
+        ]
+      ],
+      "seconds": 960.9
+    },
+    {
+      "target": "1m",
+      "year": 2018,
+      "n_train": 167837,
+      "n_val": 67617,
+      "val_from": "2015-02-27",
+      "refit_cut": "2018-11-30",
+      "selection_metric": "monthly_spearman_ic(loss = 1 − IC)",
+      "best_estimator": "sgd",
+      "n_trials": 60,
+      "best_loss_per_estimator": {
+        "lgbm": 0.9092657935041146,
+        "xgboost": 0.9091772578968815,
+        "rf": 0.9115590416606435,
+        "extra_tree": 0.9105365061968755,
+        "sgd": 0.8787457303845854
+      },
+      "ensemble_weights": {
+        "rf": 0.1,
+        "sgd": 0.76,
+        "xgboost": 0.14
+      },
+      "best_configs": {
+        "rf": {
+          "n_estimators": 9,
+          "max_features": 0.6757561443241726,
+          "max_leaves": 4,
+          "random_state": 20261123,
+          "FLAML_sample_size": 10000
+        },
+        "sgd": {
+          "penalty": "elasticnet",
+          "alpha": 0.00038977576520402176,
+          "l1_ratio": 0.010169636689017287,
+          "epsilon": 0.1,
+          "learning_rate": "invscaling",
+          "eta0": 0.1,
+          "power_t": 0.2169801160403344,
+          "average": false,
+          "loss": "squared_epsilon_insensitive",
+          "random_state": 20261123,
+          "FLAML_sample_size": 167837
+        },
+        "xgboost": {
+          "n_estimators": 10,
+          "max_leaves": 9,
+          "min_child_weight": 0.7294570255284247,
+          "learning_rate": 0.1866514940816001,
+          "subsample": 1.0,
+          "colsample_bylevel": 1.0,
+          "colsample_bytree": 0.9962975463940674,
+          "reg_alpha": 0.0009765625,
+          "reg_lambda": 4.073686084984736,
+          "FLAML_sample_size": 10000
+        }
+      },
+      "importance_top": [],
+      "seconds": 462.9
+    },
+    {
+      "target": "1m",
+      "year": 2019,
+      "n_train": 180432,
+      "n_val": 73543,
+      "val_from": "2015-11-30",
+      "refit_cut": "2019-11-29",
+      "selection_metric": "monthly_spearman_ic(loss = 1 − IC)",
+      "best_estimator": "sgd",
+      "n_trials": 60,
+      "best_loss_per_estimator": {
+        "lgbm": 0.891585484104691,
+        "xgboost": 0.8660030439810569,
+        "rf": 0.900897227574781,
+        "extra_tree": 0.9031056846909713,
+        "sgd": 0.8646835587776657
+      },
+      "ensemble_weights": {
+        "lgbm": 0.08,
+        "sgd": 0.22,
+        "xgboost": 0.7
+      },
+      "best_configs": {
+        "lgbm": {
+          "n_estimators": 4,
+          "num_leaves": 14,
+          "min_child_samples": 40,
+          "learning_rate": 0.21314237834893088,
+          "log_max_bin": 7,
+          "colsample_bytree": 0.9188140276687888,
+          "reg_alpha": 0.018934640759725962,
+          "reg_lambda": 0.08562319361370566,
+          "deterministic": true,
+          "force_row_wise": true,
+          "random_state": 20261123,
+          "FLAML_sample_size": 40000
+        },
+        "sgd": {
+          "penalty": "l2",
+          "alpha": 3.092154018381843e-05,
+          "l1_ratio": 0.9999999999999999,
+          "epsilon": 0.044771834411887354,
+          "learning_rate": "invscaling",
+          "eta0": 0.1,
+          "power_t": 0.40470162729973624,
+          "average": false,
+          "loss": "squared_epsilon_insensitive",
+          "random_state": 20261123,
+          "FLAML_sample_size": 180432
+        },
+        "xgboost": {
+          "n_estimators": 119,
+          "max_leaves": 12,
+          "min_child_weight": 0.15998008019684984,
+          "learning_rate": 0.08446668015188524,
+          "subsample": 0.8489181255498852,
+          "colsample_bylevel": 0.8991195632748802,
+          "colsample_bytree": 0.8273629440619876,
+          "reg_alpha": 0.0013575434841663623,
+          "reg_lambda": 9.276605112878567,
+          "FLAML_sample_size": 40000
+        }
+      },
+      "importance_top": [
+        [
+          "CR06_DTC_Proxy",
+          0.0364
+        ],
+        [
+          "L14_Price_Impact",
+          0.0124
+        ],
+        [
+          "s_breadth_3m",
+          0.0037
+        ],
+        [
+          "L05_Dollar_Volume",
+          0.0028
+        ],
+        [
+          "s_kr_credit",
+          0.0021
+        ],
+        [
+          "T07_PMA20",
+          0.002
+        ],
+        [
+          "v_gpp",
+          0.0017
+        ],
+        [
+          "p_mom_5",
+          0.0017
+        ],
+        [
+          "cat_kosdaq",
+          0.0015
+        ],
+        [
+          "p_dvol_250",
+          0.0014
+        ],
+        [
+          "S02_Float_Size",
+          0.0013
+        ],
+        [
+          "T09_PMA120",
+          0.0011
+        ],
+        [
+          "s_kq_ks_3m",
+          0.0011
+        ],
+        [
+          "T14_HLRange",
+          0.001
+        ],
+        [
+          "L06_Zero_Trade_Days",
+          0.0009
+        ],
+        [
+          "v_ebitda_ev",
+          0.0009
+        ],
+        [
+          "s_mkt_3m",
+          0.0009
+        ],
+        [
+          "R01_VaR_95",
+          0.0008
+        ],
+        [
+          "s_mkt_1m",
+          0.0007
+        ],
+        [
+          "p_amt_20",
+          0.0007
+        ],
+        [
+          "L02_Turnover",
+          0.0007
+        ],
+        [
+          "q_EBITDA_Margin",
+          0.0007
+        ],
+        [
+          "L37_Relative_Vol",
+          0.0007
+        ],
+        [
+          "c_eps_chg_1m",
+          0.0007
+        ],
+        [
+          "p_mom_12_1",
+          0.0006
+        ],
+        [
+          "C02_EPS_Chg_1m",
+          0.0006
+        ],
+        [
+          "cat_kq150",
+          0.0005
+        ],
+        [
+          "T06_PMA5",
+          0.0004
+        ]
+      ],
+      "seconds": 492.9
+    },
+    {
+      "target": "1m",
+      "year": 2020,
+      "n_train": 194958,
+      "n_val": 79332,
+      "val_from": "2016-09-30",
+      "refit_cut": "2020-11-30",
+      "selection_metric": "monthly_spearman_ic(loss = 1 − IC)",
+      "best_estimator": "sgd",
+      "n_trials": 60,
+      "best_loss_per_estimator": {
+        "lgbm": 0.901419957175075,
+        "xgboost": 0.8778321650276417,
+        "rf": 0.9023593603214107,
+        "extra_tree": 0.9084010893402623,
+        "sgd": 0.8694779183006586
+      },
+      "ensemble_weights": {
+        "sgd": 0.4,
+        "xgboost": 0.6
+      },
+      "best_configs": {
+        "sgd": {
+          "penalty": "l2",
+          "alpha": 1.623445388863616e-05,
+          "l1_ratio": 0.6219230069527613,
+          "epsilon": 0.012791703131711789,
+          "learning_rate": "invscaling",
+          "eta0": 0.018576338618364014,
+          "power_t": 0.21794400624368107,
+          "average": false,
+          "loss": "squared_epsilon_insensitive",
+          "random_state": 20261123,
+          "FLAML_sample_size": 194958
+        },
+        "xgboost": {
+          "n_estimators": 77,
+          "max_leaves": 14,
+          "min_child_weight": 1.7339427506289034,
+          "learning_rate": 0.10562988189724704,
+          "subsample": 0.8965052132047895,
+          "colsample_bylevel": 1.0,
+          "colsample_bytree": 1.0,
+          "reg_alpha": 0.0009765625,
+          "reg_lambda": 5.754847907954033,
+          "FLAML_sample_size": 40000
+        }
+      },
+      "importance_top": [],
+      "seconds": 529.1
+    },
+    {
+      "target": "1m",
+      "year": 2021,
+      "n_train": 210084,
+      "n_val": 88109,
+      "val_from": "2017-07-31",
+      "refit_cut": "2021-11-30",
+      "selection_metric": "monthly_spearman_ic(loss = 1 − IC)",
+      "best_estimator": "sgd",
+      "n_trials": 60,
+      "best_loss_per_estimator": {
+        "lgbm": 0.9077718236311179,
+        "xgboost": 0.9103830522172137,
+        "rf": 0.9055043079860289,
+        "extra_tree": 0.9055896842662958,
+        "sgd": 0.8726330576315413
+      },
+      "ensemble_weights": {
+        "lgbm": 0.08,
+        "rf": 0.02,
+        "sgd": 0.54,
+        "xgboost": 0.36
+      },
+      "best_configs": {
+        "lgbm": {
+          "n_estimators": 4,
+          "num_leaves": 4,
+          "min_child_samples": 39,
+          "learning_rate": 0.0342258804030488,
+          "log_max_bin": 8,
+          "colsample_bytree": 1.0,
+          "reg_alpha": 0.0009765625,
+          "reg_lambda": 0.6915231435916506,
+          "deterministic": true,
+          "force_row_wise": true,
+          "random_state": 20261123,
+          "FLAML_sample_size": 40000
+        },
+        "rf": {
+          "n_estimators": 25,
+          "max_features": 1.0,
+          "max_leaves": 4,
+          "random_state": 20261123,
+          "FLAML_sample_size": 10000
+        },
+        "sgd": {
+          "penalty": "l1",
+          "alpha": 4.7347764101185555e-05,
+          "l1_ratio": 0.9999999999999999,
+          "epsilon": 0.08694256625272596,
+          "learning_rate": "invscaling",
+          "eta0": 0.1,
+          "power_t": 0.3177799388776745,
+          "average": false,
+          "loss": "squared_epsilon_insensitive",
+          "random_state": 20261123,
+          "FLAML_sample_size": 210084
+        },
+        "xgboost": {
+          "n_estimators": 4,
+          "max_leaves": 4,
+          "min_child_weight": 7.287151314591108,
+          "learning_rate": 0.032071443356167094,
+          "subsample": 0.9891946870125281,
+          "colsample_bylevel": 1.0,
+          "colsample_bytree": 0.9950869113440826,
+          "reg_alpha": 0.0009765625,
+          "reg_lambda": 1.026825645767129,
+          "FLAML_sample_size": 10000
+        }
+      },
+      "importance_top": [
+        [
+          "CR06_DTC_Proxy",
+          0.067
+        ],
+        [
+          "L14_Price_Impact",
+          0.013
+        ]
+      ],
+      "seconds": 962.8
+    },
+    {
+      "target": "1m",
+      "year": 2022,
+      "n_train": 223912,
+      "n_val": 96992,
+      "val_from": "2018-04-30",
+      "refit_cut": "2022-11-30",
+      "selection_metric": "monthly_spearman_ic(loss = 1 − IC)",
+      "best_estimator": "lgbm",
+      "n_trials": 60,
+      "best_loss_per_estimator": {
+        "lgbm": 0.8390045975518399,
+        "xgboost": 0.8749391606414948,
+        "rf": 0.8886402587019488,
+        "extra_tree": 0.8844855826358359,
+        "sgd": 0.8462976447613924
+      },
+      "ensemble_weights": {
+        "extra_tree": 0.04,
+        "lgbm": 0.62,
+        "sgd": 0.34
+      },
+      "best_configs": {
+        "extra_tree": {
+          "n_estimators": 4,
+          "max_features": 0.7997323264449901,
+          "max_leaves": 15,
+          "random_state": 20261123,
+          "FLAML_sample_size": 10000
+        },
+        "lgbm": {
+          "n_estimators": 59,
+          "num_leaves": 8,
+          "min_child_samples": 15,
+          "learning_rate": 0.17510032022089056,
+          "log_max_bin": 7,
+          "colsample_bytree": 0.897484259984422,
+          "reg_alpha": 0.002009308551002135,
+          "reg_lambda": 48.74546697130417,
+          "deterministic": true,
+          "force_row_wise": true,
+          "random_state": 20261123,
+          "FLAML_sample_size": 223912
+        },
+        "sgd": {
+          "penalty": "l2",
+          "alpha": 9.6974759823847e-06,
+          "l1_ratio": 0.9999999999999999,
+          "epsilon": 0.1,
+          "learning_rate": "invscaling",
+          "eta0": 0.01070967507702012,
+          "power_t": 0.2782206912524911,
+          "average": false,
+          "loss": "squared_epsilon_insensitive",
+          "random_state": 20261123,
+          "FLAML_sample_size": 223912
+        }
+      },
+      "importance_top": [
+        [
+          "CR06_DTC_Proxy",
+          0.1108
+        ],
+        [
+          "p_ivol_60",
+          0.0485
+        ],
+        [
+          "L14_Price_Impact",
+          0.0382
+        ],
+        [
+          "s_breadth_3m",
+          0.0225
+        ],
+        [
+          "T14_HLRange",
+          0.0172
+        ],
+        [
+          "T07_PMA20",
+          0.0149
+        ],
+        [
+          "s_mkt_1m",
+          0.0137
+        ],
+        [
+          "p_amt_20",
+          0.012
+        ],
+        [
+          "v_gpp",
+          0.011
+        ],
+        [
+          "L27_Price_Level",
+          0.0109
+        ],
+        [
+          "p_hl_20",
+          0.0095
+        ],
+        [
+          "s_mkt_3m",
+          0.0086
+        ],
+        [
+          "L35_Reversal_Intensity",
+          0.008
+        ],
+        [
+          "cat_kosdaq",
+          0.0078
+        ],
+        [
+          "T09_PMA120",
+          0.0076
+        ],
+        [
+          "M06_High_52w",
+          0.0075
+        ],
+        [
+          "c_eps_chg_1m",
+          0.0075
+        ],
+        [
+          "p_mom_5",
+          0.0075
+        ],
+        [
+          "s_kr3y",
+          0.0072
+        ],
+        [
+          "s_krcpi_yoy",
+          0.0067
+        ],
+        [
+          "L05_Dollar_Volume",
+          0.0065
+        ],
+        [
+          "cat_kq150",
+          0.0063
+        ],
+        [
+          "M11_ST_Reversal",
+          0.0058
+        ],
+        [
+          "f_ind_amt_20",
+          0.0058
+        ],
+        [
+          "M04_Mom_1",
+          0.0057
+        ],
+        [
+          "s_cs_disp_1m",
+          0.0056
+        ],
+        [
+          "C02_EPS_Chg_1m",
+          0.0055
+        ],
+        [
+          "p_size",
+          0.0055
+        ],
+        [
+          "p_gap_20",
+          0.0053
+        ],
+        [
+          "T08_PMA60",
+          0.005
+        ]
+      ],
+      "seconds": 676.5
+    },
+    {
+      "target": "1m",
+      "year": 2023,
+      "n_train": 239599,
+      "n_val": 103460,
+      "val_from": "2019-02-28",
+      "refit_cut": "2023-11-30",
+      "selection_metric": "monthly_spearman_ic(loss = 1 − IC)",
+      "best_estimator": "xgboost",
+      "n_trials": 60,
+      "best_loss_per_estimator": {
+        "lgbm": 0.8756659448293411,
+        "xgboost": 0.8332281901242427,
+        "rf": 0.8777945055030053,
+        "extra_tree": 0.8756643850305689,
+        "sgd": 0.8495566909086022
+      },
+      "ensemble_weights": {
+        "lgbm": 0.34,
+        "sgd": 0.16,
+        "xgboost": 0.5
+      },
+      "best_configs": {
+        "lgbm": {
+          "n_estimators": 5,
+          "num_leaves": 8,
+          "min_child_samples": 18,
+          "learning_rate": 0.0803011458519124,
+          "log_max_bin": 10,
+          "colsample_bytree": 0.7538732926233009,
+          "reg_alpha": 0.1979187439717841,
+          "reg_lambda": 0.2119735538398177,
+          "deterministic": true,
+          "force_row_wise": true,
+          "random_state": 20261123,
+          "FLAML_sample_size": 10000
+        },
+        "sgd": {
+          "penalty": "l2",
+          "alpha": 9.6974759823847e-06,
+          "l1_ratio": 0.9999999999999999,
+          "epsilon": 0.1,
+          "learning_rate": "invscaling",
+          "eta0": 0.01070967507702012,
+          "power_t": 0.2782206912524911,
+          "average": false,
+          "loss": "squared_epsilon_insensitive",
+          "random_state": 20261123,
+          "FLAML_sample_size": 239599
+        },
+        "xgboost": {
+          "n_estimators": 68,
+          "max_leaves": 22,
+          "min_child_weight": 0.7216292080102416,
+          "learning_rate": 0.14727258904527743,
+          "subsample": 1.0,
+          "colsample_bylevel": 1.0,
+          "colsample_bytree": 0.8509144854288561,
+          "reg_alpha": 0.0009765625,
+          "reg_lambda": 49.42697470063359,
+          "FLAML_sample_size": 239599
+        }
+      },
+      "importance_top": [
+        [
+          "CR06_DTC_Proxy",
+          0.1694
+        ],
+        [
+          "p_ivol_60",
+          0.0695
+        ],
+        [
+          "L14_Price_Impact",
+          0.0416
+        ],
+        [
+          "p_amt_20",
+          0.0087
+        ],
+        [
+          "L35_Reversal_Intensity",
+          0.0076
+        ],
+        [
+          "v_ebitda_ev",
+          0.0072
+        ],
+        [
+          "s_breadth_3m",
+          0.0068
+        ],
+        [
+          "M04_Mom_1",
+          0.0062
+        ],
+        [
+          "T07_PMA20",
+          0.0054
+        ],
+        [
+          "M15_Mom_3",
+          0.0037
+        ],
+        [
+          "T14_HLRange",
+          0.0034
+        ],
+        [
+          "Q08_Composite_Quality",
+          0.0029
+        ],
+        [
+          "cat_kq150",
+          0.0028
+        ],
+        [
+          "p_mom_5",
+          0.0024
+        ],
+        [
+          "s_kr3y",
+          0.0024
+        ]
+      ],
+      "seconds": 665.4
+    },
+    {
+      "target": "1m",
+      "year": 2024,
+      "n_train": 253898,
+      "n_val": 109936,
+      "val_from": "2019-11-29",
+      "refit_cut": "2024-11-29",
+      "selection_metric": "monthly_spearman_ic(loss = 1 − IC)",
+      "best_estimator": "extra_tree",
+      "n_trials": 60,
+      "best_loss_per_estimator": {
+        "lgbm": 0.84688966572325,
+        "xgboost": 0.872204010344054,
+        "rf": 0.8747490636623614,
+        "extra_tree": 0.8386841156663278,
+        "sgd": 0.8669655265515002
+      },
+      "ensemble_weights": {
+        "extra_tree": 0.9,
+        "lgbm": 0.1
+      },
+      "best_configs": {
+        "extra_tree": {
+          "n_estimators": 188,
+          "max_features": 0.6431363653920714,
+          "max_leaves": 500,
+          "random_state": 20261123,
+          "FLAML_sample_size": 40000
+        },
+        "lgbm": {
+          "n_estimators": 59,
+          "num_leaves": 4,
+          "min_child_samples": 10,
+          "learning_rate": 0.15502069310816494,
+          "log_max_bin": 7,
+          "colsample_bytree": 0.7646950415962601,
+          "reg_alpha": 0.0009765625,
+          "reg_lambda": 25.225361162886653,
+          "deterministic": true,
+          "force_row_wise": true,
+          "random_state": 20261123,
+          "FLAML_sample_size": 40000
+        }
+      },
+      "importance_top": [
+        [
+          "CR06_DTC_Proxy",
+          0.0244
+        ],
+        [
+          "p_ivol_60",
+          0.0135
+        ],
+        [
+          "L14_Price_Impact",
+          0.0079
+        ],
+        [
+          "L35_Reversal_Intensity",
+          0.0034
+        ],
+        [
+          "T14_HLRange",
+          0.0034
+        ],
+        [
+          "s_mkt_1m",
+          0.0022
+        ],
+        [
+          "L05_Dollar_Volume",
+          0.0021
+        ],
+        [
+          "p_mom_5",
+          0.002
+        ],
+        [
+          "v_gpp",
+          0.0019
+        ],
+        [
+          "T07_PMA20",
+          0.0018
+        ],
+        [
+          "L27_Price_Level",
+          0.0017
+        ],
+        [
+          "M04_Mom_1",
+          0.0016
+        ],
+        [
+          "L26_Log_MktCap",
+          0.0014
+        ],
+        [
+          "v_tbp",
+          0.0013
+        ],
+        [
+          "M11_ST_Reversal",
+          0.0013
+        ],
+        [
+          "p_amt_20",
+          0.0012
+        ],
+        [
+          "V14_EBIT_EV",
+          0.0012
+        ],
+        [
+          "c_eps_chg_1m",
+          0.0012
+        ],
+        [
+          "f_ind_amt_20",
+          0.0012
+        ],
+        [
+          "p_size",
+          0.0011
+        ],
+        [
+          "v_ebitdap",
+          0.001
+        ],
+        [
+          "p_gap_20",
+          0.001
+        ],
+        [
+          "D01_IdioVol",
+          0.001
+        ],
+        [
+          "s_mkt_12m",
+          0.0009
+        ],
+        [
+          "s_breadth_3m",
+          0.0009
+        ],
+        [
+          "M10_Intermediate_Mom",
+          0.0009
+        ],
+        [
+          "p_hl_20",
+          0.0008
+        ],
+        [
+          "M06_High_52w",
+          0.0007
+        ],
+        [
+          "C02_EPS_Chg_1m",
+          0.0007
+        ],
+        [
+          "M13_VolAdj_Mom",
+          0.0007
+        ]
+      ],
+      "seconds": 4682.7
+    },
+    {
+      "target": "1m",
+      "year": 2025,
+      "n_train": 270445,
+      "n_val": 113512,
+      "val_from": "2020-09-29",
+      "refit_cut": "2025-11-28",
+      "selection_metric": "monthly_spearman_ic(loss = 1 − IC)",
+      "best_estimator": "lgbm",
+      "n_trials": 60,
+      "best_loss_per_estimator": {
+        "lgbm": 0.832551767008941,
+        "xgboost": 0.8551152581359998,
+        "rf": 0.8362579158827715,
+        "extra_tree": 0.8459092238607899,
+        "sgd": 0.8487616761851655
+      },
+      "ensemble_weights": {
+        "extra_tree": 0.14,
+        "lgbm": 0.48,
+        "sgd": 0.38
+      },
+      "best_configs": {
+        "extra_tree": {
+          "n_estimators": 6,
+          "max_features": 1.0,
+          "max_leaves": 11,
+          "random_state": 20261123,
+          "FLAML_sample_size": 40000
+        },
+        "lgbm": {
+          "n_estimators": 42,
+          "num_leaves": 4,
+          "min_child_samples": 21,
+          "learning_rate": 0.1367680942876457,
+          "log_max_bin": 7,
+          "colsample_bytree": 0.8039265918151056,
+          "reg_alpha": 0.0009765625,
+          "reg_lambda": 2.0382831768215013,
+          "deterministic": true,
+          "force_row_wise": true,
+          "random_state": 20261123,
+          "FLAML_sample_size": 270445
+        },
+        "sgd": {
+          "penalty": "elasticnet",
+          "alpha": 0.0010311961605437158,
+          "l1_ratio": 0.005006293744186481,
+          "epsilon": 0.08953160844750573,
+          "learning_rate": "invscaling",
+          "eta0": 0.009337351439780964,
+          "power_t": 0.22177930874750887,
+          "average": false,
+          "loss": "huber",
+          "random_state": 20261123,
+          "FLAML_sample_size": 10000
+        }
+      },
+      "importance_top": [
+        [
+          "CR06_DTC_Proxy",
+          0.1367
+        ],
+        [
+          "p_ivol_60",
+          0.0683
+        ],
+        [
+          "L14_Price_Impact",
+          0.0269
+        ],
+        [
+          "T14_HLRange",
+          0.0197
+        ],
+        [
+          "p_vol_120",
+          0.0177
+        ],
+        [
+          "p_ivol_250",
+          0.0127
+        ],
+        [
+          "p_hl_20",
+          0.0117
+        ],
+        [
+          "s_breadth_3m",
+          0.0096
+        ],
+        [
+          "T07_PMA20",
+          0.008
+        ],
+        [
+          "v_rep",
+          0.0077
+        ],
+        [
+          "c_eps_chg_1m",
+          0.0073
+        ],
+        [
+          "p_amt_20",
+          0.0063
+        ],
+        [
+          "L27_Price_Level",
+          0.0061
+        ],
+        [
+          "p_size",
+          0.0055
+        ],
+        [
+          "p_mom_5",
+          0.0055
+        ],
+        [
+          "v_ebitda_ev",
+          0.0054
+        ],
+        [
+          "f_ind_amt_20",
+          0.0052
+        ],
+        [
+          "v_gpp",
+          0.0051
+        ],
+        [
+          "p_gap_20",
+          0.0049
+        ],
+        [
+          "M11_ST_Reversal",
+          0.0047
+        ],
+        [
+          "D22_Tracking_Error",
+          0.0047
+        ],
+        [
+          "L26_Log_MktCap",
+          0.0045
+        ],
+        [
+          "C02_EPS_Chg_1m",
+          0.0045
+        ],
+        [
+          "L35_Reversal_Intensity",
+          0.0044
+        ],
+        [
+          "M04_Mom_1",
+          0.0044
+        ],
+        [
+          "L05_Dollar_Volume",
+          0.0043
+        ],
+        [
+          "q_SharesGrowth",
+          0.0042
+        ],
+        [
+          "M32_Composite_Mom_v2",
+          0.0039
+        ],
+        [
+          "v_opp",
+          0.0037
+        ],
+        [
+          "p_mom_12_1",
+          0.0035
+        ]
+      ],
+      "seconds": 762.3
+    }
+  ]
+}

@@ -1,5 +1,7 @@
 ## aif_progress_notify.R — 텔레그램 진행 알림(승인 계획 '진행 알림'). 상태 파일을 읽어 한 통을 만들고, 보낼 때인지 스스로 판정한다.
-##   실행: Rscript notify/aif_progress_notify.R [--send] [--force] [--event=start|end|error|resume|result|report] [--summary=<json>] [--note=<줄1|줄2|…>]
+##   실행: Rscript notify/aif_progress_notify.R [--send] [--force] [--event=start|end|error|resume|result|report|charts] [--summary=<json>] [--note=<줄1|줄2|…>]
+##     --event=charts = 그림만 보내는 통(요약 파일의 charts · chart_names · headline) — 앞 통에서 못 간 그림을 손으로 이어 보낼 때.
+##     그림이 많으면 한 통에 15장까지만 싣고 나머지는 65초 뒤 '그림 이어서' 통으로 보낸다(텔레그램이 같은 채팅에 1분에 스무 건쯤만 받는다).
 ##     --send 가 없으면 미리보기(발송 없음 · 형식 검사만). 발송은 저장소의 단일 진입점 tg_agent_brief() 로만 한다.
 ##     --event=report = 종합 보고 통(요약 파일 + 1단계는 후속 연구 계획 요약 followup_plan.json + 그림). 마지막 단계(final_report · nl_report)의 결과 통도 이 모양으로 간다.
 ##     --note = 통에 '조치' 구획으로 덧붙일 줄(세로줄로 나눈다 · 둘 이상) — 오류 뒤 다시 띄웠을 때 원인과 조치를 알리는 데 쓴다.
@@ -131,15 +133,63 @@ if (EVENT == "report") {
                                                                                    sm$report_file_line %||% (if (nzchar(TRACK)) "보고서 파일 = 연구 폴더 results/nl_report/ · 계획서 = FOLLOWUP_PLAN.md" else "보고서 파일 = 연구 폴더 results/final/final_report.html · 계획서 = FOLLOWUP_PLAN.md")))))
   title <- sprintf("[무인] %s — 종합 보고 · 전체 %d%%", RNAME, pct)
 }
+## 그림은 글 다음에 한 장씩 간다. 텔레그램은 같은 채팅에 1분에 스무 건쯤만 받는다 — 11-23 종합 보고에서 그림 32장 가운데 뒤 13장이 그 제한(429)으로 못 갔다.
+##   그래서 같은 파일은 한 번만 싣고, 이름이 겹치면 번호를 붙여 구분하고, 한 통에 CH 장까지만 싣는다. 남은 그림과 못 간 그림은 GAP 초 뒤 '그림 이어서' 통으로 보낸다(못 간 그림은 한 번만 다시).
+CH <- 15L; GAP <- 65
+uniq_charts <- function(ch) {
+  if (!length(ch)) return(ch)
+  ch <- ch[!duplicated(unname(ch))]
+  nm <- names(ch); if (is.null(nm)) nm <- rep("", length(ch))
+  bad <- is.na(nm) | !nzchar(nm); nm[bad] <- sub("\\.[A-Za-z0-9]+$", "", basename(ch[bad]))
+  tot <- as.integer(table(nm)[nm]); idx <- ave(seq_along(nm), nm, FUN = seq_along)
+  setNames(unname(ch), ifelse(tot > 1L, sprintf("%s (%d/%d)", nm, idx, tot), nm))
+}
+## 그림만 실은 통의 글 — 발송 함수가 구획 둘 이상 · 400바이트 이상을 요구하므로, 한 줄 요약 + 그림 목록 + 참고를 싣는다
+chart_secs <- function(headline, ch) {
+  nm <- sub(" \\([0-9]+/[0-9]+\\)$", "", names(ch)); tb <- table(nm)[unique(nm)]
+  list(list(type = "summary", body = substr(headline, 1L, 100L)),
+       list(type = "bullet", emoji = "\U0001F5BC", heading = "이번 통의 그림",
+            items = c(sprintf("%s %d장", names(tb), as.integer(tb)), "그림의 설명과 성과표는 앞서 보낸 종합 보고 통과 보고서 파일에 있습니다")),
+       list(type = "kv", emoji = "\U0001F4C1", heading = "참고",
+            kv = list("그림 수" = sprintf("%d장", length(ch)), "보고서 파일" = if (nzchar(TRACK)) "연구 폴더 results/nl_report/" else "연구 폴더 results/final/final_report.html")))
+}
+## 그림만 보내는 통(--event=charts --summary=<charts · chart_names · headline>) — 앞 통에서 못 간 그림을 손으로 이어 보낼 때 쓴다
+if (EVENT == "charts") {
+  cp <- unlist(sm$charts); cn <- unlist(sm$chart_names)
+  if (is.null(sm) || !length(cp) || length(cn) != length(cp)) { cat("[aif-notify] 그림 통에는 그림 목록(charts · chart_names)이 든 --summary 가 필요하다\n"); quit(status = 2L) }
+  ex <- file.exists(cp); charts <- uniq_charts(setNames(cp[ex], cn[ex]))
+  secs <- chart_secs(sm$headline %||% sprintf("%s 종합 보고의 그림을 이어서 보냅니다(%d장)", RNAME, length(charts)), charts)
+  title <- sprintf("[무인] %s — 종합 보고 그림 이어서", RNAME)
+}
 mute <- quiet   # 낮에는 주기 통도 알림음으로 보낸다(도훈 11-23 '30분마다 · 알림음 켬') · 밤(00~07시)에 보내는 통은 종류와 무관하게 알림음 없이 채팅에만 남긴다
 if (!SEND) Sys.setenv(QVEST_TG_DRY_RUN = "1")
 invisible(capture.output(suppressMessages(source(file.path(root, "02_Infrastructure", "telegram", "telegram_notify.R")))))
-r <- tryCatch(tg_agent_brief(agent = "Q-Lead", title = title, sections = secs, charts = charts, relaxed = TRUE, mute = mute, glossary = FALSE),
-              error = function(e) { cat("[aif-notify] 발송 함수 오류:", conditionMessage(e), "\n"); NULL })
+send1 <- function(ttl, ss, ch) tryCatch(tg_agent_brief(agent = "Q-Lead", title = ttl, sections = ss, charts = ch, relaxed = TRUE, mute = mute, glossary = FALSE),
+                                        error = function(e) { cat("[aif-notify] 발송 함수 오류:", conditionMessage(e), "\n"); NULL })
+charts <- uniq_charts(charts)
+first <- if (SEND && length(charts) > CH) charts[seq_len(CH)] else charts
+r <- send1(title, secs, first)
 if (is.null(r)) quit(status = 2L)
 if (SEND && is.list(r) && isFALSE(r$ok)) { cat("[aif-notify] 발송 실패(응답 ok = FALSE)\n"); quit(status = 3L) }
 if (!SEND) { cat("[aif-notify] 미리보기(발송 없음) — 형식 검사 통과\n"); if (is.character(r)) cat(r, "\n") else if (!is.null(r$body)) cat(r$body, "\n") else str(r, max.level = 1); quit(status = 0L) }
-tryCatch(aif_write_json(list(sent_at = format(now, "%Y-%m-%d %H:%M:%S"), stage_key = st$stage_key, stage_state = state, pct = pct, stage_pct = spct, event = EVENT), NSP),
-         error = function(e) cat("[aif-notify] 직전 통 기록을 쓰지 못했다(발송은 됨):", conditionMessage(e), "\n"))
-nfail <- length(r$charts_failed) + length(r$charts_missing)       # 그림은 글 다음에 한 장씩 간다 — 못 보낸 장수를 로그에 남긴다
-cat(sprintf("[aif-notify] 보냄 — %s · 전체 %d%% · %s · 그림 %d장%s\n", EVENT, pct, if (mute) "무음" else "알림음", length(charts), if (nfail) sprintf("(실패 %d)", nfail) else ""))
+if (EVENT != "charts")                                            # 그림만 보낸 통은 주기 통의 간격 계산에 넣지 않는다
+  tryCatch(aif_write_json(list(sent_at = format(now, "%Y-%m-%d %H:%M:%S"), stage_key = st$stage_key, stage_state = state, pct = pct, stage_pct = spct, event = EVENT), NSP),
+           error = function(e) cat("[aif-notify] 직전 통 기록을 쓰지 못했다(발송은 됨):", conditionMessage(e), "\n"))
+## 남은 그림과 못 간 그림을 이어서 보낸다
+lost <- unlist(r$charts_missing)
+queue <- c(charts[setdiff(names(charts), names(first))], charts[intersect(names(charts), unlist(r$charts_failed))])
+tried <- intersect(names(charts), unlist(r$charts_failed)); part <- 1L
+while (length(queue)) {
+  Sys.sleep(GAP)
+  part <- part + 1L
+  ch <- queue[seq_len(min(CH, length(queue)))]; queue <- queue[-seq_along(ch)]
+  r2 <- send1(sprintf("%s · 그림 이어서 %d", title, part),
+              chart_secs(sprintf("앞 통의 그림을 이어서 보냅니다 — 이번 통 %d장 · 그 뒤로 남은 그림 %d장", length(ch), length(queue)), ch), ch)
+  f2 <- if (is.null(r2)) names(ch) else intersect(names(ch), unlist(r2$charts_failed))
+  again <- setdiff(f2, tried); tried <- c(tried, again); queue <- c(queue, charts[again])
+  lost <- c(lost, setdiff(f2, again), if (!is.null(r2)) unlist(r2$charts_missing))
+  cat(sprintf("[aif-notify] 그림 이어서 %d — %d장 · 못 간 %d장 · 남은 %d장\n", part, length(ch), length(f2), length(queue)))
+}
+nfail <- length(lost)                                             # 다시 보내고도 못 간 그림 수를 로그에 남긴다
+cat(sprintf("[aif-notify] 보냄 — %s · 전체 %d%% · %s · 그림 %d장%s%s\n", EVENT, pct, if (mute) "무음" else "알림음", length(charts),
+            if (part > 1L) sprintf("(%d통에 나눔)", part) else "", if (nfail) sprintf("(실패 %d — %s)", nfail, paste(lost, collapse = ", ")) else ""))
