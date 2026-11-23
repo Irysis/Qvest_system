@@ -1,15 +1,19 @@
 """aif_riskmodel.py — 위험 평가 모형 1부: 지표 → 노출 → 횡단면 회귀(FOLLOWUP_PLAN.md '위험 평가 모형' · 걸음 1 '원문 재현 판'의 선형 모형).
 
 Barra USE4 의 구조를 한국 자료로 만든다: 수익 = 시장 + 업종 + 스타일 + 고유.
-  desc   지표 19개(USE4 Empirical Notes 부록 A 의 정의) — 신호일(월말)마다, 그날까지의 자료로
-           가격 · 거래: BETA · HSIGMA · DASTD · CMRA · RSTR · STOM · STOQ · STOA · LNCAP
-           재무 · 컨센서스: EPFWD · CETOP · ETOP · EGRO · SGRO · YILD · BTOP · MLEV · DTOA · BLEV
-  expo   스타일 노출 12개 — 지표 표준화(평균 = 추정 유니버스 시총 가중 · 표준편차 = 동일가중 · 3 표준편차 절단) → 부록 A 의 가중으로 합성 → 다시 표준화
+  desc   지표 33개 — 신호일(월말)마다, 그날까지의 자료로
+           USE4 Empirical Notes 부록 A 의 정의 19개
+             가격 · 거래: BETA · HSIGMA · DASTD · CMRA · RSTR · STOM · STOQ · STOA · LNCAP
+             재무 · 컨센서스: EPFWD · CETOP · ETOP · EGRO · SGRO · YILD · BTOP · MLEV · DTOA · BLEV
+           GEMLT 에서 더해진 다섯 스타일의 지표 14개(지표 문서를 받지 못해 팩터 이름의 뜻에 맞춰 정한 정의 — README 표 · 도훈 11-23 '그대로 진행')
+             수익성 ATO · GP · GPM · ROA / 이익 변동성 VSAL · VERN · VFLO / 투자의 질 AGRO · IGRO · CXGRO / 이익의 질 ABS · ACF / 장기 반전 LTRSTR · LTHALPHA
+  expo   스타일 노출 17개 — 지표 표준화(평균 = 추정 유니버스 시총 가중 · 표준편차 = 동일가중 · 3 표준편차 절단) → 지표 가중(USE4 = 부록 A · 다섯 스타일 = 같은 가중)으로 합성 → 다시 표준화
            → 결측은 업종과 규모에 회귀해 채움 → 잔차 변동성은 베타에 직교화 → 비선형 규모 · 비선형 베타(세제곱 → 직교화 → 절단 → 표준화)
   reg    횡단면 회귀 — √시총 가중 · 업종 팩터 수익의 시총 가중 합 = 0. 노출은 신호일 값으로 그 보유월 내내 고정.
            월간(유의성 · 설명력 평가용)과 일간(팩터 공분산 · 고유 위험의 재료 = 순수 팩터 수익 · 고유수익)
   stats  팩터 통계표(USE4 표 4.2 의 열) — 평균 |t| · |t|>2 인 달의 비율 · 연 수익 · 연 변동성 · 추정 유니버스와의 상관 · 노출 안정 계수 · 분산팽창계수
            설정을 고르는 데 쓰는 표이므로 표본 안(설정 measure.is_end 까지)만 낸다. 그 뒤 구간의 팩터 수익은 저장만 하고 여기서 요약하지 않는다.
+           스타일끼리의 노출 상관(√시총 가중 · 표본 안 달 평균)도 함께 낸다 — 겹치는 스타일을 가려내는 재료.
 추정 유니버스 = 측정 축 멤버(공통 틀) 가운데 그날 행과 업종이 있는 종목. 노출은 행이 있는 모든 종목에 매긴다(표준화의 평균 · 표준편차는 추정 유니버스에서).
 미래참조: 지표는 신호일까지의 일별 자료 · 재무는 쓸 수 있는 첫날(Factor_Date)이 신호일 이전인 값 · 컨센서스는 신호일 전날까지의 마지막 값.
   --check 가 자료를 신호일에서 자른 뒤 다시 만든 지표 · 노출이 온 자료로 만든 것과 같은지 확인한다.
@@ -17,7 +21,9 @@ Barra USE4 의 구조를 한국 자료로 만든다: 수익 = 시장 + 업종 + 
   예상 이익수익률 = 컨센서스 1년 EPS ÷ 1년 BPS × 장부가/시가(주당 추정치를 수정주가 수준과 나누지 않는다) · 성장에 애널리스트 장기 성장 예상이 없다 ·
   창 안 관측 하한 50% · 표준화 전 10 표준편차 밖은 자료 오류로 버림 · 성장의 분모는 절댓값 평균 · 성장은 연간 점 세 개부터 ·
   장기부채 = 이자부부채 − 단기차입금 − 유동성 사채 · 배당 = 현금배당액(없는 기간은 배당금 지급 — 퀀티의 배당 시트가 2012Q3~2013Q4 에 오류를 돌려줘 그 기간 행이 없다).
-산출(.cache/aif_research/followup/risk/): desc.npz · expo.npz · reg.npz · spec_daily.npy · meta.json + results/followup/risk/factor_stats_is.csv · checks.json
+다섯 스타일에서 정한 것: 연간 점은 성장 지표와 같은 규칙(최근 4분기 합 · 기간 말 값을 4분기 간격으로 · 세 점부터) · 변동성의 분모는 절댓값 평균 ·
+  주식 수 = 수정 평균 주식 수(기말 수정 주식 수는 0 인 행이 3% 있다) · 순영업자산 = (총자산 − 현금) − (총부채 − 이자부부채) · 장기 반전은 직교화하지 않는다.
+산출(.cache/aif_research/followup/risk/): desc.npz · expo.npz · reg.npz · spec_daily.npy · meta.json + results/followup/risk/factor_stats_is.csv · expo_corr_is.csv · checks.json
 실행: python py/aif_riskmodel.py [--force] [--check] [--smoke]     (감시 셸: ops/aif_run.py --track followup --job nl_risk --stage nl_risk)
 """
 import argparse
@@ -35,7 +41,7 @@ import aif_daily as ad
 from aif_roll import last_valid
 
 F32 = np.float32
-VERSION = 1
+VERSION = 2                               # 2 = GEMLT 에서 더해진 다섯 스타일(지표 14개)을 넣은 판
 STAGE, PART_TO = "nl_risk", 0.40          # 위험 평가 모형 단계의 1부(지표 · 노출 · 회귀) — 2부(공분산 · 고유 위험) · 3부(평가 · 검증)가 뒤를 잇는다
 
 # ── USE4 Empirical Notes 부록 A 의 값(창 · 반감기 · 지표 가중) · 방법론 노트 2.2 의 절단 ──────────────────────
@@ -43,6 +49,7 @@ BETA_WIN, BETA_HL = 252, 63                 # 베타 · 베타 회귀의 잔차 
 DASTD_HL = 42                               # 일별 초과수익 변동성(창은 베타와 같은 252일)
 RSTR_WIN, RSTR_LAG, RSTR_HL = 504, 21, 126  # 상대 강도(모멘텀)
 CMRA_MONTHS, MONTH_DAYS = 12, 21            # 누적 범위 — 21거래일 한 달 × 12
+LTR_WIN, LTR_LAG, LTR_HL = 1040, 273, 260   # 장기 반전(정한 값 — README 의 정의안: 최근 273거래일을 뺀 1,040거래일 · 반감기 260일)
 STYLE_DEF = {                               # 스타일: [(지표, 가중)]
     "BETA": [("BETA", 1.0)],
     "MOMENTUM": [("RSTR", 1.0)],
@@ -54,12 +61,19 @@ STYLE_DEF = {                               # 스타일: [(지표, 가중)]
     "BTOP": [("BTOP", 1.0)],
     "LEVERAGE": [("MLEV", 0.75), ("DTOA", 0.15), ("BLEV", 0.10)],
     "LIQUIDITY": [("STOM", 0.35), ("STOQ", 0.35), ("STOA", 0.30)],
+    # GEMLT 에서 더해진 다섯 스타일 — 지표는 같은 가중(있는 지표끼리 평균). 부호는 지표에서 맞춘다(투자의 질 · 이익의 질 · 장기 반전 = 뒤집은 값)
+    "PROFIT": [("ATO", 1.0), ("GP", 1.0), ("GPM", 1.0), ("ROA", 1.0)],
+    "EARNVAR": [("VSAL", 1.0), ("VERN", 1.0), ("VFLO", 1.0)],
+    "INVQ": [("AGRO", 1.0), ("IGRO", 1.0), ("CXGRO", 1.0)],
+    "EARNQ": [("ABS", 1.0), ("ACF", 1.0)],
+    "LTREV": [("LTRSTR", 1.0), ("LTHALPHA", 1.0)],
 }
 ORTH = {"RESVOL": "BETA"}                   # 잔차 변동성은 베타에 직교화
 CUBE = {"NLSIZE": "SIZE", "NLBETA": "BETA"} # 비선형 규모 · 비선형 베타 = 표준화 노출의 세제곱 → 원래 노출에 직교화 → 절단 → 표준화
 STYLES = list(STYLE_DEF) + list(CUBE)
 STYLE_KO = {"BETA": "베타", "MOMENTUM": "모멘텀", "SIZE": "규모", "EARNYILD": "이익수익률", "RESVOL": "잔차 변동성", "GROWTH": "성장", "DIVYILD": "배당수익률",
-            "BTOP": "장부가/시가", "LEVERAGE": "레버리지", "LIQUIDITY": "유동성", "NLSIZE": "비선형 규모", "NLBETA": "비선형 베타"}
+            "BTOP": "장부가/시가", "LEVERAGE": "레버리지", "LIQUIDITY": "유동성", "PROFIT": "수익성", "EARNVAR": "이익 변동성", "INVQ": "투자의 질",
+            "EARNQ": "이익의 질", "LTREV": "장기 반전", "NLSIZE": "비선형 규모", "NLBETA": "비선형 베타"}
 CLIP_SD = 3.0
 # ── 정한 값(원문에 수치가 없다) ────────────────────────────────────────────────────────────────────────
 OUT_SD = 10.0                               # 표준화 전 이만큼 벗어난 값은 자료 오류로 보고 버린다(원문은 '자료 오류 무리'의 경계를 밝히지 않았다)
@@ -68,14 +82,19 @@ MIN_EST = 30                                # 표준화 · 회귀에 필요한 �
 MIN_COVER = 0.5                             # 스타일이 그 달에 '있다'고 보는 하한 — 추정 유니버스의 이 비율 이상에 지표 값이 있어야 한다(그 밑이면 대부분이
                                             #   업종 · 규모로 채워져 그 스타일이 규모 · 업종과 거의 같은 것이 된다 — 배당 자료가 빈 기간에서 실제로 그랬다)
 MAX_AGE_CONS = 20                           # 컨센서스 값의 유효 기간(거래일) — 1단계 컨센서스 묶음과 같다
-GROWTH_LAGS = (16, 12, 8, 4, 0)             # 성장 지표의 연간 다섯 점 = 최근 4분기 합을 4분기 간격으로(오래된 것 → 최근)
-GROWTH_MIN = 3                              # 성장 지표에 필요한 연간 점의 수(가장 최근 점부터 이어진 것) — 원문은 다섯 회계연도다. 퀀티 분기 재무가 2000년부터라
+GROWTH_LAGS = (16, 12, 8, 4, 0)             # 연간 다섯 점 = 최근 4분기 합(기간 말 항목은 그 값)을 4분기 간격으로(오래된 것 → 최근) — 성장 · 이익 변동성 · 투자의 질
+GROWTH_MIN = 3                              # 연간 점 지표에 필요한 점의 수(가장 최근 점부터 이어진 것) — 원문은 다섯 회계연도다. 퀀티 분기 재무가 2000년부터라
                                             #   다섯 점은 2005년 봄에야 선다 → 세 점부터 낸다(2003년 봄부터 · 도훈 11-23 '성장 지표 수리'). 다섯 점이 다 있으면 원문과 같다.
+YOY_LAGS = (4, 0)                           # 1년 변화(순영업자산)
 ANCHOR = "TotalAssets"                      # 재무 기간을 잡는 기준 항목(모든 회사에 있다)
-FUND_NOW = [ANCHOR, "NetIncomeParent", "CashEarnings", "CashDivTotal", "DividendsPaid", "EquityParent", "PreferredCapital", "InterestBearingDebt", "CurrentBorr", "CurrentBonds",
-            "LongTermBorr", "Bonds", "ConvBonds", "ExchBonds", "BondsWithWarrants", "CurrentLiab"]
-FUND_LAG = ["EPSParentAdj", "Revenue", "SharesCommonAvgAdj"]
-DESC_NAMES = ["BETA", "HSIGMA", "DASTD", "CMRA", "RSTR", "STOM", "STOQ", "STOA", "LNCAP", "EPFWD", "CETOP", "ETOP", "EGRO", "SGRO", "YILD", "BTOP", "MLEV", "DTOA", "BLEV"]
+FUND_USE = {                                # 항목: 읽는 분기 시차(0 = 기준 기간)
+    ANCHOR: GROWTH_LAGS, "EPSParentAdj": GROWTH_LAGS, "Revenue": GROWTH_LAGS, "SharesCommonAvgAdj": GROWTH_LAGS, "NetIncome": GROWTH_LAGS, "OperatingCF": GROWTH_LAGS,
+    "Capex": GROWTH_LAGS, "InterestBearingDebt": YOY_LAGS, "CashAndEquiv": YOY_LAGS, "TotalLiab": YOY_LAGS,
+    **{it: (0,) for it in ("NetIncomeParent", "CashEarnings", "CashDivTotal", "DividendsPaid", "EquityParent", "PreferredCapital", "CurrentBorr", "CurrentBonds", "LongTermBorr",
+                           "Bonds", "ConvBonds", "ExchBonds", "BondsWithWarrants", "CurrentLiab", "GrossProfit")},
+}
+DESC_NAMES = ["BETA", "HSIGMA", "DASTD", "CMRA", "RSTR", "STOM", "STOQ", "STOA", "LNCAP", "EPFWD", "CETOP", "ETOP", "EGRO", "SGRO", "YILD", "BTOP", "MLEV", "DTOA", "BLEV",
+              "ATO", "GP", "GPM", "ROA", "VSAL", "VERN", "VFLO", "AGRO", "IGRO", "CXGRO", "ABS", "ACF", "LTRSTR", "LTHALPHA"]
 assert BETA_WIN == CMRA_MONTHS * MONTH_DAYS
 assert set(d for p in STYLE_DEF.values() for d, _ in p) == set(DESC_NAMES)
 
@@ -133,10 +152,11 @@ def estu_return(D):
 # ── 지표(가격 · 거래) ────────────────────────────────────────────────────────────────────────────────
 def desc_price(D, mkt, sel=None, progress=None):
     S, N = len(D.sig_rows), D.N
-    out = {k: np.full((S, N), np.nan, F32) for k in ("BETA", "HSIGMA", "DASTD", "CMRA", "RSTR", "STOM", "STOQ", "STOA", "LNCAP")}
+    out = {k: np.full((S, N), np.nan, F32) for k in ("BETA", "HSIGMA", "DASTD", "CMRA", "RSTR", "STOM", "STOQ", "STOA", "LNCAP", "LTRSTR", "LTHALPHA")}
     wb = 0.5 ** (np.arange(BETA_WIN - 1, -1, -1) / BETA_HL)[:, None]                         # 오래된 날 → 최근(가중 1)
     wd = 0.5 ** (np.arange(BETA_WIN - 1, -1, -1) / DASTD_HL)[:, None]
     wr = 0.5 ** (np.arange(RSTR_WIN - 1, -1, -1) / RSTR_HL)[:, None]
+    wl = 0.5 ** (np.arange(LTR_WIN - 1, -1, -1) / LTR_HL)[:, None]
     row = np.isfinite(D.ls)                                                                  # 그날 행이 있었나
     first = np.where(row.any(0), row.argmax(0), D.T)                                         # 첫 행의 위치(그 앞은 상장 전)
     with np.errstate(all="ignore"):                                                          # 일 회전율 = 거래대금 ÷ 시총(주식 수 회전율과 같은 비율) · 거래가 없던 날 = 0
@@ -176,9 +196,24 @@ def desc_price(D, mkt, sel=None, progress=None):
             lr = D.lr[b0:b1 + 1].astype(np.float64); ok = np.isfinite(lr)
             x = np.where(ok, lr - D.lrf[b0:b1 + 1, None], 0.0)                               # 상장 뒤 행이 없는 날(정지) = 수익 0
             live = np.arange(b0, b1 + 1)[:, None] >= first[None, :]
-            wl = (wr * live).sum(0)
+            wv = (wr * live).sum(0)
             with np.errstate(all="ignore"):                                                  # 상장 전 날의 가중만큼 키운다(창이 덜 찬 종목의 합이 작게 나오지 않게)
-                out["RSTR"][i] = np.where(live.sum(0) >= MIN_FRAC * RSTR_WIN, (wr * x).sum(0) * (wr.sum() / wl), np.nan)
+                out["RSTR"][i] = np.where(live.sum(0) >= MIN_FRAC * RSTR_WIN, (wr * x).sum(0) * (wr.sum() / wv), np.nan)
+        c1 = r - LTR_LAG; c0 = c1 - LTR_WIN + 1
+        if c0 >= 1:                                                                          # 장기 반전: 최근 273일을 뺀 1,040일 — 상대 강도와 같은 식의 합 · 같은 창의 시장 대비 알파(둘 다 부호를 뒤집는다)
+            lr = D.lr[c0:c1 + 1].astype(np.float64); ok = np.isfinite(lr)
+            x = np.where(ok, lr - D.lrf[c0:c1 + 1, None], 0.0)
+            live = np.arange(c0, c1 + 1)[:, None] >= first[None, :]
+            wv = (wl * live).sum(0)
+            y = np.where(ok, np.expm1(lr) - D.rf[c0:c1 + 1, None], 0.0)                      # 일별 초과수익(행이 없는 날은 가중 0) — 베타 회귀와 같은 꼴
+            m = mk[c0:c1 + 1, None]
+            w = wl * ok; W = w.sum(0)
+            with np.errstate(all="ignore"):
+                out["LTRSTR"][i] = np.where(live.sum(0) >= MIN_FRAC * LTR_WIN, -(wl * x).sum(0) * (wl.sum() / wv), np.nan)
+                mm, my = (w * m).sum(0) / W, (w * y).sum(0) / W
+                vm = (w * m * m).sum(0) / W - mm ** 2
+                b = ((w * m * y).sum(0) / W - mm * my) / vm
+                out["LTHALPHA"][i] = np.where((ok.sum(0) >= MIN_FRAC * LTR_WIN) & (vm > 0), -(my - b * mm), np.nan)   # 가중 회귀의 절편(하루 단위)
         for nm, win, months in (("STOM", MONTH_DAYS, 1.0), ("STOQ", 3 * MONTH_DAYS, 3.0), ("STOA", 12 * MONTH_DAYS, 12.0)):
             if r - win >= 0:                                                                 # 회전율의 로그: 1개월 합 · 3개월의 월평균 · 12개월의 월평균
                 s_, n_ = C[r] - C[r - win], Cn[r] - Cn[r - win]
@@ -193,7 +228,7 @@ def desc_price(D, mkt, sel=None, progress=None):
 def fund_panel(f, sig_sel, cut=None, chunk=500, progress=None):
     """재무 값 dict[(항목, 분기 시차)] = [덮는 신호 × 종목].
     신호일마다 기준 항목(총자산)의 as-of 기간 Q(쓸 수 있는 첫날 <= 신호일인 마지막 기간 · 묵은 기간은 버림 — nlff_data 의 규칙)를 잡고,
-    다른 항목은 같은 기간 Q(성장용 항목은 Q − 4 · 8 · 12 · 16 도)의 값을 기간 번호로 찾는다 — 항목마다 따로 as-of 를 잡으면 드물게 적히는 항목(사채 · 우선주)의 옛 값이 끌려온다.
+    다른 항목은 같은 기간 Q(FUND_USE 의 시차가 있으면 Q − 4 · 8 · 12 · 16 도)의 값을 기간 번호로 찾는다 — 항목마다 따로 as-of 를 잡으면 드물게 적히는 항목(사채 · 우선주)의 옛 값이 끌려온다.
     찾은 값의 쓸 수 있는 첫날이 신호일 뒤면 버린다."""
     import pandas as pd
     nd = ab._nlff()
@@ -201,9 +236,8 @@ def fund_panel(f, sig_sel, cut=None, chunk=500, progress=None):
     me = f.sig_dates[sig_sel].astype(np.int64)
     trunc = None if cut is None else int(np.datetime64(cut, "D").astype(np.int64))
     path, stale = nd.p(cfg["paths"]["fund_q"]), int(cfg["staleness_months"]["q"])
-    items = FUND_NOW + FUND_LAG
-    keys = [(it, 0) for it in items] + [(it, lg) for it in FUND_LAG for lg in GROWTH_LAGS if lg]
-    out = {k: np.full((len(me), f.nt), np.nan, F32) for k in keys}
+    items = list(FUND_USE)
+    out = {(it, lg): np.full((len(me), f.nt), np.nan, F32) for it, lags in FUND_USE.items() for lg in lags}
     q0 = 1990 * 4
 
     def qnum(days):
@@ -261,22 +295,33 @@ def desc_fund(D, FP, eps1, bps1):
     ibd = g("InterestBearingDebt")
     ld = np.where(np.isfinite(ibd), np.maximum(ibd - z0(g("CurrentBorr")) - z0(g("CurrentBonds")), 0.0),      # 장기부채 = 이자부부채 − 단기차입금 − 유동성 사채
                   z0(g("LongTermBorr")) + z0(g("Bonds")) + z0(g("ConvBonds")) + z0(g("ExchBonds")) + z0(g("BondsWithWarrants")))   # 이자부부채가 없으면 장기차입금 + 사채류
-    def growth(y):
-        """연간 점(오래된 것 → 최근)을 시간에 회귀한 기울기 ÷ 절댓값 평균. 가장 최근 점부터 이어진 점이 GROWTH_MIN 개 이상일 때 그 점들로 낸다."""
-        fin = np.isfinite(y)
-        run = np.cumprod(fin[::-1], axis=0).sum(0)                                             # 가장 최근 점부터 이어진 점의 수
-        out = np.full(y.shape[1:], np.nan)
+
+    def ann(it):
+        return np.stack([g(it, lg) for lg in GROWTH_LAGS])                                   # 연간 점 [5 × 신호 × 종목] — 오래된 것 → 최근
+
+    def annual(y, stat):
+        """연간 점의 통계 ÷ 절댓값 평균 — stat = 'slope'(시간에 회귀한 기울기) · 'sd'(표준편차). 가장 최근 점부터 이어진 점이 GROWTH_MIN 개 이상일 때 그 점들로 낸다."""
+        run = np.cumprod(np.isfinite(y)[::-1], axis=0).sum(0)                                # 가장 최근 점부터 이어진 점의 수
+        res = np.full(y.shape[1:], np.nan)
         with np.errstate(all="ignore"):
             for n in range(GROWTH_MIN, y.shape[0] + 1):
                 yy = y[-n:]
-                k = (np.arange(n) - (n - 1) / 2.0)[:, None, None]
                 den = np.abs(yy).mean(0)
-                g = (k * yy).sum(0) / (k ** 2).sum() / den
-                out = np.where((run == n) & (den > 0), g, out)
-        return out
+                if stat == "slope":
+                    k = (np.arange(n) - (n - 1) / 2.0)[:, None, None]
+                    num = (k * yy).sum(0) / (k ** 2).sum()
+                else:
+                    num = yy.std(0, ddof=1)
+                res = np.where((run == n) & (den > 0), num / den, res)
+        return res
+
+    def noa(lg):                                                                             # 순영업자산 = (총자산 − 현금) − (총부채 − 이자부부채) · 현금 · 이자부부채가 적히지 않은 회사는 0 으로 본다
+        return (g(ANCHOR, lg) - z0(g("CashAndEquiv", lg))) - (g("TotalLiab", lg) - z0(g("InterestBearingDebt", lg)))
 
     with np.errstate(all="ignore"):
-        sh = np.stack([g("SharesCommonAvgAdj", lg) for lg in GROWTH_LAGS])
+        sh = ann("SharesCommonAvgAdj")
+        sh = np.where(sh > 0, sh, np.nan)
+        rev, ni, ocf = g("Revenue"), g("NetIncome"), g("OperatingCF")
         btop = np.where(has & (cap > 0), be / cap, np.nan)
         out = {"ETOP": g("NetIncomeParent") / cap, "CETOP": g("CashEarnings") / cap,
                "YILD": np.where(np.isfinite(g("CashDivTotal")), g("CashDivTotal"), g("DividendsPaid")) / cap,   # 최근 12개월 현금배당액 ÷ 시총 — 그 기간에 없으면 현금흐름표의 배당금 지급
@@ -285,8 +330,17 @@ def desc_fund(D, FP, eps1, bps1):
                "MLEV": np.where(has, (cap + pe + ld) / cap, np.nan),
                "DTOA": np.where(ta > 0, (ld + g("CurrentLiab")) / ta, np.nan),
                "BLEV": np.where(be > 0, (be + pe + ld) / be, np.nan),
-               "EGRO": growth(np.stack([g("EPSParentAdj", lg) for lg in GROWTH_LAGS])),
-               "SGRO": growth(np.stack([g("Revenue", lg) for lg in GROWTH_LAGS]) / np.where(sh > 0, sh, np.nan))}
+               "EGRO": annual(ann("EPSParentAdj"), "slope"),
+               "SGRO": annual(ann("Revenue") / sh, "slope"),
+               # 수익성 — 최근 4분기 합 ÷ 같은 기간 말 총자산(매출총이익률은 ÷ 매출)
+               "ATO": np.where(ta > 0, rev / ta, np.nan), "GP": np.where(ta > 0, g("GrossProfit") / ta, np.nan),
+               "GPM": np.where(rev > 0, g("GrossProfit") / rev, np.nan), "ROA": np.where(ta > 0, ni / ta, np.nan),
+               # 이익 변동성 — 연간 점의 표준편차 ÷ 절댓값 평균
+               "VSAL": annual(ann("Revenue"), "sd"), "VERN": annual(ann("NetIncome"), "sd"), "VFLO": annual(ann("OperatingCF"), "sd"),
+               # 투자의 질 — 총자산 · 주식 수 · 설비투자의 성장(부호를 뒤집는다 — 덜 늘린 쪽이 높다)
+               "AGRO": -annual(ann(ANCHOR), "slope"), "IGRO": -annual(sh, "slope"), "CXGRO": -annual(ann("Capex"), "slope"),
+               # 이익의 질 — 발생액(부호를 뒤집는다 — 발생액이 작은 쪽이 높다): 대차 기준 = 순영업자산의 1년 변화 · 현금흐름 기준 = 순이익 − 영업현금흐름
+               "ABS": np.where(ta > 0, -(noa(YOY_LAGS[1]) - noa(YOY_LAGS[0])) / ta, np.nan), "ACF": np.where(ta > 0, -(ni - ocf) / ta, np.nan)}
     return {k_: np.where(np.isfinite(v), v, np.nan).astype(F32) for k_, v in out.items()}
 
 
@@ -485,10 +539,11 @@ def wcorr(x, y, v):
 
 
 def expo_stats(D, X, EST, sector, n_sec, months):
-    """노출 안정 계수(이번 달과 다음 달 노출의 √시총 가중 횡단면 상관) · 분산팽창계수(다른 팩터 전부에 회귀) — months 의 평균."""
+    """노출 안정 계수(이번 달과 다음 달 노출의 √시총 가중 횡단면 상관) · 분산팽창계수(다른 팩터 전부에 회귀) · 스타일끼리의 노출 상관(√시총 가중) — months 의 평균."""
     S, K = X.shape[0], X.shape[2]
     stab = np.full((len(months), K), np.nan)
     vif = np.full((len(months), K), np.nan)
+    csum, cnum = np.zeros((K, K)), np.zeros((K, K))
     for a, i in enumerate(months):
         cap = np.exp(D.ls[D.sig_rows[i]].astype(np.float64))
         if i + 1 < S and EST[i + 1].any():
@@ -505,19 +560,26 @@ def expo_stats(D, X, EST, sector, n_sec, months):
                 y = A[:, col]
                 e = y - Z @ np.linalg.lstsq(Z * sv[:, None], y * sv, rcond=None)[0]
                 vif[a, j] = 1.0 / max(np.dot(v, e * e) / np.dot(v, (y - np.dot(v, y) / v.sum()) ** 2), 1e-12)
-    with warnings.catch_warnings():
+            wn = v / v.sum()
+            xs = A[:, A.shape[1] - len(ks):]
+            xc = xs - wn @ xs
+            cov = (xc * wn[:, None]).T @ xc
+            sd = np.sqrt(np.diag(cov))
+            csum[np.ix_(ks, ks)] += cov / np.outer(sd, sd)
+            cnum[np.ix_(ks, ks)] += 1.0
+    with warnings.catch_warnings(), np.errstate(all="ignore"):
         warnings.simplefilter("ignore", RuntimeWarning)
-        return np.nanmean(stab, axis=0), np.nanmean(vif, axis=0)
+        return np.nanmean(stab, axis=0), np.nanmean(vif, axis=0), np.where(cnum > 0, csum / cnum, np.nan)
 
 
 def factor_table(f, D, mkt, reg, X, EST, sector, sec_names, is_end):
-    """표본 안(보유월이 is_end 안에서 끝난 달 · 그날까지의 일별 값)의 팩터 통계 — 행 = 시장 · 업종 평균 · 스타일 12."""
+    """표본 안(보유월이 is_end 안에서 끝난 달 · 그날까지의 일별 값)의 팩터 통계 — 행 = 시장 · 업종 · 스타일. 돌려주는 것: 행 · 전체 요약 · 스타일끼리의 노출 상관."""
     n_sec, K = len(sec_names), X.shape[2]
     sg = D.sig_sel
     ok_m = np.isfinite(reg["r2m"]) & (f.dates[np.minimum(f.hold_b[sg], f.nd - 1)] <= is_end)
     ok_d = np.isfinite(reg["r2d"]) & (f.dates <= is_end)
     months = np.nonzero(ok_m)[0]
-    stab, vif = expo_stats(D, X, EST, sector, n_sec, months)
+    stab, vif, xcorr = expo_stats(D, X, EST, sector, n_sec, months)
     me = mkt[D.offset:][ok_d]
     names = ["시장"] + list(sec_names) + [STYLE_KO[s] for s in STYLES]
     rows = []
@@ -533,7 +595,7 @@ def factor_table(f, D, mkt, reg, X, EST, sector, sec_names, is_end):
                      "sharpe": float(ret / vol) if vol > 0 else np.nan, "corr_estu": float(np.corrcoef(fd[g], me[g])[0, 1]),
                      "stability": float(stab[j]) if j >= 0 else np.nan, "vif": float(vif[j]) if j >= 0 else np.nan})
     return rows, {"months": int(ok_m.sum()), "days": int(ok_d.sum()), "r2_month_mean": float(np.nanmean(reg["r2m"][ok_m])), "r2_day_mean": float(np.nanmean(reg["r2d"][ok_d])),
-                  "n_month_mean": float(reg["nm"][ok_m].mean())}
+                  "n_month_mean": float(reg["nm"][ok_m].mean())}, xcorr
 
 
 # ── 점검 ─────────────────────────────────────────────────────────────────────────────────────────────
@@ -629,7 +691,7 @@ def main():
     _save_npz(RK("reg.npz"), factors=np.array(["MARKET"] + ["IND_%02d" % k for k in range(n_sec)] + STYLES), estu_excess=mkt[D.offset:], **reg)
     _save_npy(RK("spec_daily.npy"), SPEC)
     is_end = np.datetime64(ac.cfg()["measure"]["is_end"], "D")
-    rows, ov = factor_table(f, D, mkt, reg, X, EST, sector[D.sig_sel], sec_names, is_end)
+    rows, ov, xcorr = factor_table(f, D, mkt, reg, X, EST, sector[D.sig_sel], sec_names, is_end)
     chk = checks(f, D, mkt, reg, X, EST)
     cover = {d: float(np.mean([np.isfinite(desc[d][i][EST[i]]).mean() for i in range(len(EST)) if EST[i].any()])) for d in DESC_NAMES}
     fill = {s: float(np.mean([filled[i, j] / max(EST[i].sum(), 1) for i in range(len(EST)) if EST[i].any()])) for j, s in enumerate(STYLES)}
@@ -644,15 +706,27 @@ def main():
             w.writeheader()
             w.writerows(rows)
     ac.write_atomic(rdir + "/factor_stats_is.csv", wcsv)
-    ac.write_json({"at": ac._now(), "is_end": str(is_end), "overall_is": ov, "checks": chk, "descriptor_cover_in_estu": cover, "filled_share_in_estu": fill}, rdir + "/checks.json")
+    ko = [STYLE_KO[s] for s in STYLES]
+
+    def write_xcorr(p):                                                                      # 스타일끼리의 노출 상관(표본 안 달 평균 · √시총 가중)
+        with open(p, "w", newline="", encoding="utf-8-sig") as fh:
+            w = csv.writer(fh)
+            w.writerow(["style"] + ko)
+            for a_, nm in enumerate(ko):
+                w.writerow([nm] + ["" if not np.isfinite(c) else "%.4f" % c for c in xcorr[a_]])
+    ac.write_atomic(rdir + "/expo_corr_is.csv", write_xcorr)
+    pairs = sorted(((abs(xcorr[a_, b_]), xcorr[a_, b_], ko[a_], ko[b_]) for a_ in range(len(ko)) for b_ in range(a_ + 1, len(ko)) if np.isfinite(xcorr[a_, b_])), reverse=True)
+    ac.write_json({"at": ac._now(), "is_end": str(is_end), "overall_is": ov, "checks": chk, "descriptor_cover_in_estu": cover, "filled_share_in_estu": fill,
+                   "expo_corr_top": [{"a": p_[2], "b": p_[3], "corr": float(p_[1])} for p_ in pairs[:12]]}, rdir + "/checks.json")
     st = [r for r in rows if r["kind"] == "스타일"]
     mk_ = rows[0]
-    lines = ["지표 19개 → 스타일 노출 12개 → 월간 %d달 · 일간 %s일의 횡단면 회귀를 돌렸습니다(추정 유니버스 달 평균 %.0f종목 · 표본 안 통계)" % (ov["months"], format(ov["days"], ","), ov["n_month_mean"]),
+    lines = ["지표 %d개 → 스타일 노출 %d개 → 월간 %d달 · 일간 %s일의 횡단면 회귀를 돌렸습니다(추정 유니버스 달 평균 %.0f종목 · 표본 안 통계)" % (len(DESC_NAMES), len(STYLES), ov["months"], format(ov["days"], ","), ov["n_month_mean"]),
              "월간 회귀의 설명력(R²) 평균 %.1f%% · 시장 팩터의 평균 |t| %.1f · 시장 팩터와 추정 유니버스 수익의 일간 상관 %.4f" % (100 * ov["r2_month_mean"], mk_["abs_t_mean"], chk["market_vs_estu_corr_daily"]),
-             "스타일 12개 — 평균 |t| %.2f · |t|>2 인 달 %.0f%% · 노출 안정 계수 %.2f · 분산팽창계수 %.1f" % (np.mean([r["abs_t_mean"] for r in st]), 100 * np.mean([r["abs_t_gt2"] for r in st]),
+             "스타일 %d개 — 평균 |t| %.2f · |t|>2 인 달 %.0f%% · 노출 안정 계수 %.2f · 분산팽창계수 %.1f" % (len(st), np.mean([r["abs_t_mean"] for r in st]), 100 * np.mean([r["abs_t_gt2"] for r in st]),
                                                                               np.mean([r["stability"] for r in st]), np.mean([r["vif"] for r in st])),
              "평균 |t| 가 큰 스타일 — " + " · ".join("%s %.1f" % (r["factor"], r["abs_t_mean"]) for r in sorted(st, key=lambda r: -r["abs_t_mean"])[:4]),
              "평균 |t| 가 작은 스타일 — " + " · ".join("%s %.1f" % (r["factor"], r["abs_t_mean"]) for r in sorted(st, key=lambda r: r["abs_t_mean"])[:3]),
+             "노출이 가장 겹치는 스타일 쌍 — " + " · ".join("%s × %s %+.2f" % (p_[2], p_[3], p_[1]) for p_ in pairs[:3]),
              "구현 점검 — 표준화 어긋남 %.1e · 업종 제약 어긋남 %.1e%s" % (max(chk["standardize_capw_mean_max_abs"], chk["standardize_eq_sd_max_dev"]), chk["industry_constraint_max_abs_monthly"],
                                                           (" · 자르기 시험 차이 %.1e" % max(max(t["desc_max_abs_diff"], t["expo_max_abs_diff"]) for t in chk["truncation"])) if a.check else "")]
     ac.write_json({"at": ac._now(), "title": "위험 평가 모형 1부 — 지표 · 노출 · 횡단면 회귀", "lines": lines, "charts": [], "chart_names": []}, ac.out("followup", ac.smoke_name("stage_summary_nl_risk") + ".json"))
