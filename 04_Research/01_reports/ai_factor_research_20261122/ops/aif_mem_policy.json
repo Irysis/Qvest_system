@@ -1,28 +1,262 @@
 {
   "schema": "memory_policy_v1",
-  "_doc": "AI 팩터 연구 전용 메모리 정책 — 인프라 관문(02_Infrastructure/ops/mem_gate.py)을 MG_POLICY 로 이 파일을 가리켜 부른다. 인프라 등록부(06_Registry/memory_policy.json)는 고치지 않는다. 식 = 가용 메모리 − 이 작업의 상한 ≥ reserve_gb. conflicts = 먼저 돌고 있으면 기다릴 무거운 작업의 명령줄 표지(밤 갱신 · 충실구현 레인 검증기 · 셀 워커 · DNN 학습 · 무인 Judge · 팩터 DB 빌드).",
+  "_doc": "AI 팩터 연구 전용 메모리 정책 — 인프라 관문(02_Infrastructure/ops/mem_gate.py)을 MG_POLICY 로 이 파일을 가리켜 부른다. 인프라 등록부(06_Registry/memory_policy.json)는 고치지 않는다. 식 = 가용 메모리 − 이 작업의 상한 ≥ reserve_gb. conflicts = 먼저 돌고 있으면 기다릴 무거운 작업의 명령줄 표지(밤 갱신 · 충실구현 레인 검증기 · 셀 워커 · DNN 학습 · 무인 Judge · 팩터 DB 빌드). 2단계 작업(aif_nl_*): 가벼운 것은 수식 탐색 3판 옆에서 돌 수 있어 정점에 이웃 몫 4GB 를 더하고 트리 AutoML(aif_tree.py)이 돌면 기다린다. 무거운 것(머신러닝 팩터 · 포트폴리오 측정 · 보고)은 긴 대기열(run_queue_long.sh)이 끝날 때까지 기다린다.",
   "physical_gb": 31.8,
   "reserve_gb": 3.2,
   "peaks": {
-    "aif_perf": {"gb": 6, "basis": "cap"},
-    "aif_terminals": {"gb": 6, "basis": "cap"},
-    "aif_enumerate": {"gb": 8, "basis": "cap"},
-    "aif_feature_boost": {"gb": 8, "basis": "cap"},
-    "aif_gp_v3": {"gb": 4, "basis": "cap"},
-    "aif_tree_automl": {"gb": 8, "basis": "cap"},
-    "aif_neural_net": {"gb": 8, "basis": "cap"},
-    "aif_pca_ipca": {"gb": 8, "basis": "cap"},
-    "aif_cond_autoencoder": {"gb": 8, "basis": "cap"}
+    "aif_perf": {
+      "gb": 6,
+      "basis": "cap"
+    },
+    "aif_terminals": {
+      "gb": 6,
+      "basis": "cap"
+    },
+    "aif_enumerate": {
+      "gb": 8,
+      "basis": "cap"
+    },
+    "aif_feature_boost": {
+      "gb": 8,
+      "basis": "cap"
+    },
+    "aif_gp_v3": {
+      "gb": 4,
+      "basis": "cap"
+    },
+    "aif_tree_automl": {
+      "gb": 8,
+      "basis": "cap"
+    },
+    "aif_neural_net": {
+      "gb": 8,
+      "basis": "cap"
+    },
+    "aif_pca_ipca": {
+      "gb": 8,
+      "basis": "cap"
+    },
+    "aif_cond_autoencoder": {
+      "gb": 8,
+      "basis": "cap"
+    },
+    "aif_nl_frame": {
+      "gb": 8,
+      "basis": "cap 4 + 이웃 작업(수식 탐색 3판)이 상한까지 자랄 몫 4"
+    },
+    "aif_nl_shape": {
+      "gb": 8,
+      "basis": "cap 4 + 이웃 작업(수식 탐색 3판)이 상한까지 자랄 몫 4"
+    },
+    "aif_nl_factor": {
+      "gb": 8,
+      "basis": "cap 4 + 이웃 작업(수식 탐색 3판)이 상한까지 자랄 몫 4"
+    },
+    "aif_nl_level": {
+      "gb": 8,
+      "basis": "cap 4 + 이웃 작업(수식 탐색 3판)이 상한까지 자랄 몫 4"
+    },
+    "aif_nl_dynw": {
+      "gb": 8,
+      "basis": "cap 4 + 이웃 작업(수식 탐색 3판)이 상한까지 자랄 몫 4"
+    },
+    "aif_nl_mlfactor": {
+      "gb": 8,
+      "basis": "cap"
+    },
+    "aif_nl_port": {
+      "gb": 6,
+      "basis": "cap"
+    },
+    "aif_nl_report": {
+      "gb": 6,
+      "basis": "cap"
+    }
   },
   "conflicts": {
-    "aif_perf": ["daily_refresh", "qm_refresh_", "rf_replication_verify\\.R", "rf_cell_worker\\.R", "dnn_rolling\\.py", "judge_run\\.sh", "run_fdb_", "factor_db_full_rebuild"],
-    "aif_terminals": ["daily_refresh", "qm_refresh_", "rf_replication_verify\\.R", "rf_cell_worker\\.R", "dnn_rolling\\.py", "judge_run\\.sh", "run_fdb_", "factor_db_full_rebuild"],
-    "aif_enumerate": ["daily_refresh", "qm_refresh_", "rf_replication_verify\\.R", "rf_cell_worker\\.R", "dnn_rolling\\.py", "judge_run\\.sh", "run_fdb_", "factor_db_full_rebuild"],
-    "aif_feature_boost": ["daily_refresh", "qm_refresh_", "rf_replication_verify\\.R", "rf_cell_worker\\.R", "dnn_rolling\\.py", "judge_run\\.sh", "run_fdb_", "factor_db_full_rebuild"],
-    "aif_gp_v3": ["daily_refresh", "qm_refresh_", "rf_replication_verify\\.R", "rf_cell_worker\\.R", "dnn_rolling\\.py", "judge_run\\.sh", "run_fdb_", "factor_db_full_rebuild"],
-    "aif_tree_automl": ["daily_refresh", "qm_refresh_", "rf_replication_verify\\.R", "rf_cell_worker\\.R", "dnn_rolling\\.py", "judge_run\\.sh", "run_fdb_", "factor_db_full_rebuild"],
-    "aif_neural_net": ["daily_refresh", "qm_refresh_", "rf_replication_verify\\.R", "rf_cell_worker\\.R", "dnn_rolling\\.py", "judge_run\\.sh", "run_fdb_", "factor_db_full_rebuild"],
-    "aif_pca_ipca": ["daily_refresh", "qm_refresh_", "rf_replication_verify\\.R", "rf_cell_worker\\.R", "dnn_rolling\\.py", "judge_run\\.sh", "run_fdb_", "factor_db_full_rebuild"],
-    "aif_cond_autoencoder": ["daily_refresh", "qm_refresh_", "rf_replication_verify\\.R", "rf_cell_worker\\.R", "dnn_rolling\\.py", "judge_run\\.sh", "run_fdb_", "factor_db_full_rebuild"]
+    "aif_perf": [
+      "daily_refresh",
+      "qm_refresh_",
+      "rf_replication_verify\\.R",
+      "rf_cell_worker\\.R",
+      "dnn_rolling\\.py",
+      "judge_run\\.sh",
+      "run_fdb_",
+      "factor_db_full_rebuild"
+    ],
+    "aif_terminals": [
+      "daily_refresh",
+      "qm_refresh_",
+      "rf_replication_verify\\.R",
+      "rf_cell_worker\\.R",
+      "dnn_rolling\\.py",
+      "judge_run\\.sh",
+      "run_fdb_",
+      "factor_db_full_rebuild"
+    ],
+    "aif_enumerate": [
+      "daily_refresh",
+      "qm_refresh_",
+      "rf_replication_verify\\.R",
+      "rf_cell_worker\\.R",
+      "dnn_rolling\\.py",
+      "judge_run\\.sh",
+      "run_fdb_",
+      "factor_db_full_rebuild"
+    ],
+    "aif_feature_boost": [
+      "daily_refresh",
+      "qm_refresh_",
+      "rf_replication_verify\\.R",
+      "rf_cell_worker\\.R",
+      "dnn_rolling\\.py",
+      "judge_run\\.sh",
+      "run_fdb_",
+      "factor_db_full_rebuild"
+    ],
+    "aif_gp_v3": [
+      "daily_refresh",
+      "qm_refresh_",
+      "rf_replication_verify\\.R",
+      "rf_cell_worker\\.R",
+      "dnn_rolling\\.py",
+      "judge_run\\.sh",
+      "run_fdb_",
+      "factor_db_full_rebuild"
+    ],
+    "aif_tree_automl": [
+      "daily_refresh",
+      "qm_refresh_",
+      "rf_replication_verify\\.R",
+      "rf_cell_worker\\.R",
+      "dnn_rolling\\.py",
+      "judge_run\\.sh",
+      "run_fdb_",
+      "factor_db_full_rebuild"
+    ],
+    "aif_neural_net": [
+      "daily_refresh",
+      "qm_refresh_",
+      "rf_replication_verify\\.R",
+      "rf_cell_worker\\.R",
+      "dnn_rolling\\.py",
+      "judge_run\\.sh",
+      "run_fdb_",
+      "factor_db_full_rebuild"
+    ],
+    "aif_pca_ipca": [
+      "daily_refresh",
+      "qm_refresh_",
+      "rf_replication_verify\\.R",
+      "rf_cell_worker\\.R",
+      "dnn_rolling\\.py",
+      "judge_run\\.sh",
+      "run_fdb_",
+      "factor_db_full_rebuild"
+    ],
+    "aif_cond_autoencoder": [
+      "daily_refresh",
+      "qm_refresh_",
+      "rf_replication_verify\\.R",
+      "rf_cell_worker\\.R",
+      "dnn_rolling\\.py",
+      "judge_run\\.sh",
+      "run_fdb_",
+      "factor_db_full_rebuild"
+    ],
+    "aif_nl_frame": [
+      "daily_refresh",
+      "qm_refresh_",
+      "rf_replication_verify\\.R",
+      "rf_cell_worker\\.R",
+      "dnn_rolling\\.py",
+      "judge_run\\.sh",
+      "run_fdb_",
+      "factor_db_full_rebuild",
+      "aif_tree\\.py"
+    ],
+    "aif_nl_shape": [
+      "daily_refresh",
+      "qm_refresh_",
+      "rf_replication_verify\\.R",
+      "rf_cell_worker\\.R",
+      "dnn_rolling\\.py",
+      "judge_run\\.sh",
+      "run_fdb_",
+      "factor_db_full_rebuild",
+      "aif_tree\\.py"
+    ],
+    "aif_nl_factor": [
+      "daily_refresh",
+      "qm_refresh_",
+      "rf_replication_verify\\.R",
+      "rf_cell_worker\\.R",
+      "dnn_rolling\\.py",
+      "judge_run\\.sh",
+      "run_fdb_",
+      "factor_db_full_rebuild",
+      "aif_tree\\.py"
+    ],
+    "aif_nl_level": [
+      "daily_refresh",
+      "qm_refresh_",
+      "rf_replication_verify\\.R",
+      "rf_cell_worker\\.R",
+      "dnn_rolling\\.py",
+      "judge_run\\.sh",
+      "run_fdb_",
+      "factor_db_full_rebuild",
+      "aif_tree\\.py"
+    ],
+    "aif_nl_dynw": [
+      "daily_refresh",
+      "qm_refresh_",
+      "rf_replication_verify\\.R",
+      "rf_cell_worker\\.R",
+      "dnn_rolling\\.py",
+      "judge_run\\.sh",
+      "run_fdb_",
+      "factor_db_full_rebuild",
+      "aif_tree\\.py"
+    ],
+    "aif_nl_mlfactor": [
+      "daily_refresh",
+      "qm_refresh_",
+      "rf_replication_verify\\.R",
+      "rf_cell_worker\\.R",
+      "dnn_rolling\\.py",
+      "judge_run\\.sh",
+      "run_fdb_",
+      "factor_db_full_rebuild",
+      "run_queue_long\\.sh",
+      "aif_tree\\.py",
+      "aif_gp"
+    ],
+    "aif_nl_port": [
+      "daily_refresh",
+      "qm_refresh_",
+      "rf_replication_verify\\.R",
+      "rf_cell_worker\\.R",
+      "dnn_rolling\\.py",
+      "judge_run\\.sh",
+      "run_fdb_",
+      "factor_db_full_rebuild",
+      "run_queue_long\\.sh",
+      "aif_tree\\.py",
+      "aif_gp"
+    ],
+    "aif_nl_report": [
+      "daily_refresh",
+      "qm_refresh_",
+      "rf_replication_verify\\.R",
+      "rf_cell_worker\\.R",
+      "dnn_rolling\\.py",
+      "judge_run\\.sh",
+      "run_fdb_",
+      "factor_db_full_rebuild",
+      "run_queue_long\\.sh",
+      "aif_tree\\.py",
+      "aif_gp"
+    ]
   }
 }

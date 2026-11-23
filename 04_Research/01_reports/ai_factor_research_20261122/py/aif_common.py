@@ -10,6 +10,7 @@ import datetime as dt
 import json
 import os
 import sys
+import time
 
 import numpy as np
 
@@ -57,12 +58,33 @@ def log(msg, *a):
     print("[aif %s] %s" % (dt.datetime.now().strftime("%H:%M:%S"), msg % a if a else msg), flush=True)
 
 
+def replace_retry(tmp, path, tries=40, wait=0.05):
+    """이름 바꾸기(덮어쓰기). 윈도에서는 다른 프로그램(동기화 · 백신 · 그 파일을 읽는 중인 프로세스)이 대상을 잠깐 잡고 있으면
+    '액세스 거부'가 난다 — 짧게 기다렸다 다시 한다(모두 합쳐 약 9초). 2026-11-23 트리 AutoML 이 상태 파일의 이 순간에 죽었다."""
+    for i in range(tries):
+        try:
+            os.replace(tmp, path)
+            return
+        except PermissionError:
+            if i == tries - 1:
+                raise
+            time.sleep(wait * (1 + i // 5))
+
+
 def write_atomic(path, write_fn):
-    """임시 파일에 쓰고 이름을 바꾼다(쓰다 끊겨도 반쪽 파일이 남지 않는다)."""
+    """임시 파일에 쓰고 이름을 바꾼다(쓰다 끊겨도 반쪽 파일이 남지 않는다). 임시 파일 이름에 프로세스 번호를 넣는다 —
+    같은 파일을 두 프로세스(작업과 감시 셸)가 쓸 때 임시 파일이 겹치지 않게."""
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    tmp = path + ".tmp"
-    write_fn(tmp)
-    os.replace(tmp, path)
+    tmp = "%s.%d.tmp" % (path, os.getpid())
+    try:
+        write_fn(tmp)
+        replace_retry(tmp, path)
+    except BaseException:
+        try:
+            os.remove(tmp)
+        except OSError:
+            pass
+        raise
     return path
 
 
@@ -115,8 +137,19 @@ def _now():
     return dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
+def track():
+    """실행 줄 — 빈 값 = 1단계(기존 경로 그대로) · "followup" = 2단계. 감시 셸(aif_run.py --track)이 AIF_TRACK 으로 넘긴다.
+    줄마다 상태 파일과 진행률 단계 목록을 따로 쓴다(1단계의 남은 작업과 2단계 작업이 함께 돌 수 있어서)."""
+    return os.environ.get("AIF_TRACK", "")
+
+
+def status_path():
+    t = track()
+    return out(t, "status.json") if t else out("status.json")
+
+
 def status_read():
-    return read_json(out("status.json"), {"stage_progress": {}}) or {"stage_progress": {}}
+    return read_json(status_path(), {"stage_progress": {}}) or {"stage_progress": {}}
 
 
 def status_set(**kw):
@@ -127,7 +160,10 @@ def status_set(**kw):
         else:
             st[k] = v
     st["updated_at"] = _now()
-    write_json(st, out("status.json"))
+    try:
+        write_json(st, status_path())
+    except OSError as e:                                   # 상태 파일은 진행 표시일 뿐이다 — 못 써도 작업을 죽이지 않는다
+        log("상태 파일을 쓰지 못했다(작업은 계속): %s", e)
     return st
 
 

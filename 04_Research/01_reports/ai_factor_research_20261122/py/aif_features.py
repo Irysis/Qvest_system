@@ -32,7 +32,7 @@ class FeatureStore:
     def commit(self, block, mm, names, meta, kind="raw"):
         mm.flush()
         mm._mmap.close()                                  # 윈도에서는 열려 있는 파일의 이름을 바꿀 수 없다 — 매핑을 닫고 확정한다(이 뒤로 mm 을 쓰지 않는다)
-        os.replace(self._file(block, kind) + ".tmp", self._file(block, kind))
+        ac.replace_retry(self._file(block, kind) + ".tmp", self._file(block, kind))      # 대상이 잠깐 잠겨 있어도 다시 시도한다
         info = ac.read_json(self._meta(block), {}) or {}
         info.update({"block": block, "names": list(names), "n_features": len(names), "built_at": ac._now()})
         info.setdefault("kinds", [])

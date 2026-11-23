@@ -46,11 +46,12 @@ def log(fh, msg):
 
 
 def status_update(**kw):
-    os.makedirs(OUT, exist_ok=True)
+    os.makedirs(os.path.dirname(STATUS), exist_ok=True)
     st = {}
     if os.path.exists(STATUS):
         try:
-            st = json.load(open(STATUS, encoding="utf-8"))
+            with open(STATUS, encoding="utf-8") as fh:      # 읽자마자 닫는다 — 열어 둔 사이에 작업 쪽의 덮어쓰기가 '액세스 거부'로 실패하지 않게
+                st = json.load(fh)
         except Exception:  # noqa: BLE001 — 읽다 깨진 상태 파일은 새로 쓴다
             st = {}
     for k, v in kw.items():
@@ -59,10 +60,23 @@ def status_update(**kw):
         else:
             st[k] = v
     st["updated_at"] = now()
-    tmp = STATUS + ".tmp"
-    with open(tmp, "w", encoding="utf-8") as fh:
-        json.dump(st, fh, ensure_ascii=False, indent=2)
-    os.replace(tmp, STATUS)
+    tmp = "%s.%d.tmp" % (STATUS, os.getpid())                # 작업 쪽 임시 파일과 겹치지 않게 프로세스 번호를 넣는다
+    try:
+        with open(tmp, "w", encoding="utf-8") as fh:
+            json.dump(st, fh, ensure_ascii=False, indent=2)
+        for i in range(40):                                  # 윈도: 대상을 다른 프로그램이 잠깐 잡고 있으면 '액세스 거부' — 짧게 기다렸다 다시 한다(합쳐 약 9초)
+            try:
+                os.replace(tmp, STATUS)
+                break
+            except PermissionError:
+                if i == 39:
+                    raise
+                time.sleep(0.05 * (1 + i // 5))
+    except OSError:                                          # 상태 파일은 진행 표시일 뿐이다 — 못 써도 감시를 멈추지 않는다
+        try:
+            os.remove(tmp)
+        except OSError:
+            pass
 
 
 class MEMSTAT(ctypes.Structure):
@@ -194,21 +208,30 @@ def main():
     ap.add_argument("--job", required=True)
     ap.add_argument("--stage", required=True)
     ap.add_argument("--no-notify", action="store_true")
+    ap.add_argument("--track", default="", help="실행 줄 — 빈 값 = 1단계(지금까지와 같다) · followup = 2단계(상태 파일 · 로그 · 작업 상한을 그 줄 것으로 쓴다)")
     ap.add_argument("--summary", default=None, help="작업이 성공으로 끝난 뒤 결과 통에 실을 요약 파일(json)")
     ap.add_argument("cmd", nargs=argparse.REMAINDER)
     a = ap.parse_args()
     cmd = a.cmd[1:] if a.cmd and a.cmd[0] == "--" else a.cmd
     if not cmd:
         ap.error("명령이 없다")
-    jc = CFG["resources"]["jobs"][a.job]
+    global STATUS
+    base = OUT
+    if a.track:                                   # 2단계 줄 — 상태 파일 · 로그를 따로 두고, 자식 작업과 알림 스크립트에 같은 줄을 알린다(AIF_TRACK)
+        base = os.path.join(OUT, a.track)
+        STATUS = os.path.join(base, "status.json")
+        os.environ["AIF_TRACK"] = a.track
+    jc = (CFG[a.track] if a.track else CFG)["resources"]["jobs"][a.job]
     send = not a.no_notify
-    os.makedirs(os.path.join(OUT, "logs"), exist_ok=True)
+    os.makedirs(os.path.join(base, "logs"), exist_ok=True)
     stamp = dt.datetime.now().strftime("%Y%m%d_%H%M%S")
-    wlog = open(os.path.join(OUT, "logs", "%s_%s.wrapper.log" % (a.job, stamp)), "w", encoding="utf-8")
-    jlog = open(os.path.join(OUT, "logs", "%s_%s.log" % (a.job, stamp)), "w", encoding="utf-8")
+    wlog = open(os.path.join(base, "logs", "%s_%s.wrapper.log" % (a.job, stamp)), "w", encoding="utf-8")
+    jlog = open(os.path.join(base, "logs", "%s_%s.log" % (a.job, stamp)), "w", encoding="utf-8")
     log(wlog, "작업 %s · 단계 %s · 상한 스레드 %s · RAM %sGB%s" % (a.job, a.stage, jc["threads"], jc["ram_gb"], " · GPU %sGB" % jc["vram_gb"] if "vram_gb" in jc else ""))
     try:        # 단계가 바뀌면 단계 시작 시각을 새로 적는다 — 생성기의 stage_begin 은 '같은 단계면 유지' 라, 여기서 갈지 않으면 첫 단계의 시각이 끝까지 남아 알림의 '경과' 가 틀린다
-        if json.load(open(STATUS, encoding="utf-8")).get("stage_key") != a.stage:
+        with open(STATUS, encoding="utf-8") as fh:
+            prev_stage = json.load(fh).get("stage_key")
+        if prev_stage != a.stage:
             status_update(stage_started_at=now())
     except Exception:  # noqa: BLE001 — 상태 파일이 없거나 깨졌으면 생성기가 새로 적는다
         pass

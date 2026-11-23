@@ -26,12 +26,18 @@ aif_results <- function(..., root = aif_root(), cfg = aif_cfg(root)) file.path(r
 aif_log <- function(...) cat(sprintf("[aif %s] %s\n", format(Sys.time(), "%H:%M:%S"), sprintf(...)))
 
 ## 확정 저장 — 임시 파일에 쓰고 이름을 바꾼다(쓰다 끊겨도 반쪽 파일이 남지 않는다)
+## 이름 바꾸기는 대상을 덮어쓴다(먼저 지우지 않는다 — 지운 사이에 읽는 쪽이 '파일 없음'을 보지 않게). 윈도에서는 다른 프로그램(동기화 · 백신 ·
+## 그 파일을 읽는 중인 프로세스)이 대상을 잠깐 잡고 있으면 실패하므로 짧게 기다렸다 다시 한다(합쳐 약 9초). 임시 파일 이름에 프로세스 번호를 넣는다.
 aif_write_atomic <- function(path, write_fn) {
   dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
-  tmp <- paste0(path, ".tmp")
+  tmp <- paste0(path, ".", Sys.getpid(), ".tmp")
   write_fn(tmp)
-  if (file.exists(path)) file.remove(path)
-  if (!file.rename(tmp, path)) stop("[aif] 이름 바꾸기 실패: ", path)
+  ok <- FALSE
+  for (i in seq_len(40L)) {
+    if (suppressWarnings(file.rename(tmp, path))) { ok <- TRUE; break }
+    Sys.sleep(0.05 * (1 + (i - 1L) %/% 5L))
+  }
+  if (!ok) { unlink(tmp); stop("[aif] 이름 바꾸기 실패: ", path) }
   invisible(path)
 }
 aif_write_json <- function(x, path) aif_write_atomic(path, function(p) writeLines(toJSON(x, auto_unbox = TRUE, digits = NA, null = "null", pretty = TRUE), p, useBytes = TRUE))
