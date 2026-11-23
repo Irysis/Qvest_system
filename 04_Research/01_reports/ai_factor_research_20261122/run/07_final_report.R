@@ -154,7 +154,9 @@ ln_head <- c(sprintf("신규 팩터 %d개(종목 점수) + 잠재팩터 포트�
              sprintf("공통 기간 %s ~ · 상위 분위 롱온리 SR — %s %s · 기존 전체 합성 %s · 신규 최고 %s %s(기존 개별 %d개 가운데 %d위)", cm_from, bl, num(bmc$SR), num(tot[portfolio == "top", SR]), bestt$factor, num(bestt$SR), CT$n_existing, rt[[bestt$factor]]),
              sprintf("공통 기간 롱숏 SR — 기존 전체 합성 %s · 신규 최고 %s %s(%d위) · 기존 개별 팩터를 모두 앞선 신규 %d개 · 10위 안 %d개 · 기존 중간값 아래 %d개", num(tot[portfolio == "ls", SR]), bestl$factor, num(bestl$SR), rl[[bestl$factor]],
                      sum(rl == 1L), sum(rl <= 10L), sum(rl > CT$n_existing / 2)))
-lines <- c(ln_head, ln_method)
+oo <- O0[portfolio == "top" & factor %in% names(res)][which.max(CAGR)]; bo <- O0[portfolio == "benchmark"]; uo <- O0[portfolio == "universe_ew"]   # OOS 롱온리는 지수 대비로 함께 적는다(대형주 장세)
+ln_oos <- if (nrow(oo) && nrow(bo)) sprintf("OOS(2023-01~) 롱온리 CAGR — %s %s · 유니버스 동일가중 %s · 신규 최고 %s %s(지수 대비 %sp)", bl, aif_pct(bo$CAGR), aif_pct(uo$CAGR), oo$factor, aif_pct(oo$CAGR), aif_pct(oo$CAGR - bo$CAGR)) else NULL
+lines <- c(ln_head, ln_oos, ln_method)
 step_done(5L, "요약")
 
 ## ── ⑥ 보고서 파일(한 파일 · 그림 포함) ───────────────────────────────────────
@@ -219,7 +221,8 @@ aif_write_atomic(file.path(OUT, "final_report.html"), function(p) writeLines(htm
 charts <- c(imgs_tab, p_all, CT$images, imgs_rank, p_dist, grids, RES("stage4_latent", "charts", "table_latent_portfolios_01.png"), RES("stage4_cae", "charts", "table_latent_portfolios_01.png"), lat_imgs); ok <- file.exists(charts)
 cn <- c(rep("신규 팩터 전체 성과표", length(imgs_tab)), rep("신규 팩터 전체 P/L", length(p_all)), rep("공통 기간 비교 · 순위", length(CT$images)), rep("통합 순위", length(imgs_rank)), "기존 팩터 분포 속 위치",
         rep("P/L 격자", length(grids)), rep("잠재팩터 포트폴리오", 2L + length(lat_imgs)))
-aif_write_json(list(at = format(Sys.time(), "%Y-%m-%d %H:%M:%S"), title = if (length(missing_sets)) "중간 종합 보고" else "종합 보고 — 신규 팩터 전체", lines = as.list(lines), charts = as.list(unname(charts[ok])), chart_names = as.list(cn[ok])),
+aif_write_json(list(at = format(Sys.time(), "%Y-%m-%d %H:%M:%S"), title = if (length(missing_sets)) sprintf("종합 보고(끝난 묶음 %d개 · 남은 것 %d개)", sum(done), length(missing_sets)) else "최종 종합 보고",
+                    lines = as.list(lines), charts = as.list(unname(charts[ok])), chart_names = as.list(cn[ok])),
                CACHE("stage_summary_final.json"))
 if (nzchar(STAGE)) { aif_stage_unit(6L, "보고서 파일", root = root, cfg = cfg); aif_stage_end(done = !length(missing_sets), root = root, cfg = cfg) }
 aif_log("종합 보고 — 팩터 %d개 · 그림 %d장 · %s (%.1f MB)", length(res), sum(ok), file.path(OUT, "final_report.html"), file.size(file.path(OUT, "final_report.html")) / 2^20); cat(paste0(lines, collapse = "\n"), "\n")

@@ -207,6 +207,11 @@ def main():
     wlog = open(os.path.join(OUT, "logs", "%s_%s.wrapper.log" % (a.job, stamp)), "w", encoding="utf-8")
     jlog = open(os.path.join(OUT, "logs", "%s_%s.log" % (a.job, stamp)), "w", encoding="utf-8")
     log(wlog, "작업 %s · 단계 %s · 상한 스레드 %s · RAM %sGB%s" % (a.job, a.stage, jc["threads"], jc["ram_gb"], " · GPU %sGB" % jc["vram_gb"] if "vram_gb" in jc else ""))
+    try:        # 단계가 바뀌면 단계 시작 시각을 새로 적는다 — 생성기의 stage_begin 은 '같은 단계면 유지' 라, 여기서 갈지 않으면 첫 단계의 시각이 끝까지 남아 알림의 '경과' 가 틀린다
+        if json.load(open(STATUS, encoding="utf-8")).get("stage_key") != a.stage:
+            status_update(stage_started_at=now())
+    except Exception:  # noqa: BLE001 — 상태 파일이 없거나 깨졌으면 생성기가 새로 적는다
+        pass
 
     # 1. 출발 조건
     waited = 0

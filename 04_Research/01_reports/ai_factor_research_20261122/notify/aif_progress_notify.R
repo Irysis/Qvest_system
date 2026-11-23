@@ -1,6 +1,7 @@
 ## aif_progress_notify.R — 텔레그램 진행 알림(승인 계획 '진행 알림'). 상태 파일을 읽어 한 통을 만들고, 보낼 때인지 스스로 판정한다.
-##   실행: Rscript notify/aif_progress_notify.R [--send] [--force] [--event=start|end|error|resume|result]
+##   실행: Rscript notify/aif_progress_notify.R [--send] [--force] [--event=start|end|error|resume|result|report] [--summary=<json>]
 ##     --send 가 없으면 미리보기(발송 없음 · 형식 검사만). 발송은 저장소의 단일 진입점 tg_agent_brief() 로만 한다.
+##     --event=report = 종합 보고 통(07_final_report.R 이 쓴 요약 + 후속 연구 계획 요약 followup_plan.json + 그림). 마지막 단계(final_report)의 결과 통도 이 모양으로 간다.
 ##   보내는 때: 08~23시 매시(무음) · 단계 시작/종료/오류/재개/결과(알림음) · 00~07시는 단계 전환과 오류만.
 ##   보낸 메시지를 고치는 기능이 없으므로, 새 통이 올 때마다 더 채워진 막대가 간다.
 here <- function() {   # 이 스크립트가 든 폴더의 위 폴더(연구 폴더). 경로 정규화 함수는 쓰지 않는다 — 구분자만 맞춘다
@@ -67,16 +68,34 @@ secs <- list(
   list(type = "bullet", emoji = "⏭", heading = "다음", items = nxt[seq_len(2L)])
 )
 charts <- NULL
-if (EVENT %in% c("end", "result")) {
-  sf <- sub("^--summary=", "", A[grepl("^--summary=", A)])[1]
-  if (!is.na(sf) && file.exists(sf)) {
-    sm <- fromJSON(sf, simplifyVector = FALSE)
-    secs <- append(secs, list(list(type = "bullet", emoji = "\U0001F4C8", heading = sm$title %||% "이 단계 결과", items = unlist(sm$lines))), after = 2L)
-    cp <- unlist(sm$charts); cn <- unlist(sm$chart_names); ex <- file.exists(cp)
-    if (any(ex)) charts <- setNames(cp[ex], cn[ex])
-  }
+sf <- sub("^--summary=", "", A[grepl("^--summary=", A)])[1]
+sm <- if (!is.na(sf) && file.exists(sf)) fromJSON(sf, simplifyVector = FALSE) else NULL
+if (EVENT %in% c("end", "result") && identical(st$stage_key, "final_report") && !is.null(sm)) EVENT <- "report"   # 마지막 단계의 결과 통은 종합 보고 통으로 보낸다
+if (EVENT %in% c("end", "result") && !is.null(sm)) {
+  secs <- append(secs, list(list(type = "bullet", emoji = "\U0001F4C8", heading = sm$title %||% "이 단계 결과", items = unlist(sm$lines))), after = 2L)
+  cp <- unlist(sm$charts); cn <- unlist(sm$chart_names); ex <- file.exists(cp)
+  if (any(ex)) charts <- setNames(cp[ex], cn[ex])
 }
 title <- sprintf("[무인] AI 팩터 연구 — %s · 전체 %d%%%s", sg$name, pct, switch(EVENT, start = " · 시작", end = " · 끝", error = " · 오류", resume = " · 재개", result = " · 결과", ""))
+## 종합 보고 통(--event=report --summary=<07 이 쓴 요약>) — 지금 도는 단계와 무관하게 끝난 묶음 전체의 결론 · 진행 · 후속 연구 계획 요약(followup_plan.json 이 있으면) · 그림을 보낸다
+if (EVENT == "report") {
+  if (is.null(sm)) { cat("[aif-notify] 종합 보고 통에는 --summary 가 필요하다\n"); quit(status = 2L) }
+  sp <- st$stage_progress %||% list(); left <- vapply(stages[vapply(keys, function(kk) as.numeric(sp[[kk]] %||% 0) < 1, TRUE)], function(s) s$name, "")
+  head_txt <- sprintf("%s — AI 팩터 연구에서 만든 신규 팩터 전체의 성과 요약", sm$title %||% "종합 보고")
+  secs <- list(list(type = "summary", body = substr(head_txt, 1L, 100L)),
+               list(type = "bullet", emoji = "\U0001F4C8", heading = "결론", items = unlist(sm$lines)),
+               list(type = "code", emoji = "\U0001F4CA", heading = "진행률", body = sprintf("전체     %s\n남은 단계 %s", bar(pct), if (length(left)) paste(left, collapse = " · ") else "없음")))
+  cp <- unlist(sm$charts); cn <- unlist(sm$chart_names); ex <- file.exists(cp); if (any(ex)) charts <- setNames(cp[ex], cn[ex])
+  pf <- file.path(D, "followup_plan.json")
+  if (file.exists(pf)) {
+    pl <- fromJSON(pf, simplifyVector = FALSE)
+    secs <- c(secs, list(list(type = "bullet", emoji = "\U0001F5FA", heading = pl$title %||% "후속 연구 계획(안)", items = unlist(pl$items))))
+    pc <- vapply(pl$charts %||% list(), function(p) file.path(D, p), ""); pc <- pc[file.exists(pc)]; if (length(pc)) charts <- c(charts, pc)
+  }
+  secs <- c(secs, list(list(type = "bullet", emoji = "⏭", heading = "다음", items = c(if (length(left)) sprintf("남은 단계(%s)가 끝나면 최종판을 다시 보냅니다", paste(left, collapse = " · ")) else "모든 단계가 끝났습니다 — 이 통이 최종판입니다",
+                                                                                   "보고서 파일 = 연구 폴더 results/final/final_report.html · 계획서 = FOLLOWUP_PLAN.md"))))
+  title <- sprintf("[무인] AI 팩터 연구 — 종합 보고 · 전체 %d%%", pct)
+}
 mute <- EVENT == "hourly" || quiet   # 밤(00~07시)에 보내는 통은 종류와 무관하게 알림음 없이 채팅에만 남긴다
 if (!SEND) Sys.setenv(QVEST_TG_DRY_RUN = "1")
 invisible(capture.output(suppressMessages(source(file.path(root, "02_Infrastructure", "telegram", "telegram_notify.R")))))
