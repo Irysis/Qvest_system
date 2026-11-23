@@ -16,6 +16,7 @@
 
 밤 갱신(00:03~)과 겹치지 않게 **밤 갱신이 끝난 뒤** 한 묶음으로 돌린다. 원장은 ② 직전에 연다(열려 있는 채로 밤 갱신이 돌면 [6v] 가 실패 스텝으로 센다).
 무거운 단계(④ · ⑧ · ⑨)는 세션과 떼어 띄우고(WMI) 끝을 기다린다. 한 번에 무거운 작업 하나.
+★메모리(11-24 06:3x 실측 · 물리 32GB): 재무 캐시 생산기(`build_fundamental_caches.R`)의 정점 = 10.3GB · 부분 재빌드 도구 한 프로세스의 정점 = 약 10.2GB(재무 캐시 두 개를 통째로 읽는다). 수식 탐색 3판(약 4GB)과 함께 돌리면 가용이 3.5GB 아래로 내려간다 → 단계 ④ · ⑦ · ⑧ 과 ⑨ 의 첫 적재는 **수식 탐색 3판을 단위 경계에서 멈춘 뒤** 돌리고, 부분 재빌드는 작업자 1개(`--workers 1`)로 한다. 수식 탐색은 해 단위 체크포인트(`.cache/aif_research/gp3/<변형>_<해>.json`)에서 이어 달린다.
 
 | # | 단계 | 명령 · 산출 | 관문(어기면 멈춘다 — 원장은 열린 채로 둔다) | 상태 |
 |---|---|---|---|---|
@@ -27,7 +28,7 @@
 | 5 | 캐시 대조 | `cache_diff.py <옛 캐시 폴더> .cache <out.json>` | 값이 생긴 항목 = 배당 원계정과 그 파생뿐 · 사라진 값 0 · Factor_Date 변화 = 기간 202609 행뿐(달력 꼬리 — 아래 예행) | |
 | 6 | FF 요인 | `Rscript --no-save 02_Infrastructure/data/build_kr_factor_returns.R`(분기 표 md5 가 바뀌므로) | rc 0 · meta md5 = 새 분기 표 | |
 | 7 | 영향 팩터 탐침 | 표본 달 모의 실행 → `repair_spec.json`(대상 · 모듈) | 달라진 팩터가 배당을 쓰는 팩터로 설명된다 · 대조 달(영향 밖)은 0 | |
-| 8 | 월간 부분 재빌드 | `QVEST_RFS_SPEC=<repair_spec.json> bash 02_Infrastructure/factor_db/run_factor_subset_repair.sh --no-wait --workers 3` → 이번 달은 `rebuild_factor_subset.R --months <이번 달>` 따로 | 요약 result = 성공 · IC · 대응표 · 결합용 뷰 rc 0 | |
+| 8 | 월간 부분 재빌드 | `QVEST_RFS_SPEC=<repair_spec.json> bash 02_Infrastructure/factor_db/run_factor_subset_repair.sh --no-wait --workers 1` → 이번 달은 `rebuild_factor_subset.R --months <이번 달>` 따로 | 요약 result = 성공 · IC · 대응표 · 결합용 뷰 rc 0 | |
 | 9 | 일간 단계 F | `cd 02_Infrastructure && Rscript -e "source('factor_db/factor_db_daily_phaseF_fundamental.R')"`(약 190분) | rc 0 · 443달 | |
 | 10 | 검증 | 일간 = 월간 월말 값(대상 팩터 · 영향 달 + 대조 달) · 이번 달 일간 파일의 마지막 날짜 = RAWDATA 마지막 날짜 · `factor_db_vintage_coverage.py` | 차이 0 · status=OK | |
 | 11 | 닫기 | 원장 completed_at · 등록부 `ts_supplements[].status` = loaded · 이 문서 · 커밋 · 텔레그램 1통 | | |
@@ -54,7 +55,7 @@ QVEST_RFS_SPEC=<스크래치>/probe_spec.json QM_ROOT="G:/OneDrive/Quant_Module_
 
 ```powershell
 # 8 · 9 — 세션과 떼어 띄운다(도구 셸의 자식은 도구가 끝나면 함께 죽는다)
-Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{ CommandLine = '"C:\Program Files\Git\bin\bash.exe" -c "cd /g/OneDrive/Quant_Module_Moltbot && QVEST_RFS_SPEC=04_Research/01_reports/dividend_gap_repair_20261123/repair_spec.json bash 02_Infrastructure/factor_db/run_factor_subset_repair.sh --no-wait --workers 3 > .cache/scheduler_logs/div_gap_subset.out.log 2>&1"' }
+Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{ CommandLine = '"C:\Program Files\Git\bin\bash.exe" -c "cd /g/OneDrive/Quant_Module_Moltbot && QVEST_RFS_SPEC=04_Research/01_reports/dividend_gap_repair_20261123/repair_spec.json bash 02_Infrastructure/factor_db/run_factor_subset_repair.sh --no-wait --workers 1 > .cache/scheduler_logs/div_gap_subset.out.log 2>&1"' }
 Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{ CommandLine = '"C:\Program Files\Git\bin\bash.exe" -c "cd /g/OneDrive/Quant_Module_Moltbot/02_Infrastructure && { echo START $(date); \"/c/Program Files/R/R-4.6.2/bin/Rscript.exe\" -e \"source(''factor_db/factor_db_daily_phaseF_fundamental.R'')\"; echo RC=$? END $(date); } > ../.cache/scheduler_logs/div_gap_phaseF.log 2>&1"' }
 ```
 
@@ -73,6 +74,15 @@ Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{ Comma
   - 예상 밖 차이 하나: 기간 202609 의 Factor_Date 33,117행이 2026-12-30 → 2027-01-01. 법정기한 11-14(토)가 달력에 새로 들어온 11-16(월)로 넘어가
     45일 뒤가 12-31 이 된 것이다 — 달력 끝을 넘는 날짜는 분기 표를 다시 만들 때마다 다시 매겨진다. 두 날짜 모두 아직 오지 않아 지금 팩터 값에는 닿지 않는다.
     단계 5 의 캐시 대조에서는 202609 행(원계정 + 파생)의 날짜 변화로 보인다.
+
+## 11-24 새벽 기록
+
+- 밤 갱신은 00:03 에 시작해 데이터 단계를 06:08 에 마쳤다(퀀티 수급 단계가 4.6시간) · 그 뒤 시험 배터리가 06:25 부터 돈다. 그래서 06:30 기한의 대기기는 '아직 도는 중'으로 끝났다.
+  데이터 잠금은 배터리 전에 풀리지만, 시험이 도는 동안 운영 캐시 · 원장을 바꾸지 않으려고 끝 줄('Daily Refresh v2 Done')을 기다린다.
+- 스크래치 예행 두 번이 안전장치(가용 3.5GB 아래면 프로세스 트리 종료)에 걸려 멈췄다: 재무 캐시 생산(정점 10.29GB · 가용 최저 3.4GB) · 탐침 두 달(정점 10.24GB · 가용 최저 3.5GB).
+  운영 데이터 무접촉 · 남은 프로세스 없음. 어젯밤 탐침 한 달(23:12)이 통과한 것은 그때 가용이 조금 더 많았기 때문으로 보인다(정점은 못 쟀다).
+- 그래서 시작 조건 = 밤 갱신 끝 줄 ∧ 그 뒤 수식 탐색 3판이 단위 하나를 마친 순간(대기기 `wait_start.ps1`) → 수식 탐색을 멈추고(셸 → 감시 셸 → 작업 순서) 단계 2~9 의 첫 적재까지 돌린 뒤 다시 띄운다.
+  수식 탐색 체크포인트 = 28단위(EXP 19 · ROLL8 9) 저장 확인.
 
 ## 배당을 읽는 곳(정적 확인 — 실측은 단계 7)
 
