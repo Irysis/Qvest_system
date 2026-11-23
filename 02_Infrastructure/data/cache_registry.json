@@ -645,6 +645,28 @@
       "depends_on": [],
       "tier": 3,
       "_note": "2026-11-23 신설 · 같은 수집기가 쓰는 수집 이력(Series · Date · Value · First_Seen · Kind) — 덧붙이기만 한다. 값이 처음 보이거나 바뀐 날을 적어, 개정되는 계열의 '그때 알 수 있던 값'을 복원한다(이력 시작 = 2026-11-23). max(First_Seen) = 어느 계열이든 새 값이 온 마지막 날: 달마다 심리지수(월말)와 산업활동동향(다음 달 말)이 오므로 max_lag 45."
+    },
+    {
+      "path": ".cache/customs_kr_trade.parquet",
+      "producer": "02_Infrastructure/data/data_collector_customs_trade.R",
+      "entry_fn": "customs_fetch_kr_trade",
+      "schedule": "daily",
+      "date_col": "Date",
+      "max_lag_days": 50,
+      "depends_on": [],
+      "tier": 3,
+      "_note": "2026-11-23 신설 · daily_refresh [4ka](data/run_ecos_kr_activity.R 가 ECOS 다음에 부른다 · 끄기 QVEST_CUSTOMS_KR_TRADE=0) · 도훈 '수출 데이터 더 빠른 원천을 찾아봐' → '배선해주고' · 결정 KR-EXPORT-CUSTOMS-FAST-PIPELINE-20261123. 관세청 수출 실적 65계열의 최신 값(천 달러) — 10일 단위 잠정치(1~10일 · 1~20일 · 한 달분 × 전체 · 10대 품목 · 10개 나라 · 2016-01~)와 월 확정치 총계(수출 · 수입). Date = 관측월 1일. max_lag 50일 = 새 달의 1~10일분이 그 달 11~14일에 생기므로 그 직전의 최댓값(전월 1일 · 약 44일) + 여유. 가용일 규칙 = 06_Registry/kr_activity_availability_rules.json 의 KR_CUSTOMS_*."
+    },
+    {
+      "path": ".cache/customs_kr_trade_vintages.parquet",
+      "producer": "02_Infrastructure/data/data_collector_customs_trade.R",
+      "entry_fn": "customs_fetch_kr_trade",
+      "schedule": "daily",
+      "date_col": "First_Seen",
+      "max_lag_days": 20,
+      "depends_on": [],
+      "tier": 3,
+      "_note": "2026-11-23 신설 · 같은 수집기가 쓰는 수집 이력(Series · Date · Value · First_Seen · Kind) — 덧붙이기만 한다. 관세청은 지난 달의 값을 계속 고치므로, '그때 알 수 있던 값'은 이 이력이 쌓인 구간에서만 복원된다. max_lag 20일 = 새 줄이 적어도 1일 · 11일 · 21일 언저리에 생긴다(열흘 간격 + 휴일 여유)."
     }
   ]
 }

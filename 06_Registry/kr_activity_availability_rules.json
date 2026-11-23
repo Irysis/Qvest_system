@@ -1,6 +1,6 @@
 {
   "schema": "fred_availability_rules/v1",
-  "version": "2026-11-23.kr_activity.1",
+  "version": "2026-11-23.kr_activity.2",
   "plan": "B_fixed_upper_bound",
   "note": "한국 경기 지표(월간 · ECOS) 9계열의 가용일 상한 규칙. 정본 규칙 파일(fred_availability_rules.json)과 같은 형식이고 같은 엔진(02_Infrastructure/data/fred_availability.R · .py)에 rules_path 로 넘겨 쓴다. 정본 파일에 더하지 않은 이유: 그 파일의 md5 가 국면 계산의 에폭 키라, 고치면 국면 체인이 에폭 불일치로 선다. 수집기 = 02_Infrastructure/data/data_collector_ecos_activity.R · 밤 갱신 [4ka].",
   "authority": [
@@ -76,13 +76,41 @@
       "bounds": [{"type": "month_nth_kr_trading_day", "month_offset": 2, "n": 3,
                   "basis": "KR_CLI 와 같은 '산업활동동향' 으로 다음 달 말에 공표한다(같은 근거). 상한 = M+2월 셋째 한국 거래일. 2026-11-23 ECOS 실측: 최신 = 9월분."}],
       "vintage": {"revisions": "known", "evidence": "전월 잠정치가 다음 달 고쳐지고 계절조정 계수와 연간 보정으로 전 구간이 바뀐다 — 수집 이력 이전 구간은 결정 입력으로 쓰지 않는다(참고)."}
+    },
+    {
+      "id": "KR_CUSTOMS_D10", "name": "KR_CUSTOMS_D10", "aliases": ["KR_EXP_APPLIANCE_D10", "KR_EXP_AUTOPART_D10", "KR_EXP_CAR_D10", "KR_EXP_COMPPERIPH_D10", "KR_EXP_PETRO_D10", "KR_EXP_PHONE_D10", "KR_EXP_PRECISION_D10", "KR_EXP_SEMI_D10", "KR_EXP_SHIP_D10", "KR_EXP_STEEL_D10", "KR_EXP_TOTAL_D10", "KR_EXP_TO_CN_D10", "KR_EXP_TO_EU_D10", "KR_EXP_TO_HK_D10", "KR_EXP_TO_IN_D10", "KR_EXP_TO_JP_D10", "KR_EXP_TO_MY_D10", "KR_EXP_TO_SG_D10", "KR_EXP_TO_TW_D10", "KR_EXP_TO_US_D10", "KR_EXP_TO_VN_D10"], "source": "관세청 10일 단위 잠정치(공공데이터포털 15157908 품목별 · 15157941 국가별) — 그 달 1~10일 수출 누계(천 달러 · 2016-01~)", "frequency": "monthly",
+      "date_meaning": "M-01 = 관측월(그 달 1~10일 누계)", "status": "active",
+      "bounds": [{"type": "month_nth_kr_trading_day", "month_offset": 0, "n": 10,
+                  "basis": "관세청은 1~10일 통계를 그 달 11일에 낸다(공공데이터포털 15157908 설명 '1일~10일 통계는 11일에 제공' https://www.data.go.kr/data/15157908/openapi.do). 보도자료는 11일이 휴일이면 다음 영업일에 나왔다 — 2026-11-11(수) · 2026-10-12(11일 = 일요일)(KDI 경제정책자료의 발표 기록 https://eiec.kdi.re.kr/policy/materialView.do?num=289368). 11일 또는 그 뒤 첫 영업일은 그 달의 아홉째 거래일을 넘지 않는다(1~10일에 평일은 많아야 여드레) — 상한 = 그 달 열째 한국 거래일(발표일보다 늘 뒤)."}],
+      "vintage": {"revisions": "known", "evidence": "지난 달의 값은 그때 발표된 값이 아니라 그 뒤 고쳐진 값이다(2016~2025년 한 달분은 ECOS 수출금액과 같고, 2026-10 분은 11-01 잠정 약 1,153억 달러 → 11-16 확정 1,153.8억 달러였다). 수집 이력(.cache/customs_kr_trade_vintages.parquet · 2026-11-23~)이 쌓인 구간에서만 '그때 알 수 있던 값'을 쓸 수 있다."}
+    },
+    {
+      "id": "KR_CUSTOMS_D20", "name": "KR_CUSTOMS_D20", "aliases": ["KR_EXP_APPLIANCE_D20", "KR_EXP_AUTOPART_D20", "KR_EXP_CAR_D20", "KR_EXP_COMPPERIPH_D20", "KR_EXP_PETRO_D20", "KR_EXP_PHONE_D20", "KR_EXP_PRECISION_D20", "KR_EXP_SEMI_D20", "KR_EXP_SHIP_D20", "KR_EXP_STEEL_D20", "KR_EXP_TOTAL_D20", "KR_EXP_TO_CN_D20", "KR_EXP_TO_EU_D20", "KR_EXP_TO_HK_D20", "KR_EXP_TO_IN_D20", "KR_EXP_TO_JP_D20", "KR_EXP_TO_MY_D20", "KR_EXP_TO_SG_D20", "KR_EXP_TO_TW_D20", "KR_EXP_TO_US_D20", "KR_EXP_TO_VN_D20"], "source": "관세청 10일 단위 잠정치(같은 원천) — 그 달 1~20일 수출 누계(천 달러 · 2016-01~)", "frequency": "monthly",
+      "date_meaning": "M-01 = 관측월(그 달 1~20일 누계)", "status": "active",
+      "bounds": [{"type": "month_nth_kr_trading_day", "month_offset": 0, "n": 17,
+                  "basis": "1~20일 통계는 21일에 낸다(같은 설명 '1일~20일 통계는 21일에 제공'). 2026-11 은 21일이 토요일이라 보도자료가 11-23(월)에 나왔고 API 에도 그날 올라와 있었다. 21일 또는 그 뒤 첫 영업일은 그 달의 열여섯째 거래일을 넘지 않는다(1~20일에 평일은 많아야 열닷새) — 상한 = 그 달 열일곱째 한국 거래일. 거래일이 열일곱 번이 안 되는 달은 다음 달 첫 거래일들로 넘어간다."}],
+      "vintage": {"revisions": "known", "evidence": "지난 달의 값은 그때 발표된 값이 아니라 그 뒤 고쳐진 값이다(2016~2025년 한 달분은 ECOS 수출금액과 같고, 2026-10 분은 11-01 잠정 약 1,153억 달러 → 11-16 확정 1,153.8억 달러였다). 수집 이력(.cache/customs_kr_trade_vintages.parquet · 2026-11-23~)이 쌓인 구간에서만 '그때 알 수 있던 값'을 쓸 수 있다."}
+    },
+    {
+      "id": "KR_CUSTOMS_MON", "name": "KR_CUSTOMS_MON", "aliases": ["KR_EXP_APPLIANCE_MON", "KR_EXP_AUTOPART_MON", "KR_EXP_CAR_MON", "KR_EXP_COMPPERIPH_MON", "KR_EXP_PETRO_MON", "KR_EXP_PHONE_MON", "KR_EXP_PRECISION_MON", "KR_EXP_SEMI_MON", "KR_EXP_SHIP_MON", "KR_EXP_STEEL_MON", "KR_EXP_TOTAL_MON", "KR_EXP_TO_CN_MON", "KR_EXP_TO_EU_MON", "KR_EXP_TO_HK_MON", "KR_EXP_TO_IN_MON", "KR_EXP_TO_JP_MON", "KR_EXP_TO_MY_MON", "KR_EXP_TO_SG_MON", "KR_EXP_TO_TW_MON", "KR_EXP_TO_US_MON", "KR_EXP_TO_VN_MON"], "source": "관세청 10일 단위 잠정치(같은 원천) — 한 달분 수출(천 달러 · 2016-01~ · 다음 달 1일에 잠정치로 생기고 그 뒤 고쳐진다)", "frequency": "monthly",
+      "date_meaning": "M-01 = 관측월", "status": "active",
+      "bounds": [{"type": "month_nth_kr_trading_day", "month_offset": 1, "n": 2,
+                  "basis": "한 달분 잠정치는 다음 달 1일에 낸다(같은 설명 '1일~말일 통계는 익월 1일에 제공'). 2026-11-01 은 일요일이었는데 관세청과 산업통상부가 그날 냈다(https://eiec.kdi.re.kr/policy/materialView.do?num=288909 · https://eiec.kdi.re.kr/policy/materialView.do?num=288880). 상한 = 다음 달 둘째 한국 거래일."}],
+      "vintage": {"revisions": "known", "evidence": "지난 달의 값은 그때 발표된 값이 아니라 그 뒤 고쳐진 값이다(2016~2025년 한 달분은 ECOS 수출금액과 같고, 2026-10 분은 11-01 잠정 약 1,153억 달러 → 11-16 확정 1,153.8억 달러였다). 수집 이력(.cache/customs_kr_trade_vintages.parquet · 2026-11-23~)이 쌓인 구간에서만 '그때 알 수 있던 값'을 쓸 수 있다."}
+    },
+    {
+      "id": "KR_CUSTOMS_CONF", "name": "KR_CUSTOMS_CONF", "aliases": ["KR_EXP_TOTAL_CONF", "KR_IMP_TOTAL_CONF"], "source": "관세청 품목별 수출입실적(공공데이터포털 15101609)의 총계 행 — 월 확정치 수출 · 수입(달러를 1000 으로 나눈 값)", "frequency": "monthly",
+      "date_meaning": "M-01 = 관측월", "status": "active",
+      "bounds": [{"type": "month_nth_kr_trading_day", "month_offset": 1, "n": 14,
+                  "basis": "확정치는 다음 달 15일경에 낸다(공공데이터포털 15101609 설명 '매월 15일경 … 전월까지의 자료를 현행화' https://www.data.go.kr/data/15101609/openapi.do). 2026-10 분은 15일이 일요일이라 11-16(월)에 나왔다(https://eiec.kdi.re.kr/policy/materialView.do?num=289594). '15일경'의 폭을 실측하지 못해, 15일 뒤 첫 영업일(많아야 그 달 열한째 거래일)보다 넉넉한 다음 달 열넷째 한국 거래일을 상한으로 둔다."}],
+      "vintage": {"revisions": "known", "evidence": "지난 달의 값은 그때 발표된 값이 아니라 그 뒤 고쳐진 값이다(2016~2025년 한 달분은 ECOS 수출금액과 같고, 2026-10 분은 11-01 잠정 약 1,153억 달러 → 11-16 확정 1,153.8억 달러였다). 수집 이력(.cache/customs_kr_trade_vintages.parquet · 2026-11-23~)이 쌓인 구간에서만 '그때 알 수 있던 값'을 쓸 수 있다."}
     }
   ],
-  "coverage_note": "이 목록 = .cache/ecos_kr_activity.parquet 의 Series 9종 전수(2026-11-23 적재분).",
+  "coverage_note": "이 목록 = .cache/ecos_kr_activity.parquet 의 Series 9종 전수(2026-11-23 적재분) + .cache/customs_kr_trade.parquet 의 Series 65종 전수(KR_CUSTOMS_* 네 규칙의 aliases · 2026-11-23 적재분).",
   "residual_risk": [
     "상한 규칙의 실측 근거가 얇다 — 공표 관행과 2026-11-23 하루의 ECOS 최신 월뿐이다. 과거 공표일 · ECOS 반영일 대조는 하지 못했다.",
     "개정이 있는 계열(수출 · 경기종합지수 · 순환변동치 · 생산지수)은 수집 이력이 2026-11-23 부터라, 그 전 구간에서 '그때 알 수 있던 값'을 복원할 수 없다.",
-    "수출은 ECOS 반영이 느려 상한이 관측월 뒤 약 두 달 반이다 — 더 빠른 원천(관세청 · 산업부 공표)을 붙이지 않았다."
+    "수출은 ECOS 반영이 느려 KR_EXPORT 의 상한이 관측월 뒤 약 두 달 반이다 — 더 빠른 관세청 계열(KR_CUSTOMS_* · 2026-11-23 추가)을 따로 두었다. 관세청 계열의 상한은 발표 관행과 2026-10~11 의 발표 기록 다섯 건이 근거이고, 과거 발표일 대조는 하지 못했다."
   ],
   "history_verified": "none"
 }

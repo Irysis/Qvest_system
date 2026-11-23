@@ -57,6 +57,7 @@ ECOS_ACTIVITY_SERIES <- list(
   write_parquet(dt, tmp)
   for (i in seq_len(40L)) {
     if (suppressWarnings(file.rename(tmp, path))) return(invisible(path))
+    if (i == 1L) invisible(gc(verbose = FALSE))     # 이 프로세스가 방금 읽은 그 파일을 아직 잡고 있을 수 있다 — arrow 의 파일 매핑은 쓰레기 수집 때 풀린다
     Sys.sleep(0.05 * (1 + (i - 1L) %/% 5L))
   }
   unlink(tmp)
