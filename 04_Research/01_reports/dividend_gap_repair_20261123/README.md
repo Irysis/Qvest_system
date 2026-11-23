@@ -30,7 +30,7 @@
 | 7 | 영향 팩터 탐침 | 표본 달 모의 실행 → `repair_spec.json`(대상 · 모듈) | 달라진 팩터가 배당을 쓰는 팩터로 설명된다 · 대조 달(영향 밖)은 0 | |
 | 8 | 월간 부분 재빌드 | `QVEST_RFS_SPEC=<repair_spec.json> bash 02_Infrastructure/factor_db/run_factor_subset_repair.sh --no-wait --workers 1` → 이번 달은 `rebuild_factor_subset.R --months <이번 달>` 따로 | 요약 result = 성공 · IC · 대응표 · 결합용 뷰 rc 0 | |
 | 9 | 일간 단계 F | `cd 02_Infrastructure && Rscript -e "source('factor_db/factor_db_daily_phaseF_fundamental.R')"`(약 190분) | rc 0 · 443달 | |
-| 10 | 검증 | 일간 = 월간 월말 값(대상 팩터 · 영향 달 + 대조 달) · 이번 달 일간 파일의 마지막 날짜 = RAWDATA 마지막 날짜 · `factor_db_vintage_coverage.py` | 차이 0 · status=OK | |
+| 10 | 검증 | 일간 = 월간 월말 값(대상 팩터 · 영향 달 + 대조 달) · 이번 달 일간 파일의 끝 날짜 · 행 수가 단계 F 전후로 같다(단계 F 는 있는 날짜의 재무 열만 다시 쓴다 — 11-24 아침 끝 날짜 = 2026-11-13 · RAWDATA 끝 = 11-23 · 일간 DB 연장은 이 사슬 범위 밖) · `factor_db_vintage_coverage.py` | 차이 0 · status=OK | |
 | 11 | 닫기 | 원장 completed_at · 등록부 `ts_supplements[].status` = loaded · 이 문서 · 커밋 · 텔레그램 1통 | | |
 | 12 | 연구 쪽 | AI 팩터 연구의 위험 모형 1~3부 재실행(연구 캐시의 보충 표가 쓰이지 않게 됨을 확인) | | |
 
@@ -83,6 +83,8 @@ Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{ Comma
   운영 데이터 무접촉 · 남은 프로세스 없음. 어젯밤 탐침 한 달(23:12)이 통과한 것은 그때 가용이 조금 더 많았기 때문으로 보인다(정점은 못 쟀다).
 - 그래서 시작 조건 = 밤 갱신 끝 줄 ∧ 그 뒤 수식 탐색 3판이 단위 하나를 마친 순간(대기기 `wait_start.ps1`) → 수식 탐색을 멈추고(셸 → 감시 셸 → 작업 순서) 단계 2~9 의 첫 적재까지 돌린 뒤 다시 띄운다.
   수식 탐색 체크포인트 = 28단위(EXP 19 · ROLL8 9) 저장 확인.
+
+- 점검 세션(신선도 · 밤 갱신 부분실패)이 알려 준 것(11-24 07:3x): ① 일간 팩터 DB 끝 날짜가 11-13 이다(자동 연장 꺼짐) → 단계 ⑩ 관문을 '전후 동일'로 고쳤다 ② 팩터 등록부 두 사본(`.cache/factor_db/` 11-10 판 · `02_Infrastructure/factor_db/` 11-16 판)이 다르고 빌더는 `.cache` 사본을 읽는다(방향 동기화 경보의 원인). 사슬 전 · 사슬 중에는 맞추지 않는다 — 어제 수리 두 건과 같은 상태이고 음성 대조(다시 계산한 값 = 저장값)가 그 상태에서 맞았다. 동기화는 원장 줄이 닫힌 뒤 도훈 결정.
 
 ## 배당을 읽는 곳(정적 확인 — 실측은 단계 7)
 
