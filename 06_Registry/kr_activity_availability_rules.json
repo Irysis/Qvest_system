@@ -1,0 +1,88 @@
+{
+  "schema": "fred_availability_rules/v1",
+  "version": "2026-11-23.kr_activity.1",
+  "plan": "B_fixed_upper_bound",
+  "note": "한국 경기 지표(월간 · ECOS) 9계열의 가용일 상한 규칙. 정본 규칙 파일(fred_availability_rules.json)과 같은 형식이고 같은 엔진(02_Infrastructure/data/fred_availability.R · .py)에 rules_path 로 넘겨 쓴다. 정본 파일에 더하지 않은 이유: 그 파일의 md5 가 국면 계산의 에폭 키라, 고치면 국면 체인이 에폭 불일치로 선다. 수집기 = 02_Infrastructure/data/data_collector_ecos_activity.R · 밤 갱신 [4ka].",
+  "authority": [
+    "06_Registry/decision_register.json KR-ACTIVITY-INDICATORS-PIPELINE-20261123 (도훈 2026-11-23 '한국지표 추가(지속 수집가능한 파이프라인 배선 포함)')",
+    "한국은행 통계 공표 일정 https://www.bok.or.kr/portal/main/contents.do?menuNo=200672",
+    "국가데이터처(옛 통계청) 통계 공표 일정 https://mods.go.kr/lcofNewsPln.es?mid=a60303000000"
+  ],
+  "semantics": {
+    "avail_date": "그 관측값을 결정에 써도 되는 첫 한국 거래일의 상한(실제 공표 · ECOS 반영이 이보다 늦은 적이 없어야 한다)",
+    "vintage": "ECOS 는 최신 값만 준다. 개정이 있는 계열은 수집 이력(.cache/ecos_kr_activity_vintages.parquet)이 쌓인 뒤 구간에서만 '그때 알 수 있던 값'을 쓸 수 있다. 그 전 구간의 값은 최신 개정값이다.",
+    "tighten": "상한은 공표 관행과 2026-11-23 하루의 ECOS 실측으로 넉넉히 잡았다. 수집 이력의 Kind = new 줄(First_Seen = 실제로 처음 본 날)이 쌓이면 실제 도착일로 좁힌다."
+  },
+  "series": [
+    {
+      "id": "KR_ESI", "name": "KR_ESI", "aliases": ["513Y001/E1000"], "source": "ECOS 513Y001/E1000 경제심리지수(원계열)", "frequency": "monthly",
+      "date_meaning": "M-01 = 조사월", "status": "active",
+      "bounds": [{"type": "month_nth_kr_trading_day", "month_offset": 1, "n": 1,
+                  "basis": "한국은행 '기업경기실사지수 및 경제심리지수' 는 조사월 말에 공표한다. 2026년 실례: 4월분 04-28 · 8월분 08-26 · 9월분 09-29 · 10월분 10-29(보도자료 게시 https://eiec.kdi.re.kr/policy/materialView.do?num=288716 · 공표 일정 https://www.bok.or.kr/portal/main/contents.do?menuNo=200672). 달마다의 공표일 실측이 없어 상한을 다음 달 첫 한국 거래일로 둔다 — 월말 신호는 전월 조사분까지만 쓴다. 2026-11-23 ECOS 실측: 최신 = 10월분."}],
+      "vintage": {"revisions": "possible", "evidence": "표준화한 지수라 기준 구간이 바뀌면 전 구간 값이 다시 매겨질 수 있다(확인 전 — 수집 이력으로 추적). 3개월 대 12개월 이동평균의 부호처럼 선형 변환에 바뀌지 않는 신호로 쓴다."}
+    },
+    {
+      "id": "KR_BSI_ALL", "name": "KR_BSI_ALL", "aliases": ["512Y007/AA/99988"], "source": "ECOS 512Y007/AA/99988 업황실적 BSI(전산업 · 2009-08~)", "frequency": "monthly",
+      "date_meaning": "M-01 = 조사월", "status": "active",
+      "bounds": [{"type": "month_nth_kr_trading_day", "month_offset": 1, "n": 1,
+                  "basis": "KR_ESI 와 같은 보도자료로 조사월 말에 공표한다(같은 근거). 상한 = 다음 달 첫 한국 거래일. 2026-11-23 ECOS 실측: 최신 = 10월분."}],
+      "vintage": {"revisions": "none_known", "evidence": "조사 응답 비율로 만든 지수 — 소급 개정은 표본 개편 때뿐(2009-08 이전은 다른 통계표 512Y001 이라 잇지 않았다)."}
+    },
+    {
+      "id": "KR_BSI_MFG", "name": "KR_BSI_MFG", "aliases": ["512Y007/AA/C0000"], "source": "ECOS 512Y007/AA/C0000 업황실적 BSI(제조업 · 2009-08~)", "frequency": "monthly",
+      "date_meaning": "M-01 = 조사월", "status": "active",
+      "bounds": [{"type": "month_nth_kr_trading_day", "month_offset": 1, "n": 1,
+                  "basis": "KR_ESI 와 같은 보도자료로 조사월 말에 공표한다(같은 근거). 상한 = 다음 달 첫 한국 거래일. 2026-11-23 ECOS 실측: 최신 = 10월분."}],
+      "vintage": {"revisions": "none_known", "evidence": "조사 응답 비율로 만든 지수 — 소급 개정은 표본 개편 때뿐."}
+    },
+    {
+      "id": "KR_EXPORT", "name": "KR_EXPORT", "aliases": ["901Y118/T002"], "source": "ECOS 901Y118/T002 수출금액(관세청 통관 · 천 달러)", "frequency": "monthly",
+      "date_meaning": "M-01 = 관측월", "status": "active",
+      "bounds": [{"type": "month_nth_kr_trading_day", "month_offset": 2, "n": 10,
+                  "basis": "2026-11-23 ECOS 실측: 최신 = 9월분이고 10월분은 아직 없다 — ECOS 반영이 M+1월 23일보다 늦다. 실측이 이 한 점뿐이라 상한을 M+2월 열째 한국 거래일로 넉넉히 둔다(9월분 → 11월 중순). 수집 이력의 Kind = new 줄이 쌓이면 실제 도착일로 좁힌다."}],
+      "vintage": {"revisions": "known", "evidence": "통관 실적은 잠정에서 확정으로 고쳐진다 — 수집 이력 이전 구간은 최신 값이다."}
+    },
+    {
+      "id": "KR_CLI", "name": "KR_CLI", "aliases": ["901Y067/I16A"], "source": "ECOS 901Y067/I16A 선행종합지수(2020=100)", "frequency": "monthly",
+      "date_meaning": "M-01 = 관측월", "status": "active",
+      "bounds": [{"type": "month_nth_kr_trading_day", "month_offset": 2, "n": 3,
+                  "basis": "국가데이터처 '산업활동동향' 은 다음 달 말에 공표한다. 2026년 실례: 9월분 10-30 공표 · 10월분 11-30 예정(https://eiec.kdi.re.kr/policy/materialView.do?num=288806 · 공표 일정 https://mods.go.kr/lcofNewsPln.es?mid=a60303000000). ECOS 반영 시각의 실측이 없어 상한을 M+2월 셋째 한국 거래일로 둔다. 2026-11-23 ECOS 실측: 최신 = 9월분."}],
+      "vintage": {"revisions": "known", "evidence": "구성 지표의 잠정치가 다음 달 고쳐지고 연간 보정이 있다 — 수집 이력 이전 구간은 최신 개정값이라 결정 입력으로 쓰지 않는다(참고)."}
+    },
+    {
+      "id": "KR_CLI_CYC", "name": "KR_CLI_CYC", "aliases": ["901Y067/I16E"], "source": "ECOS 901Y067/I16E 선행지수 순환변동치", "frequency": "monthly",
+      "date_meaning": "M-01 = 관측월", "status": "active",
+      "bounds": [{"type": "month_nth_kr_trading_day", "month_offset": 2, "n": 3,
+                  "basis": "KR_CLI 와 같은 '산업활동동향' 으로 다음 달 말에 공표한다(같은 근거). 상한 = M+2월 셋째 한국 거래일."}],
+      "vintage": {"revisions": "known", "evidence": "추세를 다시 추정해 달마다 전 구간이 바뀐다(끝점 문제) — 수집 이력 이전 구간은 미래 정보가 섞인 최신 추정값이라 결정 입력으로 쓰지 않는다(참고)."}
+    },
+    {
+      "id": "KR_CCI_CYC", "name": "KR_CCI_CYC", "aliases": ["901Y067/I16D"], "source": "ECOS 901Y067/I16D 동행지수 순환변동치", "frequency": "monthly",
+      "date_meaning": "M-01 = 관측월", "status": "active",
+      "bounds": [{"type": "month_nth_kr_trading_day", "month_offset": 2, "n": 3,
+                  "basis": "KR_CLI 와 같은 '산업활동동향' 으로 다음 달 말에 공표한다(같은 근거). 상한 = M+2월 셋째 한국 거래일."}],
+      "vintage": {"revisions": "known", "evidence": "추세를 다시 추정해 달마다 전 구간이 바뀐다 — 수집 이력 이전 구간은 결정 입력으로 쓰지 않는다(참고)."}
+    },
+    {
+      "id": "KR_IP_ALL_SA", "name": "KR_IP_ALL_SA", "aliases": ["901Y033/A00/2"], "source": "ECOS 901Y033/A00/2 전산업생산지수(농림어업 제외 · 계절조정 · 2020=100)", "frequency": "monthly",
+      "date_meaning": "M-01 = 관측월", "status": "active",
+      "bounds": [{"type": "month_nth_kr_trading_day", "month_offset": 2, "n": 3,
+                  "basis": "KR_CLI 와 같은 '산업활동동향' 으로 다음 달 말에 공표한다(같은 근거). 상한 = M+2월 셋째 한국 거래일. 2026-11-23 ECOS 실측: 최신 = 9월분."}],
+      "vintage": {"revisions": "known", "evidence": "전월 잠정치가 다음 달 고쳐지고 계절조정 계수와 연간 보정으로 전 구간이 바뀐다 — 수집 이력 이전 구간은 결정 입력으로 쓰지 않는다(참고)."}
+    },
+    {
+      "id": "KR_IP_MFG_SA", "name": "KR_IP_MFG_SA", "aliases": ["901Y033/AB00/2"], "source": "ECOS 901Y033/AB00/2 광공업 생산지수(계절조정 · 2020=100)", "frequency": "monthly",
+      "date_meaning": "M-01 = 관측월", "status": "active",
+      "bounds": [{"type": "month_nth_kr_trading_day", "month_offset": 2, "n": 3,
+                  "basis": "KR_CLI 와 같은 '산업활동동향' 으로 다음 달 말에 공표한다(같은 근거). 상한 = M+2월 셋째 한국 거래일. 2026-11-23 ECOS 실측: 최신 = 9월분."}],
+      "vintage": {"revisions": "known", "evidence": "전월 잠정치가 다음 달 고쳐지고 계절조정 계수와 연간 보정으로 전 구간이 바뀐다 — 수집 이력 이전 구간은 결정 입력으로 쓰지 않는다(참고)."}
+    }
+  ],
+  "coverage_note": "이 목록 = .cache/ecos_kr_activity.parquet 의 Series 9종 전수(2026-11-23 적재분).",
+  "residual_risk": [
+    "상한 규칙의 실측 근거가 얇다 — 공표 관행과 2026-11-23 하루의 ECOS 최신 월뿐이다. 과거 공표일 · ECOS 반영일 대조는 하지 못했다.",
+    "개정이 있는 계열(수출 · 경기종합지수 · 순환변동치 · 생산지수)은 수집 이력이 2026-11-23 부터라, 그 전 구간에서 '그때 알 수 있던 값'을 복원할 수 없다.",
+    "수출은 ECOS 반영이 느려 상한이 관측월 뒤 약 두 달 반이다 — 더 빠른 원천(관세청 · 산업부 공표)을 붙이지 않았다."
+  ],
+  "history_verified": "none"
+}

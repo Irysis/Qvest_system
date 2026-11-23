@@ -789,6 +789,22 @@ else
   echo "[4gm] 퀀티 경제 질의서 건너뜀(벤치 수급 rc=${_qw_rc:-?} · QVEST_QW_GLOBAL_MACRO=${QVEST_QW_GLOBAL_MACRO:-1})"
 fi
 
+# ─── [4ka] 한국 경기 지표(월간) — 심리 · 수출 · 경기종합지수 · 생산 (2026-11-23 · 도훈 '한국지표 추가(지속 수집가능한 파이프라인 배선 포함)') ──────────
+#   ECOS 513Y001 · 512Y007 · 901Y118 · 901Y067 · 901Y033 의 9계열 → .cache/ecos_kr_activity.parquet(최신 값) +
+#   .cache/ecos_kr_activity_vintages.parquet(수집 이력 — 덧붙이기만 · 개정 추적). 가용일 = 06_Registry/kr_activity_availability_rules.json.
+#   연구용(3등급) 계열이라 실패를 단계 실패로 세지 않는다 — run_r 을 쓰지 않고(스텝 번호 r<N> 이 밀리지 않게) DR_FAILED 에도 싣지 않는다
+#   (실으면 아침 자가 복구가 거시 단계와 그 하류를 다시 돌린다). 실패하면 수집기가 아무 파일도 쓰지 않아 기존 캐시가 남고,
+#   낡음은 캐시 신선도 감사(cache_registry.json 의 max_lag_days)가 알린다. 끄기: QVEST_ECOS_KR_ACTIVITY=0
+if [ "${QVEST_ECOS_KR_ACTIVITY:-1}" != "0" ]; then
+  _ka_rc=0
+  ( cd "$INFRA" && "$RSCRIPT" --no-save data/run_ecos_kr_activity.R ) || _ka_rc=$?
+  if [ "$_ka_rc" -ne 0 ]; then
+    echo "!! [4ka] 한국 경기 지표 수집 실패 rc=$_ka_rc — 기존 캐시 유지(단계 실패로 세지 않는다 · 낡으면 캐시 신선도 감사가 알린다)"
+  fi
+else
+  echo "[4ka] 한국 경기 지표 건너뜀(QVEST_ECOS_KR_ACTIVITY=0)"
+fi
+
 # ─── Cache Freshness Audit (도훈 mandate 2026-05-15 영구 보호망 L3) ─────────
 # Registry 기반 stale + orphan 양방향 감지, Telegram alert
 cd "$BASE"
