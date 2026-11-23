@@ -2,7 +2,8 @@
 ##   실행: Rscript notify/aif_progress_notify.R [--send] [--force] [--event=start|end|error|resume|result|report] [--summary=<json>]
 ##     --send 가 없으면 미리보기(발송 없음 · 형식 검사만). 발송은 저장소의 단일 진입점 tg_agent_brief() 로만 한다.
 ##     --event=report = 종합 보고 통(07_final_report.R 이 쓴 요약 + 후속 연구 계획 요약 followup_plan.json + 그림). 마지막 단계(final_report)의 결과 통도 이 모양으로 간다.
-##   보내는 때: 08~23시 매시(무음) · 단계 시작/종료/오류/재개/결과(알림음) · 00~07시는 단계 전환과 오류만.
+##   보내는 때: 08~23시 주기 통(설정 progress.interval_min 분마다 · 알림음) · 단계 시작/종료/오류/재개/결과(알림음) · 00~07시는 단계 전환과 오류만(무음).
+##   진행률 막대는 일반 글 줄(kv 구획)로 보낸다 — code 구획은 텔레그램이 복사 단추가 달린 상자로 그린다(도훈 11-23).
 ##   보낸 메시지를 고치는 기능이 없으므로, 새 통이 올 때마다 더 채워진 막대가 간다.
 here <- function() {   # 이 스크립트가 든 폴더의 위 폴더(연구 폴더). 경로 정규화 함수는 쓰지 않는다 — 구분자만 맞춘다
   a <- commandArgs(FALSE); f <- gsub("\\\\", "/", sub("^--file=", "", a[grepl("^--file=", a)])[1])
@@ -51,13 +52,15 @@ head_txt <- switch(EVENT, start = sprintf("%d단계 시작 — %s", k, sg$name),
                    error = sprintf("%d단계 오류로 멈춤 — %s", k, sg$name), resume = sprintf("중단 뒤 재개 — %d단계 %s", k, sg$name),
                    result = sprintf("%d단계 중간 결과 — %s", k, sg$name), sprintf("%d단계 진행 중 — %s", k, sg$name))
 if (nchar(head_txt) < 20L) head_txt <- paste0(head_txt, " (AI 팩터 연구 진행 알림)")
-nxt <- if (k < length(stages)) vapply(stages[(k + 1L):min(length(stages), k + 2L)], function(s) s$name, "") else character(0)
-nxt <- c(nxt, if (length(nxt) < 2L) "모든 단계가 끝나면 종합 브리핑을 보냅니다")
+## '다음' = 아직 안 끝난 단계(지금 단계 제외) — 실행 순서를 바꾼 뒤로 설정의 단계 순서가 실제 순서와 달라, 이미 끝난 단계가 '다음' 에 나오고 있었다
+sp0 <- st$stage_progress %||% list()
+todo <- vapply(stages[vapply(keys, function(kk) kk != st$stage_key && as.numeric(sp0[[kk]] %||% 0) < 1, TRUE)], function(s) s$name, "")
+nxt <- c(todo, "모든 단계가 끝나면 종합 브리핑을 보냅니다", "보고서 파일 = 연구 폴더 results/final/final_report.html")[seq_len(2L)]
 
 secs <- list(
   list(type = "summary", body = substr(head_txt, 1L, 100L)),
-  list(type = "code", emoji = "\U0001F4CA", heading = "진행률",
-       body = sprintf("전체     %s\n이 단계  %s", bar(pct), bar(spct))),
+  list(type = "kv", emoji = "\U0001F4CA", heading = "진행률",        # 일반 글 줄로 보낸다(도훈 11-23 — code 구획은 텔레그램이 복사 상자로 그린다)
+       kv = list("전체" = bar(pct), "이 단계" = bar(spct))),
   list(type = "bullet", emoji = "\U0001F52C", heading = "연구 내용",
        items = c("원자료와 기존 팩터 DB(월간 값이 있는 290개)에서 새 팩터를 자동으로 만들고 성과를 잽니다", sprintf("지금 단계: %s", sg$what))),
   list(type = "kv", emoji = "\U0001F9ED", heading = "현재 단계",
@@ -84,7 +87,7 @@ if (EVENT == "report") {
   head_txt <- sprintf("%s — AI 팩터 연구에서 만든 신규 팩터 전체의 성과 요약", sm$title %||% "종합 보고")
   secs <- list(list(type = "summary", body = substr(head_txt, 1L, 100L)),
                list(type = "bullet", emoji = "\U0001F4C8", heading = "결론", items = unlist(sm$lines)),
-               list(type = "code", emoji = "\U0001F4CA", heading = "진행률", body = sprintf("전체     %s\n남은 단계 %s", bar(pct), if (length(left)) paste(left, collapse = " · ") else "없음")))
+               list(type = "kv", emoji = "\U0001F4CA", heading = "진행률", kv = list("전체" = bar(pct), "남은 단계" = if (length(left)) paste(left, collapse = " · ") else "없음")))
   cp <- unlist(sm$charts); cn <- unlist(sm$chart_names); ex <- file.exists(cp); if (any(ex)) charts <- setNames(cp[ex], cn[ex])
   pf <- file.path(D, "followup_plan.json")
   if (file.exists(pf)) {
@@ -96,7 +99,7 @@ if (EVENT == "report") {
                                                                                    "보고서 파일 = 연구 폴더 results/final/final_report.html · 계획서 = FOLLOWUP_PLAN.md"))))
   title <- sprintf("[무인] AI 팩터 연구 — 종합 보고 · 전체 %d%%", pct)
 }
-mute <- EVENT == "hourly" || quiet   # 밤(00~07시)에 보내는 통은 종류와 무관하게 알림음 없이 채팅에만 남긴다
+mute <- quiet   # 낮에는 주기 통도 알림음으로 보낸다(도훈 11-23 '30분마다 · 알림음 켬') · 밤(00~07시)에 보내는 통은 종류와 무관하게 알림음 없이 채팅에만 남긴다
 if (!SEND) Sys.setenv(QVEST_TG_DRY_RUN = "1")
 invisible(capture.output(suppressMessages(source(file.path(root, "02_Infrastructure", "telegram", "telegram_notify.R")))))
 r <- tryCatch(tg_agent_brief(agent = "Q-Lead", title = title, sections = secs, charts = charts, relaxed = TRUE, mute = mute, glossary = FALSE),
