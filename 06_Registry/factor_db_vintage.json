@@ -231,6 +231,14 @@
       "decision": "도훈 11-16 '나'(재빌드 뒤 수리) · 11-17 '차입금 빈칸 채우기 작업 시작' — 총차입금이 있는 기간의 단기 · 장기부채 빈칸 = 0(장기부채 비율 · PF_dLever · d_LongTermDebt 등)",
       "note": "재무 캐시 재생산 11-17 09:3x(build_fundamental_caches.R) · 완료 = 두 번째 재빌드(qw_login_chain 완료 판정 결함으로 00:37 재시작 · 그동안 일간 DB 재생성) 끝 + 차입금 팩터 월간 부분 재빌드 + 일간 단계 F · 이 줄이 열려 있는 동안 측정은 모두 낡음(01:46 시작 2611.16540 레인 측정 포함 — 재빌드 중 측정) · 완료 11-23 Q: 영향 팩터 = Q04_Piotroski_F 하나(3달 실측 대조) · 월간 부분 재빌드 442달 + 202611 별도(factor_subset_repair_20261123_035316 · IC · 대응표 · 결합용 뷰 rc 0 · 894초) · 일간 단계 F 443달 rc 0(182.6분 · debt_zerofill_phaseF.log) · 일간 = 월간 월말 값 일치(201906 · 202506 diff 0)",
       "evidence": ".cache/fundamental_caches_report.json · 02_Infrastructure/data/build_fundamental_caches.R"
+    },
+    {
+      "id": "FUNDAMENTAL-DERIVED-SHARE-BASIS-LAG-20261123",
+      "completed_at": "2026-11-23T15:39:20+09:00",
+      "scope": "all",
+      "decision": "도훈 11-23 '고쳐줘'(파생지표 체계 검증 발견 2개) — ① TreasuryShareRatio = (수정 발행 − 수정 유통) ÷ 수정 발행(수정 안 된 자기주식 수 섞임 수리) · BuybackRatio 삭제 ② 재무 캐시 1년 전 = 같은 종목 12개월 전 행 조회(분기 보고 빠진 기간의 전년 대비 지표 결측 수리)",
+      "note": "캐시 재생산 2026-11-23T11:57 시작(build_fundamental_caches.R) · 완료 = 영향 팩터 월간 부분 재빌드 + 일간 단계 F · 이 줄이 열려 있는 동안 측정은 모두 낡음 · 완료 11-23 Q: 캐시 차이 = TreasuryShareRatio 변경 · BuybackRatio 삭제 · 분기 표 57항목 값 40,324개 새로 생김(Factor_Date 변화 0) · 영향 팩터 13개(8달 실측 대조 · repair_spec.json) · 월간 부분 재빌드 442달 + 202611 별도(factor_subset_repair_20261123_120833 · IC · 대응표 · 결합용 뷰 rc 0 · 1045초) · 일간 단계 F 443달 rc 0(190.5분 · share_lag_phaseF.log) · 일간 = 월간 월말 값 일치(200306 · 201506 · 202506 · 202610 · 13팩터 diff 0 · 월간에만 있는 종목 = 일간 표본에 없는 종목)",
+      "evidence": "04_Research/01_reports/fundamental_derived_verify_20261123/README.md"
     }
   ]
 }

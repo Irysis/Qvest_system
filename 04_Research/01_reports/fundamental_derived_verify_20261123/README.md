@@ -41,6 +41,14 @@
 비율이 정의 범위를 벗어난 행: IntangibleRatio 748 · CashToAssets 36 · CashRatio 36 · RecvToAssets 13 · IBDebtToAssets 13 · LongTermDebtRatio 10 · ShortDebtShare 10 · DebtToAssets 5(분기 표 · 수십만 행 중) —
 분자 원계정이 음수(무형자산 · 매출채권 · 현금 음수)인 행이다. `sdv()` 는 분모만 거른다. 극단값(PPE_Growth 최대 250만 · SharesGrowth 14억 배 · DaysPayable 6천만 일)도 원계정에서 온다.
 
+## 수리 완료 (11-23 · 도훈 '고쳐줘' · 판 표식 FUNDAMENTAL-DERIVED-SHARE-BASIS-LAG-20261123)
+
+- 생산기 수정(`build_fundamental_caches.R`): `TreasuryShareRatio` = (SharesCommonAdj − SharesCommonOutAdj) ÷ SharesCommonAdj · `BuybackRatio` 삭제 · 분기 표 1년 전 = (종목, 12개월 전) 행 조회.
+- 재검증: 원계정 불일치 0 · 파생 차이 = 날짜 순서 계약으로 버린 값 + 부동소수점 3행뿐 · 날짜 위반 0.
+- 캐시 차이: 분기 표 57항목에 값 40,324개가 새로 생김(있던 값 변화 = Avg* 약 900개 · 평균 창이 채워짐) · 연간 표는 TreasuryShareRatio 만 · Factor_Date 변화 0. 옛 캐시 = `.cache/fundamental_backup/20261123_pre_share_lag/`.
+- 영향 팩터 13개(`repair_spec.json` · 8달 실측 대조 — 12개는 값이 늘기만 · Q08_Composite_Quality 는 횡단면 합성이라 값도 바뀜) → 월간 부분 재빌드 442달 + 202611(IC · 대응표 · 결합용 뷰 rc 0) → 일간 단계 F 443달 rc 0.
+- 일간 = 월간 월말 값(200306 · 201506 · 202506 · 202610 · 13팩터 차이 0).
+
 ## 파일
 
 `derived_verify.py`(A · B · C · D · 원인 분류 E) · `derived_ranges.py`(전 캐시 범위) · `*_summary.json` · 항목별 표 `derived_verify_{quarterly,annual}.csv` · `derived_ranges_{quarterly,annual}.csv`.

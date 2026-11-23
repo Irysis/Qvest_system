@@ -1,0 +1,25 @@
+{
+  "schema": "factor_subset_repair_spec/v1",
+  "decision": "FUNDAMENTAL-DERIVED-SHARE-BASIS-LAG-20261123",
+  "title": "재무 캐시 1년 전 조회 · 자기주식 비율",
+  "why": "도훈 11-23 '고쳐줘' — 파생지표 체계 검증 발견: ① 재무 캐시 1년 전 값을 '4행 전이 12개월 전'일 때만 써서 분기 보고가 빠진 기간의 전년 대비 지표가 비었다 → 같은 종목 12개월 전 행 조회 ② TreasuryShareRatio 기준 섞임 · BuybackRatio 삭제(팩터 사용 0).",
+  "targets_source": "새 캐시로 fundamental · value · defense · risk 모듈 build_factor_db(save = FALSE) 8달(2003-06 · 2006-06 · 2009-06 · 2012-06 · 2015-06 · 2019-06 · 2022-06 · 2025-06) 대조 — 여덟 달 모두 같은 13팩터 · 12개는 값 생김만(옛 값 변화 0 · 사라짐 0) · Q08_Composite_Quality 는 결합 재계산으로 값 변화",
+  "targets": [
+    "AC02_Total_Accruals_BS",
+    "AC03_WC_Accruals",
+    "AC04_NCO_Accruals",
+    "AC05_NOA",
+    "AC06_Comprehensive_Accruals",
+    "AC09_NNI",
+    "AC12_Inventory_Accruals",
+    "AC19_Receivables_Accruals",
+    "AC20_Payables_Accruals",
+    "AC24_NOA_Growth",
+    "IN05_Net_Debt_Issuance",
+    "Q05_Accrual",
+    "Q08_Composite_Quality"
+  ],
+  "modules": [
+    "fundamental"
+  ]
+}

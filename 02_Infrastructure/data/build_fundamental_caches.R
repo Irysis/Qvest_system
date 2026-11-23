@@ -153,7 +153,11 @@ fc_derive <- function(D, yl) {
   D[, SharesGrowth := gr(SharesCommonOutAdj)]                                        # 순주식발행(Pontiff & Woodgate 2008 · 1년 로그 대신 비율)
   D[, NetShareIssuance := fifelse(is.finite(SharesCommonOutAdj) & is.finite(yl(SharesCommonOutAdj)) & yl(SharesCommonOutAdj) > 0,
                                   log(SharesCommonOutAdj / yl(SharesCommonOutAdj)), NA_real_)]
-  D[, BuybackRatio := sdv(BuybackShares, SharesCommonOutAdj)][, TreasuryShareRatio := sdv(TreasuryShares, SharesCommonAdj)]
+  # (2026-11-23 도훈 '고쳐줘' · FUNDAMENTAL-DERIVED-SHARE-BASIS-LAG-20261123) 자기주식 비율은 수정 주식 수끼리 — 퀀티 TreasuryShares ·
+  #   BuybackShares 는 그때 주식 수(수정 안 됨)인데 SharesCommon*Adj 는 뒤 분할 · 병합으로 수정한 수라 섞으면 1을 넘었다(3,691행 · 최대 21만).
+  #   발행(수정) − 유통(수정) = 자기주식(수정) — 삼성전자 2025-06 42.89M = TreasuryShares 와 일치(뒤 기업행위 없음).
+  #   BuybackRatio 는 뺐다 — 수정된 매입 주식 수 항목이 없어 같은 기준 분자를 만들 수 없다(팩터 · 엔진 사용 0 · 검증 보고 04_Research/01_reports/fundamental_derived_verify_20261123).
+  D[, TreasuryShareRatio := sdv(SharesCommonAdj - SharesCommonOutAdj, SharesCommonAdj)]
   # ---- 3-8. 비용 구조 ----
   D[, COGSRatio := sdv(COGS, Revenue)][, SGARatio := sdv(SGAExpense, Revenue)][, RandDIntensity := sdv(RandD, Revenue)]
   D[, RandDToAssets := sdv(RandD, TotalAssets)][, LaborCostRatio := sdv(LaborCost, Revenue)][, AdvertisingRatio := sdv(ExpAdvertising, Revenue)]
@@ -242,7 +246,10 @@ DERIVED_FD_RULE <- "derived 행 Factor_Date = max(그 행, 1년 전 행, … 다
 run_table <- function(T, yl_k, label) {
   setorder(T, Ticker, P)
   tkT <- T$Ticker; miT <- T$mi
-  yl <- function(x) fifelse(shift(miT, yl_k) == miT - 12L & shift(tkT, yl_k) == tkT, shift(x, yl_k), NA)
+  # 1년 전 = 같은 종목의 정확히 12개월 전 행(조회) — (2026-11-23 · FUNDAMENTAL-DERIVED-SHARE-BASIS-LAG-20261123) 옛 규칙 'yl_k 행 전이 12개월 전일 때만'은
+  #   분기 보고가 빠진 기간(예: 2000년대 초 12월 행만 있는 회사)에서 12개월 전 행이 있어도 NA 를 냈다(분기 표 행 0.7%). 연간 표는 결과가 같다.
+  ylp <- match(paste(tkT, miT - 12L), paste(tkT, miT))
+  yl <- function(x) x[ylp]
   base_cols <- copy(names(T))   # copy — data.table 의 names() 는 := 가 제자리에서 늘린다
   T <- fc_derive(T, yl)
   der <- setdiff(names(T), base_cols)
