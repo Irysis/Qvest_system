@@ -37,32 +37,24 @@ public class QpWin {
   [DllImport("user32.dll")] public static extern bool EnumWindows(EnumProc f, IntPtr l);
   [DllImport("user32.dll")] public static extern int GetWindowThreadProcessId(IntPtr h, out int pid);
   [DllImport("user32.dll", CharSet=CharSet.Unicode)] public static extern int GetWindowText(IntPtr h, StringBuilder s, int n);
-  [DllImport("user32.dll")] public static extern bool EnumChildWindows(IntPtr p, EnumProc f, IntPtr l);
-  [DllImport("user32.dll", CharSet=CharSet.Unicode)] public static extern int GetClassName(IntPtr h, StringBuilder s, int n);
   public static List<string> Titles(int pid0) {
     var res = new List<string>();
     EnumWindows((h, l) => { int pid; GetWindowThreadProcessId(h, out pid); if (pid == pid0) { var t = new StringBuilder(256); GetWindowText(h, t, 256); if (t.Length > 0) res.Add(t.ToString()); } return true; }, IntPtr.Zero);
-    return res; }
-  // texts of the children of every '#32770' dialog of the process whose title contains 'Quantiwise'
-  public static List<string> DialogTexts(int pid0) {
-    var res = new List<string>();
-    EnumWindows((h, l) => { int pid; GetWindowThreadProcessId(h, out pid);
-      if (pid == pid0) { var c = new StringBuilder(64); GetClassName(h, c, 64); var t = new StringBuilder(256); GetWindowText(h, t, 256);
-        if (c.ToString() == "#32770" && t.ToString().Contains("Quantiwise")) {
-          EnumChildWindows(h, (k, l2) => { var s = new StringBuilder(1024); GetWindowText(k, s, 1024); if (s.Length > 0) res.Add(s.ToString()); return true; }, IntPtr.Zero); } }
-      return true; }, IntPtr.Zero);
     return res; }
 }
 "@
 # 2026-11-08: the duplicate-login termination dialog (#32770, title 'Quantiwise7G', text '[HOST(IP)]... (dup) ...')
 #   matched '*Quantiwise7*' below, so a kicked session looked alive and every later sheet "refreshed" in 0 s with
 #   no data (FundV2_IS / FundV2_BS 81 sheets, 17:15). A visible kick dialog = no session.
+# 2026-11-23 (Dohoon '2beon-eun gyuchik bogang'): the rule lives in ops/qw_kick_rule.ps1 (one rule for the three drivers) - it also
+#   takes the notice whose body is cut inside the device tag ('[' + part of a device name, no ']', one OK button).
+$QwKickRule = Join-Path $PSScriptRoot 'qw_kick_rule.ps1'
+if (-not (Test-Path -LiteralPath $QwKickRule)) { Write-Host "[peer-refresh] ERROR $QwKickRule missing - not running without the kick rule"; exit 1 }
+. $QwKickRule
 function Kick-Dialog {
-  $p = Get-Process qwMain -EA SilentlyContinue
+  $p = Get-Process qwMain -EA SilentlyContinue | Select-Object -First 1
   if (-not $p) { return $false }
-  $dup = "$([char]0xC911)$([char]0xBCF5)"   # Korean 'jung-bok' (duplicate)
-  foreach ($t in [QpWin]::DialogTexts([int]$p.Id)) { if ($t -match '\(\d{1,3}(\.\d{1,3}){3}\)\]' -or $t.Contains($dup)) { return $true } }
-  return $false
+  return [bool](Get-QwKickDialog ([int]$p.Id))
 }
 function QW-Alive {
   $p = Get-Process qwMain -EA SilentlyContinue

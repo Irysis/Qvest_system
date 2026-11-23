@@ -406,16 +406,16 @@ function Get-BookAnchor($f, $target) {
 $script:KICKS = 0
 $script:LOGINS_OK = 0   # (2026-11-13) 이 실행에서 로그인 뒤 살아난 횟수 — 세션 확인 도우미가 '로그인 실패'와 '재로그인 뒤 다시 밀림'을 가른다
 $script:LOGIN_BLOCKED = ''   # (2026-11-09) LOGIN 단추를 다른 창이 덮음 = 그 창 설명(비면 막힘 없음) — Ensure-Login 이 채운다
+## (2026-11-23 · 도훈 '2번은 규칙보강') 종료 알림의 판별 규칙은 ops/qw_kick_rule.ps1 한 곳에 둔다 — 본문이 기기 이름에서 끊긴 알림
+##   ('[' 로 시작 · ']' 없음 · 단추 하나 · 제목 Quantiwise7G)도 잡는다. 구판 규칙(본문의 '(IP)]' · '중복')만으로는 11-23 18:17 의 끊긴 알림을
+##   못 잡아 QW-Alive 가 끊긴 세션을 살아 있다고 봤다(-LoginOnly 와 밤 세션 확인이 그대로 지나간다). 시험 = 08_Tests/scenarios/test_scn_qw_kick_shape.sh
+$QW_KICK_RULE = Join-Path $PSScriptRoot 'qw_kick_rule.ps1'
+if (-not (Test-Path -LiteralPath $QW_KICK_RULE)) { Write-Host "[kick-rule] ERROR $QW_KICK_RULE missing - not running without the kick rule"; exit 1 }
+. $QW_KICK_RULE
 function Kick-Dialog {
-  $p = Get-Process qwMain -EA SilentlyContinue
+  $p = Get-Process qwMain -EA SilentlyContinue | Select-Object -First 1
   if (-not $p) { return $null }
-  $dup = "$([char]0xC911)$([char]0xBCF5)"   # '중복'
-  foreach ($h in [Win]::Wins([uint32]$p.Id)) {
-    if ([Win]::Cls($h) -eq '#32770' -and [Win]::Txt($h) -like '*Quantiwise*') {
-      foreach ($k in [Win]::Kids($h)) { $t = [Win]::Txt($k); if ($t -match '\(\d{1,3}(\.\d{1,3}){3}\)\]' -or $t.Contains($dup)) { return $h } }
-    }
-  }
-  return $null
+  return (Get-QwKickDialog ([int]$p.Id))
 }
 function QW-Alive {
   $p = Get-Process qwMain -EA SilentlyContinue

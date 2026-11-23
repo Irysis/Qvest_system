@@ -71,17 +71,16 @@ public class TW { public delegate bool EnumProc(IntPtr h, IntPtr l);
   public static List<IntPtr> All(int pid0){ var r=new List<IntPtr>(); EnumWindows((h,l)=>{int p; GetWindowThreadProcessId(h,out p); if(p==pid0) r.Add(h); return true;}, IntPtr.Zero); return r; }
   public static List<IntPtr> Kids(IntPtr p0){ var r=new List<IntPtr>(); EnumChildWindows(p0,(h,l)=>{ r.Add(h); return true; }, IntPtr.Zero); return r; } }
 "@
-# Same detection as qw_refresh.ps1::Kick-Dialog (dialog body with '(IP)]' or the word for 'duplicate')
+# Detection = ops/qw_kick_rule.ps1 (one rule for the three drivers). 2026-11-23 (Dohoon '2beon-eun gyuchik bogang'): it also takes the
+#   notice whose body is cut inside the device tag ('[' + part of a device name, no ']', one OK button, title 'Quantiwise7G') - the old
+#   rule (body with '(IP)]' or the word for 'duplicate') stopped this collector on 'unknown Quantiwise dialog' on 11-23 18:19.
+$QwKickRule = Join-Path $PSScriptRoot 'qw_kick_rule.ps1'
+if (-not (Test-Path -LiteralPath $QwKickRule)) { Write-Host "[tax-ts] ERROR $QwKickRule missing - not running without the kick rule"; exit 1 }
+. $QwKickRule
 function Kick-Dialog {
   $p = Get-Process qwMain -EA SilentlyContinue | Select-Object -First 1
   if (-not $p) { return $null }
-  $dup = "$([char]0xC911)$([char]0xBCF5)"
-  foreach ($h in [TW]::Wins([int]$p.Id)) {
-    if ([TW]::Cls($h) -eq '#32770' -and [TW]::Txt($h) -like '*Quantiwise*') {
-      foreach ($k in [TW]::Kids($h)) { $t = [TW]::Txt($k); if ($t -match '\(\d{1,3}(\.\d{1,3}){3}\)\]' -or $t.Contains($dup)) { return $h } }
-    }
-  }
-  return $null
+  return (Get-QwKickDialog ([int]$p.Id))
 }
 function Other-Dialog {
   $p = Get-Process qwMain -EA SilentlyContinue | Select-Object -First 1
