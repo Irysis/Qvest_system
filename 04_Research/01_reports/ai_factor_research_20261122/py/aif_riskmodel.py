@@ -15,7 +15,8 @@ Barra USE4 의 구조를 한국 자료로 만든다: 수익 = 시장 + 업종 + 
   --check 가 자료를 신호일에서 자른 뒤 다시 만든 지표 · 노출이 온 자료로 만든 것과 같은지 확인한다.
 원문과 다르게 둔 곳(자료 사정 · 원문에 없는 값 — README '위험 평가 모형 1부'에 표로 적는다):
   예상 이익수익률 = 컨센서스 1년 EPS ÷ 1년 BPS × 장부가/시가(주당 추정치를 수정주가 수준과 나누지 않는다) · 성장에 애널리스트 장기 성장 예상이 없다 ·
-  창 안 관측 하한 50% · 표준화 전 10 표준편차 밖은 자료 오류로 버림 · 성장의 분모는 절댓값 평균 · 장기부채 = 이자부부채 − 단기차입금 − 유동성 사채.
+  창 안 관측 하한 50% · 표준화 전 10 표준편차 밖은 자료 오류로 버림 · 성장의 분모는 절댓값 평균 · 성장은 연간 점 세 개부터 ·
+  장기부채 = 이자부부채 − 단기차입금 − 유동성 사채 · 배당 = 현금배당액(없는 기간은 배당금 지급 — 퀀티의 배당 시트가 2012Q3~2013Q4 에 오류를 돌려줘 그 기간 행이 없다).
 산출(.cache/aif_research/followup/risk/): desc.npz · expo.npz · reg.npz · spec_daily.npy · meta.json + results/followup/risk/factor_stats_is.csv · checks.json
 실행: python py/aif_riskmodel.py [--force] [--check] [--smoke]     (감시 셸: ops/aif_run.py --track followup --job nl_risk --stage nl_risk)
 """
@@ -64,14 +65,16 @@ CLIP_SD = 3.0
 OUT_SD = 10.0                               # 표준화 전 이만큼 벗어난 값은 자료 오류로 보고 버린다(원문은 '자료 오류 무리'의 경계를 밝히지 않았다)
 MIN_FRAC = 0.5                              # 창 안에서 행이 있는 날의 비율 하한(새로 상장한 종목은 반년쯤 지나야 가격 지표가 생긴다 — 그전에는 업종 · 규모로 채운다)
 MIN_EST = 30                                # 표준화 · 회귀에 필요한 최소 종목 수
+MIN_COVER = 0.5                             # 스타일이 그 달에 '있다'고 보는 하한 — 추정 유니버스의 이 비율 이상에 지표 값이 있어야 한다(그 밑이면 대부분이
+                                            #   업종 · 규모로 채워져 그 스타일이 규모 · 업종과 거의 같은 것이 된다 — 배당 자료가 빈 기간에서 실제로 그랬다)
 MAX_AGE_CONS = 20                           # 컨센서스 값의 유효 기간(거래일) — 1단계 컨센서스 묶음과 같다
 GROWTH_LAGS = (16, 12, 8, 4, 0)             # 성장 지표의 연간 다섯 점 = 최근 4분기 합을 4분기 간격으로(오래된 것 → 최근)
+GROWTH_MIN = 3                              # 성장 지표에 필요한 연간 점의 수(가장 최근 점부터 이어진 것) — 원문은 다섯 회계연도다. 퀀티 분기 재무가 2000년부터라
+                                            #   다섯 점은 2005년 봄에야 선다 → 세 점부터 낸다(2003년 봄부터 · 도훈 11-23 '성장 지표 수리'). 다섯 점이 다 있으면 원문과 같다.
 ANCHOR = "TotalAssets"                      # 재무 기간을 잡는 기준 항목(모든 회사에 있다)
-FUND_NOW = [ANCHOR, "NetIncomeParent", "CashEarnings", "EquityParent", "PreferredCapital", "InterestBearingDebt", "CurrentBorr", "CurrentBonds",
+FUND_NOW = [ANCHOR, "NetIncomeParent", "CashEarnings", "CashDivTotal", "DividendsPaid", "EquityParent", "PreferredCapital", "InterestBearingDebt", "CurrentBorr", "CurrentBonds",
             "LongTermBorr", "Bonds", "ConvBonds", "ExchBonds", "BondsWithWarrants", "CurrentLiab"]
 FUND_LAG = ["EPSParentAdj", "Revenue", "SharesCommonAvgAdj"]
-FUND_ASOF = ["CashDivTotal"]                # 항목 자체의 as-of 로 읽는 것 — 배당은 원천에 2013년 기간 행이 없어(분기 · 연간 캐시 모두 0건) 같은 기간 맞춤으로는 2013-07~2015-04 가 통째로 빈다.
-                                            #   마지막으로 알려진 12개월 배당을 연간 자료의 묵은 값 하한(24개월)까지 쓴다 → 빈 달이 2015-01~04 넉 달로 준다. 무배당 회사는 0 행이 있다(결측 ≠ 0).
 DESC_NAMES = ["BETA", "HSIGMA", "DASTD", "CMRA", "RSTR", "STOM", "STOQ", "STOA", "LNCAP", "EPFWD", "CETOP", "ETOP", "EGRO", "SGRO", "YILD", "BTOP", "MLEV", "DTOA", "BLEV"]
 assert BETA_WIN == CMRA_MONTHS * MONTH_DAYS
 assert set(d for p in STYLE_DEF.values() for d, _ in p) == set(DESC_NAMES)
@@ -198,9 +201,8 @@ def fund_panel(f, sig_sel, cut=None, chunk=500, progress=None):
     me = f.sig_dates[sig_sel].astype(np.int64)
     trunc = None if cut is None else int(np.datetime64(cut, "D").astype(np.int64))
     path, stale = nd.p(cfg["paths"]["fund_q"]), int(cfg["staleness_months"]["q"])
-    stale_a = int(cfg["staleness_months"]["a"])
     items = FUND_NOW + FUND_LAG
-    keys = [(it, 0) for it in items + FUND_ASOF] + [(it, lg) for it in FUND_LAG for lg in GROWTH_LAGS if lg]
+    keys = [(it, 0) for it in items] + [(it, lg) for it in FUND_LAG for lg in GROWTH_LAGS if lg]
     out = {k: np.full((len(me), f.nt), np.nan, F32) for k in keys}
     q0 = 1990 * 4
 
@@ -211,18 +213,15 @@ def fund_panel(f, sig_sel, cut=None, chunk=500, progress=None):
     tk = f.tickers
     for i in range(0, len(tk), chunk):
         part = tk[i:i + chunk]
-        L = nd._read_long(path, part[0], part[-1], items + FUND_ASOF, trunc)
+        L = nd._read_long(path, part[0], part[-1], items, trunc)
         L = L[L["Ticker"].isin(part)]
         nT = len(part)
-        for it in FUND_ASOF:
-            out[(it, 0)][:, i:i + nT] = nd.asof_dense(L[L["Item"] == it], part, [it], me, stale_a)[0][:, 0, :].T
         _, Pd, _ = nd.asof_dense(L[L["Item"] == ANCHOR], part, [ANCHOR], me, stale)          # [종목 × 1 × 신호] 기준 항목의 기간 말(일수 · 없으면 −1)
         Pd = Pd[:, 0, :]
         Q = np.where(Pd >= 0, qnum(np.where(Pd >= 0, Pd, 0)), -1)
         nQ = int(max(Q.max(), 0)) + 1
         A = np.full((nT, len(items), nQ), np.nan, F32)
         FD = np.full((nT, len(items), nQ), np.iinfo(np.int32).max, np.int32)
-        L = L[L["Item"].isin(items)]                                                         # 아래는 같은 기간 맞춤으로 읽는 항목만
         if len(L):
             ti = pd.Categorical(L["Ticker"], categories=part).codes.astype(np.int64)
             ii = pd.Categorical(L["Item"], categories=items).codes.astype(np.int64)
@@ -231,8 +230,6 @@ def fund_panel(f, sig_sel, cut=None, chunk=500, progress=None):
             A[ti[ok], ii[ok], qq[ok]] = v[ok].astype(F32)
             FD[ti[ok], ii[ok], qq[ok]] = fd[ok].astype(np.int32)
         for (it, lg), dst in out.items():
-            if it in FUND_ASOF:
-                continue
             k = items.index(it)
             ql = np.clip(Q - lg, 0, nQ - 1)
             good = (Q >= 0) & (Q - lg >= 0) & (np.take_along_axis(FD[:, k, :], ql, axis=1) <= me[None, :])
@@ -264,18 +261,25 @@ def desc_fund(D, FP, eps1, bps1):
     ibd = g("InterestBearingDebt")
     ld = np.where(np.isfinite(ibd), np.maximum(ibd - z0(g("CurrentBorr")) - z0(g("CurrentBonds")), 0.0),      # 장기부채 = 이자부부채 − 단기차입금 − 유동성 사채
                   z0(g("LongTermBorr")) + z0(g("Bonds")) + z0(g("ConvBonds")) + z0(g("ExchBonds")) + z0(g("BondsWithWarrants")))   # 이자부부채가 없으면 장기차입금 + 사채류
-    k = (np.arange(len(GROWTH_LAGS)) - (len(GROWTH_LAGS) - 1) / 2.0)[:, None, None]
-
-    def growth(y):                                                                           # 연간 다섯 점을 시간에 회귀한 기울기 ÷ 절댓값 평균(다섯 점이 다 있어야 한다)
+    def growth(y):
+        """연간 점(오래된 것 → 최근)을 시간에 회귀한 기울기 ÷ 절댓값 평균. 가장 최근 점부터 이어진 점이 GROWTH_MIN 개 이상일 때 그 점들로 낸다."""
+        fin = np.isfinite(y)
+        run = np.cumprod(fin[::-1], axis=0).sum(0)                                             # 가장 최근 점부터 이어진 점의 수
+        out = np.full(y.shape[1:], np.nan)
         with np.errstate(all="ignore"):
-            den = np.abs(y).mean(0)
-            return np.where(den > 0, (k * y).sum(0) / (k ** 2).sum() / den, np.nan)
+            for n in range(GROWTH_MIN, y.shape[0] + 1):
+                yy = y[-n:]
+                k = (np.arange(n) - (n - 1) / 2.0)[:, None, None]
+                den = np.abs(yy).mean(0)
+                g = (k * yy).sum(0) / (k ** 2).sum() / den
+                out = np.where((run == n) & (den > 0), g, out)
+        return out
 
     with np.errstate(all="ignore"):
         sh = np.stack([g("SharesCommonAvgAdj", lg) for lg in GROWTH_LAGS])
         btop = np.where(has & (cap > 0), be / cap, np.nan)
         out = {"ETOP": g("NetIncomeParent") / cap, "CETOP": g("CashEarnings") / cap,
-               "YILD": g("CashDivTotal") / cap,                                              # 최근 12개월 현금배당 ÷ 시총(무배당 = 0 행 · 행이 없으면 결측)
+               "YILD": np.where(np.isfinite(g("CashDivTotal")), g("CashDivTotal"), g("DividendsPaid")) / cap,   # 최근 12개월 현금배당액 ÷ 시총 — 그 기간에 없으면 현금흐름표의 배당금 지급
                "BTOP": btop,
                "EPFWD": np.where((bps1 > 0) & (be > 0), eps1 / bps1 * btop, np.nan),         # 예상 ROE × 장부가/시가
                "MLEV": np.where(has, (cap + pe + ld) / cap, np.nan),
@@ -327,7 +331,7 @@ def wls(y, X, v, fit):
 
 def build_expo(desc, sector, mem, n_sec, sel=None, unit=None):
     """스타일 노출 [신호 × 종목 × 스타일] · 추정 유니버스 [신호 × 종목] · 채운 종목 수 [신호 × 스타일](추정 유니버스 안).
-    그 달에 값이 있는 추정 유니버스 종목이 MIN_EST 에 못 미치는 스타일은 그 달 전부 결측으로 둔다(재무 자료가 시작되기 전 · 배당 자료가 빈 달) — 회귀에서 그 달만 빠진다."""
+    그 달에 값이 있는 추정 유니버스 종목이 MIN_EST 개 또는 MIN_COVER 비율에 못 미치는 스타일은 그 달 전부 결측으로 둔다(재무 자료가 시작되기 전) — 회귀에서 그 달만 빠진다."""
     S, N = mem.shape
     X = np.full((S, N, len(STYLES)), np.nan, F32)
     EST = np.zeros((S, N), bool)
@@ -360,7 +364,7 @@ def build_expo(desc, sector, mem, n_sec, sel=None, unit=None):
             x = fac[name]
             miss = cover & ~np.isfinite(x)
             fit = est & np.isfinite(x)
-            if fit.sum() < MIN_EST:                                                          # 그 달에 이 스타일이 없다
+            if fit.sum() < max(MIN_EST, MIN_COVER * est.sum()):                              # 그 달에 이 스타일이 없다
                 fac[name] = np.full(N, np.nan)
                 continue
             if name != "SIZE" and miss.any():
