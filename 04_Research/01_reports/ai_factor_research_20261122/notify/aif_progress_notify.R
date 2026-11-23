@@ -110,8 +110,8 @@ sm <- if (!is.na(sf) && file.exists(sf)) fromJSON(sf, simplifyVector = FALSE) el
 if (EVENT %in% c("end", "result") && st$stage_key %in% c("final_report", "nl_report") && !is.null(sm)) EVENT <- "report"   # 마지막 단계의 결과 통은 종합 보고 통으로 보낸다
 if (EVENT %in% c("end", "result") && !is.null(sm)) {
   secs <- append(secs, list(list(type = "bullet", emoji = "\U0001F4C8", heading = sm$title %||% "이 단계 결과", items = unlist(sm$lines))), after = 2L)
-  cp <- unlist(sm$charts); cn <- unlist(sm$chart_names); ex <- file.exists(cp)
-  if (any(ex)) charts <- setNames(cp[ex], cn[ex])
+  cp <- unlist(sm$charts); cn <- unlist(sm$chart_names)                        # 그림이 없는 요약도 있다(빈 목록 → NULL)
+  if (length(cp)) { ex <- file.exists(cp); if (any(ex)) charts <- setNames(cp[ex], cn[ex]) }
 }
 title <- sprintf("[무인] %s — %s · 전체 %d%%%s", RNAME, sg$name, pct, switch(EVENT, start = " · 시작", end = " · 끝", error = " · 오류", resume = " · 재개", result = " · 결과", ""))
 ## 종합 보고 통(--event=report --summary=<요약>) — 지금 도는 단계와 무관하게 끝난 묶음 전체의 결론 · 진행 · (1단계는) 후속 연구 계획 요약 · 그림을 보낸다
@@ -122,7 +122,7 @@ if (EVENT == "report") {
   secs <- list(list(type = "summary", body = substr(head_txt, 1L, 100L)),
                list(type = "bullet", emoji = "\U0001F4C8", heading = "결론", items = unlist(sm$lines)),
                list(type = "kv", emoji = "\U0001F4CA", heading = "진행률", kv = list("전체" = bar(pct), "남은 단계" = if (length(left)) paste(left, collapse = " · ") else "없음")))
-  cp <- unlist(sm$charts); cn <- unlist(sm$chart_names); ex <- file.exists(cp); if (any(ex)) charts <- setNames(cp[ex], cn[ex])
+  cp <- unlist(sm$charts); cn <- unlist(sm$chart_names); if (length(cp)) { ex <- file.exists(cp); if (any(ex)) charts <- setNames(cp[ex], cn[ex]) }
   pf <- file.path(D, "followup_plan.json")
   if (!nzchar(TRACK) && file.exists(pf)) {                   # 1단계 종합 보고에는 후속 연구 계획 요약을 함께 싣는다
     pl <- fromJSON(pf, simplifyVector = FALSE)
