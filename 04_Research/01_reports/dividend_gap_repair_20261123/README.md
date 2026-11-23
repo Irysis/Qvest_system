@@ -75,6 +75,23 @@ Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{ Comma
     45일 뒤가 12-31 이 된 것이다 — 달력 끝을 넘는 날짜는 분기 표를 다시 만들 때마다 다시 매겨진다. 두 날짜 모두 아직 오지 않아 지금 팩터 값에는 닿지 않는다.
     단계 5 의 캐시 대조에서는 202609 행(원계정 + 파생)의 날짜 변화로 보인다.
 
+## 진행 상태(11-24 08:35 — 이어받는 세션은 여기부터 읽는다)
+
+| 단계 | 상태 |
+|---|---|
+| 0 사전 점검 · 1 음성 대조 | 끝(밤 갱신 07:47 종료 · 다른 빌드 없음 · 음성 대조 2014-06 차이 0) |
+| 수식 탐색 3판 멈춤 | 08:25:48 단위 경계(30/38 · 체크포인트 30개)에서 셸 → 감시 셸 → 작업 순서로 종료. 다시 띄우기 = `bash 04_Research/01_reports/ai_factor_research_20261122/ops/run_queue_long.sh > .cache/aif_research/logs/run_queue_long_20261124_resume.out 2>&1`(끝난 단위는 건너뛴다) — **단계 F 가 첫 적재를 지난 뒤** |
+| 2 원천 반영 | 끝 08:26 — META 신규 59,199 · INFO 신규 19,733 · 변경 0 · 삭제 0. 원천 표 사본 = `.cache/fundamental_backup/20261124_082627_pre_div_supp/qw_fund_v2/` |
+| 3 원장 열기 | 끝 08:26 — `FUNDAMENTAL-DIV-GAP-SUPPLEMENT-20261123`(completed_at = null) |
+| 4 캐시 재생산 | **반쯤** — 08:27 `fundamental_produce_v2.R` 이 1/4(분기 표 `fund_v2_quarterly.parquet` 08:27:41) · 2/4(캐시 후보 `.cache/fundamental_v2/candidate_fundamental_{quarterly,annual}.parquet` 08:32 · 행 70,682,391 / 16,079,171 = 생산 보고와 일치)를 끝낸 순간 메모리 안전장치(가용 2.0GB)에 걸려 종료. **정본 캐시는 옛 것 그대로**. 캐시 생산기의 실제 정점은 약 14.7GB 였다(새벽 실측 10.3GB 는 중단 시점 값). 남은 3/4(후보 검사) · 4/4(사본 · 교체)는 `tools/finish_produce.R`(공식 코드를 그대로 옮긴 것 · 옛 사본 정리만 뺌)로 돌린다 — 아래 5 · 7 이 깨끗할 때만 |
+| 5 캐시 대조 | 도는 중 — 옛 정본 대 후보(`cache_diff.json`) |
+| 6 FF 요인 | 도는 중 — `.cache/scheduler_logs/div_gap_krf.log` |
+| 7 영향 팩터 탐침 | 다음 — 후보 캐시로(환경변수 `QVEST_FUND_Q` · `QVEST_FUND_A` = 후보 경로) `rebuild_factor_subset.R --dry-run`(사양 `tools/probe_spec.DRYRUN_ONLY.json` — 쓰기 실행 금지 · 기록은 `--log` 로 따로) → `tools/probe_read.py` 로 풀이 → `repair_spec.json` |
+| 8 월간 부분 재빌드 · 9 일간 단계 F · 10 검증 · 11 닫기 | 아직 — 정본 교체 뒤. 원장 닫기 = `tools/ledger_edit.py close <사양.json>`(형식 보존 단정 포함) |
+
+- 메모리 안전장치 = `tools/run_guard.ps1`(프로세스 트리의 사용량을 재고 가용이 문턱 아래면 트리를 끝낸다). 무거운 단계는 이것으로 감싸 띄웠다.
+- 같은 PC 의 다른 세션 둘(신선도 · 밤 갱신 점검 / 스타일 국면 브리핑 검토)에 이 사슬이 쓰는 파일을 건드리지 말라고 알려 뒀다. 원장을 닫으면 점검 세션에 한 줄 알린다(그쪽이 팩터 등록부 사본 동기화를 도훈께 권고할 예정).
+
 ## 11-24 새벽 기록
 
 - 밤 갱신은 00:03 에 시작해 데이터 단계를 06:08 에 마쳤다(퀀티 수급 단계가 4.6시간) · 그 뒤 시험 배터리가 06:25 부터 돈다. 그래서 06:30 기한의 대기기는 '아직 도는 중'으로 끝났다.
