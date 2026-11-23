@@ -24,7 +24,7 @@
 | 2 | 원천 반영 | 원천 표 둘 사본 → `qw_fund_v2_div_supplement.py --root <루트>` | META 신규 59,199 · INFO 신규 19,733 · 변경 0 · 삭제 0(예행과 같은 수) | |
 | 3 | 원장 열기 | `06_Registry/factor_db_vintage.json` 에 한 줄(completed_at = null) | 계약이 읽힌다(`fdv_ledger`) | |
 | 4 | 캐시 재생산 | `Rscript 02_Infrastructure/data/fundamental_produce_v2.R` → 옛 캐시 = `.cache/fundamental_backup/<시각>/` | rc 0 · 후보 검사 통과 | |
-| 5 | 캐시 대조 | `cache_diff.py <옛 캐시 폴더> .cache <out.json>` | 값이 생긴 항목 = 배당 원계정과 그 파생뿐 · Factor_Date 변화 0 · 사라진 값 0 | |
+| 5 | 캐시 대조 | `cache_diff.py <옛 캐시 폴더> .cache <out.json>` | 값이 생긴 항목 = 배당 원계정과 그 파생뿐 · 사라진 값 0 · Factor_Date 변화 = 기간 202609 행뿐(달력 꼬리 — 아래 예행) | |
 | 6 | FF 요인 | `Rscript --no-save 02_Infrastructure/data/build_kr_factor_returns.R`(분기 표 md5 가 바뀌므로) | rc 0 · meta md5 = 새 분기 표 | |
 | 7 | 영향 팩터 탐침 | 표본 달 모의 실행 → `repair_spec.json`(대상 · 모듈) | 달라진 팩터가 배당을 쓰는 팩터로 설명된다 · 대조 달(영향 밖)은 0 | |
 | 8 | 월간 부분 재빌드 | `QVEST_RFS_SPEC=<repair_spec.json> bash 02_Infrastructure/factor_db/run_factor_subset_repair.sh --no-wait --workers 3` → 이번 달은 `rebuild_factor_subset.R --months <이번 달>` 따로 | 요약 result = 성공 · IC · 대응표 · 결합용 뷰 rc 0 | |
@@ -66,6 +66,13 @@ Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{ Comma
 - 탐침 음성 대조: 지금 캐시로 2014-06 을 네 모듈(fundamental · value · defense · risk)로 모의 재계산 → 만들어진 145팩터 모두 저장값과 같음
   (바뀜 0 · 생김 0 · 사라짐 0 · 61초). 요약 줄의 '바뀜 −93'은 값이 ±1 인 행이 '그대로'와 '역수 · 부호 반전'에 겹쳐 세어진 것이다 — 팩터별로 다시 센다(`probe_read.py`).
 - 보충 적재 예행(실제 원천 표의 사본): 신규 78,932행 · 변경 0 · 삭제 0 · 창 밖 행 동일(커밋 `d56251674` 메시지).
+- 분기 표 생산기 예행(스크래치 — 보충을 넣은 원천 표 사본을 `build_fundamental_v2.py --v2-dir … --out-dir …` 로 · 운영 분기 표 무접촉 · 27초):
+  - 행 19,245,658 → 19,324,590. 늘어난 78,932행 = 배당 네 항목 × 여섯 분기(기간마다 항목당 3,265~3,312행) · 사라짐 0 · 값 바뀜 0.
+  - 여섯 분기의 (종목, 기간) 20,250개에서 Factor_Date 는 항목과 무관하게 하나다 — 보충 행은 그 분기의 다른 항목과 같은 날짜를 받는다(받은 날이 아니다).
+    배당 행만 있는 (종목, 기간)은 0개. 보충 값 = 0 이 70,569행 · 양수 8,363행(분기 단독 값이라 기말 분기에 몰린다) · 음수 · 결측 0.
+  - 예상 밖 차이 하나: 기간 202609 의 Factor_Date 33,117행이 2026-12-30 → 2027-01-01. 법정기한 11-14(토)가 달력에 새로 들어온 11-16(월)로 넘어가
+    45일 뒤가 12-31 이 된 것이다 — 달력 끝을 넘는 날짜는 분기 표를 다시 만들 때마다 다시 매겨진다. 두 날짜 모두 아직 오지 않아 지금 팩터 값에는 닿지 않는다.
+    단계 5 의 캐시 대조에서는 202609 행(원계정 + 파생)의 날짜 변화로 보인다.
 
 ## 배당을 읽는 곳(정적 확인 — 실측은 단계 7)
 
