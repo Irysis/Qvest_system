@@ -114,6 +114,8 @@ def exact_diff(old_path, new_path, items):
             b2 = both[chg]
             rec["value_changed_tickers"] = int(b2["Ticker"].nunique())
             rec["value_changed_by_period"] = {str(k): int(v) for k, v in b2.groupby("Period", observed=True).size().sort_index().items()}
+        if fd.sum():
+            rec["factor_date_changed_by_period"] = {str(k): int(v) for k, v in both[fd].groupby("Period", observed=True).size().sort_index().items()}
         if len(oo):
             rec["only_old_by_period"] = {str(k): int(v) for k, v in oo.groupby("Period", observed=True).size().sort_index().items()}
         out[str(it)] = rec
@@ -169,10 +171,21 @@ def main():
         print("[cache-diff] %s — 새로 생긴 값 %s · 사라진 값 %s · 값 바뀜 %s · Factor_Date 바뀜 %s · 그 밖 열 바뀜 %s" % (
             tb, format(tot["only_new"], ","), format(tot["only_old"], ","), format(tot["value_changed"], ","),
             format(tot["factor_date_changed"], ","), format(tot["other_col_changed"], ",")))
-        for it in sorted(per, key=lambda z: -(per[z]["only_new"] + per[z]["value_changed"] + per[z]["only_old"])):
+        fdp = {}
+        for v in per.values():
+            for k, c in v.get("factor_date_changed_by_period", {}).items():
+                fdp[k] = fdp.get(k, 0) + c
+        res["tables"][tb]["factor_date_changed_by_period"] = dict(sorted(fdp.items()))
+        if fdp:
+            print("[cache-diff] %s — Factor_Date 바뀜의 기간 분포: %s" % (tb, dict(sorted(fdp.items()))))
+        shown = [it for it in per if per[it]["only_new"] or per[it]["only_old"] or per[it]["value_changed"]]
+        only_fd = [it for it in per if it not in shown and per[it]["factor_date_changed"]]
+        for it in sorted(shown, key=lambda z: -(per[z]["only_new"] + per[z]["value_changed"] + per[z]["only_old"])):
             r = per[it]
             print("    %-28s 생김 %7d · 사라짐 %7d · 값 바뀜 %7d · 날짜 바뀜 %5d" % (
                 it, r["only_new"], r["only_old"], r["value_changed"], r["factor_date_changed"]))
+        if only_fd:
+            print("    (값은 그대로이고 날짜만 바뀐 항목 %d개)" % len(only_fd))
     res["secs"] = round(time.time() - t0, 1)
     Path(a.out_json).write_text(json.dumps(res, ensure_ascii=False, indent=1), encoding="utf-8")
     print("[cache-diff] 끝 · %.0fs · %s" % (time.time() - t0, a.out_json))
