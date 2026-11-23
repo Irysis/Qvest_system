@@ -18,7 +18,8 @@
 원자 쓰기(tmp → os.replace). 금지: RAWDATA · 핵심 Update_File · 가용일 계산(관측 라벨만 싣는다 — 가용 규칙은 소비 쪽).
 종료 코드: 0 적재 · 2 새것 없음(DB가 마지막 처리 뒤 바뀌지 않음) · 3 관문 거부 · 1 오류(등록 안 된 xlsx 가 Update_File_ext 에 있으면 1).
 
-사용: python qw_ext_ingest.py [--book NAME] [--xlsx PATH(--initial 구간 DB)] [--root ROOT] [--force]
+사용: python qw_ext_ingest.py [--book NAME | --books A,B] [--xlsx PATH(--initial 구간 DB)] [--root ROOT] [--force]
+  (밤 갱신 [1pre-ext] = --books <받은 책 목록> · 목록 없이 돌면 등록된 책 전부 — 아직 만들지 않은 책은 'book missing' 1)
 """
 from __future__ import annotations
 
@@ -287,7 +288,12 @@ def ingest_book(root: Path, book: dict, xlsx: Path | None, force: bool, state: d
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--book")
+    one = ap.add_mutually_exclusive_group()
+    one.add_argument("--book")
+    # (2026-11-24) 밤 갱신 [1pre-ext] 는 만들어진 책(Update_File_ext 에 xlsx 가 있는 책)만 받는다 — 적재도 그 목록만 한다.
+    #   목록 없이 돌면 등록만 되고 아직 만들지 않은 책(ShortLending · FlowDetail)이 'book missing' 1 을 내 11-18 부터 밤마다 실패로 셌다.
+    #   목록에 든 책은 그대로 엄격하다(등록 안 된 이름 · 파일 없음 = 1).
+    one.add_argument("--books", help="쉼표 목록 — 이 책들만 적재(등록 안 된 이름 · 빈 목록 = 1)")
     ap.add_argument("--xlsx", help="--initial: 구간 이력 DB(같은 시트 · 고정 B5/B6)")
     ap.add_argument("--root", default=str(ROOT_DEFAULT))
     ap.add_argument("--registry")
@@ -310,6 +316,13 @@ def main() -> int:
         if not books:
             print(f"[ext-ingest] unknown ext book {a.book}")
             return 1
+    if a.books is not None:
+        want = list(dict.fromkeys(x.strip() for x in a.books.split(",") if x.strip()))
+        unknown = [x for x in want if x not in {b["name"] for b in books}]
+        if not want or unknown:
+            print(f"[ext-ingest] --books: {'빈 목록' if not want else 'unknown ext book(s) ' + ', '.join(unknown)}")
+            return 1
+        books = [b for b in books if b["name"] in want]
     stp = Path(a.state or root / ".cache/qw_ext/_ingest_state.json")
     state = json.loads(stp.read_text(encoding="utf-8")) if stp.exists() else {}
     rcs = []

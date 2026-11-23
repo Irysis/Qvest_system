@@ -21,7 +21,8 @@
 
 실행:
   <venv python> 02_Infrastructure/data/refresh_nonreturn_sources.py [--source nps|customs|all]
-  멱등: 신규 월이 없거나 이번 달 스냅샷이 이미 있으면 no-op으로 종료(daily 호출 안전).
+  멱등: NPS 는 신규 월이 없으면 · 관세청은 API 에 마지막 스냅샷보다 늦은 달이 없으면(HS 한 장 탐침 · 탐침 실패 = 이번 달
+  스냅샷이 있으면) no-op으로 종료(daily 호출 안전 · 관세청 규칙 = 2026-11-24 수리 — refresh_customs 설명 참조).
 """
 import os, re, sys, json, time, argparse, datetime as dt
 import urllib.parse, urllib.request, urllib.error
@@ -315,19 +316,67 @@ def _cust_parse(xml):
     return out
 
 
-def refresh_customs(lookback_years=2):
-    """★개정이 무기한 반복되므로 '최신판 덮어쓰기'는 금지. 매 pull = append-only 스냅샷."""
-    today = dt.date.today()
+def _snap_latest(path):
+    """스냅샷의 가장 늦은 달(YYYY-MM)과 가장 많이 실린 HS 장(앞 2자리) — 못 읽으면 (None, None)."""
+    try:
+        d = pd.read_parquet(path, columns=["hs", "ym"])
+    except Exception:
+        return None, None
+    if d.empty:
+        return None, None
+    ch = d.hs.astype(str).str[:2].value_counts()
+    return str(d.ym.max()), (str(ch.index[0]) if len(ch) else None)
+
+
+def _cust_api_latest(K, today, hs):
+    """API 에 지금 실린 가장 늦은 달(YYYY-MM) — HS 한 장 · 전년과 올해 두 번만 조회한다(값은 싣지 않는다 ·
+    전체 수집 97장 × 3년을 할지만 정한다). 조회 실패 · 한 행도 못 읽음 = None."""
+    best = None
+    for y in (today.year - 1, today.year):
+        end_ym = f"{y}12" if y < today.year else today.strftime("%Y%m")
+        try:
+            rows = _cust_parse(_cust_fetch(K, hs, y, end_ym))
+        except Exception:
+            return None
+        yms = [r["ym"].replace(".", "-") for r in rows if len(r["ym"]) == 7]
+        if yms and (best is None or max(yms) > best):
+            best = max(yms)
+    return best
+
+
+def refresh_customs(lookback_years=2, today=None):
+    """★개정이 무기한 반복되므로 '최신판 덮어쓰기'는 금지. 매 pull = append-only 스냅샷.
+
+    언제 받나(2026-11-24 수리): API 에 마지막 스냅샷보다 늦은 달이 실렸을 때 한 번 — 그 스냅샷에 가장 많이 실린 HS 장 하나로 잰다.
+      관세청은 전월 자료를 매월 15일경 현행화와 함께 싣는다(PIT_plan_fq073 §1-b · c). 종전 규칙('달마다 첫 실행에 1회')은 그보다 일러
+      (실측 스냅샷 07-26 · 08-01 · 09-01 · 10-03 · 11-06 = 최신 달 06 · 06 · 07 · 08 · 09) 스냅샷이 늘 한 달 늦었고, 매달 15일경부터 다음 달
+      첫 실행까지 신선도 경보(lag > 45)가 났다(08-15 · 09-15 · 10-16 · 11-15). 탐침이 실패하면 종전 규칙으로 돌아간다(이번 달 스냅샷이
+      있으면 쉰다). 같은 날 스냅샷이 있으면 받지 않는다(파일 이름 = 받은 날)."""
+    today = today or dt.date.today()
     tag = today.strftime("%Y%m%d")
     snap_path = os.path.join(VSTORE, f"customs_hs_{tag}.parquet")
     existing = sorted(f for f in os.listdir(VSTORE) if f.startswith("customs_hs_"))
-    # 멱등: 같은 달 스냅샷이 이미 있으면 no-op (규약상 월 1회 축적이면 충분)
-    same_month = [f for f in existing if f[len("customs_hs_"):len("customs_hs_") + 6] == today.strftime("%Y%m")]
-    if same_month:
-        log(f"관세청: 이번 달 스냅샷 존재({same_month[-1]}) — no-op")
-        return {"source": "customs", "action": "noop", "snapshots": len(existing)}
+    if os.path.exists(snap_path):
+        log(f"관세청: 오늘 스냅샷 존재({os.path.basename(snap_path)}) — no-op")
+        return {"source": "customs", "action": "noop", "why": "same_day", "snapshots": len(existing)}
 
     K = urllib.parse.quote(_key(), safe="")
+    if existing:
+        last_ym, probe_hs = _snap_latest(os.path.join(VSTORE, existing[-1]))
+        api_ym = _cust_api_latest(K, today, probe_hs) if (last_ym and probe_hs) else None
+        if api_ym is None:
+            same_month = [f for f in existing if f[len("customs_hs_"):len("customs_hs_") + 6] == today.strftime("%Y%m")]
+            if same_month:
+                log(f"관세청: 새 달 탐침 실패 — 종전 규칙: 이번 달 스냅샷 존재({same_month[-1]}) — no-op")
+                return {"source": "customs", "action": "noop", "why": "probe_failed_same_month", "snapshots": len(existing)}
+            log("관세청: 새 달 탐침 실패 — 종전 규칙: 이번 달 스냅샷 없음 → 받는다")
+        elif api_ym <= last_ym:
+            log(f"관세청: API 최신 달 {api_ym} ≤ 마지막 스냅샷({existing[-1]}) 최신 달 {last_ym} (HS {probe_hs} 탐침) — no-op")
+            return {"source": "customs", "action": "noop", "why": "no_new_month", "api_latest_ym": api_ym,
+                    "snapshot_latest_ym": last_ym, "snapshots": len(existing)}
+        else:
+            log(f"관세청: 새 달 실림 — API 최신 달 {api_ym} > 마지막 스냅샷({existing[-1]}) 최신 달 {last_ym} (HS {probe_hs} 탐침) → 받는다")
+
     years = range(today.year - lookback_years, today.year + 1)
     rows, fail = [], []
     for hs in HS2:

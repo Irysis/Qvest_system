@@ -425,7 +425,9 @@ if [ "${QVEST_QW_EXT:-1}" = "1" ] && [ -n "$QVENV_PY" ] && [ "${_qwuf_state:-}" 
     QWUF_GROUP=ext QWUF_ONLY="$_ext_books" QWUF_LOG="$BASE/.cache/qw_updatefile_unattended_ext.json" \
       bash "$INFRA/data/qw_updatefile_unattended.sh" "${_qw_rc:-1}" "$QVENV_PY"; _ext_rc=$?
     if [ "$_ext_rc" -eq 0 ]; then
-      "$QVENV_PY" -X utf8 "$INFRA/data/qw_ext_ingest.py"; _ei_rc=$?
+      # (2026-11-24) 받은 책만 적재한다(--books) — 목록 없이 돌면 등록만 된 책(ShortLending · FlowDetail · 아직 안 만듦)이
+      #   'book missing' rc 1 을 내 11-18 부터 밤마다 qw_ext_ingest(rc=1) 로 셌다. 시험 = 08_Tests/data/test_qw_ext_ingest.py T9~T12 · TW
+      "$QVENV_PY" -X utf8 "$INFRA/data/qw_ext_ingest.py" --books "$_ext_books"; _ei_rc=$?
       { [ "$_ei_rc" -eq 1 ] || [ "$_ei_rc" -eq 3 ]; } && DR_FAILED+=("qw_ext_ingest(rc=$_ei_rc)") && echo "!! [1pre-ext] 확장 적재 rc=$_ei_rc(1 오류 · 3 관문 거부 — .cache/qw_ext/_ingest_state.json)"
     fi
   else
@@ -1108,7 +1110,9 @@ echo "[6c/7] 비-return 원천 리프레시 (FQ-064 국민연금 · FQ-073 관�
 # 2026-07-25 도훈 지시 "지금 수집하는 데이터들 모두 자동 리프레시되도록 배선".
 #   두 원천 모두 **월간** 갱신이라 매일 호출해도 대부분 no-op이다(멱등):
 #     - NPS   : 파일 이력 목록에 신규 월이 있을 때만 다운로드 → append (기존 월 덮어쓰기 금지)
-#     - 관세청: 이번 달 스냅샷이 이미 있으면 skip. 없으면 append-only vintage 스냅샷 적립
+#     - 관세청: API 에 마지막 스냅샷보다 늦은 달이 실렸을 때만 append-only vintage 스냅샷 적립(HS 한 장 탐침 ·
+#               탐침 실패 = 종전 규칙 '이번 달 스냅샷이 있으면 skip'). 2026-11-24 수리 — 달마다 첫 실행에 받던 종전 규칙은
+#               전월 자료가 실리는 15일경보다 일러 스냅샷이 늘 한 달 늦었다(매달 15일경부터 신선도 경보 lag > 45)
 #   ★관세청은 개정이 무기한 반복(매월 15일경 과거 전체 현행화)되므로 최신판 덮어쓰기는
 #     소급 정보주입이다 — vintage_store 스냅샷이 권위이고 latest는 파생이다
 #     (PIT_plan_fq073 §2-b2). 스냅샷 2개↑ 쌓이면 개정폭을 자동 실측한다(§2-c).

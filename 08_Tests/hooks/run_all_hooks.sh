@@ -1930,6 +1930,9 @@ SUITES=(
   # 2026-11-10: 국민연금 월 덧붙이기(refresh_nps) — 현재 파일 포함 · 내용 달 해석 + 캐시 · 기존 행 불변 · 스키마 · 같은 달 판 2개 ·
   #   라벨/자료 공간 불일치 + 돌연변이 6(오프라인 · 포털 가짜)
   "08_Tests/data/test_nps_refresh_append.py"
+  # 2026-11-24: 관세청 스냅샷 시점(refresh_customs) — API 에 마지막 스냅샷보다 늦은 달이 실릴 때 받는다 · 탐침 실패 = 종전 규칙 ·
+  #   같은 날 · 스냅샷 없음 · 오류 응답 + 돌연변이 2(오프라인 · 수집 가짜)
+  "08_Tests/data/test_customs_refresh_trigger.py"
   "08_Tests/data/test_incremental_update_file_guards.R"
   # 2026-11-06: 퀀티 적재 관문(F3~F5 — 지표별 받은 창 교체 · 지평선 · B6 · 날짜별 채움 · 명시 디스패치) 위반 주입 + 뮤테이션
   "08_Tests/data/test_incremental_update_gates.R"

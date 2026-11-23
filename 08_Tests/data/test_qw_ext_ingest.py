@@ -3,6 +3,8 @@
 사례: T1 첫 적재 · T2 변경 없음 → 2 · T3 G1(B6 미해석 시트) → 3 · T4 끝 미공표 자르기 · T5 가운데 결손 → 3 ·
       T6 겹침 교체 + first_fetched_at 보존 · T7 등록 안 된 xlsx → 1 · T8 G2(B10 불일치) → 3 ·
       TM 뮤테이션(문턱 0) → T5 의 가운데 결손이 통과한다 = T5 는 그 검사의 발화다(검출력).
+      (2026-11-24) T9 --books 는 등록만 된 책을 보지 않는다 · T10 목록에 든 책은 엄격(파일 없음 = 1) · T11 등록 안 된 이름 · 빈 목록 = 1 ·
+      T12 목록 없음 = 등록된 책 전부(11-18~11-24 밤 실패 모양) · TW 밤 갱신 배선 = --books "$_ext_books".
 실행: .venv_qvest_ml/Scripts/python.exe -X utf8 08_Tests/data/test_qw_ext_ingest.py
 """
 import datetime as dt
@@ -68,13 +70,17 @@ def make_book(path, sheets, b6="CPD-1TD [20261106]", fills=None, b10=None, vals_
     wb.save(path)
 
 
-def setup(name):
+def setup(name, ghost=False):
+    """ghost = 등록만 되고 아직 만들지 않은 책(Ghost_update.xlsx 없음) — 운영 등록부의 ShortLending · FlowDetail 모양."""
     root = T / name
     (root / "03_Universe/Update_File_ext").mkdir(parents=True)
     reg = {"ext_dir": "03_Universe/Update_File_ext", "books": [{"name": "Demo", "group": "ext", "layout": "ts",
            "path": "03_Universe/Update_File_ext/Demo_update.xlsx", "sheets": [
                {"sheet": "S1", "item_code": "S102345", "item_name": "name_S1", "output": ".cache/qw_ext/demo/s1.parquet"},
                {"sheet": "S2", "item_code": "S145030", "item_name": "name_S2", "output": ".cache/qw_ext/demo/s2.parquet"}]}]}
+    if ghost:
+        reg["books"].insert(0, {"name": "Ghost", "group": "ext", "layout": "ts", "path": "03_Universe/Update_File_ext/Ghost_update.xlsx",
+                                "sheets": [{"sheet": "G1", "item_code": "G100000", "item_name": "name_G1", "output": ".cache/qw_ext/ghost/g1.parquet"}]})
     (root / "reg.json").write_text(json.dumps(reg, ensure_ascii=False), encoding="utf-8")
     return root, root / "03_Universe/Update_File_ext/Demo_update.xlsx"
 
@@ -133,6 +139,27 @@ try:
     finally:
         M.THR_CAP = cap
     ok("TM 뮤테이션(문턱 0) → T5 모양이 통과(rc 0) — T5 는 문턱 검사의 발화다") if rc == 0 else ng(f"TM rc={rc}")
+    # (2026-11-24) --books — 밤 갱신 [1pre-ext] 는 받은 책(만들어진 책)만 적재한다. 11-18~11-24 밤마다 rc 1 = 목록 없이 돌아
+    #   등록만 된 책(ShortLending · FlowDetail)이 'book missing' 을 냈다(T12 가 그 모양).
+    r, b = setup("t9", ghost=True); make_book(b, SH)
+    rc = run(r, "--books", "Demo")
+    ok("T9 --books Demo — 등록만 된 Ghost(파일 없음)는 보지 않는다 → 0 · 20행") if rc == 0 and len(read(r, "s1")) == 20 else ng(f"T9 rc={rc} n={len(read(r, 's1'))}")
+    r, b = setup("t10", ghost=True); make_book(b, SH)
+    rc = run(r, "--books", "Ghost,Demo")
+    ok("T10 --books 에 든 책은 그대로 엄격 — Ghost 파일 없음 → 1") if rc == 1 else ng(f"T10 rc={rc}")
+    r, b = setup("t11", ghost=True); make_book(b, SH)
+    rc = run(r, "--books", "Demo,Nope")
+    ok("T11 --books 에 등록 안 된 이름 → 1 · 출력 0") if rc == 1 and not read(r, "s1") else ng(f"T11 rc={rc} n={len(read(r, 's1'))}")
+    rc = run(r, "--books", " , ")
+    ok("T11b --books 빈 목록 → 1") if rc == 1 else ng(f"T11b rc={rc}")
+    r, b = setup("t12", ghost=True); make_book(b, SH)
+    rc = run(r)
+    ok("T12 목록 없이 = 등록된 책 전부 → Ghost 'book missing' 1(11-18~11-24 밤 실패 모양 · 수동 실행의 엄격함은 그대로)") if rc == 1 else ng(f"T12 rc={rc}")
+    # TW 배선 — 밤 갱신이 적재기를 받은 책 목록으로 부른다(구판 줄 = 목록 없음 → T12 모양)
+    sh = (ROOT / "02_Infrastructure/data/daily_refresh.sh").read_text(encoding="utf-8")
+    calls = [ln for ln in sh.splitlines() if "qw_ext_ingest.py" in ln and not ln.lstrip().startswith("#")]
+    ok(f"TW daily_refresh.sh 의 적재기 호출 {len(calls)}줄 전부 --books \"$_ext_books\"") if calls and all('qw_ext_ingest.py" --books "$_ext_books"' in ln for ln in calls) \
+        else ng(f"TW 호출 줄 {calls}")
 except Exception as e:  # noqa: BLE001
     ng(f"harness error: {e!r}")
 finally:
