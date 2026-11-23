@@ -1,4 +1,4 @@
-"""aif_riskmodel.py — 위험 평가 모형 1부: 지표 → 노출 → 횡단면 회귀(FOLLOWUP_PLAN.md '위험 평가 모형' · 걸음 1 '원문 재현 판'의 선형 모형).
+"""aif_riskmodel.py — 위험 평가 모형 1부: 지표 → 노출 → 횡단면 회귀(FOLLOWUP_PLAN.md '위험 평가 모형' · 1단계 '원문 재현 판'의 선형 모형).
 
 Barra USE4 의 구조를 한국 자료로 만든다: 수익 = 시장 + 업종 + 스타일 + 고유.
   desc   지표 33개 — 신호일(월말)마다, 그날까지의 자료로
@@ -76,7 +76,7 @@ STYLE_DEF = {                               # 스타일: [(지표, 가중)]
 ORTH = {"RESVOL": "BETA"}                   # 잔차 변동성은 베타에 직교화
 CUBE = {"NLSIZE": "SIZE", "NLBETA": "BETA"} # 비선형 규모 · 비선형 베타 = 표준화 노출의 세제곱 → 원래 노출에 직교화 → 절단 → 표준화
 STYLES = list(STYLE_DEF) + list(CUBE)
-# 회귀에 넣는 스타일 — main = 본 모형(비선형 베타 제외 16개) · nlbeta = 대조 판(17개 전부). 비선형 베타를 본 모형에서 빼는 까닭(README): 걸음 1 의 기준 모형에
+# 회귀에 넣는 스타일 — main = 본 모형(비선형 베타 제외 16개) · nlbeta = 대조 판(17개 전부). 비선형 베타를 본 모형에서 빼는 까닭(README): 1단계의 기준 모형에
 #   베타의 세제곱이 있으면 베타의 비선형성을 그 위에서 잴 수 없다 · 노출 안정 계수가 채택 기준(0.80) 아래다 · 직교화 뒤에도 베타와 상관이 남는다.
 MODELS = {"main": [s for s in STYLES if s != "NLBETA"], "nlbeta": list(STYLES)}
 MODEL_KO = {"main": "본 모형", "nlbeta": "대조 판(비선형 베타 포함)"}
@@ -90,7 +90,7 @@ MIN_FRAC = 0.5                              # 창 안에서 행이 있는 날의
 MIN_EST = 30                                # 표준화 · 회귀에 필요한 최소 종목 수
 MIN_COVER = 0.5                             # 스타일이 그 달에 '있다'고 보는 하한 — 추정 유니버스의 이 비율 이상에 지표 값이 있어야 한다(그 밑이면 대부분이
                                             #   업종 · 규모로 채워져 그 스타일이 규모 · 업종과 거의 같은 것이 된다 — 배당 자료가 빈 기간에서 실제로 그랬다)
-MAX_AGE_CONS = 20                           # 컨센서스 값의 유효 기간(거래일) — 1단계 컨센서스 묶음과 같다
+MAX_AGE_CONS = 20                           # 컨센서스 값의 유효 기간(거래일) — 선행 연구 컨센서스 묶음과 같다
 GROWTH_LAGS = (16, 12, 8, 4, 0)             # 연간 다섯 점 = 최근 4분기 합(기간 말 항목은 그 값)을 4분기 간격으로(오래된 것 → 최근) — 성장 · 이익 변동성 · 투자의 질
 GROWTH_MIN = 3                              # 연간 점 지표에 필요한 점의 수(가장 최근 점부터 이어진 것) — 원문은 다섯 회계연도다. 퀀티 분기 재무가 2000년부터라
                                             #   다섯 점은 2005년 봄에야 선다 → 세 점부터 낸다(2003년 봄부터 · 도훈 11-23 '성장 지표 수리'). 다섯 점이 다 있으면 원문과 같다.
@@ -303,7 +303,7 @@ def fund_panel(f, sig_sel, cut=None, chunk=500, progress=None):
 
 
 def cons_asof(D, name):
-    """컨센서스 항목의 신호일 전날까지의 마지막 값 [덮는 신호 × 종목](MAX_AGE_CONS 거래일보다 오래되면 버림 — 1단계 컨센서스 묶음과 같은 규칙)."""
+    """컨센서스 항목의 신호일 전날까지의 마지막 값 [덮는 신호 × 종목](MAX_AGE_CONS 거래일보다 오래되면 버림 — 선행 연구 컨센서스 묶음과 같은 규칙)."""
     q = ad.DailyGrid(D.f, ac.root() + "/.cache/consensus/%s.parquet" % name, [name], cut=D.cut, base_dates=D.g.dates)
     return np.asarray(last_valid(q.panel(name), ad.lag_rows(D.sig_rows, 1), max_age=MAX_AGE_CONS), dtype=np.float64)
 
@@ -698,8 +698,8 @@ def main():
     ap.add_argument("--smoke", action="store_true", help="신호 24개(2015~2016)만 · 상태 파일을 건드리지 않고 risk_smoke 폴더에 쓴다")
     a = ap.parse_args()
     ac.SMOKE["on"] = a.smoke
-    if not a.smoke and ac.track() != "followup":                                             # 2단계 줄이 아니면 1단계의 상태 파일에 이 단계를 적게 된다
-        raise RuntimeError("[aif] 2단계 줄로만 띄운다 — ops/aif_run.py --track followup 또는 AIF_TRACK=followup")
+    if not a.smoke and ac.track() != "followup":                                             # 후속 연구 줄이 아니면 선행 연구의 상태 파일에 이 단계를 적게 된다
+        raise RuntimeError("[aif] 후속 연구 줄로만 띄운다 — ops/aif_run.py --track followup 또는 AIF_TRACK=followup")
     ac.low_priority()
     f = ac.Frame()
     meta_p = RK("meta.json")
@@ -795,7 +795,7 @@ def main():
     for ln in lines:
         ac.log("%s", ln)
     ac.stage_unit(100, "1부 끝")
-    if not a.smoke:                                                                          # 이 줄에 도는 작업이 없음을 알린다 — '실행 중'으로 남으면 1단계의 주기 통이 2단계 통을 기다리며 쉰다
+    if not a.smoke:                                                                          # 이 줄에 도는 작업이 없음을 알린다 — '실행 중'으로 남으면 선행 연구의 주기 통이 후속 연구 통을 기다리며 쉰다
         ac.status_set(stage_state="done", detail="1부 끝 — 다음 작업 대기")
     return 0
 
