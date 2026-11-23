@@ -316,6 +316,30 @@
          "gates": "세션 끊김 = 재로그인 없이 rc 3(재로그인은 드라이버 몫) · B1 오늘 갱신 · 시트별 숫자 칸 > 0 · '#INVALID OPTION'(금융업) 문자열 제외 · 날짜 행 = 연속 분기 · 창 시작 = 기대 창 시작 · 끝 = 기대 창 끝 또는 한 분기 앞 · 부모 대비 채움 급감(결산월 부류별) · 매입채무 양성 대조 ≥ 0.98 · 숫자 있는 종목의 결산월 없음 = 거부 · 한 기간에 두 행 값이 다름 = 거부 · 종목별 정렬 대조(같은 분기 < 0.9 ∧ 한 분기 밀린 쪽 ≥ 0.9 · 12분기 이상) = 거부 · 창 = 결산월 부류별(11월 결산의 창 앞 행은 창 안 · 10월 결산의 마지막 행은 한 분기 더)",
          "verified_20261109": "실측 13:29~14:08 rc 0 · 창 202412~202609 · new 0 · changed 0 · deleted 0 · 양성 대조 0.99903 · 시트당 약 10분(행 수와 무관 — 종목 수가 시간을 정한다) · 짧은 리프레시는 틀의 옛 행을 안 지운다 → 수집기가 먼저 지운다"},
        "status": "loaded_20261109"}
+    ],
+    "ts_supplements": [
+      {"name": "FundV2_DIV_201209_201312",
+       "_why": "11-23 도훈 '제대로 된 퀀티 세팅으로 (가)안 실행' · '1번 배당 수리반영' — 피어 책(FundV2_META · FundV2_INFO)의 배당 시트 다섯이 기간 열 201209~201312 에서 '#INVALID OPTION' 을 돌려준다(코드 접미와 무관 · 11-23 시험). 같은 항목을 시계열(Company) 배치 + Base Date FQ0 로 조회하면 값이 온다. dbs · ts_dbs 와 분리한 키다(책 빌더 · 정기 갱신이 순회하지 않는다 — 지난 여섯 분기의 일회성 보충).",
+       "layout": "timeseries_company", "base_date": "FQ0", "window": "B5 20120701 · B6 20140701(날짜 행 2012-06~2014-06)",
+       "periods": ["201209", "201212", "201303", "201306", "201309", "201312"],
+       "period_map": "ts_dbs FundV2_TAX 와 같다(qw_fund_v2_tax_ingest.period_from_row_date) — 결산월이 분기 말이 아닌 종목은 한 분기 뒤(원천 표의 표기와 같음을 8월 · 11월 결산 두 종목으로 확인)",
+       "unit": "금액 항목 = Local thou → ×1000 = 원 · 주당 항목 = 원 그대로(주당 시트의 단위 행은 대부분 'Local thou' 로 찍혀 믿을 수 없다)",
+       "books": [
+         {"file": "FundV2_DIV_TS_201209_201312_a.xlsx", "sheets": [
+           {"sheet": "B201700_M", "item": "CashDivTotal", "code": "M441800.M", "kind": "amount", "parent": "FundV2_META"},
+           {"sheet": "B101400_M", "item": "AdjDPS", "code": "M423400.M", "kind": "per_share", "parent": "FundV2_META"}],
+          "other_sheets": "B201600_M · B100300_M = 같은 두 코드의 Base Date FY0(연간 값 — 네 분기 합과 같음을 확인하는 데만 썼다 · 적재하지 않는다)"},
+         {"file": "FundV2_DIV_TS_201209_201312_b.xlsx", "sheets": [
+           {"sheet": "B201700_M", "item": "CashDivCommon", "code": "M441600.M", "kind": "amount", "parent": "FundV2_META"},
+           {"sheet": "B201600_M", "item": "AdjDPSFinal", "code": "M423200.M", "kind": "per_share", "parent": "FundV2_INFO"}],
+          "other_sheets": "B101400_M = M423000.M(수정 DPS 중간) — 아래 not_supplemented"}],
+       "not_supplemented": {"AdjDPSInterim": "시계열 배치의 M423000 은 회계연도 말 행에만 값이 온다(대부분 0) — 피어 표의 분기 값과 뜻이 달라 넣지 않는다. 피어 표에서는 값이 있는 모든 칸에서 AdjDPSInterim = AdjDPS(1,056/1,056) — 만들어 넣을지는 정하지 않았다"},
+       "sheet_names": "틀(세금 항목 시계열 책)의 시트 이름을 그대로 썼다 — 항목은 B10 의 코드로 확인한다",
+       "ingest": "02_Infrastructure/data/qw_fund_v2_div_supplement.py",
+       "protect": "피어 적재기(qw_fund_v2_ingest.py::protected_cells)는 이 (항목 × 기간) 칸을 건드리지 않는다 — 피어 책에는 값이 없어, 통째 재적재가 보충 행을 '사라진 값'으로 지우기 때문",
+       "validated_20261123": "피어 표에 이미 있는 분기(201203 · 201206 · 201403 · 201406)에서 하나라도 0 이 아닌 칸: CashDivTotal 132/132 · CashDivCommon 126/126 · AdjDPS · AdjDPSFinal 124/126(어긋난 2칸 = A099750 의 수정 계수가 11-08 뒤 바뀜)",
+       "pit": "값 = 받은 날(2026-11-23)의 퀀티 값 · 수정 주당 항목은 그날의 수정 계수 기준(다른 v2 항목과 같은 판 한계). 가용일은 같은 기업-기간의 보고서 공시일 규칙(build_fundamental_v2.py EXTRA_ITEMS)",
+       "status": "books_staged_20261123"}
     ]
   }
 }

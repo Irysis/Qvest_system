@@ -138,6 +138,19 @@ def sheet_long(s: str, sh: dict):
     return df[df["Value"].notna()]
 
 
+def protected_cells(fv: dict) -> dict:
+    """(항목, 기간) → 보충 이름 — 피어 책이 값을 못 주는 칸을 시계열 책으로 채운 곳(등록부 fundamentals_v2.ts_supplements · 적재 =
+    qw_fund_v2_div_supplement.py · 2026-11-23 도훈 '배당 수리반영'). 피어 적재는 이 칸을 창에서 뺀다 — 피어 책에는 값이 없어(배당 시트의
+    201209~201312 = '#INVALID OPTION') 통째 재적재가 보충 행을 '사라진 값'으로 지우기 때문이다. 피어 책에 그 칸의 값이 있어도 쓰지 않는다."""
+    out = {}
+    for s in fv.get("ts_supplements") or []:
+        for b in s.get("books") or []:
+            for sh in b.get("sheets") or []:
+                for p in s.get("periods") or []:
+                    out[(sh["item"], str(p))] = s.get("name", "")
+    return out
+
+
 def window_merge(old, new, win: set, db_name: str, fetched: str):
     """부모 표 old 의 창 win((항목, 기간) 집합)을 new 로 교체한다 — 갱신용 DB · FundV2_TAX 창 갱신(qw_fund_v2_tax_ingest.py)이 같이 쓴다.
     old: Ticker · Period · Item · Value · Text · first_fetched_at · last_fetched_at / new: Ticker · Period · Item · Value · Text.
@@ -216,6 +229,7 @@ def main() -> int:
         print(f"[fund-v2] 등록부에 fundamentals_v2 없음: {reg_path}")
         return 1
     cat = {it["sheet"]: it for it in fv["items"]}
+    protected = protected_cells(fv)
     state_path = out_dir / "_ingest_state.json"
     state = json.loads(state_path.read_text(encoding="utf-8")) if state_path.exists() else {"dbs": {}}
     rev_path, fm_path = out_dir / "revisions.parquet", out_dir / "fiscal_month.parquet"
@@ -279,7 +293,7 @@ def main() -> int:
             nz = row[row > 0]
             med = float(nz.median())
             span = row.loc[nz.index[0]:nz.index[-1]]
-            holes = [p for p, v in span.items() if v < 0.3 * med and p != per_all[-1]]   # 마지막 기간 = 공시 시즌 진행 중일 수 있음
+            holes = [p for p, v in span.items() if v < 0.3 * med and p != per_all[-1] and (s, p) not in protected]   # 마지막 기간 = 공시 시즌 진행 중일 수 있음 · 보충 칸 = 피어 책에 원래 없다
             if len(per_all) >= 2 and nz.index[-1] < per_all[-2]:
                 print(f"  ⚠ W1 {s}: {nz.index[-1]} 에서 끝남(DB 마지막 {per_all[-1]}) — 부분 수신이면 그 시트만 다시 리프레시")
             if holes:
@@ -291,6 +305,12 @@ def main() -> int:
         else:
             old = pd.DataFrame(columns=["Ticker", "Period", "Item", "Value", "Text", "first_fetched_at", "last_fetched_at"])
         win = {(s, p) for s, sh in sheets.items() for p in sh["periods"]}
+        prot = win & set(protected)
+        if prot:   # 보충 칸(시계열 책으로 채운 곳)은 피어 적재가 건드리지 않는다 — 지우지도 덮지도 않는다
+            in_prot = (new["Item"] + "|" + new["Period"]).isin({f"{s}|{p}" for s, p in prot})
+            print(f"  ⓘ 보충 칸 {len(prot)}개(항목 × 기간 · {', '.join(sorted({protected[k] for k in prot}))})는 건드리지 않는다"
+                  + (f" — 피어 책에 그 칸의 값 {int(in_prot.sum()):,}행이 있다(쓰지 않음 · 확인할 것)" if in_prot.any() else ""))
+            new, win = new[~in_prot], win - prot
         res, revs, cnt = window_merge(old, new, win, name, fetched)
         new_revs.extend(revs)
         print(f"[fund-v2] {name}: 적재 — 시트 {len(sheets)} · 기간 {len(next(iter(sheets.values()))['periods'])} · "

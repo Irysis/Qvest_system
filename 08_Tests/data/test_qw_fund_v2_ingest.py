@@ -3,7 +3,9 @@
 사례: T1 첫 적재 · T2 변경 없음 → 2 · T3 G1(템플릿 스탬프 시트) → 3 · T4 G2(D9 ≠ 등록부) → 3 ·
       T5 G3(한 기간 채움 60 → 10) → 3 · T6 값 변경 → revisions 'changed' + first_fetched_at 재설정(안 바뀐 행은 유지) ·
       T7 창 안 삭제 → revisions 'deleted' · T8 날짜 항목 → Text 'YYYYMMDD' ·
-      TM 뮤테이션(FILL_RATIO 0) → T5 모양이 통과(rc 0) = T5 는 G3 의 발화다(검출력).
+      TM 뮤테이션(FILL_RATIO 0) → T5 모양이 통과(rc 0) = T5 는 G3 의 발화다(검출력) ·
+      T12 보충 칸 보호(등록부 ts_supplements — 통째 재적재 뒤에도 보충 행이 남는다) · T13 피어 책에 그 칸의 값이 생겨도 쓰지 않는다 ·
+      T12M 뮤테이션(보호 끔) → 보충 행이 지워진다 = T12 는 보호의 발화다.
 실행: .venv_qvest_ml/Scripts/python.exe -X utf8 08_Tests/data/test_qw_fund_v2_ingest.py
 """
 import importlib.util
@@ -185,6 +187,45 @@ try:
     good = list(t11["Text"]) == ["적정", "한정"] and list(t11b["Text"]) == ["KS", "KQ"] \
         and not any(str(x).lower() in ("nan", "none", "") for x in list(t11["Text"]) + list(t11b["Text"]))
     ok("T11 글자 항목 빈칸 → 행 없음('nan' · 'None' 글자 없음)") if good else ng(f"T11 {list(t11['Text'])} {list(t11b['Text'])}")
+    # T12 / T13 보충 칸 보호(2026-11-23 · 도훈 '배당 수리반영') — 피어 책에 값이 없는 (항목, 기간)을 시계열 책으로 채운 뒤(등록부 ts_supplements),
+    #   피어 책을 통째로 다시 적재해도 그 행이 남는다. 보호가 없으면 창 안에서 '사라진 값'으로 지워진다(T12M).
+    def sup_reg(root):
+        reg = json.loads((root / "reg.json").read_text(encoding="utf-8"))
+        reg["fundamentals_v2"]["ts_supplements"] = [{"name": "Sup", "periods": ["202406"], "books": [{"file": "x.xlsx", "sheets": [{"item": "TotalAssets"}]}]}]
+        (root / "reg.json").write_text(json.dumps(reg, ensure_ascii=False), encoding="utf-8")
+
+    def add_sup_rows(root):   # 보충 적재가 넣은 행(60종 · TotalAssets 202406)
+        import pyarrow as pa
+        pth = root / ".cache/qw_fund_v2/Demo.parquet"
+        t = pq.read_table(pth)
+        rows = t.to_pylist() + [{"Ticker": c, "Period": "202406", "Item": "TotalAssets", "Value": 7000.0 + i, "Text": None,
+                                 "first_fetched_at": "SUP", "last_fetched_at": "SUP"} for i, c in enumerate(CODES)]
+        pq.write_table(pa.Table.from_pylist(rows, schema=t.schema), pth)
+
+    def sup_rows(root):
+        return [x for x in read(root) if x["Item"] == "TotalAssets" and x["Period"] == "202406"]
+
+    def sup_case(name):       # 피어 책에 그 칸이 빈 채로 첫 적재 → 보충 행 추가 → 같은 피어 책(새 스탬프)을 통째로 다시 적재할 준비
+        root, book = setup(name); sup_reg(root); make_db(book, fill={("TotalAssets", "202406"): 0}); run(root)
+        add_sup_rows(root)
+        make_db(book, stamp="2026-11-09 12:00:00", fill={("TotalAssets", "202406"): 0}); bump(book)
+        return root, book
+
+    r, b = sup_case("t12")
+    rc = run(r); sr = sup_rows(r); de = [x for x in read(r, "revisions.parquet") if x["kind"] == "deleted"]
+    ok("T12 보충 칸 보호 — 통째 재적재 뒤에도 보충 행 60개가 그대로(삭제 0 · first_fetched_at 유지)") if rc == 0 and len(sr) == 60         and all(x["first_fetched_at"] == "SUP" for x in sr) and not de else ng(f"T12 rc={rc} sup={len(sr)} deleted={len(de)}")
+    make_db(b, stamp="2026-11-10 12:00:00"); t13 = time.time() + 60; os.utime(b, (t13, t13))   # 피어 책에 그 칸의 값이 생겼다(60개) · 앞선 bump 와 다른 mtime
+    rc = run(r); sr = sup_rows(r)
+    ok("T13 피어 책에 보충 칸의 값이 생겨도 쓰지 않는다 — 보충 값 그대로") if rc == 0 and len(sr) == 60         and all(x["Value"] >= 7000 and x["first_fetched_at"] == "SUP" for x in sr) else ng(f"T13 rc={rc} sup={len(sr)} {sr[:1]}")
+    r, b = sup_case("t12m")
+    keep_pc = M.protected_cells; M.protected_cells = lambda fv: {}
+    try:
+        rc = run(r)
+    finally:
+        M.protected_cells = keep_pc
+    sr = sup_rows(r); de = [x for x in read(r, "revisions.parquet") if x["kind"] == "deleted"]
+    ok("T12M 뮤테이션(보호 끔) → 통째 재적재가 보충 행 60개를 지운다 — T12 는 보호의 발화다") if rc == 0 and len(sr) == 0 and len(de) == 60 else ng(
+        f"T12M rc={rc} sup={len(sr)} deleted={len(de)}")
     # TM 뮤테이션 — G3 를 끄면 T5 모양이 통과해야 한다
     ratio = M.FILL_RATIO; M.FILL_RATIO = 0.0
     try:
