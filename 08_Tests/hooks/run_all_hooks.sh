@@ -2085,6 +2085,9 @@ SUITES=(
   "08_Tests/ops/test_qvest_machine.sh"
   "08_Tests/ops/test_rf_verify_report_composition.R"
   "08_Tests/ops/test_tg_scope_key.R"
+  # 2026-11-24: 아침 1계층 상태 통의 '개별 연구' 줄(research_brief_lines.R) — aif 상태 · 공통 status.json · README '상태:' 줄 · 멈춤 표지 ·
+  #   수치 든 세부 글 생략 · 항목 실패 격리 · 미등록 폴더 알림 · 배선 + 돌연변이 2(모래상자 · 발송 없음)
+  "08_Tests/ops/test_research_brief_lines.R"
   "08_Tests/programs/test_round_kit_pair_alpha.R"
   "08_Tests/programs/test_round_kit_shard.R"
   "08_Tests/reinforcement/test_rf_overlay_full_cash.R"

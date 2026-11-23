@@ -6,6 +6,9 @@
 #   · 상태 출처는 기존 정본 함수(round_core 마지막 출시 판 — rc_standing_status_lines · rc_p4_base_pool · rc_p4_status · rc_outcomes_read)와 등록부 파일.
 #     여기서 판정을 다시 만들지 않는다. 한 칸이 실패하면 그 칸만 '판독 불가'(체인은 계속 · 종료 코드 0).
 #   · ★성과 수치를 싣지 않는다(τ_D = 2022-12-31 이후 성과 포함 — 사람 면이라도 아침 요약에는 개수 · 시각 · 상태 단어만).
+#   · (2026-11-24 도훈 '앞으로 Q-Lead 아침상태 텔레 메세지에 강화 계층 외에 현재 개별적으로 진행 중인 연구들에 대한 브리핑도 넣어줘')
+#     '개별 연구' 구획 — 등록부 06_Registry/research_briefs.json 의 켜진 항목마다 한 줄(단계 · 상태 단어 · 진행률 · 갱신 시각 · 멈춤 표지) ·
+#     줄 = morning_steps/research_brief_lines.R(시험 08_Tests/ops/test_research_brief_lines.R). ② 판 표식 칸은 원장에 열린 줄이 있으면 '진행 중'.
 # 실행: Rscript --no-save -e 'source("02_Infrastructure/ops/morning_steps/l1_status_send.R")'   (morning_briefing.sh 가 부른다)
 #   QVEST_TG_DRY_RUN=1 → 본문만 출력. 시험 = 08_Tests/scenarios/test_scn_tg_alert_noise.R(L 축 · 모의 발송기).
 source("02_Infrastructure/ops/morning_steps/_root.R")
@@ -37,7 +40,10 @@ l1_status_lines <- function() {
   ## ② 팩터 DB 최근 수리 — 판 표식 원장 마지막 줄
   L$fdv <- .cell({
     e <- .rd("06_Registry/factor_db_vintage.json")$entries
-    if (!length(e)) "팩터 DB 판 표식: 기록 없음" else sprintf("팩터 DB 판 표식: %s · %s", e[[length(e)]]$id %||% "?", .hm(e[[length(e)]]$completed_at))
+    op <- Filter(function(x) !is.character(x$completed_at) || !nzchar(x$completed_at), e)   # 열린 줄 = 수리 진행 중(completed_at 없음)
+    if (!length(e)) "팩터 DB 판 표식: 기록 없음"
+    else if (length(op)) sprintf("팩터 DB 판 표식: %s · 진행 중(열린 줄 %d)", op[[length(op)]]$id %||% "?", length(op))
+    else sprintf("팩터 DB 판 표식: %s · %s", e[[length(e)]]$id %||% "?", .hm(e[[length(e)]]$completed_at))
   })
   ## ③ 상설 판 — standing: true 인 라운드 사양마다 정본 상태 줄 첫 줄(개수만 · 성과 없음)
   L$standing <- .cell({
@@ -98,12 +104,22 @@ lines <- l1_status_lines()
 .nm <- c(data = "데이터", fdv = "팩터 DB 판 표식", standing = "상설 판", pool = "기저 풀", chain = "강화 사슬", outcome = "결과 원장", dec = "열린 결정")
 lines <- ifelse(lines == .na, paste0(.nm[names(lines)], ": ", .na), lines)
 cat(paste0("[l1_status] ", lines, collapse = "\n"), "\n")
+## 개별 연구 — 1계층 라운드 · 강화 사슬 밖에서 개별로 진행 중인 연구(등록부 06_Registry/research_briefs.json · 줄 = research_brief_lines.R)
+##   항목 하나가 실패하면 그 줄만 판독 불가 · 줄 함수 자체를 못 읽으면 구획 한 줄이 판독 불가(통은 그대로 간다)
+rlines <- .cell({
+  .rb_env <- new.env()
+  sys.source(file.path(.root, "02_Infrastructure/ops/morning_steps/research_brief_lines.R"), envir = .rb_env)
+  .rb_env$research_brief_lines(.root)
+})
+if (identical(rlines, .na)) rlines <- paste0("개별 연구: ", .na)
+cat(paste0("[l1_status] ", rlines, collapse = "\n"), "\n")
 if (!exists("tg_agent_brief", mode = "function"))
   invisible(capture.output(suppressMessages(source(file.path(.root, "02_Infrastructure/telegram/telegram_notify.R")))))
 .r <- tryCatch(tg_agent_brief(agent = "Q-Lead", title = sprintf("[1계층] 아침 상태 — %s", format(Sys.Date(), "%m-%d")),
-                              sections = list(list(type = "summary", emoji = "\U0001F9ED", body = "1계층(v10.2) 아침 상태 — 무음 일일 요약 · 7칸"),
-                                              list(heading = "상태", type = "bullet", items = unname(lines))),
-                              footer = "무음 · 개수 · 시각 · 상태 단어만(성과 수치 없음) · 출처 = round_core 정본 함수 · 등록부",
+                              sections = list(list(type = "summary", emoji = "\U0001F9ED", body = "1계층(v10.2) 아침 상태 — 무음 일일 요약 · 7칸 + 개별 연구"),
+                                              list(heading = "상태", type = "bullet", items = unname(lines)),
+                                              list(heading = "개별 연구", type = "bullet", items = unname(rlines))),
+                              footer = "무음 · 개수 · 시각 · 상태 단어만(성과 수치 없음) · 출처 = round_core 정본 함수 · 등록부 · 개별 연구 = 06_Registry/research_briefs.json",
                               mute = TRUE, relaxed = TRUE, force = TRUE, decode_jargon = FALSE, glossary = FALSE,
                               lock_scope = sprintf("l1_status_%s", format(Sys.Date(), "%Y%m%d"))),
                error = function(e) list(ok = FALSE, error = conditionMessage(e)))

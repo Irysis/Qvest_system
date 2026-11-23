@@ -1,0 +1,58 @@
+{
+  "schema": "research_briefs_v1",
+  "_doc": "아침 1계층 상태 통(02_Infrastructure/ops/morning_steps/l1_status_send.R · 줄 = morning_steps/research_brief_lines.R)의 '개별 연구' 구획 등록부. 2026-11-24 도훈 '앞으로 Q-Lead 아침상태 텔레 메세지에 강화 계층 외에 현재 개별적으로 진행 중인 연구들에 대한 브리핑도 넣어줘'. 1계층 라운드 · 강화 사슬 밖에서 개별로 진행 중인 연구를 항목 하나씩 적는다 — 상태 원천 kind: aif_status(AI 팩터 연구 상태 파일 · 단계 이름과 가중치 = 그 연구의 aif_config.json) · status_json(공통 약속 — status_json_schema · 연구 폴더에 status.json) · readme_state(README 의 '상태:' 첫 줄 + README 갱신 시각). 연구를 끝내거나 멈추면 active = false 로 둔다(지우지 않는다). 성과 수치는 싣지 않는다 — 소수 · 퍼센트 · 부호 달린 수가 든 세부 글은 줄에서 뺀다(아침 상태 통의 '개수 · 시각 · 상태 단어만' 원칙).",
+  "status_json_schema": {
+    "stage": "지금 단계 이름",
+    "state": "running | waiting | paused | done | error",
+    "progress": "0~1(선택 · 전체 진행률)",
+    "stage_progress": "0~1(선택 · 지금 단계 안 진행률)",
+    "updated_at": "YYYY-MM-DD HH:MM:SS(현지 시각)",
+    "detail": "한 줄(선택 · 수치 없이)",
+    "next": "다음 할 일(선택)"
+  },
+  "stale_hours_running": 6,
+  "discover": {
+    "_doc": "등록 안 된 연구 폴더 알림 — root 아래 폴더 중 맨 위 항목(파일 · 폴더)의 마지막 수정이 recent_days 안인 것 · 등록 항목의 dir 과 ignore 는 뺀다 · 이름만 한 줄로 알린다(등록하라는 신호).",
+    "root": "04_Research/01_reports",
+    "recent_days": 3,
+    "ignore": [
+      {"dir": "strategy_role_grading_20261006", "why": "밤 갱신 [8.1r] 이 매일 다시 쓰는 등급표(연구 진행 아님)"},
+      {"dir": "kr_market_stress_index_20261106", "why": "일일 스트레스 지수 산출(운영 산출물 · 아침 브리프 별도)"},
+      {"dir": "weekly", "why": "주간 정리(Cleaner) 산출"},
+      {"dir": "dividend_gap_repair_20261123", "why": "인프라 수리 사슬 — 판 표식 칸(②)이 열린 원장 줄로 보인다"},
+      {"dir": "fundamental_derived_verify_20261123", "why": "11-23 수리 완료(판 표식 FUNDAMENTAL-DERIVED-SHARE-BASIS-LAG-20261123)"},
+      {"dir": "factor_db_debt_zerofill_20261117", "why": "11-23 수리 완료(판 표식 FUNDAMENTAL-DEBT-ZEROFILL-20261117)"}
+    ]
+  },
+  "items": [
+    {
+      "id": "aif_stage1",
+      "name": "AI 팩터 연구 1단계",
+      "kind": "aif_status",
+      "dir": "04_Research/01_reports/ai_factor_research_20261122",
+      "track": "",
+      "active": true,
+      "since": "2026-11-22",
+      "why": "도훈 11-22 — Qvest 1계층과 별개인 독립 연구(팩터 생성 · 잠재팩터 · 성과 측정) · 상태 파일 = <out_cache>/status.json"
+    },
+    {
+      "id": "aif_followup",
+      "name": "AI 팩터 연구 2단계",
+      "kind": "aif_status",
+      "dir": "04_Research/01_reports/ai_factor_research_20261122",
+      "track": "followup",
+      "active": true,
+      "since": "2026-11-23",
+      "why": "도훈 11-23 승인 — 비선형 노출 × 동적 비중 멀티팩터 · 상태 파일 = <out_cache>/followup/status.json"
+    },
+    {
+      "id": "nlff_automl",
+      "name": "비선형 재무 팩터(AutoML)",
+      "kind": "readme_state",
+      "dir": "04_Research/01_reports/nonlinear_fundamental_factors_20261116",
+      "active": true,
+      "since": "2026-11-16",
+      "why": "도훈 11-16 'AutoML 을 써서 비선형 재무 팩터 구현해 봐' — 상태 = README '상태:' 줄"
+    }
+  ]
+}
