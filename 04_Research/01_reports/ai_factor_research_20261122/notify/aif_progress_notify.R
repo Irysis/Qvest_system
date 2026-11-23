@@ -1,6 +1,8 @@
 ## aif_progress_notify.R — 텔레그램 진행 알림(승인 계획 '진행 알림'). 상태 파일을 읽어 한 통을 만들고, 보낼 때인지 스스로 판정한다.
-##   실행: Rscript notify/aif_progress_notify.R [--send] [--force] [--event=start|end|error|resume|result|report|charts] [--summary=<json>] [--note=<줄1|줄2|…>]
+##   실행: Rscript notify/aif_progress_notify.R [--send] [--force] [--event=start|end|error|resume|result|report|charts|gp_evo] [--summary=<json>] [--note=<줄1|줄2|…>]
 ##     --event=charts = 그림만 보내는 통(요약 파일의 charts · chart_names · headline) — 앞 통에서 못 간 그림을 손으로 이어 보낼 때.
+##     --event=gp_evo = 수식 탐색 3판의 '진화의 효과'만 보내는 통(그림과 요약 줄 = R/aif_gp_evo.R · 도훈 11-23). 수식 탐색 단계의 주기 통에는 해가 새로 끝났을 때,
+##       그 단계의 끝 · 결과 통에는 늘 같은 그림과 요약 줄이 함께 실린다. 그림을 못 만들면 글만 간다.
 ##     그림이 많으면 한 통에 15장까지만 싣고 나머지는 65초 뒤 '그림 이어서' 통으로 보낸다(텔레그램이 같은 채팅에 1분에 스무 건쯤만 받는다).
 ##     --send 가 없으면 미리보기(발송 없음 · 형식 검사만). 발송은 저장소의 단일 진입점 tg_agent_brief() 로만 한다.
 ##     --event=report = 종합 보고 통(요약 파일 + 1단계는 후속 연구 계획 요약 followup_plan.json + 그림). 마지막 단계(final_report · nl_report)의 결과 통도 이 모양으로 간다.
@@ -113,6 +115,16 @@ if (EVENT %in% c("end", "result") && !is.null(sm)) {
   cp <- unlist(sm$charts); cn <- unlist(sm$chart_names)                        # 그림이 없는 요약도 있다(빈 목록 → NULL)
   if (length(cp)) { ex <- file.exists(cp); if (any(ex)) charts <- setNames(cp[ex], cn[ex]) }
 }
+## 수식 탐색 3판의 '진화의 효과'(도훈 11-23 "진화에 따른 효과 보여주는 시각자료도 같이") — 주기 통에는 직전에 보낸 뒤로 새로 끝난 해가 있을 때만 싣는다
+evo <- NULL
+if (EVENT == "gp_evo" || (identical(st$stage_key, "gp_v3") && EVENT %in% c("hourly", "end", "result"))) evo <- tryCatch({
+  source(file.path(D, "R", "aif_gp_evo.R"))
+  aif_gp_evo(root, cfg, only_new = EVENT == "hourly")
+}, error = function(e) { cat("[aif-notify] 진화 효과 그림을 만들지 못했다(글만 보낸다):", conditionMessage(e), "\n"); NULL })
+if (!is.null(evo) && EVENT != "gp_evo") {
+  secs <- append(secs, list(list(type = "bullet", emoji = "\U0001F9EC", heading = "진화의 효과(수식 탐색 3판)", items = evo$lines)), after = length(secs) - 1L)
+  charts <- c(charts, evo$charts)
+}
 title <- sprintf("[무인] %s — %s · 전체 %d%%%s", RNAME, sg$name, pct, switch(EVENT, start = " · 시작", end = " · 끝", error = " · 오류", resume = " · 재개", result = " · 결과", ""))
 ## 종합 보고 통(--event=report --summary=<요약>) — 지금 도는 단계와 무관하게 끝난 묶음 전체의 결론 · 진행 · (1단계는) 후속 연구 계획 요약 · 그림을 보낸다
 if (EVENT == "report") {
@@ -161,6 +173,15 @@ if (EVENT == "charts") {
   secs <- chart_secs(sm$headline %||% sprintf("%s 종합 보고의 그림을 이어서 보냅니다(%d장)", RNAME, length(charts)), charts)
   title <- sprintf("[무인] %s — 종합 보고 그림 이어서", RNAME)
 }
+## 진화 효과만 보내는 통(--event=gp_evo) — 수식 탐색 3판의 기록에서 만든 그림(변형마다 두 장)과 요약 줄
+if (EVENT == "gp_evo") {
+  if (is.null(evo)) { cat("[aif-notify] 진화 효과 통 — 그릴 기록이 없거나 그림을 만들지 못했다\n"); quit(status = 2L) }
+  charts <- evo$charts
+  secs <- list(list(type = "summary", body = substr(evo$headline, 1L, 100L)),
+               list(type = "bullet", emoji = "\U0001F9EC", heading = "진화의 효과", items = evo$lines),
+               list(type = "bullet", emoji = "\U0001F5BC", heading = "그림 읽는 법", items = evo$guide))
+  title <- sprintf("[무인] %s — 수식 탐색 3판 · 진화의 효과", RNAME)
+}
 mute <- quiet   # 낮에는 주기 통도 알림음으로 보낸다(도훈 11-23 '30분마다 · 알림음 켬') · 밤(00~07시)에 보내는 통은 종류와 무관하게 알림음 없이 채팅에만 남긴다
 if (!SEND) Sys.setenv(QVEST_TG_DRY_RUN = "1")
 invisible(capture.output(suppressMessages(source(file.path(root, "02_Infrastructure", "telegram", "telegram_notify.R")))))
@@ -172,7 +193,8 @@ r <- send1(title, secs, first)
 if (is.null(r)) quit(status = 2L)
 if (SEND && is.list(r) && isFALSE(r$ok)) { cat("[aif-notify] 발송 실패(응답 ok = FALSE)\n"); quit(status = 3L) }
 if (!SEND) { cat("[aif-notify] 미리보기(발송 없음) — 형식 검사 통과\n"); if (is.character(r)) cat(r, "\n") else if (!is.null(r$body)) cat(r$body, "\n") else str(r, max.level = 1); quit(status = 0L) }
-if (EVENT != "charts")                                            # 그림만 보낸 통은 주기 통의 간격 계산에 넣지 않는다
+if (!is.null(evo)) tryCatch(aif_gp_evo_mark_sent(evo$key, root, cfg), error = function(e) cat("[aif-notify] 진화 효과 보냄 기록을 쓰지 못했다:", conditionMessage(e), "\n"))
+if (!(EVENT %in% c("charts", "gp_evo")))                          # 그림만 보낸 통은 주기 통의 간격 계산에 넣지 않는다
   tryCatch(aif_write_json(list(sent_at = format(now, "%Y-%m-%d %H:%M:%S"), stage_key = st$stage_key, stage_state = state, pct = pct, stage_pct = spct, event = EVENT), NSP),
            error = function(e) cat("[aif-notify] 직전 통 기록을 쓰지 못했다(발송은 됨):", conditionMessage(e), "\n"))
 ## 남은 그림과 못 간 그림을 이어서 보낸다
