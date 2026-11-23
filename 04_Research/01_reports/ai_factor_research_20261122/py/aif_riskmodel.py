@@ -11,19 +11,24 @@ Barra USE4 의 구조를 한국 자료로 만든다: 수익 = 시장 + 업종 + 
            → 결측은 업종과 규모에 회귀해 채움 → 잔차 변동성은 베타에 직교화 → 비선형 규모 · 비선형 베타(세제곱 → 직교화 → 절단 → 표준화)
   reg    횡단면 회귀 — √시총 가중 · 업종 팩터 수익의 시총 가중 합 = 0. 노출은 신호일 값으로 그 보유월 내내 고정.
            월간(유의성 · 설명력 평가용)과 일간(팩터 공분산 · 고유 위험의 재료 = 순수 팩터 수익 · 고유수익)
+           모형 둘(도훈 11-23 '권고안 수용'): 본 모형 = 비선형 베타를 뺀 스타일 16개(GEMLT 의 구성 — 2부의 공분산 · 고유 위험은 이것으로 짓는다) ·
+           대조 판 = 비선형 베타를 넣은 17개(3부 편향 통계에서 본 모형과 나란히 검증한다). 노출은 한 번만 만들고 회귀만 두 번 돈다.
   stats  팩터 통계표(USE4 표 4.2 의 열) — 평균 |t| · |t|>2 인 달의 비율 · 연 수익 · 연 변동성 · 추정 유니버스와의 상관 · 노출 안정 계수 · 분산팽창계수
            설정을 고르는 데 쓰는 표이므로 표본 안(설정 measure.is_end 까지)만 낸다. 그 뒤 구간의 팩터 수익은 저장만 하고 여기서 요약하지 않는다.
            스타일끼리의 노출 상관(√시총 가중 · 표본 안 달 평균)도 함께 낸다 — 겹치는 스타일을 가려내는 재료.
 추정 유니버스 = 측정 축 멤버(공통 틀) 가운데 그날 행과 업종이 있는 종목. 노출은 행이 있는 모든 종목에 매긴다(표준화의 평균 · 표준편차는 추정 유니버스에서).
+  고유수익도 노출이 다 있는 모든 종목에 낸다 — 회귀는 추정 유니버스로만 돌리고, 그 밖 종목(멤버가 아닌 지수 구성 종목 등)은 같은 날의 팩터 수익으로 수익 − 노출 × 팩터 수익을 구한다(2부의 고유 위험을 매기는 범위).
 미래참조: 지표는 신호일까지의 일별 자료 · 재무는 쓸 수 있는 첫날(Factor_Date)이 신호일 이전인 값 · 컨센서스는 신호일 전날까지의 마지막 값.
   --check 가 자료를 신호일에서 자른 뒤 다시 만든 지표 · 노출이 온 자료로 만든 것과 같은지 확인한다.
 원문과 다르게 둔 곳(자료 사정 · 원문에 없는 값 — README '위험 평가 모형 1부'에 표로 적는다):
   예상 이익수익률 = 컨센서스 1년 EPS ÷ 1년 BPS × 장부가/시가(주당 추정치를 수정주가 수준과 나누지 않는다) · 성장에 애널리스트 장기 성장 예상이 없다 ·
   창 안 관측 하한 50% · 표준화 전 10 표준편차 밖은 자료 오류로 버림 · 성장의 분모는 절댓값 평균 · 성장은 연간 점 세 개부터 ·
-  장기부채 = 이자부부채 − 단기차입금 − 유동성 사채 · 배당 = 현금배당액(없는 기간은 배당금 지급 — 퀀티의 배당 시트가 2012Q3~2013Q4 에 오류를 돌려줘 그 기간 행이 없다).
+  장기부채 = 이자부부채 − 단기차입금 − 유동성 사채 · 배당 = 현금배당액(퀀티의 배당 시트가 2012Q3~2013Q4 에 오류를 돌려줘 재무 캐시에 그 기간 행이 없다 →
+  시계열 배치로 다시 받은 값의 보충 표를 쓰고(DIV_SUPP), 그래도 없는 칸은 현금흐름표의 배당금 지급).
 다섯 스타일에서 정한 것: 연간 점은 성장 지표와 같은 규칙(최근 4분기 합 · 기간 말 값을 4분기 간격으로 · 세 점부터) · 변동성의 분모는 절댓값 평균 ·
   주식 수 = 수정 평균 주식 수(기말 수정 주식 수는 0 인 행이 3% 있다) · 순영업자산 = (총자산 − 현금) − (총부채 − 이자부부채) · 장기 반전은 직교화하지 않는다.
-산출(.cache/aif_research/followup/risk/): desc.npz · expo.npz · reg.npz · spec_daily.npy · meta.json + results/followup/risk/factor_stats_is.csv · expo_corr_is.csv · checks.json
+산출(.cache/aif_research/followup/risk/): desc.npz · expo.npz(17개 전부) · reg.npz · spec_daily.npy(본 모형) · reg_nlbeta.npz · spec_daily_nlbeta.npy(대조 판) · meta.json
+      + results/followup/risk/factor_stats_is.csv(본 모형) · factor_stats_is_nlbeta.csv(대조 판) · expo_corr_is.csv · checks.json
 실행: python py/aif_riskmodel.py [--force] [--check] [--smoke]     (감시 셸: ops/aif_run.py --track followup --job nl_risk --stage nl_risk)
 """
 import argparse
@@ -41,7 +46,7 @@ import aif_daily as ad
 from aif_roll import last_valid
 
 F32 = np.float32
-VERSION = 2                               # 2 = GEMLT 에서 더해진 다섯 스타일(지표 14개)을 넣은 판
+VERSION = 3                               # 2 = GEMLT 에서 더해진 다섯 스타일(지표 14개) · 3 = 본 모형 16개(비선형 베타 제외) + 대조 판 17개
 STAGE, PART_TO = "nl_risk", 0.40          # 위험 평가 모형 단계의 1부(지표 · 노출 · 회귀) — 2부(공분산 · 고유 위험) · 3부(평가 · 검증)가 뒤를 잇는다
 
 # ── USE4 Empirical Notes 부록 A 의 값(창 · 반감기 · 지표 가중) · 방법론 노트 2.2 의 절단 ──────────────────────
@@ -71,6 +76,10 @@ STYLE_DEF = {                               # 스타일: [(지표, 가중)]
 ORTH = {"RESVOL": "BETA"}                   # 잔차 변동성은 베타에 직교화
 CUBE = {"NLSIZE": "SIZE", "NLBETA": "BETA"} # 비선형 규모 · 비선형 베타 = 표준화 노출의 세제곱 → 원래 노출에 직교화 → 절단 → 표준화
 STYLES = list(STYLE_DEF) + list(CUBE)
+# 회귀에 넣는 스타일 — main = 본 모형(비선형 베타 제외 16개) · nlbeta = 대조 판(17개 전부). 비선형 베타를 본 모형에서 빼는 까닭(README): 걸음 1 의 기준 모형에
+#   베타의 세제곱이 있으면 베타의 비선형성을 그 위에서 잴 수 없다 · 노출 안정 계수가 채택 기준(0.80) 아래다 · 직교화 뒤에도 베타와 상관이 남는다.
+MODELS = {"main": [s for s in STYLES if s != "NLBETA"], "nlbeta": list(STYLES)}
+MODEL_KO = {"main": "본 모형", "nlbeta": "대조 판(비선형 베타 포함)"}
 STYLE_KO = {"BETA": "베타", "MOMENTUM": "모멘텀", "SIZE": "규모", "EARNYILD": "이익수익률", "RESVOL": "잔차 변동성", "GROWTH": "성장", "DIVYILD": "배당수익률",
             "BTOP": "장부가/시가", "LEVERAGE": "레버리지", "LIQUIDITY": "유동성", "PROFIT": "수익성", "EARNVAR": "이익 변동성", "INVQ": "투자의 질",
             "EARNQ": "이익의 질", "LTREV": "장기 반전", "NLSIZE": "비선형 규모", "NLBETA": "비선형 베타"}
@@ -93,6 +102,8 @@ FUND_USE = {                                # 항목: 읽는 분기 시차(0 = �
     **{it: (0,) for it in ("NetIncomeParent", "CashEarnings", "CashDivTotal", "DividendsPaid", "EquityParent", "PreferredCapital", "CurrentBorr", "CurrentBonds", "LongTermBorr",
                            "Bonds", "ConvBonds", "ExchBonds", "BondsWithWarrants", "CurrentLiab", "GrossProfit")},
 }
+DIV_SUPP = ("div_refetch", "cashdiv_ttm_supplement.parquet")   # 퀀티에서 시계열 배치로 다시 받은 배당 여섯 분기(2012Q3~2013Q4)로 만든 현금배당액의 최근 4분기 합
+                                            #   (tools/qw_div_refetch_build.py · 도훈 11-23 '(가)안 실행') — 재무 캐시에 그 종목 · 기간의 행이 없을 때만 쓴다(캐시가 수리되면 저절로 안 쓰인다)
 DESC_NAMES = ["BETA", "HSIGMA", "DASTD", "CMRA", "RSTR", "STOM", "STOQ", "STOA", "LNCAP", "EPFWD", "CETOP", "ETOP", "EGRO", "SGRO", "YILD", "BTOP", "MLEV", "DTOA", "BLEV",
               "ATO", "GP", "GPM", "ROA", "VSAL", "VERN", "VFLO", "AGRO", "IGRO", "CXGRO", "ABS", "ACF", "LTRSTR", "LTHALPHA"]
 assert BETA_WIN == CMRA_MONTHS * MONTH_DAYS
@@ -225,6 +236,20 @@ def desc_price(D, mkt, sel=None, progress=None):
 
 
 # ── 재무 · 컨센서스 ──────────────────────────────────────────────────────────────────────────────────
+def div_supplement(trunc=None):
+    """다시 받은 배당으로 만든 현금배당액 최근 4분기 합의 보충 행(읽기 도우미 _read_long 과 같은 열: Ticker · Item · pd · fd · v) — 파일이 없으면 None.
+    trunc(날짜의 일수)를 주면 그날 뒤에 쓸 수 있게 되는 행을 잘라 낸다(자가 시험 — 캐시 행과 같은 규칙)."""
+    import pandas as pd
+    import pyarrow.parquet as pq
+    p = ac.out("followup", *DIV_SUPP)
+    if not os.path.exists(p):
+        return None
+    t = pq.read_table(p).to_pandas()
+    days = lambda c: t[c].to_numpy().astype("datetime64[D]").astype(np.int64)             # noqa: E731
+    df = pd.DataFrame({"Ticker": t["Ticker"].astype(str).to_numpy(), "Item": "CashDivTotal", "pd": days("Period_Date"), "fd": days("Factor_Date"), "v": t["Value"].to_numpy(np.float64)})
+    return df if trunc is None else df[df["fd"] <= trunc]
+
+
 def fund_panel(f, sig_sel, cut=None, chunk=500, progress=None):
     """재무 값 dict[(항목, 분기 시차)] = [덮는 신호 × 종목].
     신호일마다 기준 항목(총자산)의 as-of 기간 Q(쓸 수 있는 첫날 <= 신호일인 마지막 기간 · 묵은 기간은 버림 — nlff_data 의 규칙)를 잡고,
@@ -245,10 +270,14 @@ def fund_panel(f, sig_sel, cut=None, chunk=500, progress=None):
         return (d.astype("datetime64[Y]").astype(np.int64) + 1970) * 4 + (d.astype("datetime64[M]").astype(np.int64) % 12) // 3 - q0
 
     tk = f.tickers
+    supp = div_supplement(trunc)
     for i in range(0, len(tk), chunk):
         part = tk[i:i + chunk]
         L = nd._read_long(path, part[0], part[-1], items, trunc)
         L = L[L["Ticker"].isin(part)]
+        if supp is not None:                                                                 # 다시 받은 배당의 보충 행 — 캐시에 그 종목 · 기간의 현금배당액 행이 없을 때만
+            sx = supp[supp["Ticker"].isin(part)].merge(L.loc[L["Item"] == "CashDivTotal", ["Ticker", "pd"]].assign(_h=1), on=["Ticker", "pd"], how="left")
+            L = pd.concat([L, sx[sx["_h"].isna()].drop(columns="_h")], ignore_index=True)
         nT = len(part)
         _, Pd, _ = nd.asof_dense(L[L["Item"] == ANCHOR], part, [ANCHOR], me, stale)          # [종목 × 1 × 신호] 기준 항목의 기간 말(일수 · 없으면 −1)
         Pd = Pd[:, 0, :]
@@ -450,13 +479,20 @@ def build_expo(desc, sector, mem, n_sec, sel=None, unit=None):
 # ── 횡단면 회귀 ──────────────────────────────────────────────────────────────────────────────────────
 def design(Xi, sec_i, est_i, cap_i, n_sec):
     """한 달의 설계 — 추정 유니버스 종목의 [시장 | 업종 더미(종목이 있는 업종만) | 스타일] 과 제약 변환 R.
-    제약: 업종 팩터 수익의 시총 가중 합 = 0 → 마지막 업종의 수익을 나머지로 푼다(f_J = −Σ (w_i ÷ w_J) f_i). 전체 팩터 = R × 줄인 팩터."""
+    제약: 업종 팩터 수익의 시총 가중 합 = 0 → 마지막 업종의 수익을 나머지로 푼다(f_J = −Σ (w_i ÷ w_J) f_i). 전체 팩터 = R × 줄인 팩터.
+    ext · A_ext = 추정 유니버스 밖이지만 노출이 다 있는 종목(지수 구성 종목 등)과 그 설계 행 — 회귀에는 넣지 않고 고유수익(수익 − 노출 × 팩터 수익)만 낸다."""
     ks = np.nonzero(np.isfinite(Xi[est_i]).any(0))[0]                                         # 그 달에 값이 있는 스타일
-    idx = np.nonzero(est_i & np.isfinite(Xi[:, ks]).all(1))[0]
+    full = np.isfinite(Xi[:, ks]).all(1)
+
+    def rows(ix, present):
+        return np.column_stack([np.ones(len(ix)), (sec_i[ix].astype(np.int64)[:, None] == present[None, :]).astype(np.float64), Xi[ix][:, ks].astype(np.float64)])
+
+    idx = np.nonzero(est_i & full)[0]
     sec = sec_i[idx].astype(np.int64)
     present = np.unique(sec)
     K, J = len(ks), len(present)
-    A = np.column_stack([np.ones(len(idx)), (sec[:, None] == present[None, :]).astype(np.float64), Xi[idx][:, ks].astype(np.float64)])
+    A = rows(idx, present)
+    ext = np.nonzero(~est_i & full & np.isin(sec_i, present))[0]
     cols = np.r_[0, 1 + present, 1 + n_sec + ks]                                              # 전체 팩터 순서(시장 · 업종 26 · 스타일) 안의 열 번호
     wi = np.array([cap_i[idx][sec == s].sum() for s in present])
     wi = wi / wi.sum()
@@ -466,7 +502,7 @@ def design(Xi, sec_i, est_i, cap_i, n_sec):
         R[1 + a, 1 + a] = 1.0
         R[J, 1 + a] = -wi[a] / wi[J - 1]
     R[1 + J + np.arange(K), J + np.arange(K)] = 1.0
-    return idx, A, cols, R, wi, ks
+    return idx, A, cols, R, wi, ks, ext, rows(ext, present)
 
 
 def creg(y, A, R, v, want_t=True):
@@ -491,8 +527,8 @@ def creg(y, A, R, v, want_t=True):
     return fr, u, t, 1.0 - sse / float((v * y * y).sum())
 
 
-def run_reg(f, D, X, EST, sector, n_sec, sel=None, unit=None):
-    """월간 · 일간 횡단면 회귀. 노출과 추정 유니버스는 신호일 i 의 것을 그 보유월(틀의 hold_a ~ hold_b) 내내 쓴다."""
+def run_reg(f, D, X, EST, sector, n_sec, sel=None, unit=None, part=3):
+    """월간 · 일간 횡단면 회귀. 노출과 추정 유니버스는 신호일 i 의 것을 그 보유월(틀의 hold_a ~ hold_b) 내내 쓴다. X = 그 모형에 넣는 스타일만(part = 진행률을 적는 부분 번호)."""
     S, N, K = X.shape
     P = 1 + n_sec + K
     fwd = np.asarray(f.fwd(1))
@@ -507,7 +543,7 @@ def run_reg(f, D, X, EST, sector, n_sec, sel=None, unit=None):
         if (sel is not None and i not in sel) or not EST[i].any():
             continue
         cap = np.exp(D.ls[D.sig_rows[i]].astype(np.float64))
-        idx, A, cols, R, wi, _ = design(X[i], sector[i], EST[i], cap, n_sec)
+        idx, A, cols, R, wi, _, ext, A_ext = design(X[i], sector[i], EST[i], cap, n_sec)
         if len(idx) < MIN_EST:
             continue
         v = np.sqrt(cap[idx])
@@ -526,8 +562,12 @@ def run_reg(f, D, X, EST, sector, n_sec, sel=None, unit=None):
                 fr, u, _, r2 = creg(y[ok], A[ok], R, v[ok], want_t=False)
                 FDY[d, cols], R2D[d], NDY[d] = fr, r2, int(ok.sum())
                 SPEC[d, idx[ok]] = u.astype(F32)
+                if len(ext):                                                                 # 추정 유니버스 밖 종목의 고유수익 — 같은 날의 팩터 수익으로
+                    ye = np.expm1(D.lr[d + D.offset, ext].astype(np.float64)) - rf[d]
+                    oke = np.isfinite(ye)
+                    SPEC[d, ext[oke]] = (ye[oke] - A_ext[oke] @ fr).astype(F32)
         if unit:
-            unit(3, i + 1, S)
+            unit(part, i + 1, S)
     return {"fm": FM, "tm": TM, "r2m": R2M, "nm": NM, "fd": FDY, "r2d": R2D, "ndy": NDY, "wind": WIND}, SPEC
 
 
@@ -551,7 +591,7 @@ def expo_stats(D, X, EST, sector, n_sec, months):
                 both = EST[i] & EST[i + 1] & np.isfinite(X[i, :, j]) & np.isfinite(X[i + 1, :, j])
                 if both.sum() >= MIN_EST:
                     stab[a, j] = wcorr(X[i, both, j].astype(np.float64), X[i + 1, both, j].astype(np.float64), np.sqrt(cap[both]))
-        idx, A, _, _, _, ks = design(X[i], sector[i], EST[i], cap, n_sec)
+        idx, A, _, _, _, ks = design(X[i], sector[i], EST[i], cap, n_sec)[:6]
         if len(idx) >= MIN_EST:
             v = np.sqrt(cap[idx]); sv = np.sqrt(v)
             for c, j in enumerate(ks):
@@ -572,16 +612,16 @@ def expo_stats(D, X, EST, sector, n_sec, months):
         return np.nanmean(stab, axis=0), np.nanmean(vif, axis=0), np.where(cnum > 0, csum / cnum, np.nan)
 
 
-def factor_table(f, D, mkt, reg, X, EST, sector, sec_names, is_end):
-    """표본 안(보유월이 is_end 안에서 끝난 달 · 그날까지의 일별 값)의 팩터 통계 — 행 = 시장 · 업종 · 스타일. 돌려주는 것: 행 · 전체 요약 · 스타일끼리의 노출 상관."""
-    n_sec, K = len(sec_names), X.shape[2]
+def factor_table(f, D, mkt, reg, X, EST, sector, sec_names, is_end, styles):
+    """표본 안(보유월이 is_end 안에서 끝난 달 · 그날까지의 일별 값)의 팩터 통계 — 행 = 시장 · 업종 · 스타일(styles = X 의 열 이름). 돌려주는 것: 행 · 전체 요약 · 스타일끼리의 노출 상관."""
+    n_sec = len(sec_names)
     sg = D.sig_sel
     ok_m = np.isfinite(reg["r2m"]) & (f.dates[np.minimum(f.hold_b[sg], f.nd - 1)] <= is_end)
     ok_d = np.isfinite(reg["r2d"]) & (f.dates <= is_end)
     months = np.nonzero(ok_m)[0]
     stab, vif, xcorr = expo_stats(D, X, EST, sector, n_sec, months)
     me = mkt[D.offset:][ok_d]
-    names = ["시장"] + list(sec_names) + [STYLE_KO[s] for s in STYLES]
+    names = ["시장"] + list(sec_names) + [STYLE_KO[s] for s in styles]
     rows = []
     for p, nm in enumerate(names):
         t = reg["tm"][ok_m, p]; t = t[np.isfinite(t)]
@@ -663,7 +703,9 @@ def main():
     ac.low_priority()
     f = ac.Frame()
     meta_p = RK("meta.json")
-    tag = {"version": VERSION, "rawdata_tag": f.meta.get("rawdata_tag"), "n_signals": f.ns}
+    supp_p = ac.out("followup", *DIV_SUPP)
+    tag = {"version": VERSION, "rawdata_tag": f.meta.get("rawdata_tag"), "n_signals": f.ns,
+           "div_supp": [os.path.getsize(supp_p), int(os.path.getmtime(supp_p))] if os.path.exists(supp_p) else None}
     if not a.force and not a.check and (ac.read_json(meta_p) or {}).get("tag") == tag:
         ac.log("위험 모형 1부 — 저장분이 같은 판이다(건너뜀 · 다시 만들려면 --force)")
         return 0
@@ -672,7 +714,8 @@ def main():
     sec_names = ac.read_json(f.path + "/sector.json")["names"]
     n_sec = len(sec_names)
     sel = set(range(180, 204)) if a.smoke else None
-    parts = [("가격 · 거래 지표", 0.00, 0.25), ("재무 · 컨센서스 지표", 0.25, 0.40), ("노출", 0.40, 0.60), ("횡단면 회귀", 0.60, 0.95)]
+    parts = [("가격 · 거래 지표", 0.00, 0.20), ("재무 · 컨센서스 지표", 0.20, 0.32), ("노출", 0.32, 0.45)]
+    parts += [("횡단면 회귀 — %s" % MODEL_KO[m], 0.45 + 0.25 * k, 0.45 + 0.25 * (k + 1)) for k, m in enumerate(MODELS)]
 
     def unit(k, done, total):                                                                # 부분 k 의 진행을 단계 진행률로 옮긴다
         if done == total or done % 20 == 0:
@@ -684,14 +727,23 @@ def main():
     D, mkt, desc = build_desc(f, sel=sel, unit=unit)
     X, EST, filled = build_expo(desc, sector[D.sig_sel], D.mem, n_sec, sel=sel, unit=unit)
     ac.log("노출 — %.0f초 · 추정 유니버스 평균 %.0f종목", time.perf_counter() - t0, EST[EST.any(1)].sum(1).mean())
-    reg, SPEC = run_reg(f, D, X, EST, sector[D.sig_sel], n_sec, sel=sel, unit=unit)
-    ac.log("횡단면 회귀 — %.0f초 · 월간 %d달 · 일간 %d일", time.perf_counter() - t0, int(np.isfinite(reg["r2m"]).sum()), int(np.isfinite(reg["r2d"]).sum()))
     _save_npz(RK("desc.npz"), names=np.array(DESC_NAMES), D=np.stack([desc[k] for k in DESC_NAMES], axis=2))
     _save_npz(RK("expo.npz"), styles=np.array(STYLES), X=X, EST=EST, filled=filled)
-    _save_npz(RK("reg.npz"), factors=np.array(["MARKET"] + ["IND_%02d" % k for k in range(n_sec)] + STYLES), estu_excess=mkt[D.offset:], **reg)
-    _save_npy(RK("spec_daily.npy"), SPEC)
     is_end = np.datetime64(ac.cfg()["measure"]["is_end"], "D")
-    rows, ov, xcorr = factor_table(f, D, mkt, reg, X, EST, sector[D.sig_sel], sec_names, is_end)
+    sec_sel = sector[D.sig_sel]
+    res = {}
+    for k, (m, styles) in enumerate(MODELS.items()):                                         # 모형마다 회귀 · 통계표 — 노출은 같고 회귀에 넣는 스타일만 다르다
+        Xm = X[:, :, [STYLES.index(s) for s in styles]]
+        reg_m, SPEC = run_reg(f, D, Xm, EST, sec_sel, n_sec, sel=sel, unit=unit, part=3 + k)
+        sfx = "" if m == "main" else "_" + m
+        _save_npz(RK("reg%s.npz" % sfx), factors=np.array(["MARKET"] + ["IND_%02d" % j for j in range(n_sec)] + styles), estu_excess=mkt[D.offset:], **reg_m)
+        _save_npy(RK("spec_daily%s.npy" % sfx), SPEC)
+        del SPEC
+        res[m] = (reg_m,) + factor_table(f, D, mkt, reg_m, Xm, EST, sec_sel, sec_names, is_end, styles)
+        ac.log("횡단면 회귀(%s · 스타일 %d개) — %.0f초 · 월간 %d달 · 일간 %d일", MODEL_KO[m], len(styles), time.perf_counter() - t0,
+               int(np.isfinite(reg_m["r2m"]).sum()), int(np.isfinite(reg_m["r2d"]).sum()))
+    reg, rows, ov, xcorr = res["main"]
+    rows_c, ov_c, xcorr_c = res["nlbeta"][1:]
     chk = checks(f, D, mkt, reg, X, EST)
     cover = {d: float(np.mean([np.isfinite(desc[d][i][EST[i]]).mean() for i in range(len(EST)) if EST[i].any()])) for d in DESC_NAMES}
     fill = {s: float(np.mean([filled[i, j] / max(EST[i].sum(), 1) for i in range(len(EST)) if EST[i].any()])) for j, s in enumerate(STYLES)}
@@ -700,37 +752,46 @@ def main():
     rdir = ac.results("followup", ac.smoke_name("risk"))
     os.makedirs(rdir, exist_ok=True)
 
-    def wcsv(p):
-        with open(p, "w", newline="", encoding="utf-8-sig") as fh:
-            w = csv.DictWriter(fh, fieldnames=list(rows[0]))
-            w.writeheader()
-            w.writerows(rows)
-    ac.write_atomic(rdir + "/factor_stats_is.csv", wcsv)
-    ko = [STYLE_KO[s] for s in STYLES]
+    def write_rows(path, rr):
+        def w_(p):
+            with open(p, "w", newline="", encoding="utf-8-sig") as fh:
+                w = csv.DictWriter(fh, fieldnames=list(rr[0]))
+                w.writeheader()
+                w.writerows(rr)
+        ac.write_atomic(path, w_)
+    write_rows(rdir + "/factor_stats_is.csv", rows)
+    write_rows(rdir + "/factor_stats_is_nlbeta.csv", rows_c)
+    ko_all = [STYLE_KO[s] for s in STYLES]
 
-    def write_xcorr(p):                                                                      # 스타일끼리의 노출 상관(표본 안 달 평균 · √시총 가중)
+    def write_xcorr(p):                                                                      # 스타일끼리의 노출 상관(표본 안 달 평균 · √시총 가중) — 17개 전부(대조 판의 설계에서 낸 값 · 16개의 칸은 본 모형과 같다)
         with open(p, "w", newline="", encoding="utf-8-sig") as fh:
             w = csv.writer(fh)
-            w.writerow(["style"] + ko)
-            for a_, nm in enumerate(ko):
-                w.writerow([nm] + ["" if not np.isfinite(c) else "%.4f" % c for c in xcorr[a_]])
+            w.writerow(["style"] + ko_all)
+            for a_, nm in enumerate(ko_all):
+                w.writerow([nm] + ["" if not np.isfinite(c) else "%.4f" % c for c in xcorr_c[a_]])
     ac.write_atomic(rdir + "/expo_corr_is.csv", write_xcorr)
+    ko = [STYLE_KO[s] for s in MODELS["main"]]
     pairs = sorted(((abs(xcorr[a_, b_]), xcorr[a_, b_], ko[a_], ko[b_]) for a_ in range(len(ko)) for b_ in range(a_ + 1, len(ko)) if np.isfinite(xcorr[a_, b_])), reverse=True)
-    ac.write_json({"at": ac._now(), "is_end": str(is_end), "overall_is": ov, "checks": chk, "descriptor_cover_in_estu": cover, "filled_share_in_estu": fill,
-                   "expo_corr_top": [{"a": p_[2], "b": p_[3], "corr": float(p_[1])} for p_ in pairs[:12]]}, rdir + "/checks.json")
+    nlb = next(r for r in rows_c if r["factor"] == STYLE_KO["NLBETA"])                       # 대조 판에서의 비선형 베타 행
+    ac.write_json({"at": ac._now(), "is_end": str(is_end), "models": {m: {"styles": MODELS[m], "overall_is": res[m][2]} for m in MODELS}, "checks": chk,
+                   "descriptor_cover_in_estu": cover, "filled_share_in_estu": fill, "expo_corr_top": [{"a": p_[2], "b": p_[3], "corr": float(p_[1])} for p_ in pairs[:12]],
+                   "nlbeta_in_control": nlb}, rdir + "/checks.json")
     st = [r for r in rows if r["kind"] == "스타일"]
     mk_ = rows[0]
-    lines = ["지표 %d개 → 스타일 노출 %d개 → 월간 %d달 · 일간 %s일의 횡단면 회귀를 돌렸습니다(추정 유니버스 달 평균 %.0f종목 · 표본 안 통계)" % (len(DESC_NAMES), len(STYLES), ov["months"], format(ov["days"], ","), ov["n_month_mean"]),
-             "월간 회귀의 설명력(R²) 평균 %.1f%% · 시장 팩터의 평균 |t| %.1f · 시장 팩터와 추정 유니버스 수익의 일간 상관 %.4f" % (100 * ov["r2_month_mean"], mk_["abs_t_mean"], chk["market_vs_estu_corr_daily"]),
-             "스타일 %d개 — 평균 |t| %.2f · |t|>2 인 달 %.0f%% · 노출 안정 계수 %.2f · 분산팽창계수 %.1f" % (len(st), np.mean([r["abs_t_mean"] for r in st]), 100 * np.mean([r["abs_t_gt2"] for r in st]),
-                                                                              np.mean([r["stability"] for r in st]), np.mean([r["vif"] for r in st])),
+    lines = ["지표 %d개 → 스타일 노출 %d개 → 본 모형(비선형 베타를 뺀 %d개)과 대조 판(%d개)으로 월간 %d달 · 일간 %s일의 횡단면 회귀를 돌렸습니다(추정 유니버스 달 평균 %.0f종목 · 표본 안 통계)" % (
+                 len(DESC_NAMES), len(STYLES), len(MODELS["main"]), len(MODELS["nlbeta"]), ov["months"], format(ov["days"], ","), ov["n_month_mean"]),
+             "본 모형 — 월간 회귀의 설명력(R²) 평균 %.1f%% · 시장 팩터의 평균 |t| %.1f · 시장 팩터와 추정 유니버스 수익의 일간 상관 %.4f" % (100 * ov["r2_month_mean"], mk_["abs_t_mean"], chk["market_vs_estu_corr_daily"]),
+             "본 모형의 스타일 %d개 — 평균 |t| %.2f · |t|>2 인 달 %.0f%% · 노출 안정 계수 %.2f · 분산팽창계수 %.1f" % (len(st), np.mean([r["abs_t_mean"] for r in st]), 100 * np.mean([r["abs_t_gt2"] for r in st]),
+                                                                                     np.mean([r["stability"] for r in st]), np.mean([r["vif"] for r in st])),
              "평균 |t| 가 큰 스타일 — " + " · ".join("%s %.1f" % (r["factor"], r["abs_t_mean"]) for r in sorted(st, key=lambda r: -r["abs_t_mean"])[:4]),
              "평균 |t| 가 작은 스타일 — " + " · ".join("%s %.1f" % (r["factor"], r["abs_t_mean"]) for r in sorted(st, key=lambda r: r["abs_t_mean"])[:3]),
              "노출이 가장 겹치는 스타일 쌍 — " + " · ".join("%s × %s %+.2f" % (p_[2], p_[3], p_[1]) for p_ in pairs[:3]),
+             "대조 판 — 월간 R² 평균 %.1f%%(본 모형보다 %+.2f%%p) · 비선형 베타의 평균 |t| %.2f · 노출 안정 계수 %.2f — 3부 편향 통계에서 본 모형과 나란히 검증합니다" % (
+                 100 * ov_c["r2_month_mean"], 100 * (ov_c["r2_month_mean"] - ov["r2_month_mean"]), nlb["abs_t_mean"], nlb["stability"]),
              "구현 점검 — 표준화 어긋남 %.1e · 업종 제약 어긋남 %.1e%s" % (max(chk["standardize_capw_mean_max_abs"], chk["standardize_eq_sd_max_dev"]), chk["industry_constraint_max_abs_monthly"],
                                                           (" · 자르기 시험 차이 %.1e" % max(max(t["desc_max_abs_diff"], t["expo_max_abs_diff"]) for t in chk["truncation"])) if a.check else "")]
     ac.write_json({"at": ac._now(), "title": "위험 평가 모형 1부 — 지표 · 노출 · 횡단면 회귀", "lines": lines, "charts": [], "chart_names": []}, ac.out("followup", ac.smoke_name("stage_summary_nl_risk") + ".json"))
-    ac.write_json({"tag": tag, "at": ac._now(), "styles": STYLES, "descriptors": DESC_NAMES, "seconds": round(time.perf_counter() - t0, 1)}, meta_p)
+    ac.write_json({"tag": tag, "at": ac._now(), "styles": STYLES, "models": MODELS, "descriptors": DESC_NAMES, "seconds": round(time.perf_counter() - t0, 1)}, meta_p)
     for ln in lines:
         ac.log("%s", ln)
     ac.stage_unit(100, "1부 끝")

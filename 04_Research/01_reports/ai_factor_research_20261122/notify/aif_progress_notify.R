@@ -185,7 +185,7 @@ if (EVENT == "gp_evo") {
 mute <- quiet   # 낮에는 주기 통도 알림음으로 보낸다(도훈 11-23 '30분마다 · 알림음 켬') · 밤(00~07시)에 보내는 통은 종류와 무관하게 알림음 없이 채팅에만 남긴다
 if (!SEND) Sys.setenv(QVEST_TG_DRY_RUN = "1")
 invisible(capture.output(suppressMessages(source(file.path(root, "02_Infrastructure", "telegram", "telegram_notify.R")))))
-send1 <- function(ttl, ss, ch) tryCatch(tg_agent_brief(agent = "Q-Lead", title = ttl, sections = ss, charts = ch, relaxed = TRUE, mute = mute, glossary = FALSE),
+send1 <- function(ttl, ss, ch) tryCatch(tg_agent_brief(agent = "Q-Lead", title = ttl, sections = ss, charts = ch, relaxed = TRUE, mute = mute, glossary = FALSE, force = FORCE),   # --force = 손으로 다시 보낼 때 발송 함수의 중복 발송 가드(같은 제목 30분)도 넘긴다
                                         error = function(e) { cat("[aif-notify] 발송 함수 오류:", conditionMessage(e), "\n"); NULL })
 charts <- uniq_charts(charts)
 first <- if (SEND && length(charts) > CH) charts[seq_len(CH)] else charts

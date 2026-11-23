@@ -9,6 +9,9 @@
   select  해마다 12월에 그때까지의 값으로: 자격(IC 36개월 이상 · 최근 36개월 채움 60% 이상) → 방향을 맞춘 ICIR 순으로 훑으며
           앞선 대표와 수익 차이 상관이 0.5 이상이면 그 묶음에 넣고 아니면 새 대표 → 대표 40개까지.
           방향 = 기존 팩터는 등록부 방향(저장된 순위가 이미 그 방향) · 나머지는 그때까지의 IC 부호. 손으로 뒤집지 않는다.
+          두 층(도훈 11-23 '두 층 나누기'): 대표(기본층)는 일반 특성(기존 팩터 DB + 1단계 원자료 특성)에서만 뽑는다. 수식형 신규 식은 식 안에 꺾임 ·
+          상호작용 · 두 특성의 결합이 이미 들어 있어 기준 모형의 자리에 두지 않고, 자격을 갖춘 것을 '얹는 층 후보'로 따로 적는다 —
+          얹을 식은 걸음 1 에서 기본층의 선형 + 제곱 모형이 남긴 고유수익을 더 설명하는 것만 고른다(상한 10 · py/aif_nlfactor.py).
 산출(.cache/aif_research/followup/): frame_ext.npz · features/newf.* · cand/{candidates.json · ic.npy · cov.npy · ls.npy} · select/representatives.json
       + results/followup/{halt_delist_check.csv · representatives.csv} · stage_summary_nl_frame.json(텔레그램 결과 통)
 실행: python py/aif_nl_frame.py [--force] [--only ext|newf|stats|select] [--check]     (감시 셸: ops/aif_run.py --track followup --job nl_frame --stage nl_frame)
@@ -31,6 +34,8 @@ from aif_fboost import BLOCKS, op_text, op_value
 from aif_features import FeatureStore
 
 VERSION = 1
+SELECT_VERSION = 2                                                      # 2 = 두 층(기본층 대표는 일반 특성에서만 · 수식형 신규 식은 얹는 층 후보)
+BASE_EXCLUDE = ("newf", "cat")                                          # 기본층에서 빼는 묶음 — 수식형 신규 식(얹는 층) · 범주형 표시(두 값뿐이라 노출의 제곱 성분이 없다)
 MIN_IC_MONTHS, MIN_COVER, COVER_WINDOW, BURN_YEARS = 36, 0.60, 36, 5      # 1단계 체계적 열거와 같은 자격 · 예열(계획 걸음 0)
 TOP_Q, MIN_SIDE = 0.2, 5                                                # 5분위(1단계 측정과 같은 분위 수) · 한쪽에 종목이 이만큼은 있어야 수익 차이를 낸다
 CORR_CUT, MAX_REP, MIN_OVERLAP = 0.5, 40, 24                            # 계획: 상관 0.5 로 묶고 대표는 40개까지 · 상관은 겹치는 달이 2년 이상일 때만(Q 가 정한 값)
@@ -323,13 +328,14 @@ def pair_corr(A):
 
 def part_select(f, force):
     meta = ac.read_json(FU("cand", "candidates.json"))
-    fp = "%s|select%d" % (meta["fp"], VERSION)
+    fp = "%s|select%d" % (meta["fp"], SELECT_VERSION)
     old = ac.read_json(FU("select", "representatives.json"))
     if not force and old and old.get("fp") == fp:
         ac.log("select — 이미 끝남(건너뜀)")
         return old
     IC, COV, LS = (np.load(FU("cand", n + ".npy")) for n in ("ic", "cov", "ls"))
     names, src, first = meta["names"], np.array(meta["src"]), np.array(meta["first_year"])
+    base_src = ~np.isin(src, BASE_EXCLUDE)                               # 기본층에 들 수 있는 후보(일반 특성)
     years, dec = ac.december_signals(f, BURN_YEARS)
     out, rows = {}, []
     for n, y in enumerate(years):
@@ -343,7 +349,8 @@ def part_select(f, force):
         cover = COV[:, max(0, sY - COVER_WINDOW):sY].mean(1)
         d = np.where(src == "existing", 1.0, np.sign(mu))               # 기존 팩터 = 등록부 방향 · 나머지 = 그때까지의 IC 부호
         elig = (cnt >= MIN_IC_MONTHS) & (cover >= MIN_COVER) & (np.isfinite(ls).sum(1) >= MIN_IC_MONTHS) & (first <= y) & np.isfinite(icir) & (d * icir > 0)
-        idx = np.nonzero(elig)[0]
+        pool = np.nonzero(elig & (src == "newf"))[0]                     # 얹는 층 후보 — 같은 자격을 갖춘 수식형 신규 식(선정은 걸음 1)
+        idx = np.nonzero(elig & base_src)[0]
         idx = idx[np.argsort(-(d * icir)[idx])]
         c, ov = pair_corr(ls[idx] * d[idx][:, None])
         leaders, member_of = [], {}
@@ -363,12 +370,14 @@ def part_select(f, force):
             reps.append({"cand": k, "name": names[k], "src": str(src[k]), "direction": int(d[k]), "icir": round(float(icir[k]), 4), "ic_mean": round(float(mu[k]), 4),
                          "months": int(cnt[k]), "cover": round(float(cover[k]), 3), "cluster_size": len(member_of[li]),
                          "cluster_top": [names[int(idx[j])] for j in member_of[li][1:6]]})
-            rows.append({"year_selected": y, "used_from": str(f.sig_dates[sY]), "rank": rank + 1, "name": names[k], "source": str(src[k]), "direction": int(d[k]),
+            rows.append({"year_selected": y, "used_from": str(f.sig_dates[sY]), "layer": "base", "rank": rank + 1, "name": names[k], "source": str(src[k]), "direction": int(d[k]),
                          "icir_asof": round(float(icir[k]), 3), "ic_mean_asof": round(float(mu[k]), 4), "months": int(cnt[k]), "cluster_size": len(member_of[li])})
-        out[str(y)] = {"signal": str(f.sig_dates[sY]), "eligible": int(len(idx)), "clusters": len(leaders), "reps": reps}
-        ac.stage_unit(n + 1, "%d년 말 — 자격 %d · 묶음 %d · 대표 %d" % (y, len(idx), len(leaders), len(reps)))
-    res = {"fp": fp, "at": ac._now(), "years": out,
-           "params": {"MIN_IC_MONTHS": MIN_IC_MONTHS, "MIN_COVER": MIN_COVER, "CORR_CUT": CORR_CUT, "MAX_REP": MAX_REP, "MIN_OVERLAP": MIN_OVERLAP, "TOP_Q": TOP_Q}}
+        out[str(y)] = {"signal": str(f.sig_dates[sY]), "eligible": int(len(idx)), "clusters": len(leaders), "reps": reps,
+                       "overlay_pool": [{"cand": int(k), "name": names[int(k)]} for k in pool]}
+        ac.stage_unit(n + 1, "%d년 말 — 기본층 자격 %d · 묶음 %d · 대표 %d · 얹는 층 후보 %d" % (y, len(idx), len(leaders), len(reps), len(pool)))
+    res = {"fp": fp, "at": ac._now(), "years": out, "layers": "reps = 기본층(일반 특성) · overlay_pool = 얹는 층 후보(자격을 갖춘 수식형 신규 식 — 선정은 걸음 1)",
+           "params": {"MIN_IC_MONTHS": MIN_IC_MONTHS, "MIN_COVER": MIN_COVER, "CORR_CUT": CORR_CUT, "MAX_REP": MAX_REP, "MIN_OVERLAP": MIN_OVERLAP, "TOP_Q": TOP_Q,
+                      "BASE_EXCLUDE": list(BASE_EXCLUDE)}}
     ac.write_json(res, FU("select", "representatives.json"))
     os.makedirs(ac.results("followup"), exist_ok=True)
     with open(ac.results("followup", "representatives.csv"), "w", newline="", encoding="utf-8-sig") as fh:
@@ -447,13 +456,16 @@ def main():
         srcn = {}
         for y in ys:
             for r in res["years"][y]["reps"]:
-                g = "기존 팩터 DB" if r["src"] == "existing" else ("수식형 신규 식" if r["src"] == "newf" else "1단계 원자료 특성")
+                g = "기존 팩터 DB" if r["src"] == "existing" else "1단계 원자료 특성"
                 srcn[g] = srcn.get(g, 0) + 1
         last = res["years"][ys[-1]]
-        lines = ["후보 %d개(1단계 원자료 특성 335 · 기존 팩터 282 · 수식형 신규 식과 조건 개수 점수 %d) 가운데 해마다 대표를 뽑았습니다" % (len(ac.read_json(FU("cand", "candidates.json"))["names"]), (fstore.info("newf") or {}).get("n_features", 0)),
-                 "선정 해 %s~%s · 해마다 대표 %d~%d개 · 자격을 갖춘 후보 %d~%d개 · 묶음 %d~%d개" % (ys[0], ys[-1], min(nrep), max(nrep), min(res["years"][y]["eligible"] for y in ys),
-                                                                                     max(res["years"][y]["eligible"] for y in ys), min(res["years"][y]["clusters"] for y in ys), max(res["years"][y]["clusters"] for y in ys)),
+        npool = [len(res["years"][y]["overlay_pool"]) for y in ys]
+        lines = ["후보 %d개(1단계 원자료 특성 335 · 기존 팩터 282 · 수식형 신규 식과 조건 개수 점수 %d) 가운데 해마다 기본층 대표를 일반 특성에서만 뽑았습니다(두 층 — 도훈 11-23)" % (
+                     len(ac.read_json(FU("cand", "candidates.json"))["names"]), (fstore.info("newf") or {}).get("n_features", 0)),
+                 "선정 해 %s~%s · 해마다 대표 %d~%d개 · 자격을 갖춘 일반 특성 %d~%d개 · 묶음 %d~%d개" % (ys[0], ys[-1], min(nrep), max(nrep), min(res["years"][y]["eligible"] for y in ys),
+                                                                                        max(res["years"][y]["eligible"] for y in ys), min(res["years"][y]["clusters"] for y in ys), max(res["years"][y]["clusters"] for y in ys)),
                  "대표의 출처(해마다 뽑힌 수의 합) — " + " · ".join("%s %d" % kv for kv in sorted(srcn.items(), key=lambda kv: -kv[1])),
+                 "얹는 층 후보(자격을 갖춘 수식형 신규 식) 해마다 %d~%d개 — 얹을 식은 걸음 1 에서 기본층 모형이 남긴 고유수익을 더 설명하는 것만 고릅니다(상한 10)" % (min(npool), max(npool)),
                  "%s년 말 대표 상위 다섯 — %s" % (ys[-1], " · ".join(r["name"][:28] for r in last["reps"][:5])),
                  "보유월 자료 점검 — 멤버 종목-달 %s 가운데 수익 행이 일부 빠지거나 정지 표시 %s · 보유월에 행이 끝난 것 %s" % (
                      format(hc.get("member_months", 0), ","), format(hc.get("partial_rows", 0) + hc.get("halt_flag", 0), ","), format(hc.get("rows_end_in_hold", 0), ","))]
