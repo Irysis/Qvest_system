@@ -24,6 +24,7 @@
 #   M5 FF5 트래커 가드 제거(부분월 월간 기록)   M6 SB 트래커 가드 '<' → '<='(부분월 발행)
 #   P11 · M7 · M8 (v4 · 2026-11-24 도훈 '국면판독 개선'): 정본 요인 경로 — 수기 t · |t| ≥ 문턱만 단정 · 부활 워치 = SMB · HML 둘 다
 #     문턱 이상 · 문턱 없으면 구 경로 + 사유 / M7 문턱 제거 · M8 부활 워치를 가치 하나로 → red
+#   P12 · M9 (v4.1 · 11-24 '지연없이 업데이트'): 정본 요인 따라잡기 판정 — 드라이런은 운영 .cache 를 쓰지 않는다 / M9 보호 제거 → red
 # 실행: Rscript 08_Tests/ops/test_style_brief_mtd_window.R  (STYLE_BRIEF_CODE_ROOT=<스테이징> 로 배포 전 검증 가능)
 #==============================================================================
 suppressMessages({ library(data.table); library(arrow); library(jsonlite) })
@@ -371,6 +372,27 @@ c_kf <- function(E) {
 }
 chk("P11 정본 경로 — 수기 t 일치 · |t|≥2 만 단정 · 부활 워치 둘 다 ≥2 · 문턱 없으면 구 경로 + 사유", c_kf(E0))
 
+cat("\n=== P12 v4.1 정본 요인 따라잡기 판정 — 드라이런은 운영 .cache 를 쓰지 않는다 (2026-11-24 도훈 '지연없이 업데이트') ===\n")
+c_catchup <- function(send_file) {
+  T <- file.path(tempdir(), sprintf("kfc_t_%d", Sys.getpid())); dir.create(file.path(T, ".cache"), recursive = TRUE, showWarnings = FALSE)
+  on.exit(unlink(T, recursive = TRUE), add = TRUE)
+  E <- new.env(parent = globalenv())
+  for (e in as.list(parse(file = send_file, encoding = "UTF-8", keep.source = FALSE)))
+    if (is_asg(e, "kf_catchup") || is_asg(e, "%||%")) eval(e, E)
+  if (!exists("kf_catchup", envir = E, inherits = FALSE)) return("kf_catchup 정의 없음")
+  E$ROOT <- T; E$DATA <- T; E$skip_build <- function(k) FALSE
+  put <- function(m, d) { write_json(list(last_input_date = m), file.path(T, ".cache/kr_factor_returns_meta.json"), auto_unbox = TRUE)
+    if (is.null(d)) unlink(file.path(T, ".cache/rawdata.parquet")) else write_parquet(data.frame(Date = as.Date(d)), file.path(T, ".cache/rawdata.parquet")) }
+  E$DRYRUN <- FALSE; put("2026-11-23", "2026-11-23"); r1 <- E$kf_catchup()
+  if (!identical(r1$state, "fresh")) return(paste("신선 판정:", r1$state, r1$note))
+  E$DRYRUN <- TRUE; put("2026-11-20", "2026-11-23"); r2 <- E$kf_catchup()
+  if (!identical(r2$state, "skipped")) return(paste("낡음 + 드라이런인데 운영 쓰기 생략이 아니다:", r2$state, r2$note))
+  put("2026-11-20", NULL); r3 <- E$kf_catchup()
+  if (!identical(r3$state, "unknown")) return(paste("RAWDATA 없음 판정:", r3$state))
+  ""
+}
+chk("P12 따라잡기 — 신선 · 낡음+드라이런 = 생략(운영 무접촉) · RAWDATA 판독 불가 표기", c_catchup(SEND))
+
 cat("\n=== 위반 주입 (사본 돌연변이 → red 여야 한다) ===\n")
 mut <- function(label, path, from, to, judge) {
   m <- mutate(path, from, to)
@@ -393,4 +415,7 @@ mut("M7 정본 경로 유의 문턱 제거(부호만으로 단정)", LIB, "dec <
     "dec <- .SW_KF[is.finite(t12)]", function(f) c_kf(lib_env(f)))
 mut("M8 부활 워치를 가치 하나로 발화", LIB, 't12[["SMB"]] >= t_sig && t12[["HML"]] >= t_sig',
     't12[["HML"]] >= t_sig', function(f) c_kf(lib_env(f)))
+mut("M9 따라잡기의 드라이런 보호 제거", SEND,
+    'if (DRYRUN || !identical(normalizePath(DATA, "/", FALSE), normalizePath(ROOT, "/", FALSE)) || skip_build("kf"))',
+    'if (FALSE && !identical(normalizePath(DATA, "/", FALSE), normalizePath(ROOT, "/", FALSE)) || skip_build("kf"))', c_catchup)
 finish()

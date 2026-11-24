@@ -63,6 +63,11 @@
       "gb": 8.2,
       "basis": "instantaneous_estimate",
       "source": "Judge 재현 검증 = 산출을 같은 러너(run_paper_replication)로 다시 잰다 — 레인 검증기 추정(lane_verify_cpu)과 같은 값 · LLM 세션은 1 GB 미만 · 첫 성공 뒤 역산"
+    },
+    "krf_catchup": {
+      "gb": 3.7,
+      "basis": "instantaneous",
+      "source": "한국 FF 요인 정본 빌더(02_Infrastructure/data/build_kr_factor_returns.R) 순간 정점 3.7 GB · 207초 — 11-24 08:35 배당 수리 사슬 6단계 실측(.cache/scheduler_logs/div_gap_krf.log). 아침 스타일 국면 브리핑의 정본 요인 따라잡기(ff5_brief_send.R v4.1 · 도훈 11-24 '신규데이터 지연없이 업데이트') · 성공 출발 역산 기록 없음"
     }
   },
   "conflicts": {
@@ -105,6 +110,15 @@
       "rf_replication_verify\\.R",
       "rf_cell_worker\\.R",
       "dnn_rolling\\.py"
+    ],
+    "krf_catchup": [
+      "build_kr_factor_returns\\.R",
+      "fundamental_produce_v2\\.R",
+      "build_fundamental_caches\\.R",
+      "rebuild_factor_subset\\.R",
+      "rf_cell_worker\\.R",
+      "dnn_rolling\\.py",
+      "judge_run\\.sh"
     ]
   },
   "conflicts_note": "명령줄 정규식 — 레인 검증기(감사 단계 포함) · 셀 워커(상설 · 사슬 · 라운드 측정) · DNN 학습. 관문은 자기 작업이 뜨기 전에 부르므로 살아 있는 표지는 다른 작업이다. · (11-15) judge_run.sh = 무인 Judge 가 도는 동안 다른 무거운 작업을 막는 표지(재현 측정 보호) — judge_run 키에는 넣지 않는다(Judge 가 제 부모 셸에 걸린다).",

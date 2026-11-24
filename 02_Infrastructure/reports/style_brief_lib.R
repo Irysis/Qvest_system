@@ -195,12 +195,31 @@ sw_kf_prepare <- function(kf, now = Sys.time()) {
     (d[[k]][i] / stats::sd(d[[k]][(i - .SW_KF_SD_DAYS):(i - 1L)]))^2, numeric(1)), numeric(length(idx)))
   vra <- sqrt(mean(rowMeans(matrix(z2, nrow = length(idx)))))
   vra_by <- colMeans(matrix(z2, nrow = length(idx), dimnames = list(NULL, .SW_KF)))
+  ## 스타일 동조화(흡수 비율 · v4.1) — 5요인 일간 공분산의 제1 고유값 비중. 높을수록 스타일들이 한 덩어리(한 베팅)로 움직인다.
+  ar <- sw_kf_absorption(d)
   ref <- if (is.null(kf$ref_as_of)) as.Date(NA) else suppressWarnings(as.Date(as.character(kf$ref_as_of)))
   list(ok = TRUE, reason = "ok", as_of = a, mode = mode, mtd_ym = mtd_ym, last_ym = last_ym,
        n_mtd = if (identical(mode, "mtd")) nrow(dm) else NA_integer_, mtd = mtd,
        last_month = unlist(comp[nrow(comp), .SW_KF_ALL]), w12 = win(12L), w3 = win(3L), sd_daily = sdv,
-       dd = dd, vra = vra, vra_by = vra_by, meta = kf$meta,
+       dd = dd, vra = vra, vra_by = vra_by, ar = ar, meta = kf$meta, catchup = kf$catchup,
        stale_vs_ref = !is.na(ref) && ref > a, ref_as_of = ref)
+}
+
+## 스타일 동조화 = 흡수 비율(Kritzman · Li · Page · Rigobon 2011 JPM 37(4) https://doi.org/10.3905/jpm.2011.37.4.112):
+##   공분산 고유값 중 제1 성분의 비중(요인 5개 → 상위 1개 = 1/5). 창 = 원 논문의 500거래일 · 최근 = 3개월(63거래일 · 달력 관례).
+##   백분위 = 그 날까지의 자기 역사(500일 창 값을 5거래일 간격으로 · as-of)에서 지금 값의 위치 — 전기간 통계가 아니다(C1).
+##   뜻: 높을수록 여러 스타일이 한 덩어리로 움직인다 = 브리핑의 여러 스타일 줄이 사실상 같은 베팅(Ghayur · Heaney · Platt 2018 FAJ
+##   https://doi.org/10.2469/faj.v74.n3.5 의 '목표 요인 간 상관으로 생기는 쏠림').
+.SW_KF_AR_DAYS <- 500L
+sw_kf_absorption <- function(d, cols = .SW_KF, win = .SW_KF_AR_DAYS, recent = 3L * .SW_KF_MONTH_DAYS, step = 5L) {
+  X <- as.matrix(d[, cols]); n <- nrow(X)
+  ar1 <- function(rows) { ev <- eigen(stats::cov(X[rows, , drop = FALSE]), symmetric = TRUE, only.values = TRUE)$values; ev[1L] / sum(ev) }
+  if (n < win) return(list(ok = FALSE))
+  ends <- unique(c(seq(win, n, by = step), n))
+  hist <- vapply(ends, function(e) ar1((e - win + 1L):e), numeric(1))
+  cur <- hist[length(hist)]
+  list(ok = TRUE, ar = cur, ar_recent = ar1((n - recent + 1L):n), pct = mean(hist <= cur), n_hist = length(hist),
+       since = format(as.Date(d$Date[win]), "%Y"))
 }
 
 ## 80자 bullet 규율(tg_agent_brief BULLET_ITEM_MAX) — 항목을 ' · ' 로 이어 붙이다 넘치면 다음 줄로
@@ -212,6 +231,27 @@ sw_pack <- function(head, items, max_chars = 80L, cont = "  ") {
     else cur <- cand
   }
   c(out, cur)
+}
+
+## 점프 모형 국면 줄(v4.1 · 정본 일간 · style_jump_model.R::sw_jump_regime) — 호출자가 그 파일을 source 했고 λ 파일이 있을 때만.
+##   jp = style_jump_params.json(요인별 λ · 선택일 · 다음 선택일) · 상태는 K$as_of 까지의 자료로만(PIT).
+sw_kf_jump_lines <- function(kf, K, jp, today = Sys.Date()) {
+  if (is.null(jp) || is.null(jp$factors)) return(character(0))
+  if (!exists("sw_jump_regime", mode = "function")) return("점프 모형 국면: 생략(style_jump_model.R 미적재)")
+  d <- as.data.frame(kf$daily); d$Date <- as.Date(d$Date); d <- d[d$Date <= K$as_of, , drop = FALSE]
+  d <- d[order(d$Date), , drop = FALSE]
+  its <- character(0); stale <- FALSE
+  for (k in .SW_KF) {
+    p <- jp$factors[[k]]; if (is.null(p$lambda)) next
+    if (!is.null(p$next_select) && as.Date(p$next_select) < today) stale <- TRUE
+    z <- tryCatch(sw_jump_regime(d[[k]], d$MKT, d$Date, as.numeric(p$lambda), kappa = p$kappa,
+                                 refit_months = if (is.null(jp$refit_months)) 1L else as.integer(jp$refit_months)),
+                  error = function(e) list(ok = FALSE))
+    its <- c(its, if (isTRUE(z$ok)) sprintf("%s %s %d일", .SW_KF_NAME[[k]], if (z$state == 1L) "강세" else "약세", z$days)
+                  else sprintf("%s ?", .SW_KF_NAME[[k]]))
+  }
+  if (!length(its)) return(character(0))
+  sw_pack(sprintf("점프 모형 국면(지속 일수%s): ", if (stale) " · λ 재선택 지남" else ""), its)
 }
 
 ## 국면 판독 줄(정본) — K = sw_kf_prepare() 의 ok 산출 · t_sig = 등록부 문턱
@@ -235,6 +275,9 @@ sw_kf_lines <- function(K, t_sig) {
                 if (identical(K$mode, "mtd")) sprintf(" · 진행월 초과 %+.1f%%(%d거래일)", K$mtd[["MKT"]] * 100, K$n_mtd) else "")
   top_v <- names(K$vra_by)[which.max(K$vra_by)]
   l5 <- sprintf("스타일 위험 배율 %.1f배(최근 1개월 · 1년 변동성=1 · 최대 %s)", K$vra, .SW_KF_NAME[[top_v]])
+  if (isTRUE(K$ar$ok))
+    l5 <- c(l5, sprintf("스타일 동조화(제1 공통 성분) 500일 %.0f%%(%s~ 백분위 %.0f) · 최근 3개월 %.0f%%",
+                        100 * K$ar$ar, K$ar$since, 100 * K$ar$pct, 100 * K$ar$ar_recent))
   fire <- is.finite(t12[["SMB"]]) && is.finite(t12[["HML"]]) && t12[["SMB"]] >= t_sig && t12[["HML"]] >= t_sig
   early <- !fire && is.finite(t3[["SMB"]]) && is.finite(t3[["HML"]]) && t3[["SMB"]] >= t_sig && t3[["HML"]] >= t_sig
   rw <- if (fire) sprintf("부활 워치: <b>발화</b> — 12개월 소형 t%s · 가치 t%s(매장 팩터 재검토)", ft(t12[["SMB"]]), ft(t12[["HML"]]))
@@ -249,7 +292,8 @@ sw_kf_lines <- function(K, t_sig) {
 ##   입력은 전부 인자(파일 I/O 0) — 검사가 운영 코드 그 자체를 합성 입력으로 돌린다.
 ##   kf · t_sig (v4): 정본 요인(sw_kf_prepare 입력)과 등록부 유의 문턱. 둘 다 있고 판정 가능하면 FF5 절 · 국면 판독 · 부활 워치를
 ##     정본으로 낸다. 없으면 구 경로(v3) 그대로 — kf 를 줬는데 판정 불가면 국면 판독 첫 줄에 사유를 싣는다.
-sw_compose_brief <- function(FF, SB = NULL, mtd5 = NULL, sbm = NULL, ib = NULL, now = Sys.time(), kf = NULL, t_sig = NULL) {
+sw_compose_brief <- function(FF, SB = NULL, mtd5 = NULL, sbm = NULL, ib = NULL, now = Sys.time(), kf = NULL, t_sig = NULL,
+                             jp = NULL) {
   fmt <- sw_fmt
   pos <- function(x) length(x) == 1L && !is.na(x) && x > 0
   side <- function(x, neg, posl) if (length(x) != 1L || is.na(x)) "?" else if (x < 0) neg else posl
@@ -360,7 +404,9 @@ sw_compose_brief <- function(FF, SB = NULL, mtd5 = NULL, sbm = NULL, ib = NULL, 
   ## 국면 판독 — v4(정본 요인 · 유의 문턱) 또는 v3(구 트래커 · 부호만)
   ##   v3: 12개월 창 = 완결 11개월 + 진행월 MTD (폴백 시 완결 12개월 · 표기 = tag)
   KL <- if (use_kf) sw_kf_lines(K, t_sig) else NULL
-  jd <- if (use_kf) c(KL$regime, KL$market) else
+  JL <- if (use_kf) tryCatch(sw_kf_jump_lines(kf, K, jp, today = as.Date(format(now, "%Y-%m-%d", tz = "Asia/Seoul"))),
+                             error = function(e) "점프 모형 국면: 계산 오류") else character(0)
+  jd <- if (use_kf) c(KL$regime, JL, KL$market) else
     c(if (!is.null(K)) sprintf("정본 요인 미사용(%s) — 아래 FF5 는 구 트래커 값", K$reason),
       sprintf("FF5 %s: %s 주도(SMB %s)·%s 우위(HML %s)·퀄리티 %s(RMW %s)", tag,
               side(r5[["SMB"]], "대형", "소형"), fmt(r5[["SMB"]]),
@@ -420,10 +466,17 @@ sw_compose_brief <- function(FF, SB = NULL, mtd5 = NULL, sbm = NULL, ib = NULL, 
   title <- if (!use_kf) sw_brief_title(wf) else if (identical(K$mode, "mtd"))
     sprintf("%s (%s 기준 · 완결월 %s)", .SW_TITLE_HEAD, format(K$as_of), K$last_ym)
     else sprintf("%s (완결월 %s 기준)", .SW_TITLE_HEAD, K$last_ym)
-  if (use_kf && isTRUE(K$stale_vs_ref)) title <- sprintf("%s · 정본 요인 낡음(원장 %s)", title, format(K$ref_as_of))
+  ## v4.1 따라잡기(ff5_brief_send.R::kf_catchup) — 낡음이면 못 따라잡은 사유를, 따라잡았으면 꼬리말에 그 사실을 싣는다
+  cu <- if (use_kf) K$catchup else NULL
+  cu_why <- c(held = "갱신 진행 중", mem_wait = "메모리 대기", failed = "따라잡기 실패", skipped = "드라이런",
+              unknown = "원장 판독 불가", error = "따라잡기 오류")
+  if (use_kf && isTRUE(K$stale_vs_ref))
+    title <- sprintf("%s · 정본 요인 낡음(원장 %s%s)", title, format(K$ref_as_of),
+                     if (!is.null(cu$state) && cu$state %in% names(cu_why)) paste0(" · ", cu_why[[cu$state]]) else "")
   kf_tag <- if (use_kf) {
     md <- if (is.null(K$meta$md5)) "" else sprintf(" md5 %s", substr(as.character(K$meta$md5), 1L, 8L))
-    sprintf(" · 정본 요인 %s%s", if (is.null(K$meta$cfg_version)) "" else as.character(K$meta$cfg_version), md)
+    sprintf(" · 정본 요인 %s%s%s", if (is.null(K$meta$cfg_version)) "" else as.character(K$meta$cfg_version), md,
+            if (identical(cu$state, "ran")) " · 아침 따라잡기" else "")
   } else ""
   list(title = title, sections = sections, charts = charts,
        footer = sprintf("diagnostic_monitoring · 시장 리뷰 전용(전략/자본 인용 금지) · %s%s",

@@ -57,8 +57,13 @@ if (isTRUE(K$ok) && identical(K$mode, "mtd")) {
 S <- tail(D, SHOW_DAYS)
 cols <- c(SMB = "firebrick", HML = "steelblue", RMW = "darkgreen", CMA = "purple", WML = "darkorange")
 lab <- sprintf("%s(%s)", names(.SW_KF_NAME), .SW_KF_NAME)
-png(file.path(OUT_DIR, "charts", "kr_ff_regime_t.png"), width = 1250, height = 760)
-par(mfrow = c(2, 1), mar = c(3, 5, 3, 15), cex.main = 1.4, cex.axis = 1.15, cex.lab = 1.2)   # 우측 = 범례(최신 t)
+## v4.1 스타일 동조화(흡수 비율 · style_brief_lib.R::sw_kf_absorption 과 같은 정의) — 보이는 기간의 날마다 그날까지의 500일 · 3개월 창
+X5 <- as.matrix(D[, .SW_KF, with = FALSE]); nD <- nrow(D)
+ar_at <- function(e, w) { if (e < w) return(NA_real_); ev <- eigen(cov(X5[(e - w + 1L):e, , drop = FALSE]), symmetric = TRUE, only.values = TRUE)$values; ev[1] / sum(ev) }
+sidx <- (nD - nrow(S) + 1L):nD
+AR500 <- vapply(sidx, ar_at, numeric(1), w = .SW_KF_AR_DAYS); AR63 <- vapply(sidx, ar_at, numeric(1), w = 3L * .SW_KF_MONTH_DAYS)
+png(file.path(OUT_DIR, "charts", "kr_ff_regime_t.png"), width = 1250, height = 1000)
+par(mfrow = c(3, 1), mar = c(3, 5, 3, 15), cex.main = 1.4, cex.axis = 1.15, cex.lab = 1.2)   # 우측 = 범례(최신 t)
 for (w in c("t12", "t3")) {
   Y <- as.matrix(S[, paste0(w, "_", .SW_KF), with = FALSE])
   yl <- range(c(Y, -T_SIG * 1.5, T_SIG * 1.5), na.rm = TRUE)
@@ -72,6 +77,13 @@ for (w in c("t12", "t3")) {
   legend(x = par("usr")[2] + diff(par("usr")[1:2]) * 0.01, y = par("usr")[4],
          legend = sprintf("%s %+.1f", lab, last), col = cols, lwd = 2.6, bty = "n", cex = 1.1, xpd = TRUE)
 }
+plot(S$Date, AR500 * 100, type = "l", lwd = 2.4, col = "black", ylim = range(c(AR500, AR63) * 100, na.rm = TRUE),
+     xlab = "", ylab = "제1 공통 성분 비중 %",
+     main = "스타일 동조화(흡수 비율 · 5요인 공분산 제1 고유값 비중) — 높을수록 여러 스타일이 한 베팅")
+lines(S$Date, AR63 * 100, lwd = 1.8, col = "gray45")
+legend(x = par("usr")[2] + diff(par("usr")[1:2]) * 0.01, y = par("usr")[4], bty = "n", cex = 1.1, xpd = TRUE,
+       legend = c(sprintf("500일 %.0f%%", 100 * tail(AR500, 1)), sprintf("3개월 %.0f%%", 100 * tail(AR63, 1))),
+       col = c("black", "gray45"), lwd = c(2.6, 2))
 dev.off()
 cat(sprintf("[kr_ff_regime_chart] kr_ff_regime_t.png ~%s · 12개월 t: %s\n", format(a),
             paste(sprintf("%s %+.1f", .SW_KF, unlist(D[.N, paste0("t12_", .SW_KF), with = FALSE])), collapse = " ")))

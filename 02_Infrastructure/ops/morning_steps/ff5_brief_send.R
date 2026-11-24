@@ -33,13 +33,79 @@ skip_build <- function(k) any(.skip %in% c("1", "all", k))
   tryCatch({ source(path); TRUE },
            error = function(e) { cat(sprintf("[ff5_brief] %s build FAIL: %s\n", what, conditionMessage(e))); FALSE })
 }
+## v4.1 (2026-11-24 도훈 "신규데이터 지연없이 업데이트 되게 배선된거지?") — 정본 요인 따라잡기.
+##   평소: 밤 갱신 [5c] 가 퀀티 수집 직후 T−1 까지의 정본을 만든다(11-24 실측 04:49~04:51) → 07:18 브리핑이 그 판을 읽는다.
+##   빈틈: RAWDATA 가 늦게 들어오거나(11-13 07:45 도착 사례) [5c] 가 실패하면('옛 파일 유지') 정본이 하루 늦은 채 남는다.
+##   → 정본 meta last_input_date < RAWDATA 마지막 날이면 같은 빌더를 한 번 다시 돌린다(차트 · 지수 β 빌드보다 먼저).
+##   조건 = mrs_daily_briefing.sh 의 국면 산출물 따라잡기와 같다: 리프레시 배리어 free(진행 중 갱신이 같은 산출을 스스로 만든다) ·
+##   메모리 관문 통과(mem_gate.py krf_catchup · 정본 06_Registry/memory_policy.json). 못 돌리면 사유를 남기고 브리핑 제목에 '낡음'이 붙는다.
+##   드라이런 · 샌드박스(FF5_BRIEF_DATA_DIR ≠ 루트) · FF5_BRIEF_SKIP_BUILD 에 kf 가 있으면 운영 .cache 를 쓰지 않는다(판정만).
+`%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
+kf_catchup <- function() {
+  res <- function(state, note, kf_last = as.Date(NA), rd_last = as.Date(NA)) list(state = state, note = note, kf_last = kf_last, rd_last = rd_last)
+  mt <- tryCatch(jsonlite::fromJSON(file.path(ROOT, ".cache/kr_factor_returns_meta.json")), error = function(e) NULL)
+  kf_last <- suppressWarnings(as.Date(as.character(if (is.null(mt)) NA else mt$last_input_date)))
+  ## mmap = FALSE — 매핑을 남기면 같은 파일의 다음 쓰기(RAWDATA writer)가 Windows 1224 로 막힌다(검토 시험이 실측)
+  rd_last <- tryCatch({ tb <- read_parquet(file.path(ROOT, ".cache/rawdata.parquet"), col_select = "Date", as_data_frame = FALSE, mmap = FALSE)
+                        v <- as.vector(max(tb$Date)); rm(tb); invisible(gc()); v }, error = function(e) as.Date(NA))
+  if (is.na(rd_last)) return(res("unknown", "RAWDATA 끝 날짜 판독 불가", kf_last, rd_last))
+  if (!is.na(kf_last) && kf_last >= rd_last) return(res("fresh", sprintf("정본 %s = RAWDATA %s", kf_last, rd_last), kf_last, rd_last))
+  why <- sprintf("정본 %s < RAWDATA %s", if (is.na(kf_last)) "없음" else format(kf_last), format(rd_last))
+  if (DRYRUN || !identical(normalizePath(DATA, "/", FALSE), normalizePath(ROOT, "/", FALSE)) || skip_build("kf"))
+    return(res("skipped", paste(why, "· 드라이런/샌드박스 — 운영 .cache 쓰지 않음"), kf_last, rd_last))
+  rb <- tryCatch({ source(file.path(ROOT, "02_Infrastructure/ops/refresh_barrier.R"), local = TRUE); rb_status(ROOT) },
+                 error = function(e) list(blocking = TRUE, state = "error"))
+  if (isTRUE(rb$blocking)) return(res("held", paste(why, "· 리프레시 배리어", rb$state, "— 진행 중 갱신이 만든다"), kf_last, rd_last))
+  py <- Sys.getenv("QVEST_PY", ""); if (!nzchar(py)) py <- "python"
+  mg <- suppressWarnings(system2(py, c("-X", "utf8", shQuote(file.path(ROOT, "02_Infrastructure/ops/mem_gate.py")), "krf_catchup"),
+                                 stdout = TRUE, stderr = TRUE))
+  if (!identical(as.integer(attr(mg, "status") %||% 0L), 0L))
+    return(res("mem_wait", paste(why, "· 메모리 관문", paste(tail(mg, 1), collapse = " ")), kf_last, rd_last))
+  lg <- file.path(ROOT, ".cache/scheduler_logs/ff5_brief_krf_catchup.log")
+  cat(sprintf("\n=== %s 정본 요인 따라잡기 — %s ===\n", format(Sys.time(), "%Y-%m-%d %H:%M:%S"), why), file = lg, append = TRUE)
+  rc <- suppressWarnings(system2(file.path(R.home("bin"), "Rscript"),
+                                 c("--no-save", shQuote(file.path(ROOT, "02_Infrastructure/data/build_kr_factor_returns.R"))),
+                                 stdout = lg, stderr = lg, env = c(sprintf("QM_ROOT=%s", ROOT), sprintf("CLAUDE_PROJECT_DIR=%s", ROOT)),
+                                 timeout = 900))
+  mt2 <- tryCatch(jsonlite::fromJSON(file.path(ROOT, ".cache/kr_factor_returns_meta.json")), error = function(e) NULL)
+  k2 <- suppressWarnings(as.Date(as.character(if (is.null(mt2)) NA else mt2$last_input_date)))
+  if (identical(as.integer(rc), 0L) && !is.na(k2) && k2 >= rd_last) return(res("ran", sprintf("%s → 따라잡음(정본 %s)", why, k2), k2, rd_last))
+  res("failed", sprintf("%s · 따라잡기 실패(rc %s · 로그 ff5_brief_krf_catchup.log)", why, rc), k2, rd_last)
+}
+KC <- tryCatch(kf_catchup(), error = function(e) list(state = "error", note = conditionMessage(e)))
+cat(sprintf("[ff5_brief] 정본 요인 따라잡기: %s — %s\n", KC$state, KC$note))
+
 ok_ff <- .build("ff", "02_Infrastructure/reports/ff5_kr_tracker.R", "FF5")
 ok_sb <- .build("sb", "02_Infrastructure/reports/smartbeta_kr_tracker.R", "SB")
 ok_bf <- .build("bf", "02_Infrastructure/reports/krx_index_monthend_backfill.R", "index backfill")
 ok_ib <- .build("ib", "02_Infrastructure/reports/index_factor_beta.R", "index-beta")
 ok_kc <- .build("kc", "02_Infrastructure/reports/kr_ff_regime_chart.R", "regime-chart")   # v4 정본 요인 t 차트
+
+## v4.1 점프 모형 λ · κ 재선택(Shu · Mulvey 2024 §3.2 — 6개월마다 · 6년 검증 창 샤프 최대) — 파일이 없거나 다음 선택일이 지났을 때만.
+##   후보 격자 · 적합 주기는 기존 파일의 값을 그대로 쓴다(여기서 정하지 않는다). 하위 프로세스 · 상한 15분 · 실패하면 옛 값 유지
+##   (브리핑 줄에 'λ 재선택 지남'). 드라이런 · 샌드박스 · FF5_BRIEF_SKIP_BUILD 의 jm 이면 생략.
+jm_reselect <- function() {
+  pf <- file.path(ROOT, "outputs/ff5_kr/style_jump_params.json")
+  jp0 <- tryCatch(jsonlite::fromJSON(pf), error = function(e) NULL)
+  due <- is.null(jp0) || any(vapply(jp0$factors, function(p) is.null(p$next_select) || as.Date(p$next_select) <= Sys.Date(), logical(1)))
+  if (!due) return("유효")
+  if (DRYRUN || !identical(normalizePath(DATA, "/", FALSE), normalizePath(ROOT, "/", FALSE)) || skip_build("jm")) return("재선택 필요 · 드라이런/샌드박스 생략")
+  if (is.null(jp0)) return("파라미터 파일 없음 — style_jump_select.R 첫 실행은 수동(후보 격자 결정)")
+  a <- c("--no-save", shQuote(file.path(ROOT, "02_Infrastructure/reports/style_jump_select.R")),
+         "--lambdas", paste(jp0$lambdas, collapse = ","), "--kappas", paste(jp0$kappas, collapse = ","),
+         "--refit_months", as.character(jp0$refit_months))
+  lg <- file.path(ROOT, ".cache/scheduler_logs/ff5_brief_jump_select.log")
+  cat(sprintf("\n=== %s 점프 모형 재선택 ===\n", format(Sys.time(), "%Y-%m-%d %H:%M:%S")), file = lg, append = TRUE)
+  rc <- suppressWarnings(system2(file.path(R.home("bin"), "Rscript"), a, stdout = lg, stderr = lg,
+                                 env = c(sprintf("QM_ROOT=%s", ROOT), sprintf("CLAUDE_PROJECT_DIR=%s", ROOT)), timeout = 900))
+  sprintf("재선택 rc %s (로그 ff5_brief_jump_select.log)", rc)
+}
+JMS <- tryCatch(jm_reselect(), error = function(e) paste("재선택 오류:", conditionMessage(e)))
+cat(sprintf("[ff5_brief] 점프 모형 λ: %s\n", JMS))
 setwd(ROOT)
 source("02_Infrastructure/reports/style_brief_lib.R")   # 트래커가 이미 불렀어도 재정의만(부작용 0)
+## v4.1 점프 모형(순수 함수 · 파일 I/O 0) — 못 읽으면 국면 판독에 '생략' 한 줄(조립은 계속)
+tryCatch(source("02_Infrastructure/reports/style_jump_model.R"), error = function(e) cat("[ff5_brief] 점프 모형 적재 실패:", conditionMessage(e), "\n"))
 
 ## v4 (2026-11-24 도훈 "국면판독 부분 개선"): 정본 요인(build_kr_factor_returns.R · 밤 갱신 [5c]) + 등록부 유의 문턱.
 ##   읽기 실패 · 부재는 kf 를 빈 채로 넘긴다 → 조립이 구 경로로 가며 국면 판독 첫 줄에 사유를 싣는다(침묵 폴백 금지).
@@ -65,7 +131,9 @@ if (is.null(FF) || !nrow(FF)) { cat("[ff5_brief] FF 시리즈 없음 — skip\n"
   sbm  <- sw_read_json(dp("outputs/smartbeta_kr/smartbeta_kr_mtd.json"))
   ib   <- sw_read_json(dp("outputs/ff5_kr/index_factor_beta.json"))
   kf   <- sw_read_kf(dp, ref_as_of = if (!is.null(sbm$as_of)) sbm$as_of else mtd5$as_of)
-  out <- sw_compose_brief(FF, SB, mtd5 = mtd5, sbm = sbm, ib = ib, now = Sys.time(), kf = kf, t_sig = T_SIG)
+  kf$catchup <- KC                                        # v4.1 따라잡기 결과 — 제목(낡음 사유) · 꼬리말(아침 따라잡기)
+  jp   <- sw_read_json(dp("outputs/ff5_kr/style_jump_params.json"))   # 점프 모형 λ(6개월마다 style_jump_select.R)
+  out <- sw_compose_brief(FF, SB, mtd5 = mtd5, sbm = sbm, ib = ib, now = Sys.time(), kf = kf, t_sig = T_SIG, jp = jp)
   charts <- out$charts[file.exists(dp(out$charts))]
   cat(sprintf("[ff5_brief] window ff=%s(%s) sb=%s kf=%s | %s\n", out$w_ff$mode, out$w_ff$state$reason,
               if (is.null(out$w_sb)) "-" else out$w_sb$mode,
