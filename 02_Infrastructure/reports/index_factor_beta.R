@@ -14,7 +14,31 @@ OUT_DIR <- Sys.getenv("FF5_KR_OUT_DIR", "outputs/ff5_kr")              # 검사�
 SB_DIR  <- Sys.getenv("SMARTBETA_KR_OUT_DIR", "outputs/smartbeta_kr")
 wf <- function(fmt, ...) cat(sprintf(fmt, ...), "\n")
 
-FF <- as.data.table(read_parquet(file.path(OUT_DIR, "ff5_kr_monthly.parquet"))); setorder(FF, ym)
+## v4 (2026-11-24 도훈 "스타일 국면 브리핑 국면판독 부분 개선"): FF = 한국 FF 요인 정본(02_Infrastructure/data/build_kr_factor_returns.R ·
+##   밤 갱신 [5c] · 월간 = 완결월 · 진행월 MTD = 정본 일간 복리). 구 트래커(ff5_kr_monthly · ff5_kr_mtd.json)는 CMA 부호 반전 ·
+##   월말 종가 비율 수익(가격 이음매) 결함(검토 04_Research/01_reports/style_regime_brief_review_20261124)이라 정본이 없을 때만
+##   쓰고 출처 라벨(ff_source)에 적는다. 경로 덮어쓰기(검사용) = KR_FACTOR_DIR(기본 .cache).
+KF_DIR <- Sys.getenv("KR_FACTOR_DIR", ".cache")
+.kf_m <- file.path(KF_DIR, "kr_factor_returns_v2.parquet"); .kf_d <- file.path(KF_DIR, "kr_factor_returns_daily.parquet")
+FF_SRC <- if (file.exists(.kf_m) && file.exists(.kf_d)) "정본 요인" else "구 트래커"
+if (identical(FF_SRC, "정본 요인")) {
+  FF <- as.data.table(read_parquet(.kf_m, col_select = c("ym", "MKT", "SMB", "HML", "RMW", "CMA", "RF")))
+  FF[, ym := sprintf("%s-%s", substr(as.character(ym), 1, 4), substr(as.character(ym), 5, 6))]
+  setnames(FF, "RF", "rf_m"); setorder(FF, ym)
+  KD <- as.data.table(read_parquet(.kf_d, col_select = c("Date", "MKT", "SMB", "HML", "RMW", "CMA", "RF")))
+  KD[, Date := as.Date(Date)]; KD <- KD[complete.cases(KD)]
+  kd_last <- max(KD$Date); kd_ym <- format(kd_last, "%Y-%m")
+  FF <- FF[ym < kd_ym]                                                   # 진행월 행은 월간에서 빼고 아래 MTD 로만
+  .mk <- KD[format(Date, "%Y-%m") == kd_ym]
+  mtd5 <- if (nrow(.mk)) list(as_of = format(kd_last), ym = kd_ym, n_days = nrow(.mk), rf_mtd = prod(1 + .mk$RF) - 1,
+                              MKT = prod(1 + .mk$MKT) - 1, SMB = prod(1 + .mk$SMB) - 1, HML = prod(1 + .mk$HML) - 1,
+                              RMW = prod(1 + .mk$RMW) - 1, CMA = prod(1 + .mk$CMA) - 1) else NULL
+  rm(KD, .mk)
+} else {
+  FF <- as.data.table(read_parquet(file.path(OUT_DIR, "ff5_kr_monthly.parquet"))); setorder(FF, ym)
+  mtd5 <- tryCatch(jsonlite::fromJSON(file.path(OUT_DIR, "ff5_kr_mtd.json")), error = function(e) NULL)
+}
+wf("FF 원천: %s (%s~%s)", FF_SRC, min(FF$ym), max(FF$ym))
 IX <- as.data.table(read_parquet(file.path(OUT_DIR, "krx_index_monthend.parquet")))
 IX[, Date := as.Date(Date)]; setorder(IX, idx, Date)
 if (!"src" %in% names(IX)) IX[, src := "krx"]                          # 구판 산출(원천 열 없음) = KRX
@@ -41,7 +65,6 @@ D <- merge(W, FF[, .(ym, MKT, SMB, HML, RMW, CMA, rf_m)], by = "ym")
 D <- tail(D[complete.cases(D)], 36)
 stopifnot(nrow(D) >= 30)
 IDXN <- c("KOSPI200", "KOSDAQ150", "KOSPI", "KOSDAQ")
-mtd5 <- tryCatch(jsonlite::fromJSON(file.path(OUT_DIR, "ff5_kr_mtd.json")), error = function(e) NULL)
 sbmj <- tryCatch(jsonlite::fromJSON(file.path(SB_DIR, "smartbeta_kr_mtd.json")), error = function(e) NULL)
 mtd_ym3 <- W[.N, ym]
 ## 진행월 점 판정 — 같은 날짜까지의 부분월끼리만(지수 종가일 = FF5 MTD as_of). 사유는 창 라벨에 그대로 실린다.
@@ -79,7 +102,7 @@ fc <- c(SMB = "firebrick", HML = "steelblue", RMW = "darkgreen", CMA = "purple")
 png(file.path(OUT_DIR, "charts", "index_factor_beta.png"), width = 1250, height = 560)
 par(mar = c(6, 5, 3.5, 8), cex.main = 1.45, cex.lab = 1.2)
 bp <- barplot(Bm, beside = TRUE, names.arg = lab, col = fc, border = NA, cex.names = 1.2, cex.axis = 1.15,
-              main = sprintf("지수별 FF5 팩터 베타 — %s (%s)", win_lab, SRC_LAB),
+              main = sprintf("지수별 FF5 팩터 베타 — %s (%s · FF %s)", win_lab, SRC_LAB, FF_SRC),
               ylab = "베타", ylim = range(0, Bm) * 1.3)
 abline(h = 0)
 text(x = bp, y = Bm + sign(Bm) * max(abs(Bm)) * 0.06, labels = sprintf("%+.2f", Bm), cex = 0.95, xpd = TRUE)
@@ -145,7 +168,8 @@ write_json(list(metric_type = "diagnostic_monitoring", window = win_lab, sb_wind
                 sb_mtd_reason = if (nzchar(sb_reason)) sb_reason else NA_character_,
                 index_last = format(ix_last),
                 source = sprintf("%s 월말 종가 (krx_index_monthend.parquet · 원천 %s)", SRC_LAB, paste(sort(unique(IX$src)), collapse = "+")),
-                note = "FF5: y=지수월수익-CD91, X=KR FF5 다변량 / SB: 스타일별 이변량(MKT 통제). 교차검증: 지수 패널 코스피200 vs IKS200",
+                ff_source = FF_SRC,
+                note = "FF5: y=지수월수익-CD91, X=KR FF5 다변량(ff_source) / SB: 스타일별 이변량(MKT 통제). 교차검증: 지수 패널 코스피200 vs IKS200",
                 betas = B, top_nonmkt = TOPS,
                 sb_betas = setNames(lapply(seq_len(nrow(SB_B)), function(i) as.list(SB_B[i, ])), rownames(SB_B)),
                 sb_top = SB_TOPS,

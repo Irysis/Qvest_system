@@ -22,6 +22,8 @@
 # 위반 주입(사본 돌연변이 → 같은 판정이 red 여야 한다):
 #   M1 창 → 완결 12개월(MTD 무시)   M2 제목 → 완결월 기준   M3 분모 12 → 11   M4 낡은 MTD 판정 제거
 #   M5 FF5 트래커 가드 제거(부분월 월간 기록)   M6 SB 트래커 가드 '<' → '<='(부분월 발행)
+#   P11 · M7 · M8 (v4 · 2026-11-24 도훈 '국면판독 개선'): 정본 요인 경로 — 수기 t · |t| ≥ 문턱만 단정 · 부활 워치 = SMB · HML 둘 다
+#     문턱 이상 · 문턱 없으면 구 경로 + 사유 / M7 문턱 제거 · M8 부활 워치를 가치 하나로 → red
 # 실행: Rscript 08_Tests/ops/test_style_brief_mtd_window.R  (STYLE_BRIEF_CODE_ROOT=<스테이징> 로 배포 전 검증 가능)
 #==============================================================================
 suppressMessages({ library(data.table); library(arrow); library(jsonlite) })
@@ -334,6 +336,41 @@ local({
   }
 })
 
+cat("\n=== P11 v4 정본 요인 경로 — |t| ≥ 문턱만 단정 · 부활 워치 = 둘 다 문턱 이상 (2026-11-24 도훈 '국면판독 개선') ===\n")
+## 실제 위반(검토 style_regime_brief_review_20261124): 구판은 잡음 수준 숫자의 부호로 국면을 단정했다(SMB −0.13% → '대형 주도').
+## 합성 정본 요인(결정론): 영업일 2025-06-02..2026-09-23 · SMB/CMA/WML/MKT = ±1% 교대(평균 0) · HML = +0.4%p 기울기 · RMW = −0.4%p 기울기
+KF_D <- local({
+  dd <- seq(as.Date("2025-06-02"), as.Date("2026-09-23"), by = "day"); dd <- dd[!format(dd, "%u") %in% c("6", "7")]
+  alt <- rep(c(0.01, -0.01), length.out = length(dd))
+  data.frame(Date = dd, MKT_TOTAL = alt / 2, MKT = alt / 2, SMB = alt, HML = 0.004 + alt, RMW = -0.004 + alt, CMA = alt, WML = alt)
+})
+kf_month <- function(d, upto) { m <- split(d[, -1], format(d$Date, "%Y-%m")); m <- m[names(m) <= upto]
+  data.frame(ym = names(m), t(vapply(m, function(x) vapply(x[, c("MKT", "SMB", "HML", "RMW", "CMA", "WML")], function(r) prod(1 + r) - 1, 0), numeric(6))), row.names = NULL) }
+KF_M <- kf_month(KF_D, "2026-08")
+## 수기 t(HML) — 함수와 독립: 창 = 2025-10..2026-08 월간(일간 복리) + 2026-09 MTD, 표준편차 = 마지막 252 영업일
+t_hand <- local({ inwin <- format(KF_D$Date, "%Y-%m") >= "2025-10"
+  s <- sum(KF_M$HML[KF_M$ym >= "2025-10"]) + (prod(1 + KF_D$HML[format(KF_D$Date, "%Y-%m") == "2026-09"]) - 1)
+  s / (sd(tail(KF_D$HML, 252)) * sqrt(sum(inwin))) })
+c_kf <- function(E) {
+  o <- E$sw_compose_brief(FFS, SBS, MTD5, SBM, NULL, NOW, kf = list(daily = KF_D, monthly = KF_M), t_sig = 2)
+  if (!isTRUE(o$kf_used)) return(paste("정본 경로 미사용:", o$kf$reason))
+  if (!identical(o$title, T_OK)) return(paste("제목:", o$title))
+  if (!isTRUE(abs(o$kf$w12$t[["HML"]] - t_hand) < 1e-10)) return(sprintf("t(HML) %.6f ≠ 수기 %.6f", o$kf$w12$t[["HML"]], t_hand))
+  jd <- o$sections[[length(o$sections)]]$items
+  if (!grepl("가치 우세", jd[1], fixed = TRUE) || !grepl("저수익성 우세", jd[1], fixed = TRUE)) return(paste("단정 누락:", jd[1]))
+  if (grepl("소형 우세|대형 우세|모멘텀 우세|보수투자 우세|공격투자 우세", jd[1])) return(paste("잡음 단정:", jd[1]))
+  if (!any(startsWith(jd, "부활 워치: 미발화"))) return(paste("부활 워치(SMB t≈0):", jd[length(jd)]))
+  d2 <- KF_D; d2$SMB <- d2$SMB + 0.004
+  o2 <- E$sw_compose_brief(FFS, SBS, MTD5, SBM, NULL, NOW, kf = list(daily = d2, monthly = kf_month(d2, "2026-08")), t_sig = 2)
+  if (!any(startsWith(o2$sections[[length(o2$sections)]]$items, "부활 워치: <b>발화</b>"))) return("SMB · HML 둘 다 문턱 이상인데 미발화")
+  o3 <- E$sw_compose_brief(FFS, SBS, MTD5, SBM, NULL, NOW, kf = list(daily = KF_D, monthly = KF_M), t_sig = NULL)
+  j3 <- o3$sections[[length(o3$sections)]]$items
+  if (isTRUE(o3$kf_used) || !startsWith(j3[1], "정본 요인 미사용(유의 문턱(등록부) 없음)")) return(paste("문턱 없음 폴백 사유:", j3[1]))
+  if (max(nchar(c(jd, o2$sections[[length(o2$sections)]]$items))) > 80L) return("bullet 80자 초과")
+  ""
+}
+chk("P11 정본 경로 — 수기 t 일치 · |t|≥2 만 단정 · 부활 워치 둘 다 ≥2 · 문턱 없으면 구 경로 + 사유", c_kf(E0))
+
 cat("\n=== 위반 주입 (사본 돌연변이 → red 여야 한다) ===\n")
 mut <- function(label, path, from, to, judge) {
   m <- mutate(path, from, to)
@@ -352,4 +389,8 @@ mut("M4 낡은 MTD(stale) 판정 제거", LIB, 'if (mym <= last_ym) return(mk(FA
     function(f) c_stale(lib_env(f)))
 mut("M5 FF5 트래커 완결월 가드 제거(부분월 월간 기록)", TRK5, 'rets <- rets[ym < format(max(ud), "%Y-%m")]', "invisible(NULL)", g_ff5)
 mut("M6 스마트베타 트래커 가드 '<' → '<='(부분월 발행)", TRKS, 'format(nx, "%Y-%m") < last_ym', 'format(nx, "%Y-%m") <= last_ym', g_sb)
+mut("M7 정본 경로 유의 문턱 제거(부호만으로 단정)", LIB, "dec <- .SW_KF[is.finite(t12) & abs(t12) >= t_sig]",
+    "dec <- .SW_KF[is.finite(t12)]", function(f) c_kf(lib_env(f)))
+mut("M8 부활 워치를 가치 하나로 발화", LIB, 't12[["SMB"]] >= t_sig && t12[["HML"]] >= t_sig',
+    't12[["HML"]] >= t_sig', function(f) c_kf(lib_env(f)))
 finish()
