@@ -7,6 +7,7 @@ a <- commandArgs(trailingOnly = TRUE)
 DATA <- a[1]; CODE <- a[2]; PROD <- a[3]; OUTF <- a[4]
 NOW <- as.POSIXct(if (length(a) >= 5) a[5] else format(Sys.time(), "%Y-%m-%d %H:%M:%S", tz = "Asia/Seoul"), tz = "Asia/Seoul")
 source(file.path(CODE, "02_Infrastructure/reports/style_brief_lib.R"))
+if (file.exists(file.path(CODE, "02_Infrastructure/reports/style_jump_model.R"))) source(file.path(CODE, "02_Infrastructure/reports/style_jump_model.R"))
 dp <- function(p) file.path(DATA, p)
 ## ff5_brief_send.R(v4) 의 읽기 함수와 같은 규칙 — 스테이징 송신 스크립트에서 그 함수만 꺼내 쓴다
 ex <- parse(file = file.path(CODE, "02_Infrastructure/ops/morning_steps/ff5_brief_send.R"), encoding = "UTF-8", keep.source = FALSE)
@@ -17,7 +18,9 @@ SB <- as.data.table(read_parquet(dp("outputs/smartbeta_kr/smartbeta_kr_monthly.p
 mtd5 <- sw_read_json(dp("outputs/ff5_kr/ff5_kr_mtd.json")); sbm <- sw_read_json(dp("outputs/smartbeta_kr/smartbeta_kr_mtd.json"))
 ib <- sw_read_json(dp("outputs/ff5_kr/index_factor_beta.json"))
 kf <- sw_read_kf(dp, ref_as_of = sbm$as_of)
-out <- sw_compose_brief(FF, SB, mtd5 = mtd5, sbm = sbm, ib = ib, now = NOW, kf = kf, t_sig = T_SIG)
+jp <- sw_read_json(dp("outputs/ff5_kr/style_jump_params.json"))
+out <- if ("jp" %in% names(formals(sw_compose_brief))) sw_compose_brief(FF, SB, mtd5 = mtd5, sbm = sbm, ib = ib, now = NOW, kf = kf, t_sig = T_SIG, jp = jp) else
+  sw_compose_brief(FF, SB, mtd5 = mtd5, sbm = sbm, ib = ib, now = NOW, kf = kf, t_sig = T_SIG)
 ln <- sw_dryrun_lines(out, charts_root = DATA)
 suppressMessages(source(file.path(PROD, "02_Infrastructure/telegram/telegram_notify.R")))
 rr <- tryCatch({ invisible(capture.output(x <- tg_agent_brief(agent = "Q-Lead", title = out$title, sections = out$sections,
