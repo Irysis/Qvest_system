@@ -312,7 +312,7 @@
      "ast_leaf_class": "FIELD_REGISTRY_PTR",
      "coverage_measured": "439파일 = 1990-01~2026-07. 실측: fdb_daily_199001 = 10,325행/277컬럼, Date 1990-01-05~1990-01-31; fdb_daily_202607 = 32,407행/318컬럼, Date 2026-07-01~2026-07-16 (오늘 07-25 대비 ~9일 stale). 레지스트리 총계 total_rows=14,018,027 (439개월)",
      "pit_hazards": "① C15 carve-out: load_month_factors 등가 접근자 부재 — python-policy상 'ML daily parquet carve-out은 명시 승인 hypothesis만'인데 파일 직접 read가 유일 경로 ② 단일월 증분 parity 미달 확정: update_daily_fdb는 구조 parity 통과하나 β/vol/고차모멘트 42/316 팩터 값 parity 미재현(R13_NCSKEW=0 vs 9.87e9 사례) — 자동경로는 full-rebuild 유지 (factor_db_daily_incremental.R:34-40 주석 + memory project-fdb-daily-incremental-parity) ③ 재빌드 2근본원인 이력: arrow mmap 1224 + benchmark POSIXct 조인 실패 → β 54팩터 전멸 (memory project-fdb-daily-rebuild-procedure) ④ 318컬럼 중 팩터 298 + 입력/보조 컬럼(RE_MRS, dps_1y, target_price, C08_Coverage 등) 혼재 — 컬럼=팩터 가정 금지",
-     "notes": "z-score는 phase9(composite용 cross-sectional z) + phase10 winsorize(일별 1/99pct capping — 월간 ±3 clip 대응). 월간 DB와 달리 Z_Score_Aligned/ic_sign 정렬 컬럼 없음 — 방향 정렬은 소비자 책임 (ff5_kr_tracker.R의 z_raw=Z_Score_Aligned×ic_sign 관례 참조)"
+     "notes": "z-score는 phase9(composite용 cross-sectional z) + phase10 winsorize(일별 1/99pct capping — 월간 ±3 clip 대응). 월간 DB와 달리 Z_Score_Aligned/ic_sign 정렬 컬럼 없음 — 방향 정렬은 소비자 책임 (구 예시 ff5_kr_tracker.R 의 z_raw=Z_Score_Aligned×ic_sign 관례는 CMA 이중 반전을 낳아 2026-11-24 퇴역 — 방향 규칙 = .claude/rules/pit.md C13 · 02_Infrastructure/factor_db/DIRECTION_POLICY.md)"
     },
     {
      "group_id": "FDB-B7_ic_history_monthly",
@@ -699,7 +699,7 @@
      "vintage_available": false,
      "ast_leaf_class": "FIELD",
      "coverage_measured": "bond 37,230행 2001-01-01~2026-07-23 / krw_usd 6,881행 2000-01-04~2026-07-23 (실측)",
-     "pit_hazards": "낮음(시장금리는 무개정). KR_CD91 → FF5 트래커 rf_m 소비(ff5_kr_tracker.R:136) — 월중 평균 사용이라 월말 시점 기준 부분 look-within-month이나 rf 스케일이라 영향 구조적으로 제한적(단 실측 검증은 안 됨)",
+     "pit_hazards": "낮음(시장금리는 무개정). KR_CD91 소비처 = 한국 FF 요인 정본 RF(전 거래일 CD91 금리의 일간 환산 (1 + y/100)^(1/252) − 1 · 월간 = 그 달 복리 · 02_Infrastructure/data/build_kr_factor_returns.R:390-399 · 계열 = 설정 rf.series). 구 FF5 트래커의 월중 평균 rf_m 소비(ff5_kr_tracker.R:136 · 부분 look-within-month)는 2026-11-24 퇴역으로 소멸",
      "notes": "ECOS API key 하드코딩(data_collector_ecos.R:17) — 보안 위생 항목"
     },
     {
@@ -834,17 +834,17 @@
     {
      "group_id": "E8_style_trackers",
      "domain": "style_tracker",
-     "storage": "outputs/ff5_kr/ff5_kr_monthly.parquet — writer 02_Infrastructure/reports/ff5_kr_tracker.R:142 + ff5_kr_mtd.json; outputs/smartbeta_kr/smartbeta_kr_monthly.parquet — writer 02_Infrastructure/reports/smartbeta_kr_tracker.R:164(tmp-rename) + mtd json :184. 소비 02_Infrastructure/ops/morning_steps/ff5_brief_send.R:11-20",
+     "storage": "[FF5 부분 — 2026-11-24 퇴역(도훈 '퇴역' · 스타일 국면 브리핑 v4.2 · 커밋 302f21724): 구 outputs/ff5_kr/ff5_kr_monthly.parquet · ff5_kr_mtd.json(writer 구 ff5_kr_tracker.R) → outputs/ff5_kr/_retired_tracker_20261124/(11-24 07:19 판에서 멈춤 · 인용 금지). FF5 월간 · 일간 = 한국 FF 요인 정본 .cache/kr_factor_returns_v2.parquet · .cache/kr_factor_returns_daily.parquet(writer 02_Infrastructure/data/build_kr_factor_returns.R · 밤 갱신 [5c] · 이 지도 미등재)]; outputs/smartbeta_kr/smartbeta_kr_monthly.parquet — writer 02_Infrastructure/reports/smartbeta_kr_tracker.R:164(tmp-rename) + mtd json :184. 소비 02_Infrastructure/ops/morning_steps/ff5_brief_send.R:130(스마트베타) · FF5 = 정본(같은 파일 sw_read_kf)",
      "unit": "monthly (FF5 253행 8col: MKT/SMB/HML/RMW/CMA/mkt_vw/rf_m; 스마트베타 257행 9col: BENCH/VAL/QUAL/MOM/LOWVOL/SIZE/DIV/EREV)",
      "universe": "FF5 = 학술 L/S·VW 2×3 (KR 전체), 스마트베타 = long-only top-tercile VW",
      "reference_ts_semantics": "ym = 실현(완결)월 — 진행월 제외 코드 강제(ff5_kr_tracker.R:52, 07-18 수리). mtd json = 월중 잠정치 별도 채널로 분리",
-     "availability": "완결월만 발행이 곧 availability 강제점(ff5_kr_tracker.R:52). rf_m = ECOS KR_CD91 월중평균(:136). 스마트베타는 metric_type='diagnostic_monitoring' 자기 라벨(smartbeta_kr_tracker.R:285) — 자본 소비 금지 계약 내장",
+     "availability": "완결월만 발행이 곧 availability 강제점(스마트베타 = smartbeta_kr_tracker.R §3 완결월 가드 · 검사 08_Tests/ops/test_style_brief_mtd_window.R P10b. 구 FF5 = ff5_kr_tracker.R:52 · rf_m = KR_CD91 월중평균 :136 — 2026-11-24 퇴역(도훈 '퇴역' · 스타일 국면 브리핑 v4.2 · 커밋 302f21724)). 스마트베타는 metric_type='diagnostic_monitoring' 자기 라벨(smartbeta_kr_tracker.R:285) — 자본 소비 금지 계약 내장",
      "restatement_prone": true,
      "vintage_available": false,
      "ast_leaf_class": "STORED_SCORE",
      "coverage_measured": "FF5 253행 ym 2005-06~2026-06 / 스마트베타 257행 ym 2005-02~2026-06 (실측)",
-     "pit_hazards": "① 팩터 정렬 시 z_raw = Z_Score_Aligned × ic_sign 필수(memory reference-ff5-kr-tracker — 부호 미복원 시 역방향) ② 재무 입력 개정 시 과거 월 재계산 가능(restatement) ③ monitoring-only — SMB·HML 동반 양전 = un-bury 워치 트리거이지 신호 아님 ④ rf_m 월중평균의 월말시점 정합 미검증(E2 참조)",
-     "notes": "ff5_kr_monthly_rmwgpa_backup.parquet = RMW 정의 변경 전 백업 잔존. 날짜 스탬프 csv/json 사본(20260718/20260720)이 사실상 수동 vintage 2개"
+     "pit_hazards": "① (구 FF5 트래커 · 2026-11-24 퇴역(도훈 '퇴역' · 스타일 국면 브리핑 v4.2 · 커밋 302f21724)) z_raw = Z_Score_Aligned × ic_sign 복원 관례가 CMA 를 이중 반전시켰다(팩터 DB 가 자산증가율을 음수로 저장 · 정본 대비 12개월 평균 상관 −0.75 · 검토 04_Research/01_reports/style_regime_brief_review_20261124/README.md) — 방향은 .claude/rules/pit.md C13 의 정본 접근자 direction 인자로만 ② 재무 입력 개정 시 과거 월 재계산 가능(restatement) ③ monitoring-only — SMB·HML 동반 양전 = un-bury 워치 트리거이지 신호 아님 ④ (구 FF5) rf_m 월중평균 — 퇴역으로 소멸(E2 참조)",
+     "notes": "★FF5 부분 2026-11-24 퇴역(도훈 '퇴역' · 스타일 국면 브리핑 v4.2 · 커밋 302f21724) — 아래 백업 · 날짜 사본은 outputs/ff5_kr/_retired_tracker_20261124/ 로 옮김(검토 04_Research/01_reports/style_regime_brief_review_20261124/README.md). ff5_kr_monthly_rmwgpa_backup.parquet = RMW 정의 변경 전 백업 잔존. 날짜 스탬프 csv/json 사본(20260718/20260720)이 사실상 수동 vintage 2개"
     },
     {
      "group_id": "E9_steering_caches",
