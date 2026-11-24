@@ -60,11 +60,17 @@ online_path <- function(f, lam, kap = "none") {
   st <- rep(NA_integer_, n); ex <- rep(NA_real_, n)
   for (j in seq_along(me)) {
     fi <- me[j]; nx <- if (j < length(me)) me[j + 1L] else n
-    t0 <- max(1L, which(dd >= dd[fi] - round(365.25 * 12))[1]); tr <- t0:fi
-    mu <- colMeans(X[tr, , drop = FALSE]); sg <- apply(X[tr, , drop = FALSE], 2, sd); sg[!is.finite(sg) | sg == 0] <- 1
-    Z <- sweep(sweep(X[t0:nx, , drop = FALSE], 2, mu), 2, sg, "/")
-    fit <- jm_fit_sparse(Z[seq_along(tr), , drop = FALSE], lam, kappa, dp = dp_fun)
-    if (is.null(fit) || fi == nx) next
+    if (fi == nx) next
+    ## 한 상태로 무너지면 직전 적합일로 물러난다(최대 4번 · 과거 자료만) — 운영 sw_jump_regime 과 같은 규칙
+    fit <- NULL
+    for (fc in rev(me[max(1L, j - 4L):j])) {
+      t0 <- max(1L, which(dd >= dd[fc] - round(365.25 * 12))[1]); tr <- t0:fc
+      mu <- colMeans(X[tr, , drop = FALSE]); sg <- apply(X[tr, , drop = FALSE], 2, sd); sg[!is.finite(sg) | sg == 0] <- 1
+      Z <- sweep(sweep(X[t0:nx, , drop = FALSE], 2, mu), 2, sg, "/")
+      fit <- jm_fit_sparse(Z[seq_along(tr), , drop = FALSE], lam, kappa, dp = dp_fun)
+      if (!is.null(fit)) break
+    }
+    if (is.null(fit)) next
     mret <- vapply(1:2, function(k) mean(rr[tr][fit$s == k]), numeric(1)); bull <- which.max(mret)
     so <- on_fun(jm_loss(sweep(Z, 2, sqrt(fit$w), "*"), fit$Th), lam)
     idx <- (fi + 1L):nx; loc <- idx - t0 + 1L

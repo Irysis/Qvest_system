@@ -135,14 +135,18 @@ sw_jump_regime <- function(r, mkt, dates, lam, kappa = NULL, train_min_y = 8, tr
   me <- which(c(ym[-1] != ym[-n], FALSE))                  # 각 달의 마지막 거래일(진행월 제외)
   if (refit_months > 1L) me <- me[as.integer(format(dd[me], "%m")) %% refit_months == 0L]   # λ 선택 때와 같은 적합 주기
   if (!length(me)) return(list(ok = FALSE, reason = "완결 월말 없음"))
-  fit_i <- max(me)
-  t0 <- max(1L, which(dd >= (dd[fit_i] - round(365.25 * train_max_y)))[1])
-  if (as.numeric(dd[fit_i] - dd[t0]) < 365.25 * train_min_y) return(list(ok = FALSE, reason = "학습 창 8년 미만"))
-  tr <- t0:fit_i
-  mu <- colMeans(X[tr, , drop = FALSE]); sg <- apply(X[tr, , drop = FALSE], 2, stats::sd); sg[!is.finite(sg) | sg == 0] <- 1
-  Z <- sweep(sweep(X, 2, mu), 2, sg, "/")
-  fit <- jm_fit_sparse(Z[tr, , drop = FALSE], lam, kappa, dp = dp)
-  if (is.null(fit)) return(list(ok = FALSE, reason = "적합 실패(한 상태)"))
+  ## 적합이 한 상태로 무너지면(두 상태 구분 없음) 직전 적합일로 물러난다(최대 4번 · 과거 자료만 — 연구 실행 style_jump_select.R 과 같은 규칙)
+  fit <- NULL
+  for (fit_i in rev(utils::tail(me, 5L))) {
+    t0 <- max(1L, which(dd >= (dd[fit_i] - round(365.25 * train_max_y)))[1])
+    if (as.numeric(dd[fit_i] - dd[t0]) < 365.25 * train_min_y) return(list(ok = FALSE, reason = "학습 창 8년 미만"))
+    tr <- t0:fit_i
+    mu <- colMeans(X[tr, , drop = FALSE]); sg <- apply(X[tr, , drop = FALSE], 2, stats::sd); sg[!is.finite(sg) | sg == 0] <- 1
+    Z <- sweep(sweep(X, 2, mu), 2, sg, "/")
+    fit <- jm_fit_sparse(Z[tr, , drop = FALSE], lam, kappa, dp = dp)
+    if (!is.null(fit)) break
+  }
+  if (is.null(fit)) return(list(ok = FALSE, reason = "적합 실패(한 상태 · 직전 4회 포함)"))
   mret <- vapply(1:2, function(k) mean(rr[tr][fit$s == k]), numeric(1))
   bull <- which.max(mret)
   Zw <- sweep(Z[t0:n, , drop = FALSE], 2, sqrt(fit$w), "*")
