@@ -19,6 +19,7 @@ class Face:
         self.hbfont = hb.Font(hb.Face(hb.Blob(data)))
         self.upm = self.tt['head'].unitsPerEm
         self.gs = self.tt.getGlyphSet()
+        self.cap_height = self.tt['OS/2'].sCapHeight
 
     def _run(self, text):
         b = hb.Buffer()
@@ -31,17 +32,16 @@ class Face:
             cx += pos.x_advance
         return run
 
-    def outline(self, text, x, y, size):
-        """size = em in px, (x, y) = baseline origin. Returns (svg path d, ink bbox)."""
+    def glyph_count(self, text):
+        return len(self._run(text))
+
+    def outline(self, text, x, y, size, tracking=0.0):
+        """size = em in px, (x, y) = baseline origin, tracking = extra px after each glyph.
+        Returns (svg path d, ink bbox)."""
         s = size / self.upm
         pen, bp = SVGPathPen(self.gs), BoundsPen(self.gs)
-        for name, gx, gy in self._run(text):
-            tr = (s, 0, 0, -s, x + gx * s, y - gy * s)
+        for i, (name, gx, gy) in enumerate(self._run(text)):
+            tr = (s, 0, 0, -s, x + gx * s + i * tracking, y - gy * s)
             self.gs[name].draw(TransformPen(pen, tr))
             self.gs[name].draw(TransformPen(bp, tr))
         return pen.getCommands(), bp.bounds
-
-    def fit(self, text, box_w):
-        """Em size at which the ink width equals box_w."""
-        _, (x0, _, x1, _) = self.outline(text, 0, 0, self.upm)
-        return box_w * self.upm / (x1 - x0)

@@ -1,6 +1,7 @@
 # Qvest 브랜드 로고
 
 도훈 제공 콘셉트 이미지(빛나는 Q 링 + 사선 꼬리 + QVEST + 손글씨 태그라인)를 **픽셀 단위로 실측**해 벡터(SVG)로 다시 그린 로고 패키지입니다(2026-11-24).
+태그라인은 콘셉트의 손글씨체 대신 단단한 대문자 산세리프(Michroma)로 바꿨습니다(도훈 11-24 4안 비교 뒤 C안 선택 — 심볼 · 워드마크의 기하 톤과 맞추고, 작은 크기에서 이어 쓴 필기체가 뭉개지는 문제를 없앰).
 SVG 가 정본이고 PNG 는 그 렌더입니다. 글자는 전부 외곽선(path)이라 폰트 설치 없이 어디서나 똑같이 보입니다.
 ★PNG 는 저장소 규칙(`.gitignore` 의 `*.png`)상 git 에 올라가지 않습니다 — git 에는 SVG 정본 · 생성기만 있고, PNG 는 아래 '다시 만들기'로 렌더하면 같은 파일이 나옵니다.
 
@@ -29,6 +30,7 @@ SVG 가 정본이고 PNG 는 그 렌더입니다. 글자는 전부 외곽선(pat
 | 워드마크 | 글자 높이 0.091W · 글자 폭 Q 1.65 · V 1.38 · E 1.16 · S 1.19 · T 1.29(× 글자 높이) · 획 0.17 | 같은 비율로 기하 구성 |
 
 - **QVEST 워드마크는 폰트가 아니라 기하 구성**입니다(`src/geom.py` · 글자 높이 100 단위 격자). Q 의 꼬리는 심볼 꼬리와 같은 45° 평행사변형이고, 볼을 끊는 틈(knockout)도 심볼과 같은 방식입니다 — 심볼과 워드마크가 한 언어를 씁니다.
+- **태그라인** *THE QUANT RESEARCH SYSTEM* = Michroma 대문자. 글자 높이는 워드마크의 약 0.21배(대표 20/95 · 배너 17/80 · 평면 19/92px)이고, 자간을 벌려 폭을 워드마크(Q 왼쪽 끝 ~ T 오른쪽 끝)와 똑같이 맞춥니다(잠금 폭).
 - 평면판의 틈은 도형 차집합으로 뚫어 실제로 투명합니다(흰색으로 덮은 것이 아님). 어떤 배경 위에 올려도 틈이 배경색으로 보입니다.
 - 발광판의 코어 필라멘트 · 띠 안 네트워크 점 · 꼬리 회로선은 시드 고정 난수라 다시 만들어도 같은 그림이 나옵니다.
 
@@ -45,15 +47,15 @@ SVG 가 정본이고 PNG 는 그 렌더입니다. 글자는 전부 외곽선(pat
 
 ## 글꼴 · 라이선스
 
-- 태그라인 *The Quant Research System* = **Allison**(Copyright 2020 The Allison Project Authors · SIL Open Font License 1.1) 을 HarfBuzz 로 조판한 뒤 외곽선으로 바꿔 넣었습니다. OFL 은 로고 · 이미지 안 사용과 외곽선 변환을 허용하며, 폰트 파일 자체는 이 폴더에 넣지 않았습니다.
+- 태그라인 = **Michroma**(Copyright 2011 The Michroma Project Authors · SIL Open Font License 1.1) 를 HarfBuzz 로 조판한 뒤 외곽선으로 바꿔 넣었습니다. OFL 은 로고 · 이미지 안 사용과 외곽선 변환을 허용하며, 폰트 파일 자체는 이 폴더에 넣지 않았습니다.
 - 워드마크 · 심볼은 자체 기하 구성이라 외부 라이선스가 없습니다.
 
 ## 다시 만들기
 
 ```bash
 # 1) 태그라인 폰트 (npm 레지스트리 · OFL)
-mkdir -p /tmp/qvest_fonts && cd /tmp/qvest_fonts && npm pack @fontsource/allison && tar -xzf fontsource-allison-*.tgz
-mkdir -p sel && cp package/files/allison-latin-400-normal.woff sel/
+mkdir -p /tmp/qvest_fonts && cd /tmp/qvest_fonts && npm pack @fontsource/michroma && tar -xzf fontsource-michroma-*.tgz
+mkdir -p sel && cp package/files/michroma-latin-400-normal.woff sel/
 # 2) 의존성
 pip install fonttools uharfbuzz shapely
 # 3) SVG 생성 → PNG 렌더 (Playwright Chromium)
@@ -66,4 +68,4 @@ node src/render.js qvest_logo_light.svg  qvest_logo_light.png  1400 532  1 2
 node src/render.js qvest_symbol_flat.svg qvest_symbol_flat.png 512  512  1 2
 ```
 
-`render.js` 인자 = 입력 SVG · 출력 PNG · 너비 · 높이 · 투명 배경(1) · 배율. 위 명령으로 이 폴더의 PNG 와 픽셀 단위로 같은 결과가 나옵니다(@fontsource/allison 5.3.0 기준).
+`render.js` 인자 = 입력 SVG · 출력 PNG · 너비 · 높이 · 투명 배경(1) · 배율. SVG 는 같은 폰트(@fontsource/michroma 5.3.0)면 바이트 단위로 같게 다시 나옵니다. PNG 는 렌더러(Chromium 판 · OS)에 따라 가장자리 안티앨리어싱이 미세하게 다를 수 있습니다.

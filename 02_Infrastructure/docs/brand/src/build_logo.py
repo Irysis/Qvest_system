@@ -1,8 +1,8 @@
 """Qvest brand mark generator — writes the SVG logo variants (all text converted to outlines).
 
 usage: python build_logo.py <fonts_dir> <out_dir>
-  fonts_dir must contain allison-latin-400-normal.woff (npm @fontsource/allison — SIL OFL 1.1).
-  The QVEST wordmark is a geometric construction (geom.py), not a font.
+  fonts_dir must contain michroma-latin-400-normal.woff (npm @fontsource/michroma — SIL OFL 1.1),
+  used for the tagline only. The QVEST wordmark is a geometric construction (geom.py), not a font.
   deps: fonttools · uharfbuzz · shapely
 
 Symbol geometry is measured from the reference concept image (1254 px): ring centre (627, 470),
@@ -329,29 +329,34 @@ def underline(c, x0, x1, y, style, s=1.0):
         c.add(f'<path d="M{f(x0)} {f(y)}L{f(x1)} {f(y)}" stroke="{c.ref("ul")}" stroke-width="{f(2.4 * s)}"/>')
 
 
-def tagline(c, face, xc, base, width, fill, glow=True):
-    text = 'The Quant Research System'
-    size = face.fit(text, box_w=width)
-    _, (b0, _, b1, _) = face.outline(text, 0, base, size)
+TAGLINE = 'THE QUANT RESEARCH SYSTEM'
+
+
+def tagline(c, face, x0, x1, base, cap, fill, glow=True):
+    """Uppercase sans tagline locked to the wordmark width: em size from cap height, tracking fills x0..x1."""
+    size = cap * face.upm / face.cap_height
+    _, (a0, _, a1, _) = face.outline(TAGLINE, 0, 0, size)
+    trk = (x1 - x0 - (a1 - a0)) / (face.glyph_count(TAGLINE) - 1)
     # bake the offset into the outline: a transform on a filtered element would shift the filter region
-    d, _ = face.outline(text, xc - (b0 + b1) / 2, base, size)
+    d, _ = face.outline(TAGLINE, x0 - a0, base, size, trk)
     flt = f' filter="{c.ref("gltext")}"' if glow else ''
     c.add(f'<g{flt}><path d="{d}" fill="{fill}"/></g>')
 
 
 # ---- variants ----------------------------------------------------------------------
 def build(fonts, out):
-    scr = Face(os.path.join(fonts, 'allison-latin-400-normal.woff'))
+    tag = Face(os.path.join(fonts, 'michroma-latin-400-normal.woff'))
     files = {}
 
-    # 1) primary square lockup (reference composition, 1024 grid)
+    # 1) primary square lockup (reference composition, 1024 grid);
+    #    content spans ring top 150 .. tagline baseline 874 -> vertically centred on 512
     c = Canvas(1024, 1024, 'qp')
-    background(c, 512, 420, seed=11)
+    background(c, 512, 436, seed=11)
     c.glow('gltext', 2.2, 9, 0.85)
-    symbol_glow(c, 512, 384, 250)
-    x0, x1 = wordmark(c, 512, 784, 95, 'glow')
-    underline(c, x0 - 6, x1 + 6, 813, 'glow')
-    tagline(c, scr, 512, 884, 610, '#b3e0ff')
+    symbol_glow(c, 512, 400, 250)
+    x0, x1 = wordmark(c, 512, 800, 95, 'glow')
+    underline(c, x0 - 6, x1 + 6, 829, 'glow')
+    tagline(c, tag, x0, x1, 874, 20, '#b3e0ff')
     files['qvest_logo.svg'] = c.svg('Qvest — The Quant Research System')
 
     # 2) app / avatar icon: symbol only, bbox-centred (ring [-R, R] + slab to 1.154R),
@@ -367,9 +372,9 @@ def build(fonts, out):
     background(c, 420, 300, seed=3, stars=140)
     c.glow('gltext', 2, 8, 0.85)
     symbol_glow(c, 300, 300, 195)
-    x0, x1 = wordmark(c, 890, 330, 80, 'glow')
-    underline(c, x0 - 5, x1 + 5, 356, 'glow', 0.9)
-    tagline(c, scr, 890, 414, 520, '#b3e0ff')
+    x0, x1 = wordmark(c, 890, 322, 80, 'glow')
+    underline(c, x0 - 5, x1 + 5, 348, 'glow', 0.9)
+    tagline(c, tag, x0, x1, 385, 17, '#b3e0ff')
     files['qvest_banner.svg'] = c.svg('Qvest — The Quant Research System')
 
     # 4) flat lockup for light backgrounds (transparent)
@@ -377,7 +382,7 @@ def build(fonts, out):
     symbol_flat(c, 270, 262, 200, PAL['navy'], PAL['brand'])
     x0, x1 = wordmark(c, 950, 272, 92, PAL['navy'])
     underline(c, x0, x1, 305, PAL['brand'], 1.2)
-    tagline(c, scr, 950, 374, 560, PAL['brand'], glow=False)
+    tagline(c, tag, x0, x1, 347, 19, PAL['brand'], glow=False)
     files['qvest_logo_light.svg'] = c.svg('Qvest — The Quant Research System')
 
     # 5) flat symbol alone (favicons, small sizes; transparent)
