@@ -15,29 +15,27 @@ SB_DIR  <- Sys.getenv("SMARTBETA_KR_OUT_DIR", "outputs/smartbeta_kr")
 wf <- function(fmt, ...) cat(sprintf(fmt, ...), "\n")
 
 ## v4 (2026-11-24 도훈 "스타일 국면 브리핑 국면판독 부분 개선"): FF = 한국 FF 요인 정본(02_Infrastructure/data/build_kr_factor_returns.R ·
-##   밤 갱신 [5c] · 월간 = 완결월 · 진행월 MTD = 정본 일간 복리). 구 트래커(ff5_kr_monthly · ff5_kr_mtd.json)는 CMA 부호 반전 ·
-##   월말 종가 비율 수익(가격 이음매) 결함(검토 04_Research/01_reports/style_regime_brief_review_20261124)이라 정본이 없을 때만
-##   쓰고 출처 라벨(ff_source)에 적는다. 경로 덮어쓰기(검사용) = KR_FACTOR_DIR(기본 .cache).
+##   밤 갱신 [5c] · 월간 = 완결월 · 진행월 MTD = 정본 일간 복리). 경로 덮어쓰기(검사용) = KR_FACTOR_DIR(기본 .cache).
+## v4.2 (2026-11-24 도훈 '퇴역'): 구 트래커(ff5_kr_monthly · ff5_kr_mtd.json — CMA 부호 반전 · 월말 종가 비율 수익 이음매 ·
+##   검토 04_Research/01_reports/style_regime_brief_review_20261124) 대체 경로를 없앴다. 정본이 없으면 멈춘다(지난 JSON 이 남고
+##   브리핑은 그 창 라벨을 그대로 쓴다) — 결함 있는 원천으로 조용히 바꿔 그리지 않는다.
 KF_DIR <- Sys.getenv("KR_FACTOR_DIR", ".cache")
 .kf_m <- file.path(KF_DIR, "kr_factor_returns_v2.parquet"); .kf_d <- file.path(KF_DIR, "kr_factor_returns_daily.parquet")
-FF_SRC <- if (file.exists(.kf_m) && file.exists(.kf_d)) "정본 요인" else "구 트래커"
-if (identical(FF_SRC, "정본 요인")) {
-  FF <- as.data.table(read_parquet(.kf_m, col_select = c("ym", "MKT", "SMB", "HML", "RMW", "CMA", "RF")))
-  FF[, ym := sprintf("%s-%s", substr(as.character(ym), 1, 4), substr(as.character(ym), 5, 6))]
-  setnames(FF, "RF", "rf_m"); setorder(FF, ym)
-  KD <- as.data.table(read_parquet(.kf_d, col_select = c("Date", "MKT", "SMB", "HML", "RMW", "CMA", "RF")))
-  KD[, Date := as.Date(Date)]; KD <- KD[complete.cases(KD)]
-  kd_last <- max(KD$Date); kd_ym <- format(kd_last, "%Y-%m")
-  FF <- FF[ym < kd_ym]                                                   # 진행월 행은 월간에서 빼고 아래 MTD 로만
-  .mk <- KD[format(Date, "%Y-%m") == kd_ym]
-  mtd5 <- if (nrow(.mk)) list(as_of = format(kd_last), ym = kd_ym, n_days = nrow(.mk), rf_mtd = prod(1 + .mk$RF) - 1,
-                              MKT = prod(1 + .mk$MKT) - 1, SMB = prod(1 + .mk$SMB) - 1, HML = prod(1 + .mk$HML) - 1,
-                              RMW = prod(1 + .mk$RMW) - 1, CMA = prod(1 + .mk$CMA) - 1) else NULL
-  rm(KD, .mk)
-} else {
-  FF <- as.data.table(read_parquet(file.path(OUT_DIR, "ff5_kr_monthly.parquet"))); setorder(FF, ym)
-  mtd5 <- tryCatch(jsonlite::fromJSON(file.path(OUT_DIR, "ff5_kr_mtd.json")), error = function(e) NULL)
-}
+if (!(file.exists(.kf_m) && file.exists(.kf_d)))
+  stop(sprintf("정본 요인 파일 없음(%s · %s) — 구 트래커 대체 경로는 퇴역(11-24)", .kf_m, .kf_d))
+FF_SRC <- "정본 요인"
+FF <- as.data.table(read_parquet(.kf_m, col_select = c("ym", "MKT", "SMB", "HML", "RMW", "CMA", "RF")))
+FF[, ym := sprintf("%s-%s", substr(as.character(ym), 1, 4), substr(as.character(ym), 5, 6))]
+setnames(FF, "RF", "rf_m"); setorder(FF, ym)
+KD <- as.data.table(read_parquet(.kf_d, col_select = c("Date", "MKT", "SMB", "HML", "RMW", "CMA", "RF")))
+KD[, Date := as.Date(Date)]; KD <- KD[complete.cases(KD)]
+kd_last <- max(KD$Date); kd_ym <- format(kd_last, "%Y-%m")
+FF <- FF[ym < kd_ym]                                                     # 진행월 행은 월간에서 빼고 아래 MTD 로만
+.mk <- KD[format(Date, "%Y-%m") == kd_ym]
+mtd5 <- if (nrow(.mk)) list(as_of = format(kd_last), ym = kd_ym, n_days = nrow(.mk), rf_mtd = prod(1 + .mk$RF) - 1,
+                            MKT = prod(1 + .mk$MKT) - 1, SMB = prod(1 + .mk$SMB) - 1, HML = prod(1 + .mk$HML) - 1,
+                            RMW = prod(1 + .mk$RMW) - 1, CMA = prod(1 + .mk$CMA) - 1) else NULL
+rm(KD, .mk)
 wf("FF 원천: %s (%s~%s)", FF_SRC, min(FF$ym), max(FF$ym))
 IX <- as.data.table(read_parquet(file.path(OUT_DIR, "krx_index_monthend.parquet")))
 IX[, Date := as.Date(Date)]; setorder(IX, idx, Date)

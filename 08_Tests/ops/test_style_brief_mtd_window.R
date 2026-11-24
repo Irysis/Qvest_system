@@ -7,7 +7,9 @@
 #   9월 한 달 내내 '2026-08 기준' 같은 값이 나갔다.
 # 대상 = 운영 코드 그 자체: 02_Infrastructure/reports/style_brief_lib.R (sw_window12 · sw_mtd_state ·
 #   sw_brief_title · sw_compose_brief) + ops/morning_steps/ff5_brief_send.R 배선(드라이런 서브프로세스) +
-#   트래커 완결월 발행 가드(ff5_kr_tracker.R §1 · smartbeta_kr_tracker.R §3 — 파스 트리에서 꺼내 합성 입력으로 실행).
+#   트래커 완결월 발행 가드(smartbeta_kr_tracker.R §3 — 파스 트리에서 꺼내 합성 입력으로 실행).
+#   ★v4.2(2026-11-24 도훈 '퇴역'): 구 FF5 트래커(ff5_kr_tracker.R)는 퇴역 — 그 가드 검사(P10a · P10c · M5 · R1 FF5)를 뺐다.
+#     P1~P7 의 FF5 합성 입력은 sw_window12(스마트베타도 쓰는 공용 함수)와 조립 함수의 구 경로(FF 를 직접 준 검사 · 수동)를 잰다.
 # 양성 대조:
 #   P1 FF5 합성 14개월 + MTD → 창 = (2025-10..2026-08 합 + MTD)/12 수기값(5팩터) · 월 목록
 #   P2 스마트베타 7스타일 — 같은 함수 · 수기값        P3 MTD 부재 → 완결 12개월 수기값 + '진행월 MTD 없음'
@@ -16,15 +18,17 @@
 #   P7 조립: 'FF5 최근 완결월 (2026-08)' · 12개월 절 라벨 · kv = 창 값(fmt +1.23% 규약) · 국면 판독 FF5/스타일 줄 ·
 #      부활 워치(완결 12개월은 음, 창은 양 → 발화) · regime_line · 폴백 조립 · bullet ≤80자·MTD ≤1회(최악 입력)
 #   P8 렌더: tg_agent_brief(dry_run=TRUE) 통과 3종(정상·폴백·최악) — 발송 없음
-#   P9 드라이런 서브프로세스(FF5_BRIEF_DRYRUN=1 · 빌드 생략 · 샌드박스 데이터) → 제목 기록 · 텔레그램 미적재 · 'sent' 없음
-#   P10 트래커 완결월 가드: FF5 rets · SB sig_dates — 진행월(부분월) 행 제외 · 표시층은 월간 기록 뒤에만 · 표시층 쓰기 0
-#   R1 (읽기 전용 불변식) 운영 월간 파일 max(ym) < RAWDATA 최신월(진행월) — 부분월 발행 부재
+#   P9 드라이런 서브프로세스(FF5_BRIEF_DRYRUN=1 · 빌드 생략 · 샌드박스 합성 정본 요인 + 스마트베타) → 정본 제목 · 절 ·
+#      텔레그램 미적재 · 'sent' 없음
+#   P10 스마트베타 트래커 완결월 가드: sig_dates — 진행월(부분월) 행 제외 · 표시층은 월간 기록 뒤에만 · 표시층 쓰기 0
+#   R1 (읽기 전용 불변식) 운영 스마트베타 월간 파일 max(ym) < RAWDATA 최신월(진행월) — 부분월 발행 부재
 # 위반 주입(사본 돌연변이 → 같은 판정이 red 여야 한다):
 #   M1 창 → 완결 12개월(MTD 무시)   M2 제목 → 완결월 기준   M3 분모 12 → 11   M4 낡은 MTD 판정 제거
-#   M5 FF5 트래커 가드 제거(부분월 월간 기록)   M6 SB 트래커 가드 '<' → '<='(부분월 발행)
+#   M6 SB 트래커 가드 '<' → '<='(부분월 발행)
 #   P11 · M7 · M8 (v4 · 2026-11-24 도훈 '국면판독 개선'): 정본 요인 경로 — 수기 t · |t| ≥ 문턱만 단정 · 부활 워치 = SMB · HML 둘 다
 #     문턱 이상 · 문턱 없으면 구 경로 + 사유 / M7 문턱 제거 · M8 부활 워치를 가치 하나로 → red
 #   P12 · M9 (v4.1 · 11-24 '지연없이 업데이트'): 정본 요인 따라잡기 판정 — 드라이런은 운영 .cache 를 쓰지 않는다 / M9 보호 제거 → red
+#   P13 (v4.2 · 11-24 '퇴역'): 정본 요인이 없거나 판정 불가인 날 — FF5 절 생략 · 사유 줄(최장 사유 ≤80자) · 스마트베타 절 유지
 # 실행: Rscript 08_Tests/ops/test_style_brief_mtd_window.R  (STYLE_BRIEF_CODE_ROOT=<스테이징> 로 배포 전 검증 가능)
 #==============================================================================
 suppressMessages({ library(data.table); library(arrow); library(jsonlite) })
@@ -32,7 +36,6 @@ ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
 CODE <- Sys.getenv("STYLE_BRIEF_CODE_ROOT", ROOT)
 LIB  <- file.path(CODE, "02_Infrastructure/reports/style_brief_lib.R")
 SEND <- file.path(CODE, "02_Infrastructure/ops/morning_steps/ff5_brief_send.R")
-TRK5 <- file.path(CODE, "02_Infrastructure/reports/ff5_kr_tracker.R")
 TRKS <- file.path(CODE, "02_Infrastructure/reports/smartbeta_kr_tracker.R")
 Sys.setenv(QVEST_TG_DRY_RUN = "1")   # 검사 중 텔레그램 실제 발송 금지 (배터리 기본값과 동일 — 단독 실행 대비)
 PASS <- 0L; FAIL <- 0L; SKIPS <- list()
@@ -47,7 +50,7 @@ finish <- function() {
                                          skipped = length(SKIPS), skips = SKIPS), auto_unbox = TRUE)), "\n", sep = "")
   quit(status = if (FAIL == 0L) 0L else 1L)
 }
-for (p in c(LIB, SEND, TRK5, TRKS)) if (!file.exists(p)) { ng("대상 파일 부재", p); finish() }
+for (p in c(LIB, SEND, TRKS)) if (!file.exists(p)) { ng("대상 파일 부재", p); finish() }
 
 read_txt <- function(path) paste(readLines(path, encoding = "UTF-8", warn = FALSE), collapse = "\n")
 ## 사본 돌연변이: from 이 정확히 1회 있어야 한다(없으면 '돌연변이 미적용' = 검사 자체 실패로 센다 — 조용히 통과 금지)
@@ -216,7 +219,8 @@ if (tg_ok) {
   W <- worst_inputs()
   cases <- list(정상 = E0$sw_compose_brief(FFS, SBS, MTD5, SBM, NULL, NOW),
                 폴백 = E0$sw_compose_brief(FFS, SBS, NULL, NULL, NULL, NOW),
-                최악 = E0$sw_compose_brief(W$FW, W$SW, W$MW, W$SMW, W$IB, NOW))
+                최악 = E0$sw_compose_brief(W$FW, W$SW, W$MW, W$SMW, W$IB, NOW),
+                정본없음 = E0$sw_compose_brief(NULL, SBS, NULL, SBM, W$IB, NOW, kf = list(daily = NULL, monthly = NULL), t_sig = 2))
   for (nm in names(cases)) {
     o <- cases[[nm]]
     rr <- tryCatch({ invisible(capture.output(x <- tg_agent_brief(agent = "Q-Lead", title = o$title, sections = o$sections,
@@ -236,11 +240,20 @@ local({
   as_of <- today - 1L; mym <- format(as_of, "%Y-%m")
   last <- format(seq(as.Date(paste0(mym, "-01")), by = "-1 month", length.out = 2L)[2L], "%Y-%m")
   yms <- rev(format(seq(as.Date(paste0(last, "-01")), by = "-1 month", length.out = 14L), "%Y-%m"))
-  ff <- FFS; ff$ym <- yms; sb <- SBS; sb$ym <- yms
-  write_parquet(ff, file.path(S, "outputs/ff5_kr/ff5_kr_monthly.parquet"))
+  sb <- SBS; sb$ym <- yms
   write_parquet(sb, file.path(S, "outputs/smartbeta_kr/smartbeta_kr_monthly.parquet"))
-  write_json(modifyList(MTD5, list(as_of = format(as_of), ym = mym)), file.path(S, "outputs/ff5_kr/ff5_kr_mtd.json"), auto_unbox = TRUE)
   write_json(modifyList(SBM, list(as_of = format(as_of))), file.path(S, "outputs/smartbeta_kr/smartbeta_kr_mtd.json"), auto_unbox = TRUE)
+  ## v4.2: FF5 = 합성 정본 요인(.cache/kr_factor_returns_* — 일간 = 달력일 521일 · ±1% 교대 + 기울기 ·
+  ##   월간 = 완결월(~last) 일간 복리 · ym = YYYYMM 정수 = 정본 형식). 구 트래커 산출은 만들지 않는다(퇴역)
+  dir.create(file.path(S, ".cache"), showWarnings = FALSE)
+  kdd <- seq(as_of - 520L, as_of, by = "day"); alt <- rep(c(0.01, -0.01), length.out = length(kdd))
+  kd <- data.frame(Date = kdd, MKT_TOTAL = alt / 2, MKT = alt / 2, SMB = alt, HML = 0.004 + alt, RMW = -0.004 + alt, CMA = alt, WML = alt)
+  kcols <- c("MKT", "SMB", "HML", "RMW", "CMA", "WML"); kym <- format(kdd, "%Y-%m"); um <- sort(unique(kym[kym <= last]))
+  km <- data.frame(ym = as.integer(sub("-", "", um)),
+                   t(vapply(um, function(u) vapply(kcols, function(k) prod(1 + kd[[k]][kym == u]) - 1, 0), numeric(6))), row.names = NULL)
+  write_parquet(kd, file.path(S, ".cache/kr_factor_returns_daily.parquet"))
+  write_parquet(km, file.path(S, ".cache/kr_factor_returns_v2.parquet"))
+  n_mtd <- sum(kym == mym)
   dry <- file.path(S, "dry.txt"); runner <- file.path(S, "run_brief.R")
   ## 환경은 러너 안에서 세운다 — ~/.Renviron 의 QM_ROOT 가 상속 환경을 덮어 자식이 운영 루트를 보는 함정 회피
   envs <- c(QM_ROOT = CODE, CLAUDE_PROJECT_DIR = S, FF5_BRIEF_DATA_DIR = S, FF5_BRIEF_SKIP_BUILD = "all",
@@ -256,10 +269,11 @@ local({
       paste(tail(out, 4), collapse = " | ")))
   chk(sprintf("P9b 제목 = as_of %s 기준 · 완결월 %s (운영 브리핑 배선)", format(as_of), last),
       if (any(txt == et)) "" else paste("TITLE 줄:", paste(grep("^TITLE", txt, value = TRUE), collapse = " / ")))
-  chk("P9c 절1 = 'FF5 최근 완결월' · 12개월 절 = 진행월 MTD 포함 라벨",
-      if (any(txt == sprintf("[절 1 · kv] FF5 최근 완결월 (%s)", last)) &&
-          any(grepl(sprintf("^\\[절 2 · kv\\] FF5 최근 12개월\\(진행월 MTD 17거래일 포함, ~%s\\) 평균$", format(as_of, "%m-%d")), txt))) ""
-      else "절 제목 불일치")
+  chk("P9c 절1 = 'FF5+모멘텀 최근 완결월 (… · 정본 요인)' · 12개월 절 = 진행월 MTD 포함 정본 라벨(구 트래커 읽기 0)",
+      if (any(txt == sprintf("[절 1 · kv] FF5+모멘텀 최근 완결월 (%s · 정본 요인)", last)) &&
+          any(txt == sprintf("[절 2 · kv] FF5+모멘텀 최근 12개월(진행월 MTD %d거래일 포함, ~%s) 평균 · 정본 요인",
+                             n_mtd, format(as_of, "%m-%d")))) ""
+      else paste("절 제목 불일치:", paste(grep("^\\[절 [12] ", txt, value = TRUE), collapse = " / ")))
   chk("P9d 발송 0 — 'DRYRUN ok' · 텔레그램 미적재(tg_loaded=FALSE) · 'sent ok=' 없음",
       if (any(grepl("DRYRUN ok", out, fixed = TRUE)) && any(grepl("tg_loaded=FALSE", out, fixed = TRUE)) &&
           !any(grepl("sent ok=", out, fixed = TRUE))) "" else paste(tail(out, 3), collapse = " | "))
@@ -280,21 +294,9 @@ local({
   chk("W2 브리핑이 sw_compose_brief 로 조립", if (has_compose) "" else "조립 함수 미사용")
 })
 
-cat("\n=== P10 트래커 완결월 발행 가드 (파스 트리에서 꺼내 합성 입력으로 실행) ===\n")
+cat("\n=== P10 스마트베타 트래커 완결월 발행 가드 (파스 트리에서 꺼내 합성 입력으로 실행) ===\n")
 tl_exprs <- function(path) as.list(parse(file = path, encoding = "UTF-8", keep.source = FALSE))
 is_asg <- function(e, nm) is.call(e) && identical(e[[1]], as.name("<-")) && identical(e[[2]], as.name(nm))
-g_ff5 <- function(path) {
-  ex <- tryCatch(tl_exprs(path), error = function(e) NULL); if (is.null(ex)) return("파스 실패")
-  hits <- Filter(function(e) is_asg(e, "rets") && grepl("max(ud)", paste(deparse(e[[3]]), collapse = " "), fixed = TRUE), ex)
-  if (!length(hits)) return("완결월 가드(rets <- rets[… max(ud) …]) 부재 — 진행월 부분월이 월간 파일로 간다")
-  env <- new.env(parent = globalenv())
-  env$ud <- as.Date(c("2026-08-28", "2026-08-31", "2026-09-01", "2026-09-23"))
-  env$rets <- data.table(ym = c("2026-07", "2026-08", "2026-09"), Date = as.Date(c("2026-07-31", "2026-08-31", "2026-09-23")), ret = 0.01)
-  for (h in hits) eval(h, env)
-  if ("2026-09" %in% env$rets$ym) return("진행월(2026-09) 부분월 행이 월간 패널에 남는다")
-  if (!all(c("2026-07", "2026-08") %in% env$rets$ym)) return("완결월까지 잘린다")
-  ""
-}
 g_sb <- function(path) {
   ex <- tryCatch(tl_exprs(path), error = function(e) NULL); if (is.null(ex)) return("파스 실패")
   hits <- Filter(function(e) is_asg(e, "last_ym") || is_asg(e, "sig_dates"), ex)
@@ -317,17 +319,15 @@ g_order <- function(path, obj) {   # 표시층(style_brief_lib 소스)은 월간
   if (any(vapply(after, is_asg, logical(1), nm = obj))) return(sprintf("표시층 뒤에서 %s 재할당", obj))
   ""
 }
-chk("P10a FF5 트래커 §1 완결월 가드 — 진행월 부분월 제외", g_ff5(TRK5))
 chk("P10b 스마트베타 트래커 §3 완결월 가드 — 08월말 신호(실현 09 부분월) 제외", g_sb(TRKS))
-chk("P10c FF5 표시층은 월간 기록 뒤 · FF 재할당 0", g_order(TRK5, "FF"))
 chk("P10d 스마트베타 표시층은 월간 기록 뒤 · SB 재할당 0", g_order(TRKS, "SB"))
 lib_io <- grepl("write_parquet|write_json|fwrite|saveRDS|file.rename", read_txt(LIB))
 chk("P10e style_brief_lib.R 쓰기 호출 0(표시층 전용)", if (!lib_io) "" else "라이브러리가 파일을 쓴다")
 
-cat("\n=== R1 읽기 전용 불변식 — 운영 월간 파일에 진행월(부분월) 없음 ===\n")
+cat("\n=== R1 읽기 전용 불변식 — 운영 스마트베타 월간 파일에 진행월(부분월) 없음 ===\n")
 local({
   rd <- file.path(ROOT, ".cache/rawdata.parquet")
-  pf <- c(FF5 = "outputs/ff5_kr/ff5_kr_monthly.parquet", SB = "outputs/smartbeta_kr/smartbeta_kr_monthly.parquet")
+  pf <- c(SB = "outputs/smartbeta_kr/smartbeta_kr_monthly.parquet")   # v4.2: FF5 트래커 파일은 퇴역(정본 요인은 빌더가 완결월만 낸다)
   miss <- c(rd, file.path(ROOT, pf))[!file.exists(c(rd, file.path(ROOT, pf)))]
   if (length(miss)) { sk("R1 운영 불변식", "운영 파일 부재", paste(miss, collapse = ";")); return(invisible()) }
   pym <- format(max(as.Date(read_parquet(rd, col_select = "Date")$Date)), "%Y-%m")
@@ -393,6 +393,26 @@ c_catchup <- function(send_file) {
 }
 chk("P12 따라잡기 — 신선 · 낡음+드라이런 = 생략(운영 무접촉) · RAWDATA 판독 불가 표기", c_catchup(SEND))
 
+cat("\n=== P13 v4.2 정본 요인 없음 · 판정 불가 — FF5 절 생략 · 사유 · 스마트베타 절 유지 (2026-11-24 도훈 '퇴역') ===\n")
+c_nokf <- function(E) {
+  o <- E$sw_compose_brief(NULL, SBS, NULL, SBM, NULL, NOW, kf = list(daily = NULL, monthly = NULL), t_sig = 2)
+  hs <- vapply(o$sections, function(s) s$heading, "")
+  if (isTRUE(o$kf_used) || any(grepl("FF5", hs, fixed = TRUE))) return(paste("FF5 절이 실렸다:", paste(hs, collapse = " / ")))
+  if (!identical(hs[1], "스마트베타 최근 12개월(진행월 MTD 17거래일 포함, ~09-23) 평균 초과수익")) return(paste("절1:", hs[1]))
+  if (!identical(o$title, "스타일 국면 브리핑 — FF5 + 스마트베타 (2026-09-23 기준 · FF5 생략)")) return(paste("제목:", o$title))
+  jd <- o$sections[[length(o$sections)]]$items
+  if (!identical(jd[1], "정본 요인 미사용(정본 요인 없음) — FF5 절 · 판독 생략(구 트래커 퇴역)")) return(paste("사유 줄:", jd[1]))
+  if (!any(jd == "부활 워치: 판정 불가(정본 요인 미사용)")) return(paste("부활 워치:", jd[length(jd)]))
+  if (any(grepl("ff5_rolling12|kr_ff_regime", o$charts))) return(paste("FF5 차트가 실렸다:", paste(o$charts, collapse = ",")))
+  ## 최장 사유(월간 결손 — 완결월 · 일간 날짜 둘 다 싣는다)도 bullet ≤80자
+  o2 <- E$sw_compose_brief(NULL, SBS, NULL, SBM, NULL, NOW, kf = list(daily = KF_D, monthly = KF_M[KF_M$ym <= "2026-06", ]), t_sig = 2)
+  j2 <- o2$sections[[length(o2$sections)]]$items
+  if (!startsWith(j2[1], "정본 요인 미사용(정본 월간 결손(완결 2026-06 · 일간 2026-09-23))")) return(paste("판정 불가 사유:", j2[1]))
+  if (max(nchar(c(jd, j2))) > 80L) return(sprintf("bullet %d자 > 80", max(nchar(c(jd, j2)))))
+  ""
+}
+chk("P13 정본 없음 · 판정 불가 — FF5 절 · 차트 생략 · 제목 'FF5 생략' · 사유 줄(최장 ≤80자) · 스마트베타 절 유지", c_nokf(E0))
+
 cat("\n=== 위반 주입 (사본 돌연변이 → red 여야 한다) ===\n")
 mut <- function(label, path, from, to, judge) {
   m <- mutate(path, from, to)
@@ -409,7 +429,6 @@ mut("M3 월평균 분모 12 → 11", LIB, "sum(v, na.rm = TRUE) / sum(!is.na(v))
     function(f) c_window_ff(lib_env(f)))
 mut("M4 낡은 MTD(stale) 판정 제거", LIB, 'if (mym <= last_ym) return(mk(FALSE, "stale", a, nd))', "invisible(NULL)",
     function(f) c_stale(lib_env(f)))
-mut("M5 FF5 트래커 완결월 가드 제거(부분월 월간 기록)", TRK5, 'rets <- rets[ym < format(max(ud), "%Y-%m")]', "invisible(NULL)", g_ff5)
 mut("M6 스마트베타 트래커 가드 '<' → '<='(부분월 발행)", TRKS, 'format(nx, "%Y-%m") < last_ym', 'format(nx, "%Y-%m") <= last_ym', g_sb)
 mut("M7 정본 경로 유의 문턱 제거(부호만으로 단정)", LIB, "dec <- .SW_KF[is.finite(t12) & abs(t12) >= t_sig]",
     "dec <- .SW_KF[is.finite(t12)]", function(f) c_kf(lib_env(f)))

@@ -17,6 +17,8 @@
 ## v4 (2026-11-24 도훈 "스타일 국면 브리핑 국면판독 부분 개선"): 정본 요인(build_kr_factor_returns.R) 기반 국면 판독 —
 ##   아래 '정본 요인 국면 판독' 절. 정본이 없거나 판정 불가면 구 경로(v3) 그대로 + 사유 표기. 검토 =
 ##   04_Research/01_reports/style_regime_brief_review_20261124/README.md
+## v4.2 (2026-11-24 도훈 '퇴역'): 구 FF5 트래커(ff5_kr_tracker.R) 퇴역 — 운영은 FF = NULL. 정본이 없으면 FF5 절을 생략하고 사유를 싣는다
+##   (낡은 트래커 값을 대신 내지 않는다). FF 를 넘기면(검사) 구 경로(v3) 그대로.
 ##=============================================================================
 
 .SW_FF5 <- c("MKT", "SMB", "HML", "RMW", "CMA")
@@ -153,7 +155,7 @@ sw_kf_asof <- function(dates, now = Sys.time(), tz = "Asia/Seoul", confirm_hour 
 
 ## kf = list(daily = (Date, MKT_TOTAL, MKT, SMB, HML, RMW, CMA, WML), monthly = (ym 'YYYY-MM', MKT … WML),
 ##           meta = list(cfg_version, md5, built_at) · 선택, ref_as_of = 가격 원장 as_of(신선도 대조) · 선택)
-##   반환 ok = FALSE 면 reason(한국어) — 조립은 구 경로로 가고 사유를 싣는다(침묵 폴백 금지).
+##   반환 ok = FALSE 면 reason(한국어) — 조립은 FF5 절을 생략하고 사유를 싣는다(침묵 폴백 금지 · v4.2 — 구 경로는 FF 를 직접 준 검사 · 수동만).
 sw_kf_prepare <- function(kf, now = Sys.time()) {
   bad <- function(r) list(ok = FALSE, reason = r)
   if (is.null(kf) || !is.list(kf) || is.null(kf$daily) || is.null(kf$monthly)) return(bad("정본 요인 없음"))
@@ -297,23 +299,29 @@ sw_compose_brief <- function(FF, SB = NULL, mtd5 = NULL, sbm = NULL, ib = NULL, 
   fmt <- sw_fmt
   pos <- function(x) length(x) == 1L && !is.na(x) && x > 0
   side <- function(x, neg, posl) if (length(x) != 1L || is.na(x)) "?" else if (x < 0) neg else posl
-  FF <- as.data.frame(FF); FF <- FF[order(FF$ym), , drop = FALSE]
-  L <- FF[nrow(FF), , drop = FALSE]
-  wf <- sw_window12(FF, .SW_FF5, mtd5, now)
-  r5 <- wf$values
-  mtd_ok <- identical(wf$mode, "mtd")
-  tag <- wf$short
   kv5 <- function(v) list("시장초과 MKT" = fmt(v[["MKT"]]), "소형-대형 SMB" = fmt(v[["SMB"]]),
                           "가치-성장 HML" = fmt(v[["HML"]]), "수익성 RMW" = fmt(v[["RMW"]]),
                           "투자보수 CMA" = fmt(v[["CMA"]]))
-  lv <- vapply(.SW_FF5, function(cc) if (cc %in% names(L)) as.numeric(L[[cc]]) else NA_real_, numeric(1))
-
-  regime_line <- sprintf("%s 주도 / %s 우위 / 퀄리티 %s (%s)", side(r5[["SMB"]], "대형", "소형"),
-                         side(r5[["HML"]], "성장", "가치"),
-                         if (is.na(r5[["RMW"]])) "?" else if (r5[["RMW"]] > 0) "강세" else "약세", wf$label)
-  revive_fire <- pos(r5[["SMB"]]) && pos(r5[["HML"]])
-  revive_watch <- if (revive_fire) sprintf("SMB·HML %s 동반 양전 — 소형/가치 반전 신호, 매장 팩터 un-bury 검토 발화", tag)
-                  else sprintf("반전 신호 없음 (SMB·HML %s 동반 양전 시 발화)", tag)
+  ## v4.2 (2026-11-24 도훈 '퇴역'): 구 FF5 트래커 퇴역 — 운영은 FF = NULL 로 부른다. FF 가 오면(검사 · 수동) 구 경로(v3) 그대로.
+  have_ff <- !is.null(FF) && NROW(FF) > 0L
+  if (have_ff) {
+    FF <- as.data.frame(FF); FF <- FF[order(FF$ym), , drop = FALSE]
+    L <- FF[nrow(FF), , drop = FALSE]
+    wf <- sw_window12(FF, .SW_FF5, mtd5, now)
+    r5 <- wf$values
+    mtd_ok <- identical(wf$mode, "mtd")
+    tag <- wf$short
+    lv <- vapply(.SW_FF5, function(cc) if (cc %in% names(L)) as.numeric(L[[cc]]) else NA_real_, numeric(1))
+    regime_line <- sprintf("%s 주도 / %s 우위 / 퀄리티 %s (%s)", side(r5[["SMB"]], "대형", "소형"),
+                           side(r5[["HML"]], "성장", "가치"),
+                           if (is.na(r5[["RMW"]])) "?" else if (r5[["RMW"]] > 0) "강세" else "약세", wf$label)
+    revive_fire <- pos(r5[["SMB"]]) && pos(r5[["HML"]])
+    revive_watch <- if (revive_fire) sprintf("SMB·HML %s 동반 양전 — 소형/가치 반전 신호, 매장 팩터 un-bury 검토 발화", tag)
+                    else sprintf("반전 신호 없음 (SMB·HML %s 동반 양전 시 발화)", tag)
+  } else {
+    L <- NULL; wf <- NULL; r5 <- NULL; mtd_ok <- FALSE; tag <- "12개월"; lv <- NULL; revive_fire <- FALSE
+    regime_line <- "FF5 판정 불가(정본 요인 미사용)"; revive_watch <- "판정 불가(정본 요인 미사용)"   # 사유 = 국면 판독 첫 줄
+  }
 
   ## v4: 정본 요인 판정 — kf 와 유의 문턱이 모두 있고 판정 가능할 때만 정본 경로
   K <- if (is.null(kf)) NULL else if (is.null(t_sig) || length(t_sig) != 1L || !is.finite(t_sig))
@@ -333,6 +341,9 @@ sw_compose_brief <- function(FF, SB = NULL, mtd5 = NULL, sbm = NULL, ib = NULL, 
         heading = sprintf("진행월 MTD (직전영업일 %s, %d거래일 · 정본 요인)", format(K$as_of), K$n_mtd),
         type = "kv", kv = kv6(K$mtd))
     charts <- "outputs/ff5_kr/charts/kr_ff_regime_t.png"
+    mtd_ok <- identical(K$mode, "mtd")                     # 지수 β 진행월 대조(ib_lag)도 정본 창 기준
+  } else if (!have_ff) {
+    sections <- list(); charts <- character(0)             # 정본도 트래커도 없음 — FF5 절 생략(사유는 국면 판독 첫 줄)
   } else {
   sections <- list(
     list(heading = sprintf("FF5 최근 완결월 (%s)", L$ym), type = "kv", kv = kv5(lv)),
@@ -406,7 +417,8 @@ sw_compose_brief <- function(FF, SB = NULL, mtd5 = NULL, sbm = NULL, ib = NULL, 
   KL <- if (use_kf) sw_kf_lines(K, t_sig) else NULL
   JL <- if (use_kf) tryCatch(sw_kf_jump_lines(kf, K, jp, today = as.Date(format(now, "%Y-%m-%d", tz = "Asia/Seoul"))),
                              error = function(e) "점프 모형 국면: 계산 오류") else character(0)
-  jd <- if (use_kf) c(KL$regime, JL, KL$market) else
+  jd <- if (use_kf) c(KL$regime, JL, KL$market) else if (!have_ff)
+    sprintf("정본 요인 미사용(%s) — FF5 절 · 판독 생략(구 트래커 퇴역)", if (is.null(K)) "정본 요인 없음" else K$reason) else
     c(if (!is.null(K)) sprintf("정본 요인 미사용(%s) — 아래 FF5 는 구 트래커 값", K$reason),
       sprintf("FF5 %s: %s 주도(SMB %s)·%s 우위(HML %s)·퀄리티 %s(RMW %s)", tag,
               side(r5[["SMB"]], "대형", "소형"), fmt(r5[["SMB"]]),
@@ -455,6 +467,8 @@ sw_compose_brief <- function(FF, SB = NULL, mtd5 = NULL, sbm = NULL, ib = NULL, 
     regime_line <- sprintf("%s (%s · 정본 요인 · |t|≥%.1f)", KL$regime_line,
                            if (identical(K$mode, "mtd")) sprintf("12개월+MTD ~%s", format(K$as_of, "%m-%d")) else "12개월(완결)", t_sig)
     revive_watch <- gsub("</?b>", "", sub("^부활 워치: ", "", KL$revive))
+  } else if (!have_ff) {
+    jd <- c(jd, "부활 워치: 판정 불가(정본 요인 미사용)")
   } else {
     early <- mtd_ok && pos(wf$mtd_values[["SMB"]]) && pos(wf$mtd_values[["HML"]])
     jd <- c(jd, if (revive_fire) sprintf("부활 워치: <b>발화</b> — SMB·HML %s 동반 양전(매장 팩터 un-bury 검토)", tag)
@@ -463,9 +477,12 @@ sw_compose_brief <- function(FF, SB = NULL, mtd5 = NULL, sbm = NULL, ib = NULL, 
   }
   sections[[length(sections) + 1L]] <- list(heading = "국면 판독", type = "bullet", items = jd)
 
-  title <- if (!use_kf) sw_brief_title(wf) else if (identical(K$mode, "mtd"))
-    sprintf("%s (%s 기준 · 완결월 %s)", .SW_TITLE_HEAD, format(K$as_of), K$last_ym)
+  title <- if (use_kf) {
+    if (identical(K$mode, "mtd")) sprintf("%s (%s 기준 · 완결월 %s)", .SW_TITLE_HEAD, format(K$as_of), K$last_ym)
     else sprintf("%s (완결월 %s 기준)", .SW_TITLE_HEAD, K$last_ym)
+  } else if (have_ff) sw_brief_title(wf) else if (!is.null(ws) && identical(ws$mode, "mtd"))
+    sprintf("%s (%s 기준 · FF5 생략)", .SW_TITLE_HEAD, format(ws$state$as_of))   # 사유는 국면 판독 첫 줄
+  else sprintf("%s (FF5 생략)", .SW_TITLE_HEAD)
   ## v4.1 따라잡기(ff5_brief_send.R::kf_catchup) — 낡음이면 못 따라잡은 사유를, 따라잡았으면 꼬리말에 그 사실을 싣는다
   cu <- if (use_kf) K$catchup else NULL
   cu_why <- c(held = "갱신 진행 중", mem_wait = "메모리 대기", failed = "따라잡기 실패", skipped = "드라이런",
@@ -480,7 +497,7 @@ sw_compose_brief <- function(FF, SB = NULL, mtd5 = NULL, sbm = NULL, ib = NULL, 
   } else ""
   list(title = title, sections = sections, charts = charts,
        footer = sprintf("diagnostic_monitoring · 시장 리뷰 전용(전략/자본 인용 금지) · %s%s",
-                        if (use_kf) "kr_factor_returns + smartbeta_kr" else "ff5_kr + smartbeta_kr", kf_tag),
+                        if (use_kf) "kr_factor_returns + smartbeta_kr" else if (have_ff) "ff5_kr + smartbeta_kr" else "smartbeta_kr", kf_tag),
        regime_line = regime_line, revive_watch = revive_watch, sb_line = sb_line,
        w_ff = wf, w_sb = ws, w_sb_complete = wsc, kf = K, kf_used = use_kf)
 }
@@ -501,8 +518,14 @@ sw_dryrun_lines <- function(out, charts_root = ".") {
   ln <- c(ln, sprintf("CHARTS (%d/%d 존재 — 발송 대상은 존재분만):", sum(ex), length(ex)),
           sprintf("  %s [%s · %s]", out$charts, ifelse(ex, "존재", "부재"), mt), "",
           sprintf("FOOTER: %s", out$footer),
-          sprintf("WINDOW FF5: mode=%s · %s · months=%s", out$w_ff$mode, out$w_ff$label,
-                  paste(out$w_ff$months, collapse = ",")))
+          ## v4.2: FF5 창 = 정본(kf_used) · 구 경로(FF 를 직접 준 검사 · 수동) · 없음
+          if (isTRUE(out$kf_used))
+            sprintf("WINDOW KF : mode=%s · as_of=%s · months=%s", out$kf$mode, format(out$kf$as_of),
+                    paste(out$kf$w12$months, collapse = ","))
+          else if (!is.null(out$w_ff))
+            sprintf("WINDOW FF5: mode=%s · %s · months=%s", out$w_ff$mode, out$w_ff$label,
+                    paste(out$w_ff$months, collapse = ","))
+          else sprintf("WINDOW FF5: 없음(%s)", if (is.null(out$kf$reason)) "정본 요인 없음" else out$kf$reason))
   if (!is.null(out$w_sb))
     ln <- c(ln, sprintf("WINDOW SB : mode=%s · %s · months=%s", out$w_sb$mode, out$w_sb$label,
                         paste(out$w_sb$months, collapse = ",")))

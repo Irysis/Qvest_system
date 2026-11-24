@@ -1,6 +1,8 @@
 ##=============================================================================
 ## ff5_brief_send.R — 모닝브리핑 스타일 국면 블록: FF5 + 스마트베타 통합 (v3)
-## 흐름: FF5 재빌드(~10초) + SB 증분 갱신(신규월만) → 국면 판독 → tg 1건 발송
+## 흐름: 정본 요인 따라잡기 + SB 증분 갱신(신규월만) → 국면 판독 → tg 1건 발송
+## v4.2 (2026-11-24 도훈 '퇴역'): 구 FF5 트래커(reports/ff5_kr_tracker.R) 빌드 단계와 그 산출 읽기를 없앴다 — FF5 = 정본 요인만.
+##   정본이 없는 날 = FF5 절 · FF5 국면 판독 생략 + 사유(스마트베타 절은 그대로). 사본 = 99_Archive/retired_ff5_kr_tracker_20261124/
 ## 라벨: diagnostic_monitoring — 시장 리뷰 전용(전략/자본 인용 금지)
 ## v4 (2026-11-24 도훈 "스타일 국면 브리핑 국면판독 부분 개선"): FF5 절 · 국면 판독 · 부활 워치 = 한국 FF 요인 정본
 ##   (.cache/kr_factor_returns_* · 밤 갱신 [5c]) + 등록부 유의 문턱 — 구 트래커 FF5 는 CMA 부호 · 가격 이음매 결함으로 폴백 전용.
@@ -14,7 +16,7 @@
 ## 환경변수(기본값 = 구 동작 · 크론 무설정):
 ##   FF5_BRIEF_DRYRUN=1        발송 0 — 제목·절·차트 목록을 표준출력(+ FF5_BRIEF_DRYRUN_OUT 파일)으로만.
 ##                             FF5_BRIEF_DRYRUN_RENDER=0 이 아니면 tg_agent_brief(dry_run=TRUE) 로 렌더 규율만 검증(발송 없음).
-##   FF5_BRIEF_SKIP_BUILD      all(또는 1) | 쉼표 목록 ff,sb,bf,ib,kc — 해당 재빌드 생략(기존 산출 소비)
+##   FF5_BRIEF_SKIP_BUILD      all(또는 1) | 쉼표 목록 sb,bf,ib,kc(+ 정본 따라잡기 kf · 점프 λ 재선택 jm) — 해당 재빌드 생략(기존 산출 소비)
 ##   FF5_BRIEF_DATA_DIR        산출물(outputs/… · v4 정본 요인 .cache/kr_factor_returns_*) 읽기 루트 — 기본 QM_ROOT (검사 샌드박스용)
 ##   FF5_BRIEF_FORCE           수동 재발송(쿨다운 우회) — 크론은 기본 FALSE
 ##=============================================================================
@@ -75,7 +77,7 @@ kf_catchup <- function() {
 KC <- tryCatch(kf_catchup(), error = function(e) list(state = "error", note = conditionMessage(e)))
 cat(sprintf("[ff5_brief] 정본 요인 따라잡기: %s — %s\n", KC$state, KC$note))
 
-ok_ff <- .build("ff", "02_Infrastructure/reports/ff5_kr_tracker.R", "FF5")
+## v4.2 구 FF5 트래커 빌드 단계 삭제(2026-11-24 도훈 '퇴역' · CMA 부호 반전 · 종가 비율 이음매) — 사본 99_Archive/retired_ff5_kr_tracker_20261124/
 ok_sb <- .build("sb", "02_Infrastructure/reports/smartbeta_kr_tracker.R", "SB")
 ok_bf <- .build("bf", "02_Infrastructure/reports/krx_index_monthend_backfill.R", "index backfill")
 ok_ib <- .build("ib", "02_Infrastructure/reports/index_factor_beta.R", "index-beta")
@@ -108,7 +110,7 @@ source("02_Infrastructure/reports/style_brief_lib.R")   # 트래커가 이미 �
 tryCatch(source("02_Infrastructure/reports/style_jump_model.R"), error = function(e) cat("[ff5_brief] 점프 모형 적재 실패:", conditionMessage(e), "\n"))
 
 ## v4 (2026-11-24 도훈 "국면판독 부분 개선"): 정본 요인(build_kr_factor_returns.R · 밤 갱신 [5c]) + 등록부 유의 문턱.
-##   읽기 실패 · 부재는 kf 를 빈 채로 넘긴다 → 조립이 구 경로로 가며 국면 판독 첫 줄에 사유를 싣는다(침묵 폴백 금지).
+##   읽기 실패 · 부재는 kf 를 빈 채로 넘긴다 → 조립이 FF5 절을 생략하고 국면 판독 첫 줄에 사유를 싣는다(침묵 폴백 금지 · v4.2).
 ##   문턱 = 02_Infrastructure/worktask/constraint_defaults.json::tier_graduation::grade_b_min_portfolio_alpha_t (하드코딩 금지).
 sw_read_kf <- function(dpath, ref_as_of = NULL) {
   rd <- function(p, cols = NULL) tryCatch(as.data.table(read_parquet(p, col_select = if (is.null(cols)) NULL else tidyselect::all_of(cols))),
@@ -124,24 +126,23 @@ sw_read_kf <- function(dpath, ref_as_of = NULL) {
 T_SIG <- tryCatch(as.numeric(jsonlite::fromJSON(file.path(ROOT, "02_Infrastructure/worktask/constraint_defaults.json"))$tier_graduation[["grade_b_min_portfolio_alpha_t"]]),
                   error = function(e) NULL)
 
-FF <- tryCatch(as.data.table(read_parquet(dp("outputs/ff5_kr/ff5_kr_monthly.parquet"))), error = function(e) NULL)
+## v4.2 (2026-11-24 도훈 '퇴역'): 구 FF5 트래커 산출(ff5_kr_monthly · ff5_kr_mtd.json)은 읽지 않는다 — FF5 = 정본 요인만.
 SB <- tryCatch(as.data.table(read_parquet(dp("outputs/smartbeta_kr/smartbeta_kr_monthly.parquet"))), error = function(e) NULL)
-if (is.null(FF) || !nrow(FF)) { cat("[ff5_brief] FF 시리즈 없음 — skip\n") } else {
-  mtd5 <- sw_read_json(dp("outputs/ff5_kr/ff5_kr_mtd.json"))
+kf_present <- file.exists(dp(".cache/kr_factor_returns_daily.parquet"))
+if (is.null(SB) && !kf_present) { cat("[ff5_brief] 정본 요인 · 스마트베타 모두 없음 — skip\n") } else {
   sbm  <- sw_read_json(dp("outputs/smartbeta_kr/smartbeta_kr_mtd.json"))
   ib   <- sw_read_json(dp("outputs/ff5_kr/index_factor_beta.json"))
-  kf   <- sw_read_kf(dp, ref_as_of = if (!is.null(sbm$as_of)) sbm$as_of else mtd5$as_of)
+  kf   <- sw_read_kf(dp, ref_as_of = sbm$as_of)
   kf$catchup <- KC                                        # v4.1 따라잡기 결과 — 제목(낡음 사유) · 꼬리말(아침 따라잡기)
   jp   <- sw_read_json(dp("outputs/ff5_kr/style_jump_params.json"))   # 점프 모형 λ(6개월마다 style_jump_select.R)
-  out <- sw_compose_brief(FF, SB, mtd5 = mtd5, sbm = sbm, ib = ib, now = Sys.time(), kf = kf, t_sig = T_SIG, jp = jp)
+  out <- sw_compose_brief(NULL, SB, mtd5 = NULL, sbm = sbm, ib = ib, now = Sys.time(), kf = kf, t_sig = T_SIG, jp = jp)
   charts <- out$charts[file.exists(dp(out$charts))]
-  cat(sprintf("[ff5_brief] window ff=%s(%s) sb=%s kf=%s | %s\n", out$w_ff$mode, out$w_ff$state$reason,
-              if (is.null(out$w_sb)) "-" else out$w_sb$mode,
-              if (isTRUE(out$kf_used)) sprintf("정본(%s)", format(out$kf$as_of)) else sprintf("구 경로(%s)", out$kf$reason), out$title))
+  cat(sprintf("[ff5_brief] window sb=%s kf=%s | %s\n", if (is.null(out$w_sb)) "-" else out$w_sb$mode,
+              if (isTRUE(out$kf_used)) sprintf("정본(%s)", format(out$kf$as_of)) else sprintf("정본 미사용(%s)", out$kf$reason), out$title))
 
   if (DRYRUN) {
-    lines <- c(sprintf("=== ff5_brief DRYRUN — 발송 없음 · %s KST · builds ff=%s sb=%s bf=%s ib=%s ===",
-                       format(Sys.time(), "%Y-%m-%d %H:%M:%S", tz = "Asia/Seoul"), ok_ff, ok_sb, ok_bf, ok_ib),
+    lines <- c(sprintf("=== ff5_brief DRYRUN — 발송 없음 · %s KST · builds sb=%s bf=%s ib=%s kc=%s ===",
+                       format(Sys.time(), "%Y-%m-%d %H:%M:%S", tz = "Asia/Seoul"), ok_sb, ok_bf, ok_ib, ok_kc),
                sw_dryrun_lines(out, charts_root = DATA))
     rendered <- NULL
     if (!identical(Sys.getenv("FF5_BRIEF_DRYRUN_RENDER", "1"), "0")) {
@@ -160,7 +161,7 @@ if (is.null(FF) || !nrow(FF)) { cat("[ff5_brief] FF 시리즈 없음 — skip\n"
     of <- Sys.getenv("FF5_BRIEF_DRYRUN_OUT", "")
     if (nzchar(of)) { writeLines(enc2utf8(lines), of, useBytes = TRUE); cat("[ff5_brief] DRYRUN 본문 →", of, "\n") }
     cat("[ff5_brief] DRYRUN ok (발송 없음) tg_loaded=", exists("tg_send_rich", mode = "function"),
-        " ff_build=", ok_ff, " sb_build=", ok_sb, "\n", sep = "")
+        " sb_build=", ok_sb, " ib_build=", ok_ib, "\n", sep = "")
   } else {
     source("02_Infrastructure/telegram/telegram_notify.R")
     res <- tg_agent_brief(
@@ -171,6 +172,6 @@ if (is.null(FF) || !nrow(FF)) { cat("[ff5_brief] FF 시리즈 없음 — skip\n"
       footer = out$footer,
       force = nzchar(Sys.getenv("FF5_BRIEF_FORCE", ""))   # 수동 재발송용(쿨다운 우회) — 크론은 기본 FALSE
     )
-    cat("[ff5_brief] sent ok=", isTRUE(res$ok), " ff_build=", ok_ff, " sb_build=", ok_sb, "\n", sep = "")
+    cat("[ff5_brief] sent ok=", isTRUE(res$ok), " sb_build=", ok_sb, " ib_build=", ok_ib, "\n", sep = "")
   }
 }
